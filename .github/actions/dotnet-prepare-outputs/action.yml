@@ -41,7 +41,7 @@ runs:
           --no-restore \
           --configuration Release \
           --output '${{ inputs.output_path }}\migration\databasemigration'
-          
+
     - name: Publish Web API
       shell: bash
       run: |
