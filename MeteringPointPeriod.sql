@@ -12,7 +12,7 @@ CREATE TABLE [dbo].[MeteringPointPeriod] (
   [Resolution] VARCHAR(50),
   [GridAreaCode] VARCHAR(50),
   [OwnerGLN] VARCHAR(50),
-  [AssertType] VARCHAR(50),
+  [AssetType] VARCHAR(50),
   [DisconnectType] VARCHAR(50),
   [MeasureUnit] VARCHAR(50),
   [FuelType] VARCHAR(50),
