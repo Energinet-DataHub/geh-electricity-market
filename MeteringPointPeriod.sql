@@ -22,7 +22,8 @@ CREATE TABLE [dbo].[MeteringPointPeriod] (
   [MeterReadingOccurrence] VARCHAR(50),
   [Capacity] DECIMAL(10,2),
   [ConnectionType] VARCHAR(50),
-  [NetSettlementGroup] VARCHAR(50),
+    --[NetSettlementGroup] VARCHAR(50),
+  [SettlementGroup] VARCHAR(50), -- DH3 name
   [ParentMeteringPoint] BIGINT,
   [PhysicalStatus] VARCHAR(50),
   [PowerLimitA] DECIMAL(10,2),
