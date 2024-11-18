@@ -26,7 +26,7 @@ CREATE TABLE [dbo].[MeteringPointPeriod] (
   [SettlementGroup] VARCHAR(50), -- DH3 name
   [ParentMeteringPoint] BIGINT,
   [PhysicalStatus] VARCHAR(50),
-  [PowerLimitA] DECIMAL(10,2),
+  [PowerLimitA] INT,
   [PowerPlantGLSRN] VARCHAR(50),
   [ProductCode] VARCHAR(50),
   [ProductionObligation] BIT,
