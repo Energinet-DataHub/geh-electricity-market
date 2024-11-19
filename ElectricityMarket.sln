@@ -17,6 +17,8 @@ Project("{EF126729-9F72-4334-AC6B-6E060B44BB29}") = "ElectricityMarket.Infrastru
 EndProject
 Project("{EF126729-9F72-4334-AC6B-6E060B44BB29}") = "ElectricityMarket.WebApi", "source\electricity-market\ElectricityMarket.WebAPI\ElectricityMarket.WebAPI.csproj", "{AC7E764C-12EF-492A-A60D-2E284AF2D31D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.Integration", "source\electricity-market\ElectricityMarket.Integration\ElectricityMarket.Integration.csproj", "{4C656D92-47E3-4822-88A2-71B37A6635CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C656D92-47E3-4822-88A2-71B37A6635CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C656D92-47E3-4822-88A2-71B37A6635CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C656D92-47E3-4822-88A2-71B37A6635CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C656D92-47E3-4822-88A2-71B37A6635CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8A8252D2-968E-4097-8D84-5E1A4287AB23} = {9805FFFF-9C74-4E1F-9FE8-0423C9469E33}
@@ -54,5 +60,6 @@ Global
 		{DA632F90-2298-40BA-A9C7-520AD7C7BED5} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
 		{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
 		{AC7E764C-12EF-492A-A60D-2E284AF2D31D} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
+		{4C656D92-47E3-4822-88A2-71B37A6635CD} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
 	EndGlobalSection
 EndGlobal

@@ -53,7 +53,9 @@ public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<Electri
     {
         var result = Upgrader.DatabaseUpgrade(ConnectionString);
         if (!result.Successful)
+        {
             throw new Exception("Database migration failed", result.Error);
+        }
 
         return true;
     }
