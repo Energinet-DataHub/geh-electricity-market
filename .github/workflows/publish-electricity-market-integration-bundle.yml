@@ -32,7 +32,8 @@ on:
 
 env:
   # Conditions
-  PUSH_PACKAGES: ${{ github.event_name != 'pull_request' }}
+  # PUSH_PACKAGES: ${{ github.event_name != 'pull_request' }}
+  PUSH_PACKAGES: ${{ false }}
 
 jobs:
   build_and_publish:
