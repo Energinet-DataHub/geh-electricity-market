@@ -25,6 +25,8 @@ on:
     outputs:
       dotnet:
         value: ${{ jobs.changes.outputs.dotnet }}
+      ci_integration_package:
+        value: ${{ jobs.changes.outputs.ci_integration_package }}
       render_c4model_views:
         value: ${{ jobs.changes.outputs.render_c4model_views }}
       db_migrations:
@@ -37,6 +39,7 @@ jobs:
     # Set job outputs to values from filter step
     outputs:
       dotnet: ${{ steps.filter.outputs.dotnet }}
+      ci_integration_package: ${{ steps.filter.outputs.ci_integration_package }}
       render_c4model_views: ${{ steps.filter.outputs.render_c4model_views }}
       db_migrations: ${{ steps.filter.outputs.db_migrations }}
     steps:
@@ -56,6 +59,8 @@ jobs:
               - '.github/workflows/ci-dotnet.yml'
               - '.github/actions/dotnet-*/**'
               - 'source/selectricity-market/!(DatabaseMigration/**)**'
+            ci_integration_package:
+              - 'source/Energinet.DataHub.ElectricityMarket.Integration/**'
             db_migrations:
               - 'source/electricity-market/DatabaseMigration/**'
             render_c4model_views:

@@ -40,6 +40,12 @@ jobs:
     if: ${{ needs.changes.outputs.dotnet == 'true' || needs.changes.outputs.db_migrations == 'true' }}
     uses: ./.github/workflows/ci-dotnet.yml
 
+  ci_integration_package:
+    needs: changes
+    if: ${{ needs.changes.outputs.ci_integration_package == 'true' }}
+    uses: ./.github/workflows/publish-electricity-market-integration-bundle.yml
+    secrets: inherit
+
   render_c4model_views:
     needs: changes
     if: ${{ needs.changes.outputs.render_c4model_views == 'true' }}
@@ -61,6 +67,7 @@ jobs:
         changes,
         ci_base,
         ci_dotnet,
+        ci_integration_package,
         render_c4model_views,
       ]
     if: |
