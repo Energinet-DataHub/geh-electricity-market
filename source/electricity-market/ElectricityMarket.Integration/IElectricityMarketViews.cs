@@ -16,5 +16,5 @@ namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public interface IElectricityMarketViews
 {
-    IAsyncEnumerable<MeteringPointChange> MeteringPointChangesAsync(MeteringPointIdentification identification);
+    IAsyncEnumerable<MeteringPointChange> GetMeteringPointChangesAsync(MeteringPointIdentification identification);
 }

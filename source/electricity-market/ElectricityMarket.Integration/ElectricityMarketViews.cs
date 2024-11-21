@@ -28,7 +28,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         _context = context;
     }
 
-    public IAsyncEnumerable<MeteringPointChange> MeteringPointChangesAsync(MeteringPointIdentification identification)
+    public IAsyncEnumerable<MeteringPointChange> GetMeteringPointChangesAsync(MeteringPointIdentification identification)
     {
         return _context.MeteringPointChanges.Where(x => x.Identification == identification.Value).Select(x => new MeteringPointChange
         {

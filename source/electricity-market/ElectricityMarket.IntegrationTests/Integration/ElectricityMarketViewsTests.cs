@@ -41,7 +41,7 @@ public sealed class ElectricityMarketViewsTests
         var target = serviceProvider.GetRequiredService<IElectricityMarketViews>();
 
         var actualRecords = new List<MeteringPointChange>();
-        await foreach (var view in target.MeteringPointChangesAsync(new MeteringPointIdentification("110000000000000005")))
+        await foreach (var view in target.GetMeteringPointChangesAsync(new MeteringPointIdentification("110000000000000005")))
         {
             actualRecords.Add(view);
         }
