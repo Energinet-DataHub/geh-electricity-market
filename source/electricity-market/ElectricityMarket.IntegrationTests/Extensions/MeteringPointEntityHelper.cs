@@ -12,21 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Xunit;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
+namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
 
-public sealed class ElectricityMarketDatabaseFixture : IAsyncLifetime
+public static class MeteringPointEntityHelper
 {
-    public ElectricityMarketDatabaseManager DatabaseManager { get; } = new();
-
-    public Task InitializeAsync()
+    public static MeteringPointEntity Create(string? identification = null)
     {
-        return DatabaseManager.CreateDatabaseAsync();
-    }
-
-    public Task DisposeAsync()
-    {
-        return DatabaseManager.DeleteDatabaseAsync();
+        return new MeteringPointEntity
+        {
+            Identification = identification ?? "101010101010101010",
+        };
     }
 }

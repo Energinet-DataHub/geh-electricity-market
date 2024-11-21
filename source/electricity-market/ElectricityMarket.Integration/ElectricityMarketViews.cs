@@ -12,24 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Linq.Expressions;
+using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Persistence;
+namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-internal class ElectricityMarketDatabaseContext : DbContext
+public sealed class ElectricityMarketViews : IElectricityMarketViews
 {
-    public ElectricityMarketDatabaseContext(DbContextOptions<ElectricityMarketDatabaseContext> options)
-        : base(options)
+    private readonly ElectricityMarketDatabaseContext _context;
+
+    internal ElectricityMarketViews(ElectricityMarketDatabaseContext context)
     {
+        _context = context;
     }
 
-    public ElectricityMarketDatabaseContext() { }
-
-    public DbSet<MeteringPointChangesViewRecord> MeteringPointChanges { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public IAsyncEnumerable<MeteringPointChangesViewRecord> MeteringPointChangesAsync(Expression<Func<MeteringPointChangesViewRecord, bool>> condition)
     {
-        modelBuilder.Entity<MeteringPointChangesViewRecord>().HasNoKey().ToView("vw_MeteringPointChanges");
-        base.OnModelCreating(modelBuilder);
+        return _context.MeteringPointChanges.Where(condition).AsAsyncEnumerable();
     }
 }

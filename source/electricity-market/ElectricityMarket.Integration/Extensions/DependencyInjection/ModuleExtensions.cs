@@ -15,7 +15,6 @@
 using Energinet.DataHub.ElectricityMarket.Integration.Options;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -23,7 +22,7 @@ namespace Energinet.DataHub.ElectricityMarket.Integration.Extensions.DependencyI
 
 public static class ModuleExtensions
 {
-    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services)
     {
         services
             .AddOptions<DatabaseOptions>()
@@ -39,6 +38,9 @@ public static class ModuleExtensions
                 builder.UseAzureSqlDefaults();
             });
         });
+
+        services.AddScoped<IElectricityMarketViews, ElectricityMarketViews>(s =>
+            new ElectricityMarketViews(s.GetRequiredService<ElectricityMarketDatabaseContext>()));
 
         return services;
     }
