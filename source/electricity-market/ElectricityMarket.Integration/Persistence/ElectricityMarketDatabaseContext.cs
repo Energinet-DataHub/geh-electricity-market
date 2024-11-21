@@ -16,10 +16,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 
-public class ElectricityMarketDatabaseContext : DbContext
+internal class ElectricityMarketDatabaseContext : DbContext
 {
-    private const string Schema = "electricitymarket";
-
     public ElectricityMarketDatabaseContext(DbContextOptions<ElectricityMarketDatabaseContext> options)
         : base(options)
     {
@@ -27,12 +25,11 @@ public class ElectricityMarketDatabaseContext : DbContext
 
     public ElectricityMarketDatabaseContext() { }
 
-    public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
+    public DbSet<MeteringPointChangesViewEntity> MeteringPointChanges { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(Schema);
-
+        modelBuilder.Entity<MeteringPointChangesViewEntity>().HasNoKey().ToView("vw_MeteringPointChanges");
         base.OnModelCreating(modelBuilder);
     }
 }

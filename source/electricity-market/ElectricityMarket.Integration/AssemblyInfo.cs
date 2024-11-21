@@ -12,21 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Xunit;
+using System.Runtime.CompilerServices;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
-
-public sealed class ElectricityMarketDatabaseFixture : IAsyncLifetime
-{
-    public ElectricityMarketDatabaseManager DatabaseManager { get; } = new();
-
-    public Task InitializeAsync()
-    {
-        return DatabaseManager.CreateDatabaseAsync();
-    }
-
-    public Task DisposeAsync()
-    {
-        return DatabaseManager.DeleteDatabaseAsync();
-    }
-}
+[assembly: InternalsVisibleTo("Energinet.DataHub.ElectricityMarket.IntegrationTests")]

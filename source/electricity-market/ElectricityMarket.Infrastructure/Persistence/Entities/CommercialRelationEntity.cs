@@ -12,21 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Xunit;
+using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
 
-public sealed class ElectricityMarketDatabaseFixture : IAsyncLifetime
+public sealed class CommercialRelationEntity
 {
-    public ElectricityMarketDatabaseManager DatabaseManager { get; } = new();
+    public string EnergySupplier { get; set; } = null!;
 
-    public Task InitializeAsync()
-    {
-        return DatabaseManager.CreateDatabaseAsync();
-    }
+    public Instant StartDate { get; set; }
 
-    public Task DisposeAsync()
-    {
-        return DatabaseManager.DeleteDatabaseAsync();
-    }
+    public Instant EndDate { get; set; }
 }
