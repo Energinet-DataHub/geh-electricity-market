@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.ComponentModel.DataAnnotations;
-
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-public sealed record GridAreaCode([MaxLength(3)] string Value);
+public sealed record GridAreaCode(string Value);

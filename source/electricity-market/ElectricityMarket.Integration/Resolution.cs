@@ -12,13 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.ComponentModel.DataAnnotations;
-
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public sealed record Resolution
 {
-    [MaxLength(6)]
     public string Value { get; }
 
     internal Resolution(string value)
