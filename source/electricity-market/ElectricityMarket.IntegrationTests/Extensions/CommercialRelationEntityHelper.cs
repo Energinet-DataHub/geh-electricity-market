@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Data;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
+using Energinet.DataHub.ElectricityMarket.Integration;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
@@ -22,25 +24,25 @@ public static class MeteringPointPeriodEntityHelper
     public static MeteringPointPeriodEntity Create(
         Instant? validFrom = null,
         Instant? validTo = null,
-        string? gridAreaCode = null,
-        string? gridAccessProvider = null,
-        int? connectionState = null,
-        int? subType = null,
-        string? resolution = null,
-        int? unit = null,
-        int? productId = null)
+        GridAreaCode? gridAreaCode = null,
+        ActorNumber? gridAccessProvider = null,
+        ConnectionState? connectionState = null,
+        SubType? subType = null,
+        Resolution? resolution = null,
+        MeasureUnit? unit = null,
+        ProductCode? productId = null)
     {
         return new MeteringPointPeriodEntity
         {
             ValidFrom = validFrom ?? SystemClock.Instance.GetCurrentInstant(),
             ValidTo = validTo ?? SystemClock.Instance.GetCurrentInstant(),
-            GridAreaCode = gridAreaCode ?? "123",
-            GridAccessProvider = gridAccessProvider ?? "9478450860603",
-            ConnectionState = connectionState ?? 1,
-            SubType = subType ?? 1,
-            Resolution = resolution ?? "PT15M",
-            Unit = unit ?? 1,
-            ProductId = productId ?? 12,
+            GridAreaCode = gridAreaCode?.Value ?? "123",
+            GridAccessProvider = gridAccessProvider?.Value ?? "9478450860603",
+            ConnectionState = connectionState is not null ? (int)connectionState : 0,
+            SubType = subType is not null ? (int)subType : 0,
+            Resolution = resolution?.Value ?? "PT15M",
+            Unit = unit is not null ? (int)unit : 0,
+            ProductId = productId is not null ? (int)productId : 0,
         };
     }
 }

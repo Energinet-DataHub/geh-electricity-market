@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
-using Energinet.DataHub.ElectricityMarket.Integration;
+using System.ComponentModel.DataAnnotations;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
+namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-public static class MeteringPointEntityHelper
+public sealed record Resolution
 {
-    public static MeteringPointEntity Create(MeteringPointIdentification? identification = null)
+    [MaxLength(6)]
+    public string Value { get; }
+
+    internal Resolution(string value)
     {
-        return new MeteringPointEntity
-        {
-            Identification = identification?.Value ?? "101010101010101010",
-        };
+        Value = value;
     }
 }

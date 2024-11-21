@@ -25,11 +25,11 @@ internal class ElectricityMarketDatabaseContext : DbContext
 
     public ElectricityMarketDatabaseContext() { }
 
-    public DbSet<MeteringPointChangesViewRecord> MeteringPointChanges { get; set; }
+    public DbSet<MeteringPointChangesViewEntity> MeteringPointChanges { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<MeteringPointChangesViewRecord>().HasNoKey().ToView("vw_MeteringPointChanges");
+        modelBuilder.Entity<MeteringPointChangesViewEntity>().HasNoKey().ToView("vw_MeteringPointChanges");
         base.OnModelCreating(modelBuilder);
     }
 }

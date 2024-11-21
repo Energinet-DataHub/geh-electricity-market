@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Linq.Expressions;
+using System.Data;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 using Microsoft.EntityFrameworkCore;
+using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
@@ -27,8 +28,20 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         _context = context;
     }
 
-    public IAsyncEnumerable<MeteringPointChangesViewRecord> MeteringPointChangesAsync(Expression<Func<MeteringPointChangesViewRecord, bool>> condition)
+    public IAsyncEnumerable<MeteringPointChange> MeteringPointChangesAsync(MeteringPointIdentification identification)
     {
-        return _context.MeteringPointChanges.Where(condition).AsAsyncEnumerable();
+        return _context.MeteringPointChanges.Where(x => x.Identification == identification.Value).Select(x => new MeteringPointChange
+        {
+            Identification = new MeteringPointIdentification(x.Identification),
+            ValidFrom = x.ValidFrom.ToInstant(),
+            ValidTo = x.ValidTo.ToInstant(),
+            GridAreaCode = new GridAreaCode(x.GridAreaCode),
+            GridAccessProvider = ActorNumber.Create(x.GridAccessProvider),
+            ConnectionState = (ConnectionState)x.ConnectionState,
+            SubType = (SubType)x.SubType,
+            Resolution = new Resolution(x.Resolution),
+            Unit = (MeasureUnit)x.Unit,
+            ProductCode = (ProductCode)x.ProductId,
+        }).AsAsyncEnumerable();
     }
 }

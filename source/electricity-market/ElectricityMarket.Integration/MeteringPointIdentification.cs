@@ -16,29 +16,4 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-public sealed class MeteringPointChangesViewRecord
-{
-    [MaxLength(18)]
-    public string Identification { get; internal set; } = null!;
-
-    public DateTimeOffset ValidFrom { get; internal set; }
-
-    public DateTimeOffset ValidTo { get; internal set; }
-
-    [MaxLength(3)]
-    public string GridAreaCode { get; internal set; } = null!;
-
-    [MaxLength(16)]
-    public string GridAccessProvider { get; internal set; } = null!;
-
-    public int ConnectionState { get; internal set; }
-
-    public int SubType { get; internal set; }
-
-    [MaxLength(6)]
-    public string Resolution { get; internal set; } = null!;
-
-    public int Unit { get; internal set; }
-
-    public int ProductId { get; internal set; }
-}
+public sealed record MeteringPointIdentification([MaxLength(18)] string Value);

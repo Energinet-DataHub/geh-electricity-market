@@ -12,18 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
-using Energinet.DataHub.ElectricityMarket.Integration;
+namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
-
-public static class MeteringPointEntityHelper
+public enum ProductCode
 {
-    public static MeteringPointEntity Create(MeteringPointIdentification? identification = null)
-    {
-        return new MeteringPointEntity
-        {
-            Identification = identification?.Value ?? "101010101010101010",
-        };
-    }
+    Tariff,
+    FuelQuantity,
+    PowerActive,
+    PowerReactive,
+    EnergyActivate,
+    EnergyReactive,
 }

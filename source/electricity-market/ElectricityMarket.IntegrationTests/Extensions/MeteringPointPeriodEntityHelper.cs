@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
+using Energinet.DataHub.ElectricityMarket.Integration;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
@@ -20,13 +21,13 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
 public static class CommercialRelationEntityHelper
 {
     public static CommercialRelationEntity Create(
-        string? energySupplier = null,
+        ActorNumber? energySupplier = null,
         Instant? startDate = null,
         Instant? endDate = null)
     {
         return new CommercialRelationEntity
         {
-            EnergySupplier = energySupplier ?? "4212712623156",
+            EnergySupplier = energySupplier?.Value ?? "4212712623156",
             StartDate = startDate ?? SystemClock.Instance.GetCurrentInstant(),
             EndDate = endDate ?? SystemClock.Instance.GetCurrentInstant(),
         };

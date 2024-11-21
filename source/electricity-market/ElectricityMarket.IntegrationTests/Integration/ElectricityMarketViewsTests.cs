@@ -40,20 +40,25 @@ public sealed class ElectricityMarketViewsTests
         var serviceProvider = _fixture.BuildServiceProvider();
         var target = serviceProvider.GetRequiredService<IElectricityMarketViews>();
 
-        var actualRecords = new List<MeteringPointChangesViewRecord>();
-        await foreach (var view in target.MeteringPointChangesAsync(x => x.Identification == "110000000000000005"))
+        var actualRecords = new List<MeteringPointChange>();
+        await foreach (var view in target.MeteringPointChangesAsync(new MeteringPointIdentification("110000000000000005")))
         {
             actualRecords.Add(view);
         }
 
         // assert
         Assert.Single(actualRecords);
-        Assert.Equal("110000000000000005", actualRecords.Single().Identification);
+        Assert.Equal("110000000000000005", actualRecords.Single().Identification.Value);
     }
 
     private static IEnumerable<(MeteringPointEntity MeteringPointEntity, MeteringPointPeriodEntity MeteringPointPeriodEntity, CommercialRelationEntity CommercialRelationEntity)> Records()
     {
-        for (var i = 1; i < 11; i++)
-            yield return (MeteringPointEntity: MeteringPointEntityHelper.Create(identification: "11000000000000" + i.ToString().PadLeft(4, '0')), MeteringPointPeriodEntity: MeteringPointPeriodEntityHelper.Create(), CommercialRelationEntity: CommercialRelationEntityHelper.Create());
+        for (var i = 0; i < 10; ++i)
+        {
+            yield return (
+                MeteringPointEntity: MeteringPointEntityHelper.Create(identification: new MeteringPointIdentification("11000000000000" + (i + 1).ToString().PadLeft(4, '0'))),
+                MeteringPointPeriodEntity: MeteringPointPeriodEntityHelper.Create(),
+                CommercialRelationEntity: CommercialRelationEntityHelper.Create());
+        }
     }
 }
