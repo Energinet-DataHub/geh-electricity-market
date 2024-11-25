@@ -12,11 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+using System.ComponentModel.DataAnnotations;
 
-public interface IElectricityMarketViews
+namespace Energinet.DataHub.ElectricityMarket.Integration.Persistence;
+
+internal sealed class MeteringPointEnergySuppliersViewEntity
 {
-    IAsyncEnumerable<MeteringPointChange> GetMeteringPointChangesAsync(MeteringPointIdentification identification);
+    [MaxLength(18)]
+    public string Identification { get; internal set; } = null!;
 
-    IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(MeteringPointIdentification identification);
+    [MaxLength(16)]
+    public string EnergySupplier { get; internal set; } = null!;
+
+    public DateTimeOffset StartDate { get; internal set; }
+
+    public DateTimeOffset EndDate { get; internal set; }
 }
