@@ -58,7 +58,7 @@ jobs:
               - '.github/workflows/cd.yml'
               - '.github/workflows/ci-dotnet.yml'
               - '.github/actions/dotnet-*/**'
-              - 'source/selectricity-market/!(DatabaseMigration/**)**'
+              - 'source/electricity-market/!(DatabaseMigration/**)**'
             ci_integration_package:
               - 'source/Energinet.DataHub.ElectricityMarket.Integration/**'
             db_migrations:
