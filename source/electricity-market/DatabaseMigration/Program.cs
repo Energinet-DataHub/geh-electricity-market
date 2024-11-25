@@ -12,35 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
+
 namespace Energinet.DataHub.ElectricityMarket.DatabaseMigration;
 
 internal static class Program
 {
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
-        // If you are migrating to SQL Server Express use connection string "Server=(LocalDb)\\MSSQLLocalDB;..."
-        // If you are migrating to SQL Server use connection string "Server=localhost;..."
-        var connectionString =
-            args.FirstOrDefault()
-            ?? "Server=localhost;Database=electricity-market;Trusted_Connection=True;Encrypt=No;";
+        var connectionString = ConnectionStringFactory.GetConnectionString(args);
+        var filter = EnvironmentFilter.GetFilter(args);
+        var isDryRun = args.Contains("dryRun");
 
-        Console.WriteLine($"Performing upgrade on {connectionString}");
-        var result = Upgrader.DatabaseUpgrade(connectionString);
+        var upgradeEngine = await UpgradeFactory.GetUpgradeEngineAsync(connectionString, filter, isDryRun).ConfigureAwait(false);
 
-        if (!result.Successful)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(result.Error);
-            Console.ResetColor();
-#if DEBUG
-            Console.ReadLine();
-#endif
-            return -1;
-        }
+        var result = upgradeEngine.PerformUpgrade();
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Success!");
-        Console.ResetColor();
-        return 0;
+        return ResultReporter.ReportResult(result);
     }
 }
