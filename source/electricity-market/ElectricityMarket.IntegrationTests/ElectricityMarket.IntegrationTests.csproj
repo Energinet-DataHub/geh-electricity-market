@@ -30,5 +30,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DatabaseMigration\DatabaseMigration.csproj" />
     <ProjectReference Include="..\ElectricityMarket.Infrastructure\ElectricityMarket.Infrastructure.csproj" />
+    <ProjectReference Include="..\ElectricityMarket.Integration\ElectricityMarket.Integration.csproj" />
   </ItemGroup>
 </Project>

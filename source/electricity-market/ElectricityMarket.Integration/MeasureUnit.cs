@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Xunit;
+namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
-
-public sealed class ElectricityMarketDatabaseFixture : IAsyncLifetime
+public enum MeasureUnit
 {
-    public ElectricityMarketDatabaseManager DatabaseManager { get; } = new();
-
-    public Task InitializeAsync()
-    {
-        return DatabaseManager.CreateDatabaseAsync();
-    }
-
-    public Task DisposeAsync()
-    {
-        return DatabaseManager.DeleteDatabaseAsync();
-    }
+// ReSharper disable InconsistentNaming
+#pragma warning disable SA1300
+    Ampere,
+    STK,
+    kVArh,
+    kWh,
+    kW,
+    MW,
+    MWh,
+    Tonne,
+    MVAr,
+    DanishTariffCode,
+#pragma warning restore SA1300
+// ReSharper restore InconsistentNaming
 }
