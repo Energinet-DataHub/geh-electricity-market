@@ -36,27 +36,46 @@ public sealed class ElectricityMarketViewsTests
     public async Task MeteringPointChangesAsync_FilterSupplied_AdheresTo()
     {
         // arrange
-        await _fixture.InsertAsync(Records());
+        await _fixture.InsertAsync(Records('1'));
         var serviceProvider = _fixture.BuildServiceProvider();
         var target = serviceProvider.GetRequiredService<IElectricityMarketViews>();
 
         var actualRecords = new List<MeteringPointChange>();
-        await foreach (var view in target.GetMeteringPointChangesAsync(new MeteringPointIdentification("110000000000000005")))
+        await foreach (var view in target.GetMeteringPointChangesAsync(new MeteringPointIdentification("100000000000000005")))
         {
             actualRecords.Add(view);
         }
 
         // assert
         Assert.Single(actualRecords);
-        Assert.Equal("110000000000000005", actualRecords.Single().Identification.Value);
+        Assert.Equal("100000000000000005", actualRecords.Single().Identification.Value);
     }
 
-    private static IEnumerable<(MeteringPointEntity MeteringPointEntity, MeteringPointPeriodEntity MeteringPointPeriodEntity, CommercialRelationEntity CommercialRelationEntity)> Records()
+    [Fact]
+    public async Task MeteringPointEnergySuppliersAsync_FilterSupplied_AdheresTo()
+    {
+        // arrange
+        await _fixture.InsertAsync(Records('2'));
+        var serviceProvider = _fixture.BuildServiceProvider();
+        var target = serviceProvider.GetRequiredService<IElectricityMarketViews>();
+
+        var actualRecords = new List<MeteringPointEnergySupplier>();
+        await foreach (var view in target.GetMeteringPointEnergySuppliersAsync(new MeteringPointIdentification("200000000000000006")))
+        {
+            actualRecords.Add(view);
+        }
+
+        // assert
+        Assert.Single(actualRecords);
+        Assert.Equal("200000000000000006", actualRecords.Single().Identification.Value);
+    }
+
+    private static IEnumerable<(MeteringPointEntity MeteringPointEntity, MeteringPointPeriodEntity MeteringPointPeriodEntity, CommercialRelationEntity CommercialRelationEntity)> Records(char prefix)
     {
         for (var i = 0; i < 10; ++i)
         {
             yield return (
-                MeteringPointEntity: MeteringPointEntityHelper.Create(identification: new MeteringPointIdentification("11000000000000" + (i + 1).ToString().PadLeft(4, '0'))),
+                MeteringPointEntity: MeteringPointEntityHelper.Create(identification: new MeteringPointIdentification(prefix + "0000000000000" + (i + 1).ToString().PadLeft(4, '0'))),
                 MeteringPointPeriodEntity: MeteringPointPeriodEntityHelper.Create(),
                 CommercialRelationEntity: CommercialRelationEntityHelper.Create());
         }

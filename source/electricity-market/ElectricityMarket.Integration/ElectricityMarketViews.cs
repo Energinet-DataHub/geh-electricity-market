@@ -44,4 +44,15 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
             ProductCode = (ProductCode)x.ProductId,
         }).AsAsyncEnumerable();
     }
+
+    public IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(MeteringPointIdentification identification)
+    {
+        return _context.MeteringPointEnergySuppliers.Where(x => x.Identification == identification.Value).Select(x => new MeteringPointEnergySupplier
+        {
+            Identification = new MeteringPointIdentification(x.Identification),
+            EnergySupplier = ActorNumber.Create(x.EnergySupplier),
+            StartDate = x.StartDate.ToInstant(),
+            EndDate = x.EndDate.ToInstant(),
+        }).AsAsyncEnumerable();
+    }
 }
