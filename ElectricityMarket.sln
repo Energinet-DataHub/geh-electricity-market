@@ -3,29 +3,26 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source", "source", "{9805FFFF-9C74-4E1F-9FE8-0423C9469E33}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseMigration", "source\electricity-market\DatabaseMigration\DatabaseMigration.csproj", "{EB86F2BA-AC67-4A51-BDD7-E391CDFDF265}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "electricity-market", "electricity-market", "{8A8252D2-968E-4097-8D84-5E1A4287AB23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.IntegrationTests", "source\electricity-market\ElectricityMarket.IntegrationTests\ElectricityMarket.IntegrationTests.csproj", "{B9A8CF9A-7B62-481E-A155-DA07CD3172E9}"
 EndProject
-Project("{EF126729-9F72-4334-AC6B-6E060B44BB29}") = "DatabaseMigration", "source\electricity-market\DatabaseMigration\DatabaseMigration.csproj", "{EB86F2BA-AC67-4A51-BDD7-E391CDFDF265}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.UnitTests", "source\electricity-market\ElectricityMarket.UnitTests\ElectricityMarket.UnitTests.csproj", "{DA632F90-2298-40BA-A9C7-520AD7C7BED5}"
 EndProject
-Project("{EF126729-9F72-4334-AC6B-6E060B44BB29}") = "ElectricityMarket.IntegrationTests", "source\electricity-market\ElectricityMarket.IntegrationTests\ElectricityMarket.IntegrationTests.csproj", "{B9A8CF9A-7B62-481E-A155-DA07CD3172E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.Infrastructure", "source\electricity-market\ElectricityMarket.Infrastructure\ElectricityMarket.Infrastructure.csproj", "{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE}"
 EndProject
-Project("{EF126729-9F72-4334-AC6B-6E060B44BB29}") = "ElectricityMarket.UnitTests", "source\electricity-market\ElectricityMarket.UnitTests\ElectricityMarket.UnitTests.csproj", "{DA632F90-2298-40BA-A9C7-520AD7C7BED5}"
-EndProject
-Project("{EF126729-9F72-4334-AC6B-6E060B44BB29}") = "ElectricityMarket.Infrastructure", "source\electricity-market\ElectricityMarket.Infrastructure\ElectricityMarket.Infrastructure.csproj", "{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE}"
-EndProject
-Project("{EF126729-9F72-4334-AC6B-6E060B44BB29}") = "ElectricityMarket.WebApi", "source\electricity-market\ElectricityMarket.WebAPI\ElectricityMarket.WebAPI.csproj", "{AC7E764C-12EF-492A-A60D-2E284AF2D31D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.WebAPI", "source\electricity-market\ElectricityMarket.WebAPI\ElectricityMarket.WebAPI.csproj", "{AC7E764C-12EF-492A-A60D-2E284AF2D31D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.Integration", "source\electricity-market\ElectricityMarket.Integration\ElectricityMarket.Integration.csproj", "{4C656D92-47E3-4822-88A2-71B37A6635CD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{693EB24E-1DFB-4348-8FD0-8A103385F610}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{B7F4F1FB-15F3-408B-BD98-59D27D23518F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{EB86F2BA-AC67-4A51-BDD7-E391CDFDF265}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -36,10 +33,6 @@ Global
 		{B9A8CF9A-7B62-481E-A155-DA07CD3172E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9A8CF9A-7B62-481E-A155-DA07CD3172E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9A8CF9A-7B62-481E-A155-DA07CD3172E9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AC7E764C-12EF-492A-A60D-2E284AF2D31D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC7E764C-12EF-492A-A60D-2E284AF2D31D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC7E764C-12EF-492A-A60D-2E284AF2D31D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC7E764C-12EF-492A-A60D-2E284AF2D31D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA632F90-2298-40BA-A9C7-520AD7C7BED5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA632F90-2298-40BA-A9C7-520AD7C7BED5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA632F90-2298-40BA-A9C7-520AD7C7BED5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -48,18 +41,21 @@ Global
 		{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC7E764C-12EF-492A-A60D-2E284AF2D31D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC7E764C-12EF-492A-A60D-2E284AF2D31D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC7E764C-12EF-492A-A60D-2E284AF2D31D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC7E764C-12EF-492A-A60D-2E284AF2D31D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4C656D92-47E3-4822-88A2-71B37A6635CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4C656D92-47E3-4822-88A2-71B37A6635CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C656D92-47E3-4822-88A2-71B37A6635CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C656D92-47E3-4822-88A2-71B37A6635CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{8A8252D2-968E-4097-8D84-5E1A4287AB23} = {9805FFFF-9C74-4E1F-9FE8-0423C9469E33}
-		{EB86F2BA-AC67-4A51-BDD7-E391CDFDF265} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
-		{B9A8CF9A-7B62-481E-A155-DA07CD3172E9} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
-		{DA632F90-2298-40BA-A9C7-520AD7C7BED5} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
-		{17DC0139-CE22-48AC-9CBC-4C8F9BC1DEFE} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
-		{AC7E764C-12EF-492A-A60D-2E284AF2D31D} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
-		{4C656D92-47E3-4822-88A2-71B37A6635CD} = {8A8252D2-968E-4097-8D84-5E1A4287AB23}
+		{B9A8CF9A-7B62-481E-A155-DA07CD3172E9} = {693EB24E-1DFB-4348-8FD0-8A103385F610}
+		{DA632F90-2298-40BA-A9C7-520AD7C7BED5} = {693EB24E-1DFB-4348-8FD0-8A103385F610}
+		{AC7E764C-12EF-492A-A60D-2E284AF2D31D} = {B7F4F1FB-15F3-408B-BD98-59D27D23518F}
 	EndGlobalSection
 EndGlobal
