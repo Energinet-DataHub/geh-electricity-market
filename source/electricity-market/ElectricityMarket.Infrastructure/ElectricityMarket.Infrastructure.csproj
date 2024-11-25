@@ -35,7 +35,6 @@ limitations under the License.
     <PackageReference Include="NodaTime" Version="3.2.0" />
     <PackageReference Include="NodaTime.Serialization.Protobuf" Version="2.0.1" />
     <PackageReference Include="NodaTime.Serialization.SystemTextJson" Version="1.2.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
   </ItemGroup>
 
 </Project>
