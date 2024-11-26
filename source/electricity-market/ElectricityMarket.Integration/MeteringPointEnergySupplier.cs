@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using NodaTime;
+
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-public interface IElectricityMarketViews
+public sealed class MeteringPointEnergySupplier
 {
-    IAsyncEnumerable<MeteringPointChange> GetMeteringPointChangesAsync(MeteringPointIdentification identification);
+    public MeteringPointIdentification Identification { get; internal set; } = null!;
 
-    IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(MeteringPointIdentification identification);
+    public ActorNumber EnergySupplier { get; internal set; } = null!;
+
+    public Instant StartDate { get; internal set; }
+
+    public Instant EndDate { get; internal set; }
 }
