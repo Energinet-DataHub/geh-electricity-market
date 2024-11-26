@@ -55,15 +55,15 @@ jobs:
       - name: Pack project
         uses: Energinet-DataHub/.github/.github/actions/nuget-project-pack@v13
         with:
-          project_path: ./source/Energinet.DataHub.ElectricityMarket.Integration/Energinet.DataHub.ElectricityMarket.Integration.csproj
+          project_path: ./source/electricity-market/ElectricityMarket.Integration/ElectricityMarket.Integration.csproj
 
       - name: Package content or build has changed
         id: changed-content
         uses: tj-actions/changed-files@v41
         with:
           files: |
-            source/Energinet.DataHub.ElectricityMarket.Integration/*.*
-            source/Energinet.DataHub.ElectricityMarket.Integration/**/*.*
+            source/electricity-market/ElectricityMarket.Integration/*.*
+            source/electricity-market/ElectricityMarket.Integration/**/*.*
             .github/workflows/publish-electricity-market-integration-bundle.yml
 
       - name: Assert versions of NuGet packages and push them to NuGet.org
@@ -72,7 +72,7 @@ jobs:
           push_packages: ${{ env.PUSH_PACKAGES }}
           content_changed: ${{ steps.changed-content.outputs.any_changed }}
           nuget_token: ${{ secrets.nuget_token }}
-          nupkg_recurse_path: source/Energinet.DataHub.ElectricityMarket.Integration
+          nupkg_recurse_path: source/electricity-market/ElectricityMarket.Integration
 
   #
   # Branch policy status check
