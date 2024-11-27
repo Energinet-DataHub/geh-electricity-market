@@ -2,7 +2,7 @@
 
 ## Registration
 
-Invoke the following (package included) extension with your `IServiceCollection`.
+Call the following (package included) extension with your `IServiceCollection`.
 
 ```c#
 services.AddElectricityMarketModule();
