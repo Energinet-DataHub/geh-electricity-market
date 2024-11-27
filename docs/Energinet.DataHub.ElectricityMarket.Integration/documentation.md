@@ -1,11 +1,15 @@
 # Electricity Market Integration package
 
 ## Registration
+
 Invoke the following (package included) extension with your `IServiceCollection`.
+
 ```c#
 services.AddElectricityMarketModule();
 ```
+
 Make sure that, your configuration includes the following section.
+
 ```json
 {
     "DatabaseOptions:ConnectionString": "Server=localhost; Datab..."
@@ -13,6 +17,7 @@ Make sure that, your configuration includes the following section.
 ```
 
 ## Usage
+
 After above registration, `IElectricityMarketViews` can be resolved. Following views are available.
 
 ```c#
