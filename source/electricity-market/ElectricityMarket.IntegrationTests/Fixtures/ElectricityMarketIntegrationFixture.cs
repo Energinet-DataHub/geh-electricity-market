@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
 using Energinet.DataHub.ElectricityMarket.Integration.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Integration.Options;
@@ -49,10 +52,15 @@ public sealed class ElectricityMarketIntegrationFixture : IAsyncLifetime
         MeteringPointPeriodEntity MeteringPointPeriodEntity,
         CommercialRelationEntity CommercialRelationEntity)> records)
     {
+#pragma warning disable CA2007
         await using var context = DatabaseManager.CreateDbContext();
+#pragma warning restore CA2007
 
+#pragma warning disable CA1062
         foreach (var (meteringPointEntity, meteringPointPeriodEntity, commercialRelationEntity) in records)
+#pragma warning restore CA1062
         {
+#pragma warning disable CA2007
             await context.Database.ExecuteSqlInterpolatedAsync(
                 $"""
                  INSERT INTO MeteringPoint(Identification)
@@ -66,6 +74,7 @@ public sealed class ElectricityMarketIntegrationFixture : IAsyncLifetime
                  INSERT INTO CommercialRelation(MeteringPointId, EnergySupplier, StartDate, EndDate)
                  VALUES(@id, {commercialRelationEntity.EnergySupplier}, {commercialRelationEntity.StartDate.ToDateTimeOffset()}, {commercialRelationEntity.EndDate.ToDateTimeOffset()})
                  """);
+#pragma warning restore CA2007
         }
     }
 

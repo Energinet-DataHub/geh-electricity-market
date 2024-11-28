@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
 using Energinet.DataHub.ElectricityMarket.Integration;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
@@ -75,7 +79,7 @@ public sealed class ElectricityMarketViewsTests
         for (var i = 0; i < 10; ++i)
         {
             yield return (
-                MeteringPointEntity: MeteringPointEntityHelper.Create(identification: new MeteringPointIdentification(prefix + "0000000000000" + (i + 1).ToString().PadLeft(4, '0'))),
+                MeteringPointEntity: MeteringPointEntityHelper.Create(identification: new MeteringPointIdentification(prefix + "0000000000000" + (i + 1).ToString(CultureInfo.InvariantCulture).PadLeft(4, '0'))),
                 MeteringPointPeriodEntity: MeteringPointPeriodEntityHelper.Create(),
                 CommercialRelationEntity: CommercialRelationEntityHelper.Create());
         }

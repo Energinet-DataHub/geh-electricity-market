@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+using System.Threading.Tasks;
 using Energinet.DataHub.Core.FunctionApp.TestCommon.Database;
 using Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
@@ -19,7 +21,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 
-internal class ElectricityMarketIntegrationDatabaseManager : SqlServerDatabaseManager<ElectricityMarketDatabaseContext>
+internal sealed class ElectricityMarketIntegrationDatabaseManager : SqlServerDatabaseManager<ElectricityMarketDatabaseContext>
 {
     public ElectricityMarketIntegrationDatabaseManager()
         : base("ElectricityMarketIntegration")

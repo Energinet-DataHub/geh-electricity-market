@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
@@ -25,7 +26,9 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     {
     }
 
-    public ElectricityMarketDatabaseContext() { }
+    public ElectricityMarketDatabaseContext()
+    {
+    }
 
     public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 

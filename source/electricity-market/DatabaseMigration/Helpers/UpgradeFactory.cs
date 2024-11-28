@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using DbUp;
 using DbUp.Engine;
 using Microsoft.Data.SqlClient;

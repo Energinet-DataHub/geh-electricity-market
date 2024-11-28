@@ -23,7 +23,9 @@ internal class ElectricityMarketDatabaseContext : DbContext
     {
     }
 
-    public ElectricityMarketDatabaseContext() { }
+    public ElectricityMarketDatabaseContext()
+    {
+    }
 
     public DbSet<MeteringPointChangesViewEntity> MeteringPointChanges { get; set; }
 
