@@ -18,30 +18,18 @@ using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
 
-public static class MeteringPointPeriodEntityHelper
+public static class CommercialRelationEntityHelper
 {
-    public static MeteringPointPeriodEntity Create(
-        Instant? validFrom = null,
-        Instant? validTo = null,
-        GridAreaCode? gridAreaCode = null,
-        ActorNumber? gridAccessProvider = null,
-        ConnectionState? connectionState = null,
-        SubType? subType = null,
-        Resolution? resolution = null,
-        MeasureUnit? unit = null,
-        ProductCode? productId = null)
+    public static CommercialRelationEntity Create(
+        ActorNumber? energySupplier = null,
+        Instant? startDate = null,
+        Instant? endDate = null)
     {
-        return new MeteringPointPeriodEntity
+        return new CommercialRelationEntity
         {
-            ValidFrom = validFrom ?? SystemClock.Instance.GetCurrentInstant(),
-            ValidTo = validTo ?? SystemClock.Instance.GetCurrentInstant(),
-            GridAreaCode = gridAreaCode?.Value ?? "123",
-            GridAccessProvider = gridAccessProvider?.Value ?? "9478450860603",
-            ConnectionState = connectionState is not null ? (int)connectionState : 0,
-            SubType = subType is not null ? (int)subType : 0,
-            Resolution = resolution?.Value ?? "PT15M",
-            Unit = unit is not null ? (int)unit : 0,
-            ProductId = productId is not null ? (int)productId : 0,
+            EnergySupplier = energySupplier?.Value ?? "4212712623156",
+            StartDate = startDate ?? SystemClock.Instance.GetCurrentInstant(),
+            EndDate = endDate ?? SystemClock.Instance.GetCurrentInstant(),
         };
     }
 }

@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+using System.Collections.Generic;
+
 namespace Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 
 /// <summary>
-/// Compare sql script file names
+/// Compare sql script file names.
 /// </summary>
 public sealed class ScriptComparer : Comparer<string>
 {

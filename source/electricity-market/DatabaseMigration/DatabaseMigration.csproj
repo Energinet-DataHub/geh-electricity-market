@@ -16,9 +16,12 @@ limitations under the License.
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <AssemblyName>Energinet.DataHub.ElectricityMarket.DatabaseMigration</AssemblyName>
     <RootNamespace>Energinet.DataHub.ElectricityMarket.DatabaseMigration</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

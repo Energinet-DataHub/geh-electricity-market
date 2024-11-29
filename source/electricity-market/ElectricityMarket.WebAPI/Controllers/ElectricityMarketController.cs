@@ -18,5 +18,5 @@ namespace ElectricityMarket.WebAPI.Controllers;
 
 [ApiController]
 [Route("electricity-market")]
-public class SettlementReportsController
+public class ElectricityMarketController
     : ControllerBase;

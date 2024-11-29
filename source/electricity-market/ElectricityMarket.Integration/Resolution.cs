@@ -16,10 +16,10 @@ namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public sealed record Resolution
 {
-    public string Value { get; }
-
     internal Resolution(string value)
     {
         Value = value;
     }
+
+    public string Value { get; }
 }

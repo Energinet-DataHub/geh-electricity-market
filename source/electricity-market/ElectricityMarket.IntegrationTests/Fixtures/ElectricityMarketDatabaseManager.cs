@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+using System.Threading.Tasks;
 using Energinet.DataHub.Core.FunctionApp.TestCommon.Database;
 using Energinet.DataHub.ElectricityMarket.DatabaseMigration;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
@@ -54,7 +56,9 @@ public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<Electri
         var result = Upgrader.DatabaseUpgrade(ConnectionString);
         if (!result.Successful)
         {
+#pragma warning disable CA2201
             throw new Exception("Database migration failed", result.Error);
+#pragma warning restore CA2201
         }
 
         return true;

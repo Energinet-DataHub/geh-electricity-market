@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 
 public static class ConnectionStringFactory
 {
-    private const string DefaultConnectionString = "Server=(local); Database=RevisionLogDatabase; Trusted_connection=true";
+    private const string DefaultConnectionString = "Server=(local); Database=ElectricityMarketDatabase; Trusted_connection=true";
 
     public static string GetConnectionString(IEnumerable<string> args)
     {
