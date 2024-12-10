@@ -40,6 +40,18 @@ internal sealed class ElectricityMarketIntegrationDatabaseManager : SqlServerDat
         return new ElectricityMarketDatabaseContext(optionsBuilder.Options);
     }
 
+    public Infrastructure.Persistence.ElectricityMarketDatabaseContext CreateWriteableDbContext()
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<Infrastructure.Persistence.ElectricityMarketDatabaseContext>()
+            .UseSqlServer(ConnectionString, options =>
+            {
+                options.UseNodaTime();
+                options.EnableRetryOnFailure();
+            });
+
+        return new Infrastructure.Persistence.ElectricityMarketDatabaseContext(optionsBuilder.Options);
+    }
+
     /// <summary>
     ///     Creates the database schema using DbUp instead of a database context.
     /// </summary>

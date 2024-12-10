@@ -16,9 +16,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Integration;
-using Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
+using Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -30,8 +30,7 @@ public sealed class ElectricityMarketViewsTests
 {
     private readonly ElectricityMarketIntegrationFixture _fixture;
 
-    public ElectricityMarketViewsTests(
-        ElectricityMarketIntegrationFixture fixture)
+    public ElectricityMarketViewsTests(ElectricityMarketIntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -39,18 +38,26 @@ public sealed class ElectricityMarketViewsTests
     [Fact]
     public async Task MeteringPointChangesAsync_FilterSupplied_AdheresTo()
     {
-        // arrange
+        // Arrange
+        var mp = await _fixture.PrepareMeteringPointAsync();
+
+        for (var i = 0; i < 10; i++)
+        {
+        }
+
         await _fixture.InsertAsync(Records('1'));
         var serviceProvider = _fixture.BuildServiceProvider();
         var target = serviceProvider.GetRequiredService<IElectricityMarketViews>();
 
-        var actualRecords = new List<MeteringPointChange>();
+        var actualRecords = new List<MeteringPointMasterData>();
+
+        // Act
         await foreach (var view in target.GetMeteringPointChangesAsync(new MeteringPointIdentification("100000000000000005")))
         {
             actualRecords.Add(view);
         }
 
-        // assert
+        // Assert
         Assert.Single(actualRecords);
         Assert.Equal("100000000000000005", actualRecords.Single().Identification.Value);
     }
@@ -58,18 +65,20 @@ public sealed class ElectricityMarketViewsTests
     [Fact]
     public async Task MeteringPointEnergySuppliersAsync_FilterSupplied_AdheresTo()
     {
-        // arrange
+        // Arrange
         await _fixture.InsertAsync(Records('2'));
         var serviceProvider = _fixture.BuildServiceProvider();
         var target = serviceProvider.GetRequiredService<IElectricityMarketViews>();
 
         var actualRecords = new List<MeteringPointEnergySupplier>();
+
+        // Act
         await foreach (var view in target.GetMeteringPointEnergySuppliersAsync(new MeteringPointIdentification("200000000000000006")))
         {
             actualRecords.Add(view);
         }
 
-        // assert
+        // Assert
         Assert.Single(actualRecords);
         Assert.Equal("200000000000000006", actualRecords.Single().Identification.Value);
     }

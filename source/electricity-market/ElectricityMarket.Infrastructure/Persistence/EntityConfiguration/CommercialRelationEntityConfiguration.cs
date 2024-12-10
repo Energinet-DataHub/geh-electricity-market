@@ -12,24 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
-using Energinet.DataHub.ElectricityMarket.Integration;
-using NodaTime;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public static class CommercialRelationEntityHelper
+public sealed class CommercialRelationEntityConfiguration : IEntityTypeConfiguration<CommercialRelationEntity>
 {
-    public static CommercialRelationEntity Create(
-        ActorNumber? energySupplier = null,
-        Instant? startDate = null,
-        Instant? endDate = null)
+    public void Configure(EntityTypeBuilder<CommercialRelationEntity> builder)
     {
-        return new CommercialRelationEntity
-        {
-            EnergySupplier = energySupplier?.Value ?? "4212712623156",
-            StartDate = startDate ?? SystemClock.Instance.GetCurrentInstant(),
-            EndDate = endDate ?? SystemClock.Instance.GetCurrentInstant(),
-        };
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        builder.ToTable("CommercialRelation");
     }
 }

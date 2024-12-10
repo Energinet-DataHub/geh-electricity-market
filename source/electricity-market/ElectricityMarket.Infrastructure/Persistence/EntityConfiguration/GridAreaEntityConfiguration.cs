@@ -12,9 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
+using System;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public sealed class MeteringPointEntity
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
+
+public sealed class GridAreaEntityConfiguration : IEntityTypeConfiguration<GridAreaEntity>
 {
-    public string Identification { get; set; } = null!;
+    public void Configure(EntityTypeBuilder<GridAreaEntity> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        builder.ToTable("GridArea");
+    }
 }

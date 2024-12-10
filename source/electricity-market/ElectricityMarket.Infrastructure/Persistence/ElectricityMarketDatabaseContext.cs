@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 
 public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDatabaseContext
 {
-    private const string Schema = "electricitymarket";
-
     public ElectricityMarketDatabaseContext(DbContextOptions<ElectricityMarketDatabaseContext> options)
         : base(options)
     {
@@ -30,12 +32,20 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     {
     }
 
+    public DbSet<GridAreaEntity> GridAreas { get; private set; } = null!;
+    public DbSet<MeteringPointEntity> MeteringPoints { get; private set; } = null!;
+    public DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; private set; } = null!;
+    public DbSet<CommercialRelationEntity> CommercialRelations { get; private set; } = null!;
+
     public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(Schema);
-
+        ArgumentNullException.ThrowIfNull(modelBuilder, nameof(modelBuilder));
+        modelBuilder.ApplyConfiguration(new GridAreaEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MeteringPointEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MeteringPointPeriodEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new CommercialRelationEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

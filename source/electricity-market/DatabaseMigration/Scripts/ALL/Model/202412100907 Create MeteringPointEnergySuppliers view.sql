@@ -5,4 +5,4 @@ SELECT
     cr.StartDate,
     cr.EndDate
 FROM [dbo].[MeteringPoint] mp
-JOIN [dbo].[CommercialRelation] cr on mp.Id = cr.MeteringPointId
+JOIN [dbo].[CommercialRelation] cr ON mp.Id = cr.MeteringPointId

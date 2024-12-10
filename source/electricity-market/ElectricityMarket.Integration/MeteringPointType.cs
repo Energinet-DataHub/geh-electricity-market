@@ -12,15 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
-
-public sealed class CommercialRelationEntity
+public enum MeteringPointType
 {
-    public string EnergySupplier { get; set; } = null!;
-
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    Consumption,
+    Production,
+    Exchange,
 }
