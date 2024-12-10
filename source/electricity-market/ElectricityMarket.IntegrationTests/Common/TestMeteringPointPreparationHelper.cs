@@ -23,10 +23,10 @@ public static class TestMeteringPointPreparationHelper
     public static Task<MeteringPointEntity> PrepareMeteringPointAsync(
         this ElectricityMarketIntegrationFixture fixture)
     {
-        return PrepareMeteringPointPeriodAsync(fixture, TestPreparationEntities.ValidMeteringPoint);
+        return PrepareMeteringPointAsync(fixture, TestPreparationEntities.ValidMeteringPoint);
     }
 
-    public static async Task<MeteringPointEntity> PrepareMeteringPointPeriodAsync(
+    public static async Task<MeteringPointEntity> PrepareMeteringPointAsync(
         this ElectricityMarketIntegrationFixture fixture,
         MeteringPointEntity meteringPointEntity)
     {

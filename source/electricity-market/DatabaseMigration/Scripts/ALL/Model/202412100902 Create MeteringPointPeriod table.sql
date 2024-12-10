@@ -18,6 +18,5 @@ CREATE TABLE [dbo].[MeteringPointPeriod]
 
     CONSTRAINT PK_MeteringPointPeriod PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_MeteringPointPeriod_MeteringPointPeriod FOREIGN KEY (RetiredById) REFERENCES [dbo].[MeteringPointPeriod]([ID]),
-    CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [dbo].[MeteringPoint]([ID]),
-    CONSTRAINT FK_MeteringPointPeriod_GridArea FOREIGN KEY (GridAreaCode) REFERENCES [dbo].[GridArea]([GridAreaCode])
+    CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [dbo].[MeteringPoint]([ID])
 )

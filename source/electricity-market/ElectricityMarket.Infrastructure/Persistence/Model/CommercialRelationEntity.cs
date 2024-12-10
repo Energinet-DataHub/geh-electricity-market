@@ -20,9 +20,13 @@ public sealed class CommercialRelationEntity
 {
     public long Id { get; set; }
 
+    public long MeteringPointId { get; set; }
+
     public Instant StartDate { get; set; }
 
     public Instant EndDate { get; set; }
 
     public string EnergySupplier { get; set; } = null!;
+
+    public Instant ModifiedAt { get; set; }
 }

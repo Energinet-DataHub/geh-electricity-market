@@ -16,6 +16,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using NodaTime;
 using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
@@ -34,7 +35,9 @@ public static class TestPreparationEntities
     {
         ValidFrom = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
         ValidTo = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
+        CreatedAt = SystemClock.Instance.GetCurrentInstant(),
         GridAreaCode = (_gridAreaCount % 1000).ToString(CultureInfo.InvariantCulture).PadLeft(3, '0'),
+        OwnedBy = "4672928796219",
         ConnectionState = 1,
         Type = 1,
         SubType = 1,
@@ -45,7 +48,7 @@ public static class TestPreparationEntities
 
     public static GridAreaEntity ValidGridArea => new()
     {
-        GridAreaCode = (_gridAreaCount++ % 1000).ToString(CultureInfo.InvariantCulture).PadLeft(3, '0'),
+        GridAreaCode = (++_gridAreaCount % 1000).ToString(CultureInfo.InvariantCulture).PadLeft(3, '0'),
         GridAccessProvider = "4672928796219",
         ValidFrom = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
         ValidTo = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
@@ -56,5 +59,12 @@ public static class TestPreparationEntities
         EnergySupplier = "2334379799509",
         StartDate = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
         EndDate = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
+        ModifiedAt = SystemClock.Instance.GetCurrentInstant()
     };
+
+    public static T Patch<T>(this T entity, Action<T> action)
+    {
+        action(entity);
+        return entity;
+    }
 }

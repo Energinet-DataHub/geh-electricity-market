@@ -16,7 +16,7 @@ SELECT
 FROM [dbo].[MeteringPoint] mp
 JOIN [dbo].[MeteringPointPeriod] mpp ON mp.Id = mpp.MeteringPointId
 JOIN [dbo].[GridArea] ga ON
-    mp.GridAreaCode = ga.GridAreaCode AND 
-    mp.ValidFrom <= ga.ValidTo AND
-    mp.ValidTo >= ga.ValidFrom
+    mpp.GridAreaCode = ga.GridAreaCode AND 
+    mpp.ValidFrom <= ga.ValidTo AND
+    mpp.ValidTo >= ga.ValidFrom
 WHERE mpp.RetiredById IS NULL

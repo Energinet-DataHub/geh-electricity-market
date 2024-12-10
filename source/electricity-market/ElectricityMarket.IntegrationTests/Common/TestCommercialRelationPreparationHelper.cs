@@ -23,14 +23,26 @@ public static class TestCommercialRelationPreparationHelper
     public static Task<CommercialRelationEntity> PrepareCommercialRelationAsync(
         this ElectricityMarketIntegrationFixture fixture)
     {
-        return PrepareCommercialRelationAsync(fixture, TestPreparationEntities.ValidCommercialRelation);
+        return PrepareCommercialRelationAsync(
+            fixture,
+            TestPreparationEntities.ValidMeteringPoint,
+            TestPreparationEntities.ValidCommercialRelation);
     }
 
     public static async Task<CommercialRelationEntity> PrepareCommercialRelationAsync(
         this ElectricityMarketIntegrationFixture fixture,
+        MeteringPointEntity meteringPointEntity,
         CommercialRelationEntity commercialRelationEntity)
     {
         await using var context = fixture.DatabaseManager.CreateWriteableDbContext();
+
+        if (meteringPointEntity.Id == 0)
+        {
+            await context.MeteringPoints.AddAsync(meteringPointEntity);
+            await context.SaveChangesAsync();
+        }
+
+        commercialRelationEntity.MeteringPointId = meteringPointEntity.Id;
 
         await context.CommercialRelations.AddAsync(commercialRelationEntity);
         await context.SaveChangesAsync();

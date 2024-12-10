@@ -26,7 +26,11 @@ public sealed class MeteringPointPeriodEntity
 
     public Instant ValidTo { get; set; }
 
+    public Instant CreatedAt { get; set; }
+
     public string GridAreaCode { get; set; } = null!;
+
+    public string OwnedBy { get; set; } = null!;
 
     public int ConnectionState { get; set; }
 

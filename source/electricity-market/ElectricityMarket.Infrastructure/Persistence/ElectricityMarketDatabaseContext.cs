@@ -14,7 +14,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
