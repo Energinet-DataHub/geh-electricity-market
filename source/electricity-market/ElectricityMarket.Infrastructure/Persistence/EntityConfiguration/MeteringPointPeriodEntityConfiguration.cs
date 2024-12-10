@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
-using Energinet.DataHub.ElectricityMarket.Integration;
+using System;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public static class MeteringPointEntityHelper
+public sealed class MeteringPointPeriodEntityConfiguration : IEntityTypeConfiguration<MeteringPointPeriodEntity>
 {
-    public static MeteringPointEntity Create(MeteringPointIdentification? identification = null)
+    public void Configure(EntityTypeBuilder<MeteringPointPeriodEntity> builder)
     {
-        return new MeteringPointEntity
-        {
-            Identification = identification?.Value ?? "101010101010101010",
-        };
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        builder.ToTable("MeteringPointPeriod");
     }
 }

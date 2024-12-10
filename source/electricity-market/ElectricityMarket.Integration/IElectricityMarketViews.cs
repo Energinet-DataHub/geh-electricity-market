@@ -12,13 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+using System.Threading.Tasks;
+using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public interface IElectricityMarketViews
 {
-    IAsyncEnumerable<MeteringPointChange> GetMeteringPointChangesAsync(MeteringPointIdentification identification);
+    /// <summary>
+    /// Gets the master data snapshot of the specified metering point at the specified date.
+    /// Returns NULL if:
+    /// - the metering point is missing,
+    /// - the metering point has no grid access provider,
+    /// - the metering point has no data at the specified date.
+    /// </summary>
+    /// <param name="meteringPointId">The identifier of the metering point.</param>
+    /// <param name="validAt">The point in time at which to look up the master data.</param>
+    /// <returns>The snapshot of master data for the metering point at the specified date; or NULL.</returns>
+    Task<MeteringPointMasterData?> GetMeteringPointMasterDataAsync(
+        MeteringPointIdentification meteringPointId,
+        Instant validAt);
 
-    IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(MeteringPointIdentification identification);
+    /// <summary>
+    /// Gets the energy supplier for the specified metering point at the specified date.
+    /// Returns NULL if:
+    /// - the metering point is missing,
+    /// - the metering point has no energy supplier at the specified date.
+    /// </summary>
+    /// <param name="meteringPointId">The identifier of the metering point.</param>
+    /// <param name="validAt">The point in time at which look up the energy supplier.</param>
+    /// <returns>The energy supplier for the metering point at the specified date; or NULL.</returns>
+    Task<MeteringPointEnergySupplier?> GetMeteringPointEnergySupplierAsync(
+        MeteringPointIdentification meteringPointId,
+        Instant validAt);
 }

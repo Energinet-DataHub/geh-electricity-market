@@ -32,7 +32,13 @@ internal sealed class MeteringPointChangesViewEntity
     [MaxLength(16)]
     public string GridAccessProvider { get; internal set; } = null!;
 
+    public DateTimeOffset GridAccessProviderPeriodFrom { get; internal set; }
+
+    public DateTimeOffset GridAccessProviderPeriodTo { get; internal set; }
+
     public int ConnectionState { get; internal set; }
+
+    public int Type { get; internal set; }
 
     public int SubType { get; internal set; }
 

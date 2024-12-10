@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
+namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-public sealed class MeteringPointEntity
+public enum MeteringPointType
 {
-    public string Identification { get; set; } = null!;
+    Consumption,
+    Production,
+    Exchange,
 }

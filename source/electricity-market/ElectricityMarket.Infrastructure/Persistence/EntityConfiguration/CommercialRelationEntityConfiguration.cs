@@ -12,14 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+using System;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public enum ProductCode
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
+
+public sealed class CommercialRelationEntityConfiguration : IEntityTypeConfiguration<CommercialRelationEntity>
 {
-    Tariff,
-    FuelQuantity,
-    PowerActive,
-    PowerReactive,
-    EnergyActivate,
-    EnergyReactive,
+    public void Configure(EntityTypeBuilder<CommercialRelationEntity> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        builder.ToTable("CommercialRelation");
+    }
 }

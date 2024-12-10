@@ -12,17 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
-
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
-public sealed class MeteringPointChange
+public sealed class MeteringPointMasterData
 {
     public MeteringPointIdentification Identification { get; internal set; } = null!;
-
-    public Instant ValidFrom { get; internal set; }
-
-    public Instant ValidTo { get; internal set; }
 
     public GridAreaCode GridAreaCode { get; internal set; } = null!;
 
@@ -30,11 +24,13 @@ public sealed class MeteringPointChange
 
     public ConnectionState ConnectionState { get; internal set; }
 
-    public SubType SubType { get; internal set; }
+    public MeteringPointType Type { get; internal set; }
+
+    public MeteringPointSubType SubType { get; internal set; }
 
     public Resolution Resolution { get; internal set; } = null!;
 
     public MeasureUnit Unit { get; internal set; }
 
-    public ProductCode ProductCode { get; internal set; }
+    public ProductId ProductId { get; internal set; }
 }

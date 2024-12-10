@@ -15,10 +15,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
 using Energinet.DataHub.ElectricityMarket.Integration.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Integration.Options;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -39,43 +37,13 @@ public sealed class ElectricityMarketIntegrationFixture : IAsyncLifetime
         return DatabaseManager.DeleteDatabaseAsync();
     }
 
-    public IServiceProvider BuildServiceProvider()
+    public AsyncServiceScope BeginScope()
     {
         return new ServiceCollection()
             .AddSingleton(BuildConfiguration(DatabaseManager.ConnectionString))
             .AddElectricityMarketModule()
-            .BuildServiceProvider();
-    }
-
-    public async Task InsertAsync(IEnumerable<(
-        MeteringPointEntity MeteringPointEntity,
-        MeteringPointPeriodEntity MeteringPointPeriodEntity,
-        CommercialRelationEntity CommercialRelationEntity)> records)
-    {
-#pragma warning disable CA2007
-        await using var context = DatabaseManager.CreateDbContext();
-#pragma warning restore CA2007
-
-#pragma warning disable CA1062
-        foreach (var (meteringPointEntity, meteringPointPeriodEntity, commercialRelationEntity) in records)
-#pragma warning restore CA1062
-        {
-#pragma warning disable CA2007
-            await context.Database.ExecuteSqlInterpolatedAsync(
-                $"""
-                 INSERT INTO MeteringPoint(Identification)
-                 VALUES({meteringPointEntity.Identification});
-
-                 DECLARE @id bigint = SCOPE_IDENTITY();
-
-                 INSERT INTO MeteringPointPeriod(MeteringPointId, ValidFrom, ValidTo, GridAreaCode, GridAccessProvider, ConnectionState, SubType, Resolution, Unit, ProductId)
-                 VALUES(@id, {meteringPointPeriodEntity.ValidFrom.ToDateTimeOffset()}, {meteringPointPeriodEntity.ValidTo.ToDateTimeOffset()}, {meteringPointPeriodEntity.GridAreaCode}, {meteringPointPeriodEntity.GridAccessProvider}, {meteringPointPeriodEntity.ConnectionState}, {meteringPointPeriodEntity.SubType}, {meteringPointPeriodEntity.Resolution}, {meteringPointPeriodEntity.Unit}, {meteringPointPeriodEntity.ProductId})
-
-                 INSERT INTO CommercialRelation(MeteringPointId, EnergySupplier, StartDate, EndDate)
-                 VALUES(@id, {commercialRelationEntity.EnergySupplier}, {commercialRelationEntity.StartDate.ToDateTimeOffset()}, {commercialRelationEntity.EndDate.ToDateTimeOffset()})
-                 """);
-#pragma warning restore CA2007
-        }
+            .BuildServiceProvider()
+            .CreateAsyncScope();
     }
 
     private static IConfiguration BuildConfiguration(string connectionString)
