@@ -15,7 +15,7 @@ CREATE TABLE [dbo].[MeteringPointPeriod]
     [Resolution]                 varchar(6) NOT NULL,
     [Unit]                       varchar(64) NOT NULL,
     [ProductId]                  varchar(64) NOT NULL,
-    [NetSettlementGroup]         int NULL,
+    [SettlementGroup]            int NULL,
     [ScheduledMeterReadingMonth] int NOT NULL
 
     CONSTRAINT PK_MeteringPointPeriod PRIMARY KEY CLUSTERED (Id),
