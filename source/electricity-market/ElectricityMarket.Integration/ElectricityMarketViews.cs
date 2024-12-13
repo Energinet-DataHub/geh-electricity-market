@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
@@ -40,20 +41,18 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
             from change in _context.MeteringPointChanges
             where change.Identification == meteringPointId.Value &&
                   change.ValidFrom <= validDate &&
-                  change.ValidTo > validDate &&
-                  change.GridAccessProviderPeriodFrom <= validDate &&
-                  change.GridAccessProviderPeriodTo > validDate
+                  change.ValidTo > validDate
             select new MeteringPointMasterData
             {
                 Identification = new MeteringPointIdentification(change.Identification),
                 GridAreaCode = new GridAreaCode(change.GridAreaCode),
                 GridAccessProvider = ActorNumber.Create(change.GridAccessProvider),
-                ConnectionState = (ConnectionState)change.ConnectionState,
-                Type = (MeteringPointType)change.Type,
-                SubType = (MeteringPointSubType)change.SubType,
+                ConnectionState = Enum.Parse<ConnectionState>(change.ConnectionState),
+                Type = Enum.Parse<MeteringPointType>(change.Type),
+                SubType = Enum.Parse<MeteringPointSubType>(change.SubType),
                 Resolution = new Resolution(change.Resolution),
-                Unit = (MeasureUnit)change.Unit,
-                ProductId = (ProductId)change.ProductId,
+                Unit = Enum.Parse<MeasureUnit>(change.Unit),
+                ProductId = Enum.Parse<ProductId>(change.ProductId),
             };
 
         return query.FirstOrDefaultAsync();

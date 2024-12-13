@@ -39,8 +39,6 @@ public sealed class ElectricityMarketViewsTests
     public async Task GetMeteringPointMasterDataAsync_FilterSupplied_AdheresToFilter()
     {
         // Arrange
-        await _fixture.PrepareGridAreaAsync();
-
         foreach (var meteringPointEntity in CreateRecords('1'))
         {
             var mp = await _fixture.PrepareMeteringPointAsync(meteringPointEntity);
@@ -64,8 +62,6 @@ public sealed class ElectricityMarketViewsTests
     public async Task MeteringPointEnergySuppliersAsync_FilterSupplied_AdheresToFilter()
     {
         // Arrange
-        await _fixture.PrepareGridAreaAsync();
-
         foreach (var meteringPointEntity in CreateRecords('2'))
         {
             var mp = await _fixture.PrepareMeteringPointAsync(meteringPointEntity);
@@ -90,7 +86,8 @@ public sealed class ElectricityMarketViewsTests
     {
         for (var i = 0; i < 10; ++i)
         {
-            yield return TestPreparationEntities.ValidMeteringPoint.Patch(mp => mp.Identification = prefix + "0000000000000" + (i + 1).ToString(CultureInfo.InvariantCulture).PadLeft(4, '0'));
+            var id = prefix + "0000000000000" + (i + 1).ToString(CultureInfo.InvariantCulture).PadLeft(4, '0');
+            yield return TestPreparationEntities.ValidMeteringPoint.Patch(mp => mp.Identification = id);
         }
     }
 }

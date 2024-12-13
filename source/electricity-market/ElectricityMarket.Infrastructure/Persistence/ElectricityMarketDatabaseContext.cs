@@ -31,7 +31,6 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     {
     }
 
-    public DbSet<GridAreaEntity> GridAreas { get; private set; } = null!;
     public DbSet<MeteringPointEntity> MeteringPoints { get; private set; } = null!;
     public DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; private set; } = null!;
     public DbSet<CommercialRelationEntity> CommercialRelations { get; private set; } = null!;
@@ -41,7 +40,6 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder, nameof(modelBuilder));
-        modelBuilder.ApplyConfiguration(new GridAreaEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MeteringPointEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MeteringPointPeriodEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CommercialRelationEntityConfiguration());

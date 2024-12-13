@@ -32,15 +32,15 @@ public sealed class MeteringPointPeriodEntity
 
     public string OwnedBy { get; set; } = null!;
 
-    public int ConnectionState { get; set; }
+    public string ConnectionState { get; set; } = null!;
 
-    public int Type { get; set; }
+    public string Type { get; set; } = null!;
 
-    public int SubType { get; set; }
+    public string SubType { get; set; } = null!;
 
     public string Resolution { get; set; } = null!;
 
-    public int Unit { get; set; }
+    public string Unit { get; set; } = null!;
 
-    public int ProductId { get; set; }
+    public string ProductId { get; set; } = null!;
 }
