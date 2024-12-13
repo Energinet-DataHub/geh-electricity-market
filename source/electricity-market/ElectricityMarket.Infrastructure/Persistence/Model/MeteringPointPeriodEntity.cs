@@ -14,27 +14,35 @@
 
 using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
 public sealed class MeteringPointPeriodEntity
 {
-    public string Identification { get; set; } = null!;
+    public long Id { get; set; }
+
+    public long MeteringPointId { get; set; }
 
     public Instant ValidFrom { get; set; }
 
     public Instant ValidTo { get; set; }
 
+    public Instant CreatedAt { get; set; }
+
     public string GridAreaCode { get; set; } = null!;
 
-    public string GridAccessProvider { get; set; } = null!;
+    public string OwnedBy { get; set; } = null!;
 
-    public int ConnectionState { get; set; }
+    public string ConnectionState { get; set; } = null!;
 
-    public int SubType { get; set; }
+    public string Type { get; set; } = null!;
+
+    public string SubType { get; set; } = null!;
 
     public string Resolution { get; set; } = null!;
 
-    public int Unit { get; set; }
+    public string Unit { get; set; } = null!;
 
-    public int ProductId { get; set; }
+    public string ProductId { get; set; } = null!;
+
+    public int ScheduledMeterReadingMonth { get; set; }
 }

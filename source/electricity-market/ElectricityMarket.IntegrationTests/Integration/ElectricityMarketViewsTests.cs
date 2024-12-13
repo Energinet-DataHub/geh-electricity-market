@@ -14,13 +14,13 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Entities;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Integration;
-using Energinet.DataHub.ElectricityMarket.IntegrationTests.Extensions;
+using Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
+using NodaTime;
 using Xunit;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Integration;
@@ -30,58 +30,64 @@ public sealed class ElectricityMarketViewsTests
 {
     private readonly ElectricityMarketIntegrationFixture _fixture;
 
-    public ElectricityMarketViewsTests(
-        ElectricityMarketIntegrationFixture fixture)
+    public ElectricityMarketViewsTests(ElectricityMarketIntegrationFixture fixture)
     {
         _fixture = fixture;
     }
 
     [Fact]
-    public async Task MeteringPointChangesAsync_FilterSupplied_AdheresTo()
+    public async Task GetMeteringPointMasterDataAsync_FilterSupplied_AdheresToFilter()
     {
-        // arrange
-        await _fixture.InsertAsync(Records('1'));
-        var serviceProvider = _fixture.BuildServiceProvider();
-        var target = serviceProvider.GetRequiredService<IElectricityMarketViews>();
-
-        var actualRecords = new List<MeteringPointChange>();
-        await foreach (var view in target.GetMeteringPointChangesAsync(new MeteringPointIdentification("100000000000000005")))
+        // Arrange
+        foreach (var meteringPointEntity in CreateRecords('1'))
         {
-            actualRecords.Add(view);
+            var mp = await _fixture.PrepareMeteringPointAsync(meteringPointEntity);
+            await _fixture.PrepareMeteringPointPeriodAsync(mp, TestPreparationEntities.ValidMeteringPointPeriod);
         }
 
-        // assert
-        Assert.Single(actualRecords);
-        Assert.Equal("100000000000000005", actualRecords.Single().Identification.Value);
+        await using var scope = _fixture.BeginScope();
+        var target = scope.ServiceProvider.GetRequiredService<IElectricityMarketViews>();
+
+        // Act
+        var actual = await target.GetMeteringPointMasterDataAsync(
+            new MeteringPointIdentification("100000000000000005"),
+            SystemClock.Instance.GetCurrentInstant());
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal("100000000000000005", actual.Identification.Value);
     }
 
     [Fact]
-    public async Task MeteringPointEnergySuppliersAsync_FilterSupplied_AdheresTo()
+    public async Task MeteringPointEnergySuppliersAsync_FilterSupplied_AdheresToFilter()
     {
-        // arrange
-        await _fixture.InsertAsync(Records('2'));
-        var serviceProvider = _fixture.BuildServiceProvider();
-        var target = serviceProvider.GetRequiredService<IElectricityMarketViews>();
-
-        var actualRecords = new List<MeteringPointEnergySupplier>();
-        await foreach (var view in target.GetMeteringPointEnergySuppliersAsync(new MeteringPointIdentification("200000000000000006")))
+        // Arrange
+        foreach (var meteringPointEntity in CreateRecords('2'))
         {
-            actualRecords.Add(view);
+            var mp = await _fixture.PrepareMeteringPointAsync(meteringPointEntity);
+            await _fixture.PrepareMeteringPointPeriodAsync(mp, TestPreparationEntities.ValidMeteringPointPeriod);
+            await _fixture.PrepareCommercialRelationAsync(mp, TestPreparationEntities.ValidCommercialRelation);
         }
 
-        // assert
-        Assert.Single(actualRecords);
-        Assert.Equal("200000000000000006", actualRecords.Single().Identification.Value);
+        await using var scope = _fixture.BeginScope();
+        var target = scope.ServiceProvider.GetRequiredService<IElectricityMarketViews>();
+
+        // Act
+        var actual = await target.GetMeteringPointEnergySupplierAsync(
+            new MeteringPointIdentification("200000000000000006"),
+            SystemClock.Instance.GetCurrentInstant());
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal("200000000000000006", actual.Identification.Value);
     }
 
-    private static IEnumerable<(MeteringPointEntity MeteringPointEntity, MeteringPointPeriodEntity MeteringPointPeriodEntity, CommercialRelationEntity CommercialRelationEntity)> Records(char prefix)
+    private static IEnumerable<MeteringPointEntity> CreateRecords(char prefix)
     {
         for (var i = 0; i < 10; ++i)
         {
-            yield return (
-                MeteringPointEntity: MeteringPointEntityHelper.Create(identification: new MeteringPointIdentification(prefix + "0000000000000" + (i + 1).ToString(CultureInfo.InvariantCulture).PadLeft(4, '0'))),
-                MeteringPointPeriodEntity: MeteringPointPeriodEntityHelper.Create(),
-                CommercialRelationEntity: CommercialRelationEntityHelper.Create());
+            var id = prefix + "0000000000000" + (i + 1).ToString(CultureInfo.InvariantCulture).PadLeft(4, '0');
+            yield return TestPreparationEntities.ValidMeteringPoint.Patch(mp => mp.Identification = id);
         }
     }
 }

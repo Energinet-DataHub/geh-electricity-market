@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
@@ -29,31 +31,52 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         _context = context;
     }
 
-    public IAsyncEnumerable<MeteringPointChange> GetMeteringPointChangesAsync(MeteringPointIdentification identification)
+    public Task<MeteringPointMasterData?> GetMeteringPointMasterDataAsync(
+        MeteringPointIdentification meteringPointId,
+        Instant validAt)
     {
-        return _context.MeteringPointChanges.Where(x => x.Identification == identification.Value).Select(x => new MeteringPointChange
-        {
-            Identification = new MeteringPointIdentification(x.Identification),
-            ValidFrom = x.ValidFrom.ToInstant(),
-            ValidTo = x.ValidTo.ToInstant(),
-            GridAreaCode = new GridAreaCode(x.GridAreaCode),
-            GridAccessProvider = ActorNumber.Create(x.GridAccessProvider),
-            ConnectionState = (ConnectionState)x.ConnectionState,
-            SubType = (SubType)x.SubType,
-            Resolution = new Resolution(x.Resolution),
-            Unit = (MeasureUnit)x.Unit,
-            ProductCode = (ProductCode)x.ProductId,
-        }).AsAsyncEnumerable();
+        var validDate = validAt.ToDateTimeOffset();
+
+        var query =
+            from change in _context.MeteringPointChanges
+            where change.Identification == meteringPointId.Value &&
+                  change.ValidFrom <= validDate &&
+                  change.ValidTo > validDate
+            select new MeteringPointMasterData
+            {
+                Identification = new MeteringPointIdentification(change.Identification),
+                GridAreaCode = new GridAreaCode(change.GridAreaCode),
+                GridAccessProvider = ActorNumber.Create(change.GridAccessProvider),
+                ConnectionState = Enum.Parse<ConnectionState>(change.ConnectionState),
+                Type = Enum.Parse<MeteringPointType>(change.Type),
+                SubType = Enum.Parse<MeteringPointSubType>(change.SubType),
+                Resolution = new Resolution(change.Resolution),
+                Unit = Enum.Parse<MeasureUnit>(change.Unit),
+                ProductId = Enum.Parse<ProductId>(change.ProductId),
+            };
+
+        return query.FirstOrDefaultAsync();
     }
 
-    public IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(MeteringPointIdentification identification)
+    public Task<MeteringPointEnergySupplier?> GetMeteringPointEnergySupplierAsync(
+        MeteringPointIdentification meteringPointId,
+        Instant validAt)
     {
-        return _context.MeteringPointEnergySuppliers.Where(x => x.Identification == identification.Value).Select(x => new MeteringPointEnergySupplier
-        {
-            Identification = new MeteringPointIdentification(x.Identification),
-            EnergySupplier = ActorNumber.Create(x.EnergySupplier),
-            StartDate = x.StartDate.ToInstant(),
-            EndDate = x.EndDate.ToInstant(),
-        }).AsAsyncEnumerable();
+        var validDate = validAt.ToDateTimeOffset();
+
+        var query =
+            from es in _context.MeteringPointEnergySuppliers
+            where es.Identification == meteringPointId.Value &&
+                  es.StartDate <= validDate &&
+                  es.EndDate > validDate
+            select new MeteringPointEnergySupplier
+            {
+                Identification = new MeteringPointIdentification(es.Identification),
+                EnergySupplier = ActorNumber.Create(es.EnergySupplier),
+                StartDate = es.StartDate.ToInstant(),
+                EndDate = es.EndDate.ToInstant(),
+            };
+
+        return query.FirstOrDefaultAsync();
     }
 }
