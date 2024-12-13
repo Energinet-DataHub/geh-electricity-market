@@ -21,7 +21,7 @@ on:
     branches:
       - main
     paths:
-      - source/Energinet.DataHub.ElectricityMarket.Integration/**
+      - source/electricity-market/ElectricityMarket.Integration/**
       - .github/workflows/publish-electricity-market-integration-bundle.yml
   # Build, test, pack
   # Executed if package contenet has changed
