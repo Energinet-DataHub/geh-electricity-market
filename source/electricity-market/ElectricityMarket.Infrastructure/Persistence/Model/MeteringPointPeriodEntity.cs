@@ -43,4 +43,6 @@ public sealed class MeteringPointPeriodEntity
     public string Unit { get; set; } = null!;
 
     public string ProductId { get; set; } = null!;
+
+    public int ScheduledMeterReadingMonth { get; set; }
 }

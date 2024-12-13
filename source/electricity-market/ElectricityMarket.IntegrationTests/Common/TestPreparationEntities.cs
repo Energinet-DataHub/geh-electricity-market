@@ -44,7 +44,8 @@ public static class TestPreparationEntities
         SubType = MeteringPointSubType.Physical.ToString(),
         Resolution = "PT15M",
         Unit = MeasureUnit.kWh.ToString(),
-        ProductId = ProductId.PowerActive.ToString()
+        ProductId = ProductId.PowerActive.ToString(),
+        ScheduledMeterReadingMonth = 1
     };
 
     public static CommercialRelationEntity ValidCommercialRelation => new()
