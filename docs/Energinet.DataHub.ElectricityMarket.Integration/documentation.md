@@ -21,9 +21,13 @@ Make sure that, your configuration includes the following section.
 After above registration, `IElectricityMarketViews` can be resolved. Following views are available.
 
 ```c#
-IAsyncEnumerable<MeteringPointChange> GetMeteringPointChangesAsync(MeteringPointIdentification identification)
+Task<MeteringPointMasterData?> GetMeteringPointMasterDataAsync(
+        MeteringPointIdentification meteringPointId,
+        Instant validAt);
 
-IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(MeteringPointIdentification identification)
+Task<MeteringPointEnergySupplier?> GetMeteringPointEnergySupplierAsync(
+    MeteringPointIdentification meteringPointId,
+    Instant validAt);
 ```
 
 All public types can be studied [here](https://github.com/Energinet-DataHub/geh-electricity-market/tree/main/source/electricity-market/ElectricityMarket.Integration).

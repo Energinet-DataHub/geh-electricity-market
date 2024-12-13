@@ -60,7 +60,7 @@ jobs:
               - '.github/actions/dotnet-*/**'
               - 'source/electricity-market/!(DatabaseMigration/**)**'
             ci_integration_package:
-              - 'source/Energinet.DataHub.ElectricityMarket.Integration/**'
+              - 'source/electricity-market/ElectricityMarket.Integration/**'
             db_migrations:
               - 'source/electricity-market/DatabaseMigration/**'
             render_c4model_views:
