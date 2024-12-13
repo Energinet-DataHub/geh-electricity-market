@@ -33,8 +33,16 @@ internal class ElectricityMarketDatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<MeteringPointChangesViewEntity>().HasNoKey().ToView("vw_MeteringPointChanges");
-        modelBuilder.Entity<MeteringPointEnergySuppliersViewEntity>().HasNoKey().ToView("vw_MeteringPointEnergySuppliers");
+        modelBuilder
+            .Entity<MeteringPointChangesViewEntity>()
+            .HasNoKey()
+            .ToView("vw_MeteringPointChanges");
+
+        modelBuilder
+            .Entity<MeteringPointEnergySuppliersViewEntity>()
+            .HasNoKey()
+            .ToView("vw_MeteringPointEnergySuppliers");
+
         base.OnModelCreating(modelBuilder);
     }
 }
