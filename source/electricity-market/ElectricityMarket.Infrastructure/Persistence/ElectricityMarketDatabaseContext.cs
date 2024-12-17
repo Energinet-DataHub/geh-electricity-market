@@ -40,6 +40,7 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder, nameof(modelBuilder));
+        modelBuilder.HasDefaultSchema("electricitymarket");
         modelBuilder.ApplyConfiguration(new MeteringPointEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MeteringPointPeriodEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CommercialRelationEntityConfiguration());

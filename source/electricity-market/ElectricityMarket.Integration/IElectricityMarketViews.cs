@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
@@ -20,29 +20,22 @@ namespace Energinet.DataHub.ElectricityMarket.Integration;
 public interface IElectricityMarketViews
 {
     /// <summary>
-    /// Gets the master data snapshot of the specified metering point at the specified date.
-    /// Returns NULL if:
-    /// - the metering point is missing,
-    /// - the metering point has no grid access provider,
-    /// - the metering point has no data at the specified date.
+    /// Gets the master data changes in the specified period for the specified metering point.
     /// </summary>
     /// <param name="meteringPointId">The identifier of the metering point.</param>
-    /// <param name="validAt">The point in time at which to look up the master data.</param>
-    /// <returns>The snapshot of master data for the metering point at the specified date; or NULL.</returns>
-    Task<MeteringPointMasterData?> GetMeteringPointMasterDataAsync(
+    /// <param name="period">The the period in which to look up master data changes for the given metering point.</param>
+    /// <returns>The list of metering point master data changes within the specified period.</returns>
+    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
         MeteringPointIdentification meteringPointId,
-        Instant validAt);
+        Interval period);
 
     /// <summary>
-    /// Gets the energy supplier for the specified metering point at the specified date.
-    /// Returns NULL if:
-    /// - the metering point is missing,
-    /// - the metering point has no energy supplier at the specified date.
+    /// Gets the energy suppliers for the specified metering point in the specified period.
     /// </summary>
     /// <param name="meteringPointId">The identifier of the metering point.</param>
-    /// <param name="validAt">The point in time at which look up the energy supplier.</param>
+    /// <param name="period">The the period in which to look up energy suppliers for the given metering point.</param>
     /// <returns>The energy supplier for the metering point at the specified date; or NULL.</returns>
-    Task<MeteringPointEnergySupplier?> GetMeteringPointEnergySupplierAsync(
+    IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(
         MeteringPointIdentification meteringPointId,
-        Instant validAt);
+        Interval period);
 }

@@ -33,6 +33,8 @@ internal class ElectricityMarketDatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema("electricitymarket");
+
         modelBuilder
             .Entity<MeteringPointChangesViewEntity>()
             .HasNoKey()

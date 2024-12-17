@@ -1,4 +1,4 @@
-CREATE VIEW vw_MeteringPointChanges AS
+CREATE VIEW [electricitymarket].vw_MeteringPointChanges AS
 SELECT
     mp.Identification,
     mpp.ValidFrom,
@@ -11,6 +11,6 @@ SELECT
     mpp.Resolution,
     mpp.Unit,
     mpp.ProductId
-FROM [dbo].[MeteringPoint] mp
-JOIN [dbo].[MeteringPointPeriod] mpp ON mp.Id = mpp.MeteringPointId
+FROM [electricitymarket].[MeteringPoint] mp
+JOIN [electricitymarket].[MeteringPointPeriod] mpp ON mp.Id = mpp.MeteringPointId
 WHERE mpp.RetiredById IS NULL
