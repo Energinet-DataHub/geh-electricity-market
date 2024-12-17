@@ -13,8 +13,8 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -31,17 +31,19 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         _context = context;
     }
 
-    public Task<MeteringPointMasterData?> GetMeteringPointMasterDataAsync(
+    public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
         MeteringPointIdentification meteringPointId,
-        Instant validAt)
+        Interval period)
     {
-        var validDate = validAt.ToDateTimeOffset();
+        var f = period.Start.ToDateTimeOffset();
+        var t = period.End.ToDateTimeOffset();
 
         var query =
             from change in _context.MeteringPointChanges
             where change.Identification == meteringPointId.Value &&
-                  change.ValidFrom <= validDate &&
-                  change.ValidTo > validDate
+                  change.ValidFrom <= t &&
+                  change.ValidTo > f
+            orderby change.ValidFrom
             select new MeteringPointMasterData
             {
                 Identification = new MeteringPointIdentification(change.Identification),
@@ -55,20 +57,22 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
                 ProductId = Enum.Parse<ProductId>(change.ProductId),
             };
 
-        return query.FirstOrDefaultAsync();
+        return query.AsAsyncEnumerable();
     }
 
-    public Task<MeteringPointEnergySupplier?> GetMeteringPointEnergySupplierAsync(
+    public IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(
         MeteringPointIdentification meteringPointId,
-        Instant validAt)
+        Interval period)
     {
-        var validDate = validAt.ToDateTimeOffset();
+        var f = period.Start.ToDateTimeOffset();
+        var t = period.End.ToDateTimeOffset();
 
         var query =
             from es in _context.MeteringPointEnergySuppliers
             where es.Identification == meteringPointId.Value &&
-                  es.StartDate <= validDate &&
-                  es.EndDate > validDate
+                  es.StartDate <= t &&
+                  es.EndDate > f
+            orderby es.StartDate
             select new MeteringPointEnergySupplier
             {
                 Identification = new MeteringPointIdentification(es.Identification),
@@ -77,6 +81,6 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
                 EndDate = es.EndDate.ToInstant(),
             };
 
-        return query.FirstOrDefaultAsync();
+        return query.AsAsyncEnumerable();
     }
 }

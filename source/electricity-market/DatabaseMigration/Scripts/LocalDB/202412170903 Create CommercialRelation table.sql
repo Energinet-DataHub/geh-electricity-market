@@ -1,4 +1,4 @@
-CREATE TABLE [dbo].[CommercialRelation]
+CREATE TABLE [electricitymarket].[CommercialRelation]
 (
     [Id]                 bigint IDENTITY(1,1) NOT NULL,
     [MeteringPointId]    bigint NOT NULL,
@@ -8,5 +8,5 @@ CREATE TABLE [dbo].[CommercialRelation]
     [ModifiedAt]         datetimeoffset NOT NULL
 
     CONSTRAINT PK_CommercialRelation PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_CommercialRelation_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [dbo].[MeteringPoint]([ID])
+    CONSTRAINT FK_CommercialRelation_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID])
 )

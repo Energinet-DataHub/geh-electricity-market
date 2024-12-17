@@ -14,6 +14,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Integration;
@@ -49,13 +50,17 @@ public sealed class ElectricityMarketViewsTests
         var target = scope.ServiceProvider.GetRequiredService<IElectricityMarketViews>();
 
         // Act
-        var actual = await target.GetMeteringPointMasterDataAsync(
-            new MeteringPointIdentification("100000000000000005"),
-            SystemClock.Instance.GetCurrentInstant());
+        var actual = new List<MeteringPointMasterData>();
+        await foreach (var change in target.GetMeteringPointMasterDataChangesAsync(
+                           new MeteringPointIdentification("100000000000000005"),
+                           new Interval(SystemClock.Instance.GetCurrentInstant(), SystemClock.Instance.GetCurrentInstant())))
+        {
+            actual.Add(change);
+        }
 
         // Assert
-        Assert.NotNull(actual);
-        Assert.Equal("100000000000000005", actual.Identification.Value);
+        Assert.Single(actual);
+        Assert.Equal("100000000000000005", actual.Single().Identification.Value);
     }
 
     [Fact]
@@ -73,13 +78,17 @@ public sealed class ElectricityMarketViewsTests
         var target = scope.ServiceProvider.GetRequiredService<IElectricityMarketViews>();
 
         // Act
-        var actual = await target.GetMeteringPointEnergySupplierAsync(
-            new MeteringPointIdentification("200000000000000006"),
-            SystemClock.Instance.GetCurrentInstant());
+        var actual = new List<MeteringPointEnergySupplier>();
+        await foreach (var es in target.GetMeteringPointEnergySuppliersAsync(
+                           new MeteringPointIdentification("200000000000000006"),
+                           new Interval(SystemClock.Instance.GetCurrentInstant(), SystemClock.Instance.GetCurrentInstant())))
+        {
+            actual.Add(es);
+        }
 
         // Assert
-        Assert.NotNull(actual);
-        Assert.Equal("200000000000000006", actual.Identification.Value);
+        Assert.Single(actual);
+        Assert.Equal("200000000000000006", actual.Single().Identification.Value);
     }
 
     private static IEnumerable<MeteringPointEntity> CreateRecords(char prefix)

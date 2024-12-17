@@ -1,4 +1,4 @@
-CREATE TABLE [dbo].[MeteringPointPeriod]
+CREATE TABLE [electricitymarket].[MeteringPointPeriod]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
     [MeteringPointId]            bigint NOT NULL,
@@ -19,6 +19,6 @@ CREATE TABLE [dbo].[MeteringPointPeriod]
     [ScheduledMeterReadingMonth] int NOT NULL
 
     CONSTRAINT PK_MeteringPointPeriod PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_MeteringPointPeriod_MeteringPointPeriod FOREIGN KEY (RetiredById) REFERENCES [dbo].[MeteringPointPeriod]([ID]),
-    CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [dbo].[MeteringPoint]([ID])
+    CONSTRAINT FK_MeteringPointPeriod_MeteringPointPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[MeteringPointPeriod]([ID]),
+    CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID])
 )
