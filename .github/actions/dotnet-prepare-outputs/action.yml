@@ -51,3 +51,13 @@ runs:
           --no-restore \
           --configuration Release \
           --output '${{ inputs.output_path }}\functions\webapi'
+
+    - name: Publish Import
+      shell: bash
+      run: |
+        dotnet publish \
+          '.\source\electricity-market\ElectricityMarket.Import\ElectricityMarket.Import.csproj' \
+          --no-build \
+          --no-restore \
+          --configuration Release \
+          --output '${{ inputs.output_path }}\functions\import'
