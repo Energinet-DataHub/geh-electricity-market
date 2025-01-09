@@ -25,6 +25,7 @@ internal sealed class ImportTimerTrigger
         FunctionContext executionContext)
     {
         ArgumentNullException.ThrowIfNull(executionContext);
+
         return Task.CompletedTask;
     }
 }
