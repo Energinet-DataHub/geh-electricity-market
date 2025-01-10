@@ -55,6 +55,9 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
                 Resolution = new Resolution(change.Resolution),
                 Unit = Enum.Parse<MeasureUnit>(change.Unit),
                 ProductId = Enum.Parse<ProductId>(change.ProductId),
+                ParentIdentification = change.ParentIdentification != null
+                    ? new MeteringPointIdentification(change.ParentIdentification)
+                    : null,
             };
 
         return query.AsAsyncEnumerable();

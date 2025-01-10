@@ -44,4 +44,7 @@ internal sealed class MeteringPointChangesViewEntity
     public string Unit { get; internal set; } = null!;
 
     public string ProductId { get; internal set; } = null!;
+
+    [MaxLength(18)]
+    public string? ParentIdentification { get; internal set; }
 }

@@ -33,4 +33,6 @@ public sealed class MeteringPointMasterData
     public MeasureUnit Unit { get; internal set; }
 
     public ProductId ProductId { get; internal set; }
+
+    public MeteringPointIdentification? ParentIdentification { get; internal set; }
 }
