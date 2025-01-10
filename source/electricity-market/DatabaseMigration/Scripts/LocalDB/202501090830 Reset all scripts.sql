@@ -15,3 +15,5 @@ DROP TABLE IF EXISTS electricitymarket.EnergySupplyPeriod;
 DROP TABLE IF EXISTS electricitymarket.CommercialRelation;
 DROP TABLE IF EXISTS electricitymarket.MeteringPointPeriod;
 DROP TABLE IF EXISTS electricitymarket.MeteringPoint;
+
+DROP SCHEMA IF EXISTS [electricitymarket];

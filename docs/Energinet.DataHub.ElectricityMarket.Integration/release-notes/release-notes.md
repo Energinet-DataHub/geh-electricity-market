@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.0.0
+
+- Rewrite of API to better fit use case.
+
 ## Version 3.0.0
 
 - Rewrite of API to better fit use case.
