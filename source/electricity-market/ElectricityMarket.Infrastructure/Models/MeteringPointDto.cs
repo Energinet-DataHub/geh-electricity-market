@@ -12,20 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
-using Microsoft.AspNetCore.Mvc;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
-namespace ElectricityMarket.WebAPI.Controllers;
-
-[ApiController]
-[Route("electricity-market")]
-public class ElectricityMarketController
-    : ControllerBase
-{
-    [HttpGet("{meteringPointId}")]
-    public async Task<ActionResult<IEnumerable<MeteringPointDto>>> GetMeteringPointDataAsync(string meteringPointId)
-    {
-        var meteringPoints = await Task.FromResult(new List<MeteringPointDto>()).ConfigureAwait(false);
-        return Ok(meteringPoints);
-    }
-}
+public sealed record MeteringPointDto(long Id, string Identification, MeteringPointPeriodDto MeteringPointPeriod);
