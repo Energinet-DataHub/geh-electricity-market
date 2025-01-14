@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+using System;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
 public sealed record MeteringPointPeriodDto(
     long Id,
-    Instant ValidFrom,
-    Instant ValidTo,
-    Instant CreatedAt,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidTo,
+    DateTimeOffset CreatedAt,
     string GridAreaCode,
     string OwnenBy,
     string ConnectionState,
