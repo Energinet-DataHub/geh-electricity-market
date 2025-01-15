@@ -14,34 +14,23 @@
 
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
 
 namespace ElectricityMarket.Import.Functions;
 
 internal sealed class PingHttpTrigger
 {
-    private readonly ILogger<ImportTimerTrigger> _logger;
     private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
-    private readonly IImportStateRepository _importStateRepository;
-    private readonly IMeteringPointRepository _meteringPointRepository;
 
     public PingHttpTrigger(
-        ILogger<ImportTimerTrigger> logger,
         IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
-        DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
-        IImportStateRepository importStateRepository,
-        IMeteringPointRepository meteringPointRepository)
+        DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
     {
-        _logger = logger;
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
-        _importStateRepository = importStateRepository;
-        _meteringPointRepository = meteringPointRepository;
     }
 
     [Function(nameof(PingAsync))]
@@ -49,8 +38,10 @@ internal sealed class PingHttpTrigger
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = "ping")]
         HttpRequest req)
     {
+        var electricityMarketDatabaseContext = (ElectricityMarketDatabaseContext)_electricityMarketDatabaseContext;
+
         return new OkObjectResult($"""
-                                   database connected: {await _electricityMarketDatabaseContext.Database.CanConnectAsync().ConfigureAwait(false)}
+                                   database connected: {await electricityMarketDatabaseContext.Database.CanConnectAsync().ConfigureAwait(false)}
                                    databricks connected: {await CanConnectToDatabricksAsync().ConfigureAwait(false)}
                                    """);
     }
