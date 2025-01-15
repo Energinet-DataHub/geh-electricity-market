@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Generic;
+
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public sealed class MeteringPointMasterData
@@ -22,7 +24,7 @@ public sealed class MeteringPointMasterData
 
     public ActorNumber GridAccessProvider { get; internal set; } = null!;
 
-    public ActorNumber? NeighborGridAreaOwner { get; internal set; }
+    public IReadOnlyCollection<ActorNumber> NeighborGridAreaOwners { get; internal set; } = [];
 
     public ConnectionState ConnectionState { get; internal set; }
 
