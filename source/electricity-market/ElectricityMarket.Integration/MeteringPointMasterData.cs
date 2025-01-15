@@ -22,6 +22,8 @@ public sealed class MeteringPointMasterData
 
     public ActorNumber GridAccessProvider { get; internal set; } = null!;
 
+    public ActorNumber? NeighborGridAreaOwner { get; internal set; }
+
     public ConnectionState ConnectionState { get; internal set; }
 
     public MeteringPointType Type { get; internal set; }
