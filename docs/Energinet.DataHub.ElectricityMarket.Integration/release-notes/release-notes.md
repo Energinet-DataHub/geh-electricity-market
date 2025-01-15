@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.0.2
+
+- NeighborGridAreaOwner is now a list NeighborGridAreaOwners.
+
 ## Version 4.0.1
 
 - Added NeighborGridAreaOwner as a placeholder field.
