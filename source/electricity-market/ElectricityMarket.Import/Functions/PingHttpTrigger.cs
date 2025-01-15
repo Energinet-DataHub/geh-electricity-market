@@ -59,7 +59,6 @@ internal sealed class PingHttpTrigger
 
             await foreach (var unused in results)
             {
-                unused.ToString();
             }
 
             return true;
