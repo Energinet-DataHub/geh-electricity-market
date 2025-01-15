@@ -34,6 +34,7 @@ var host = new HostBuilder()
         services.AddRevisionLogIntegrationModule(context.Configuration);
 
         // Modules
+        services.AddElectricityMarketDatabaseModule();
         services.AddDatabricksModule(context.Configuration);
     })
     .ConfigureLogging((hostingContext, logging) =>
