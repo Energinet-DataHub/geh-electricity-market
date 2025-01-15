@@ -49,7 +49,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
                 Identification = new MeteringPointIdentification(change.Identification),
                 GridAreaCode = new GridAreaCode(change.GridAreaCode),
                 GridAccessProvider = ActorNumber.Create(change.GridAccessProvider),
-                NeighborGridAreaOwners = [],
+                NeighborGridAreaOwners = Array.Empty<ActorNumber>(),
                 ConnectionState = Enum.Parse<ConnectionState>(change.ConnectionState),
                 Type = Enum.Parse<MeteringPointType>(change.Type),
                 SubType = Enum.Parse<MeteringPointSubType>(change.SubType),
