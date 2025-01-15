@@ -2,6 +2,10 @@
 
 ## Version 4.0.1
 
+- NeighborGridAreaOwner is now a list NeighborGridAreaOwners.
+
+## Version 4.0.1
+
 - Added NeighborGridAreaOwner as a placeholder field.
 
 ## Version 4.0.0
