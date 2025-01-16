@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.0.3
+
+- Added ValidFrom and ValidTo to MeteringPointMasterData.
+
 ## Version 4.0.2
 
 - NeighborGridAreaOwner is now a list NeighborGridAreaOwners.

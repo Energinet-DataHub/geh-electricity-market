@@ -13,12 +13,17 @@
 // limitations under the License.
 
 using System.Collections.Generic;
+using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public sealed class MeteringPointMasterData
 {
     public MeteringPointIdentification Identification { get; internal set; } = null!;
+
+    public Instant ValidFrom { get; internal set; }
+
+    public Instant ValidTo { get; internal set; }
 
     public GridAreaCode GridAreaCode { get; internal set; } = null!;
 
