@@ -23,7 +23,7 @@ public interface IElectricityMarketViews
     /// Gets the master data changes in the specified period for the specified metering point.
     /// </summary>
     /// <param name="meteringPointId">The identifier of the metering point.</param>
-    /// <param name="period">The the period in which to look up master data changes for the given metering point.</param>
+    /// <param name="period">The period in which to look up master data changes for the given metering point.</param>
     /// <returns>The list of metering point master data changes within the specified period.</returns>
     IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
         MeteringPointIdentification meteringPointId,
@@ -33,7 +33,7 @@ public interface IElectricityMarketViews
     /// Gets the energy suppliers for the specified metering point in the specified period.
     /// </summary>
     /// <param name="meteringPointId">The identifier of the metering point.</param>
-    /// <param name="period">The the period in which to look up energy suppliers for the given metering point.</param>
+    /// <param name="period">The period in which to look up energy suppliers for the given metering point.</param>
     /// <returns>The energy supplier for the metering point at the specified date; or NULL.</returns>
     IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(
         MeteringPointIdentification meteringPointId,

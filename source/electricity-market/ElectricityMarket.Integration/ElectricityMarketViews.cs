@@ -47,6 +47,8 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
             select new MeteringPointMasterData
             {
                 Identification = new MeteringPointIdentification(change.Identification),
+                ValidFrom = change.ValidFrom.ToInstant(),
+                ValidTo = change.ValidTo.ToInstant(),
                 GridAreaCode = new GridAreaCode(change.GridAreaCode),
                 GridAccessProvider = ActorNumber.Create(change.GridAccessProvider),
                 NeighborGridAreaOwners = Array.Empty<ActorNumber>(),
