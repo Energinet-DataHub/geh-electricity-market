@@ -1,2 +1,2 @@
-insert into [electricitymarket].[ImportState](Status, Offset)
+insert into [electricitymarket].[ImportState](Enabled, Offset)
 values (0, 0)
