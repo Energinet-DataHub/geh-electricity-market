@@ -12,19 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Threading;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
-public interface IElectricityMarketDatabaseContext
+public interface IImportHandler
 {
-    DatabaseFacade Database { get; }
-    DbSet<MeteringPointEntity> MeteringPoints { get; }
-    DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; }
-    DbSet<CommercialRelationEntity> CommercialRelations { get; }
-    DbSet<ImportStateEntity> ImportStates { get; }
-    Task<int> SaveChangesAsync();
+    Task ImportAsync(CancellationToken cancellationToken);
 }

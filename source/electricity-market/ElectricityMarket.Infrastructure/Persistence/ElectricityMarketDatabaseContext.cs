@@ -34,6 +34,7 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     public DbSet<MeteringPointEntity> MeteringPoints { get; private set; } = null!;
     public DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; private set; } = null!;
     public DbSet<CommercialRelationEntity> CommercialRelations { get; private set; } = null!;
+    public DbSet<ImportStateEntity> ImportStates { get; private set; } = null!;
 
     public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 
@@ -41,6 +42,7 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     {
         ArgumentNullException.ThrowIfNull(modelBuilder, nameof(modelBuilder));
         modelBuilder.HasDefaultSchema("electricitymarket");
+        modelBuilder.ApplyConfiguration(new ImportStateEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MeteringPointEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MeteringPointPeriodEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CommercialRelationEntityConfiguration());
