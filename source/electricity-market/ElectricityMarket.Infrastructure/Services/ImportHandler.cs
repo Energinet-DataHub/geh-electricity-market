@@ -77,8 +77,6 @@ public sealed class ImportHandler : IImportHandler
                     _ = await _meteringPointRepository.GetAsync(new MeteringPointIdentification(identification)).ConfigureAwait(false) ??
                         await _meteringPointRepository.CreateAsync(new MeteringPointIdentification(identification)).ConfigureAwait(false);
 
-                    // do teh thing..
-
                     offset = (long)record.btd_business_trans_doss_id;
                 }
 
