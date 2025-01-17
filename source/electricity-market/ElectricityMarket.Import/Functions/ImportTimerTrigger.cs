@@ -12,20 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
 
 namespace ElectricityMarket.Import.Functions;
 
 internal sealed class ImportTimerTrigger
 {
+    private readonly IImportHandler _importHandler;
+
+    public ImportTimerTrigger(IImportHandler importHandler)
+    {
+        _importHandler = importHandler;
+    }
+
     [Function(nameof(ImportAsync))]
-    public Task ImportAsync(
-        [TimerTrigger("0 */1 * * * *", RunOnStartup = true)]
+    public async Task ImportAsync(
+        [TimerTrigger("0 */5 * * * *", RunOnStartup = true)]
         TimerInfo timer,
         FunctionContext executionContext)
     {
         ArgumentNullException.ThrowIfNull(executionContext);
 
-        return Task.CompletedTask;
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(28));
+
+        try
+        {
+            await _importHandler.ImportAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+        }
+        catch (TaskCanceledException)
+        {
+            // ignore
+        }
     }
 }

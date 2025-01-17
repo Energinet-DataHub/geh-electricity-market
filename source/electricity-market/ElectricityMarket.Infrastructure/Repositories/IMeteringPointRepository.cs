@@ -13,18 +13,12 @@
 // limitations under the License.
 
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Model;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
-public interface IElectricityMarketDatabaseContext
+public interface IMeteringPointRepository
 {
-    DatabaseFacade Database { get; }
-    DbSet<MeteringPointEntity> MeteringPoints { get; }
-    DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; }
-    DbSet<CommercialRelationEntity> CommercialRelations { get; }
-    DbSet<ImportStateEntity> ImportStates { get; }
-    Task<int> SaveChangesAsync();
+    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
+    Task<MeteringPoint> CreateAsync(MeteringPointIdentification identification);
 }
