@@ -16,12 +16,12 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Model;
 
 public sealed record ImportState
 {
-    public ImportState(ImportStatus status, long offset)
+    public ImportState(bool enabled, long offset)
     {
-        Status = status;
+        Enabled = enabled;
         Offset = offset;
     }
 
-    public ImportStatus Status { get; set; }
+    public bool Enabled { get; }
     public long Offset { get; set; }
 }

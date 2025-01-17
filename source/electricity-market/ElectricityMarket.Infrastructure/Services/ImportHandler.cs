@@ -52,7 +52,7 @@ public sealed class ImportHandler : IImportHandler
             {
                 var importState = await _importStateRepository.GetImportStateAsync().ConfigureAwait(false);
 
-                if (importState.Status is ImportStatus.Pristine)
+                if (!importState.Enabled)
                 {
                     return;
                 }
@@ -80,25 +80,17 @@ public sealed class ImportHandler : IImportHandler
                     offset = (long)record.btd_business_trans_doss_id;
                 }
 
-                importState = importState.Offset == offset
-                    ? importState with
-                    {
-                        Status = ImportStatus.Pristine
-                    }
-                    : importState with
-                    {
-                        Offset = offset
-                    };
+                if (offset == importState.Offset)
+                {
+                    return;
+                }
+
+                importState.Offset = offset;
 
                 // update import state
                 await _importStateRepository.UpdateImportStateAsync(importState).ConfigureAwait(false);
 
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-
-                if (importState.Status is ImportStatus.Pristine)
-                {
-                    return;
-                }
             }
         }
         while (!cancellationToken.IsCancellationRequested);

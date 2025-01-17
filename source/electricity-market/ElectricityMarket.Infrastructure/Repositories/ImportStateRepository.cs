@@ -32,14 +32,13 @@ public sealed class ImportStateRepository : IImportStateRepository
     public async Task<ImportState> GetImportStateAsync()
     {
         var entity = await _context.ImportStates.SingleAsync().ConfigureAwait(false);
-        return new ImportState((ImportStatus)entity.Status, entity.Offset);
+        return new ImportState(entity.Enabled, entity.Offset);
     }
 
     public async Task UpdateImportStateAsync(ImportState importState)
     {
         ArgumentNullException.ThrowIfNull(importState);
         var entity = await _context.ImportStates.SingleAsync().ConfigureAwait(false);
-        entity.Status = (int)importState.Status;
         entity.Offset = importState.Offset;
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }

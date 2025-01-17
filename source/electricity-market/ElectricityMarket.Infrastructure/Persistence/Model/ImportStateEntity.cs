@@ -18,7 +18,7 @@ public sealed class ImportStateEntity
 {
     public int Id { get; set; }
 
-    public int Status { get; set; }
+    public bool Enabled { get; set; }
 
     public long Offset { get; set; }
 }
