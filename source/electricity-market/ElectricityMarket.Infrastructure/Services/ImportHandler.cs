@@ -60,7 +60,6 @@ public sealed class ImportHandler : IImportHandler
                     return;
                 }
 
-
                 var offset = importState.Offset;
 
                 var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
