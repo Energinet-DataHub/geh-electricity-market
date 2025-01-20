@@ -52,13 +52,14 @@ public sealed class ImportHandler : IImportHandler
             {
                 var importState = await _importStateRepository.GetImportStateAsync().ConfigureAwait(false);
 
+                // temp: test write permissions
+                await _importStateRepository.UpdateImportStateAsync(importState).ConfigureAwait(false);
+
                 if (!importState.Enabled)
                 {
                     return;
                 }
 
-                // temp: test write permissions
-                await _importStateRepository.UpdateImportStateAsync(importState).ConfigureAwait(false);
 
                 var offset = importState.Offset;
 
