@@ -57,6 +57,9 @@ public sealed class ImportHandler : IImportHandler
                     return;
                 }
 
+                // temp: test write permissions
+                await _importStateRepository.UpdateImportStateAsync(importState).ConfigureAwait(false);
+
                 var offset = importState.Offset;
 
                 var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
