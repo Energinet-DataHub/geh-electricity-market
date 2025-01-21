@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.0.4
+
+- Update packages.
+
 ## Version 4.0.3
 
 - Added ValidFrom and ValidTo to MeteringPointMasterData.
