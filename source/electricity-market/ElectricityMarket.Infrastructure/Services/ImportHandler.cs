@@ -74,7 +74,7 @@ public sealed class ImportHandler : IImportHandler
                     var identification = (string)record.metering_point_id;
 
                     var meteringPoint = await GetAsync(identification).ConfigureAwait(false) ??
-                                        await CreateAsync(identification).ConfigureAwait(false);
+                                        Create(identification);
 
                     var handled = false;
 
@@ -114,7 +114,7 @@ public sealed class ImportHandler : IImportHandler
             .ConfigureAwait(false);
     }
 
-    private async Task<MeteringPointEntity> CreateAsync(string identification)
+    private MeteringPointEntity Create(string identification)
     {
         ArgumentNullException.ThrowIfNull(identification);
 
@@ -124,8 +124,6 @@ public sealed class ImportHandler : IImportHandler
         };
 
         _electricityMarketDatabaseContext.MeteringPoints.Add(entity);
-
-        await _electricityMarketDatabaseContext.SaveChangesAsync().ConfigureAwait(false);
 
         return entity;
     }
