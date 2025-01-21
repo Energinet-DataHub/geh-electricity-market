@@ -13,11 +13,11 @@
 // limitations under the License.
 
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Model;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
-public interface IMeteringPointRepository
+public interface ITransactionImporter
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
+    Task<bool> ImportAsync(MeteringPointEntity meteringPoint);
 }

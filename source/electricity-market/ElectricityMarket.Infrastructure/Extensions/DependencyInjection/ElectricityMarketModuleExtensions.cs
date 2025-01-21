@@ -44,11 +44,14 @@ public static class ElectricityMarketModuleExtensions
         });
 
         // Repositories
-        services.AddScoped<IImportStateRepository, ImportStateRepository>();
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
 
         // Services
         services.AddScoped<IImportHandler, ImportHandler>();
+
+        // importers
+        services.AddScoped<ITransactionImporter, MeteringPointPeriodImporter>();
+        services.AddScoped<ITransactionImporter, CommercialRelationImporter>();
 
         return services;
     }

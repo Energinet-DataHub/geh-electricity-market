@@ -16,7 +16,6 @@ using System;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -41,21 +40,5 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return entity is not null
             ? new MeteringPoint(entity.Id, new MeteringPointIdentification(entity.Identification))
             : null;
-    }
-
-    public async Task<MeteringPoint> CreateAsync(MeteringPointIdentification identification)
-    {
-        ArgumentNullException.ThrowIfNull(identification);
-
-        var entity = new MeteringPointEntity
-        {
-            Identification = identification.Value,
-        };
-
-        _context.MeteringPoints.Add(entity);
-
-        await _context.SaveChangesAsync().ConfigureAwait(false);
-
-        return new MeteringPoint(entity.Id, new MeteringPointIdentification(entity.Identification));
     }
 }
