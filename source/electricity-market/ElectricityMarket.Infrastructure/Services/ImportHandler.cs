@@ -116,8 +116,6 @@ public sealed class ImportHandler : IImportHandler
 
     private MeteringPointEntity Create(string identification)
     {
-        ArgumentNullException.ThrowIfNull(identification);
-
         var entity = new MeteringPointEntity
         {
             Identification = identification,
