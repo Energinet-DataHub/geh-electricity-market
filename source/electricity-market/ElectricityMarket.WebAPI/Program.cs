@@ -14,6 +14,7 @@
 
 using System.Reflection;
 using Asp.Versioning;
+using ElectricityMarket.WebAPI.Extensions.DependencyInjection;
 using Energinet.DataHub.Core.App.Common.Extensions.DependencyInjection;
 using Energinet.DataHub.Core.App.WebApp.Extensions.Builder;
 using Energinet.DataHub.Core.App.WebApp.Extensions.DependencyInjection;
@@ -37,6 +38,7 @@ builder.Services
     .AddJwtBearerAuthenticationForWebApp(builder.Configuration)
     .AddNodaTimeForApplication()
     .AddPermissionAuthorizationForWebApp()
+    .AddElectricityMarketWebApiModule(builder.Configuration)
     .AddRevisionLogIntegrationModule(builder.Configuration)
     .AddRevisionLogIntegrationWebApiModule<DefaultRevisionLogEntryHandler>(new Guid("1fc93427-e6fb-45db-bf92-b6efefe5aad9"));
 
