@@ -6,6 +6,8 @@
 
     "Databricks:WorkspaceUrl": "",
     "Databricks:WorkspaceToken": "",
-    "Databricks:WarehouseId": ""
+    "Databricks:WarehouseId": "",
+
+    "EnableDatabricksHealthCheck": true
   }
 }
