@@ -30,17 +30,22 @@ public static class ElectricityMarketImportModuleExtensions
         services.AddElectricityMarketDatabaseModule();
         services.AddDatabricksModule(configuration);
 
-        AddHealthChecks(services);
+        AddHealthChecks(services, configuration);
 
         return services;
     }
 
-    private static void AddHealthChecks(IServiceCollection services)
+    private static void AddHealthChecks(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<HealthCheckEndpoint>();
-        services
+
+        var healthCheckBuilder = services
             .AddHealthChecks()
-            .AddDbContextCheck<ElectricityMarketDatabaseContext>()
-            .AddDatabricksSqlStatementApiHealthCheck();
+            .AddDbContextCheck<ElectricityMarketDatabaseContext>();
+
+        if (configuration.IsSettingEnabled("EnableDatabricksHealthCheck"))
+        {
+            healthCheckBuilder.AddDatabricksSqlStatementApiHealthCheck();
+        }
     }
 }
