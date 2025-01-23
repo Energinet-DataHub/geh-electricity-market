@@ -7,6 +7,9 @@ CREATE TABLE [electricitymarket].[SpeedTestImportState]
     CONSTRAINT PK_SpeedTestImportState PRIMARY KEY CLUSTERED (Id),
 )
 
+INSERT INTO [electricitymarket].[SpeedTestImportState](Enabled, Offset)
+VALUES (0, 0)
+
 CREATE TABLE [electricitymarket].[SpeedTestGold]
 (
     [Id]              INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
