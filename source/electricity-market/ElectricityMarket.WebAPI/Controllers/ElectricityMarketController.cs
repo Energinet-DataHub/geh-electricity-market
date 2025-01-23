@@ -12,20 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElectricityMarket.WebAPI.Controllers;
 
 [ApiController]
 [Route("electricity-market")]
-public class ElectricityMarketController
-    : ControllerBase
+public class ElectricityMarketController : ControllerBase
 {
-    [HttpGet("{meteringPointId}")]
-    public async Task<ActionResult<IEnumerable<MeteringPointDto>>> GetMeteringPointDataAsync(string meteringPointId)
+    private readonly IMediator _mediator;
+
+    public ElectricityMarketController(IMediator mediator)
     {
-        var meteringPoints = await Task.FromResult(new List<MeteringPointDto>()).ConfigureAwait(false);
-        return Ok(meteringPoints);
+        _mediator = mediator;
+    }
+
+    [HttpGet("{meteringPointIdentification}")]
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointDataAsync(string meteringPointIdentification)
+    {
+        var getMeteringPointDataCommand = new GetMeteringPointDataCommand(meteringPointIdentification);
+
+        var meteringPoint = await _mediator
+            .Send(getMeteringPointDataCommand)
+            .ConfigureAwait(false);
+
+        return Ok(meteringPoint);
     }
 }
