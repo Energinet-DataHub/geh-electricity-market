@@ -48,6 +48,7 @@ public static class ElectricityMarketModuleExtensions
 
         // Services
         services.AddScoped<IImportHandler, ImportHandler>();
+        services.AddScoped<ISpeedTestImportHandler, SpeedTestImportHandler>();
 
         // importers
         services.AddScoped<ITransactionImporter, MeteringPointPeriodImporter>();
