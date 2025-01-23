@@ -20,7 +20,7 @@ public sealed class SpeedTestGoldEntity
 {
     public int Id { get; set; }
 
-    public string MeteringPointId { get; set; }
+    public string MeteringPointId { get; set; } = null!;
 
     public DateTimeOffset ValidFrom { get; set; }
 
@@ -28,7 +28,7 @@ public sealed class SpeedTestGoldEntity
 
     public DateTimeOffset CreatedDate { get; set; }
 
-    public string GridArea { get; set; }
+    public string GridArea { get; set; } = null!;
 
     public long StateId { get; set; }
 
