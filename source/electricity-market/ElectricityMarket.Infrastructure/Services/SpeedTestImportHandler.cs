@@ -66,7 +66,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                         $"""
                          SELECT *
                          FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         WHERE dh3_created >= {offset.ToInstant().ToString()}
+                         WHERE dh3_created >= '{offset.ToInstant().ToString()}'
                          ORDER BY dh3_created
                          LIMIT {limit} OFFSET 0
                          """).Build(),
