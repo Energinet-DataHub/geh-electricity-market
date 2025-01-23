@@ -19,7 +19,6 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
-using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
@@ -59,16 +58,15 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                     return;
                 }
 
-                var offset = new DateTimeOffset(importState.Offset, TimeSpan.Zero);
+                var offset = importState.Offset;
 
                 var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
                     DatabricksStatement.FromRawSql(
                         $"""
                          SELECT *
                          FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         WHERE dh3_created >= '{offset.ToInstant().ToString()}'
-                         ORDER BY dh3_created
-                         LIMIT {limit} OFFSET 0
+                         ORDER BY metering_point_id
+                         LIMIT {limit} OFFSET {offset}
                          """).Build(),
                     cancellationToken);
 
@@ -97,15 +95,15 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                         .SpeedTestGoldEntities
                         .Add(entity);
 
-                    offset = createdDate;
+                    offset++;
                 }
 
-                if (offset.Ticks == importState.Offset)
+                if (offset == importState.Offset)
                 {
                     return;
                 }
 
-                importState.Offset = offset.Ticks;
+                importState.Offset = offset;
 
                 await _electricityMarketDatabaseContext
                     .SaveChangesAsync()
