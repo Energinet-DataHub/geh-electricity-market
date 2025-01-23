@@ -19,8 +19,8 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
 public class CommercialRelationImporter : ITransactionImporter
 {
-    public Task<bool> ImportAsync(MeteringPointEntity meteringPoint)
+    public Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
     {
-        return Task.FromResult(false);
+        return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Unhandled));
     }
 }

@@ -17,9 +17,11 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     [ProductId]                  varchar(64) NOT NULL,
     [SettlementGroup]            int NULL,
     [ScheduledMeterReadingMonth] int NOT NULL,
-    [ParentIdentification]       bigint NULL
+    [ParentIdentification]       bigint NULL,
+    [MeteringPointStateId]       bigint NOT NULL,
+    [BusinessTransactionDosId]   bigint NOT NULL,
 
     CONSTRAINT PK_MeteringPointPeriod PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_MeteringPointPeriod_MeteringPointPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[MeteringPointPeriod]([ID]),
-    CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID])
+    CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID]),
 )

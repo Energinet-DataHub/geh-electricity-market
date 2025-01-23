@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
-
-public interface ITransactionImporter
+public sealed class QuarantinedMeteringPointEntity
 {
-    Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction);
+    public long Id { get; set; }
+
+    public string Identification { get; set; } = null!;
 }

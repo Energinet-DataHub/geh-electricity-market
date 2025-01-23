@@ -24,6 +24,8 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 
 public static class TestPreparationEntities
 {
+    private static int _stateIdCounter;
+
     // Grid Areas starts at 10 because '003' and '007' are reserved and should not "occur" randomly as tests are run.
     private static int _gridAreaCount = 10;
 
@@ -45,7 +47,8 @@ public static class TestPreparationEntities
         Resolution = "PT15M",
         Unit = MeasureUnit.kWh.ToString(),
         ProductId = ProductId.PowerActive.ToString(),
-        ScheduledMeterReadingMonth = 1
+        ScheduledMeterReadingMonth = 1,
+        MeteringPointStateId = _stateIdCounter++,
     };
 
     public static CommercialRelationEntity ValidCommercialRelation => new()

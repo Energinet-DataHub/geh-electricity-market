@@ -12,12 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
-public interface ITransactionImporter
-{
-    Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction);
-}
+public sealed record MeteringPointTransaction(
+    string Identification,
+    Instant ValidFrom,
+    Instant ValidTo,
+    Instant Dh3Created,
+    string MeteringGridAreaId,
+    long MeteringPointStateId,
+    long BusinessTransactionDosId,
+    string MpConnectionType,
+    string TypeOfMp,
+    string SubTypeOfMp,
+    string EnergyTimeseriesMeasureUnit);

@@ -12,12 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
-public interface ITransactionImporter
+public static class ExternalMeteringPointUnitMapper
 {
-    Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction);
+    public static string Map(string externalValue)
+    {
+        return externalValue switch
+        {
+            "AMP" => "Ampere",
+            "H87" => "STK",
+            "K3;" => "VArh",
+            "KWH" => "kWh",
+            "KWT" => "kW",
+            "MAW" => "MW",
+            "MWH" => "MWh",
+            "TNE" => "Tonne",
+            "Z03" => "MVAr",
+            "Z14" => "DanishTariffCode",
+            _ => $"Unmapped: {externalValue}",
+        };
+    }
 }
