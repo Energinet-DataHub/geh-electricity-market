@@ -65,7 +65,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                         $"""
                          SELECT *
                          FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         ORDER BY metering_point_id
+                         ORDER BY valid_from_date
                          LIMIT {limit} OFFSET {offset}
                          """).Build(),
                     cancellationToken);
