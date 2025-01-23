@@ -19,6 +19,7 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
+using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
@@ -65,7 +66,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                         $"""
                          SELECT *
                          FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         WHERE dh3_created >= {importState.Offset}
+                         WHERE dh3_created >= {offset.ToInstant().ToString()}
                          ORDER BY dh3_created
                          LIMIT {limit} OFFSET 0
                          """).Build(),
