@@ -12,15 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.ObjectModel;
+using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+namespace ElectricityMarket.Domain.Models;
 
-public sealed class MeteringPointEntity
-{
-    public long Id { get; set; }
-
-    public string Identification { get; set; } = null!;
-
-    public Collection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
-}
+public sealed record MeteringPointPeriod(
+    long Id,
+    long MeteringPointId,
+    Instant ValidFrom,
+    Instant ValidTo,
+    Instant CreatedAt,
+    string GridAreaCode,
+    string OwnedBy,
+    string ConnectionState,
+    string Type,
+    string SubType,
+    string Resolution,
+    string Unit,
+    string ProductId,
+    int ScheduledMeterReadingMonth);
