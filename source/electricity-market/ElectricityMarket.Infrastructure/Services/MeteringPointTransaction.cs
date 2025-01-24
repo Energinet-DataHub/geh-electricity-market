@@ -24,7 +24,7 @@ public sealed record MeteringPointTransaction(
     string MeteringGridAreaId,
     long MeteringPointStateId,
     long BusinessTransactionDosId,
-    string MpConnectionType,
+    string PhysicalStatusOfMp,
     string TypeOfMp,
     string SubTypeOfMp,
     string EnergyTimeseriesMeasureUnit);

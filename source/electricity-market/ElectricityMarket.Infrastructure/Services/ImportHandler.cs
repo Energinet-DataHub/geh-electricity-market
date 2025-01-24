@@ -115,7 +115,7 @@ public sealed class ImportHandler : IImportHandler
             record.metering_grid_area_id,
             record.metering_point_state_id,
             record.btd_business_trans_doss_id,
-            record.mp_connection_type,
+            record.physical_status_of_mp,
             record.type_of_mp,
             record.sub_type_of_mp,
             record.energy_timeseries_measure_unit);
