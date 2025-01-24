@@ -37,83 +37,71 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 
     public async Task ImportAsync(CancellationToken cancellationToken)
     {
-        const int limit = 100_000;
+        var importState = await _electricityMarketDatabaseContext
+            .SpeedTestImportEntities
+            .SingleAsync(cancellationToken)
+            .ConfigureAwait(false);
 
-        do
+        if (!importState.Enabled)
         {
-            var transaction = await _electricityMarketDatabaseContext
-                .Database
-                .BeginTransactionAsync(cancellationToken)
-                .ConfigureAwait(false);
+            return;
+        }
 
-            await using (transaction.ConfigureAwait(false))
+        var offset = importState.Offset;
+
+        var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
+            DatabricksStatement.FromRawSql(
+                $"""
+                 SELECT *
+                 FROM migrations_electricity_market.electricity_market_metering_points_view_v2
+                 WHERE btd_business_trans_doss_id <= 339762452 
+                 """).Build(),
+            cancellationToken);
+
+        await foreach (var record in results)
+        {
+            var meteringPointId = (string)record.metering_point_id;
+            var validFrom = (DateTimeOffset)record.valid_from_date;
+            var validTo = record.valid_to_date == null ? DateTimeOffset.MaxValue : (DateTimeOffset)record.valid_to_date;
+            var createdDate = (DateTimeOffset)record.dh3_created;
+            var gridArea = (string)record.metering_grid_area_id;
+            var stateId = (long)record.metering_point_state_id;
+            var transDossId = (long)record.btd_business_trans_doss_id;
+
+            var entity = new SpeedTestGoldEntity
             {
-                var importState = await _electricityMarketDatabaseContext
-                    .SpeedTestImportEntities
-                    .SingleAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                MeteringPointId = meteringPointId,
+                ValidFrom = validFrom,
+                ValidTo = validTo,
+                CreatedDate = createdDate,
+                GridArea = gridArea,
+                StateId = stateId,
+                TransDossId = transDossId
+            };
 
-                if (!importState.Enabled)
-                {
-                    return;
-                }
+            _electricityMarketDatabaseContext
+                .SpeedTestGoldEntities
+                .Add(entity);
 
-                var offset = importState.Offset;
+            offset++;
 
-                var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
-                    DatabricksStatement.FromRawSql(
-                        $"""
-                         SELECT *
-                         FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         ORDER BY metering_point_id
-                         LIMIT {limit} OFFSET {offset}
-                         """).Build(),
-                    cancellationToken);
-
-                await foreach (var record in results)
-                {
-                    var meteringPointId = (string)record.metering_point_id;
-                    var validFrom = (DateTimeOffset)record.valid_from_date;
-                    var validTo = record.valid_to_date == null ? DateTimeOffset.MaxValue : (DateTimeOffset)record.valid_to_date;
-                    var createdDate = (DateTimeOffset)record.dh3_created;
-                    var gridArea = (string)record.metering_grid_area_id;
-                    var stateId = (long)record.metering_point_state_id;
-                    var transDossId = (long)record.btd_business_trans_doss_id;
-
-                    var entity = new SpeedTestGoldEntity
-                    {
-                        MeteringPointId = meteringPointId,
-                        ValidFrom = validFrom,
-                        ValidTo = validTo,
-                        CreatedDate = createdDate,
-                        GridArea = gridArea,
-                        StateId = stateId,
-                        TransDossId = transDossId
-                    };
-
-                    _electricityMarketDatabaseContext
-                        .SpeedTestGoldEntities
-                        .Add(entity);
-
-                    offset++;
-                }
-
-                if (offset == importState.Offset)
-                {
-                    return;
-                }
-
-                importState.Offset = offset;
-
+            if (offset % 100000 == 0)
+            {
                 await _electricityMarketDatabaseContext
                     .SaveChangesAsync()
                     .ConfigureAwait(false);
-
-                await transaction
-                    .CommitAsync(cancellationToken)
-                    .ConfigureAwait(false);
             }
         }
-        while (!cancellationToken.IsCancellationRequested);
+
+        if (offset == importState.Offset)
+        {
+            return;
+        }
+
+        importState.Offset = offset;
+
+        await _electricityMarketDatabaseContext
+            .SaveChangesAsync()
+            .ConfigureAwait(false);
     }
 }
