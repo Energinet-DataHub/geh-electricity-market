@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,28 +19,32 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
 public sealed class ImportHandler : IImportHandler
 {
     private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
+    private readonly IQuarantineZone _quarantineZone;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
     private readonly IEnumerable<ITransactionImporter> _transactionImporters;
 
     public ImportHandler(
         IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
+        IQuarantineZone quarantineZone,
         DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
         IEnumerable<ITransactionImporter> transactionImporters)
     {
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
+        _quarantineZone = quarantineZone;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
         _transactionImporters = transactionImporters;
     }
 
     public async Task ImportAsync(CancellationToken cancellationToken)
     {
-        const int limit = 1024;
+        const int limit = 1_000;
 
         do
         {
@@ -71,25 +74,20 @@ public sealed class ImportHandler : IImportHandler
 
                 await foreach (var record in results)
                 {
-                    var identification = (string)record.metering_point_id;
+                    var meteringPointTransaction = (MeteringPointTransaction)CreateMeteringPointTransaction(record);
 
-                    var meteringPoint = await GetAsync(identification).ConfigureAwait(false) ??
-                                        Create(identification);
+                    offset = meteringPointTransaction.MeteringPointStateId;
 
-                    var handled = false;
-
-                    foreach (var transactionImporter in _transactionImporters)
+                    if (await _quarantineZone.IsQuarantinedAsync(meteringPointTransaction).ConfigureAwait(false))
                     {
-                        handled |= await transactionImporter.ImportAsync(meteringPoint).ConfigureAwait(false);
+                        await _quarantineZone.QuarantineAsync(meteringPointTransaction, "Previously quarantined").ConfigureAwait(false);
+                        continue;
                     }
 
-                    if (!handled)
-                    {
-                        // quarantine record
-                        throw new InvalidOperationException("Unhandled transaction");
-                    }
+                    var meteringPoint = await GetAsync(meteringPointTransaction.Identification).ConfigureAwait(false) ??
+                                        await CreateAsync(meteringPointTransaction.Identification).ConfigureAwait(false);
 
-                    offset = (long)record.metering_point_state_id;
+                    await RunImportChainAsync(meteringPoint, meteringPointTransaction).ConfigureAwait(false);
                 }
 
                 if (offset == importState.Offset)
@@ -107,6 +105,45 @@ public sealed class ImportHandler : IImportHandler
         while (!cancellationToken.IsCancellationRequested);
     }
 
+    private static MeteringPointTransaction CreateMeteringPointTransaction(dynamic record)
+    {
+        return new MeteringPointTransaction(
+            record.metering_point_id,
+            Instant.FromDateTimeOffset(record.valid_from_date),
+            record.valid_to_date is not null ? Instant.FromDateTimeOffset(record.valid_to_date) : Instant.MaxValue,
+            Instant.FromDateTimeOffset(record.dh3_created),
+            record.metering_grid_area_id,
+            record.metering_point_state_id,
+            record.btd_business_trans_doss_id,
+            record.mp_connection_type,
+            record.type_of_mp,
+            record.sub_type_of_mp,
+            record.energy_timeseries_measure_unit);
+    }
+
+    private async Task RunImportChainAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
+    {
+        var handled = false;
+
+        foreach (var transactionImporter in _transactionImporters)
+        {
+            var result = await transactionImporter.ImportAsync(meteringPoint, meteringPointTransaction).ConfigureAwait(false);
+
+            if (result.Status == TransactionImporterResultStatus.Error)
+            {
+                await _quarantineZone.QuarantineAsync(meteringPointTransaction, result.Message).ConfigureAwait(false);
+                return;
+            }
+
+            handled |= result.Status == TransactionImporterResultStatus.Handled;
+        }
+
+        if (!handled)
+        {
+            await _quarantineZone.QuarantineAsync(meteringPointTransaction, "Unhandled").ConfigureAwait(false);
+        }
+    }
+
     private async Task<MeteringPointEntity?> GetAsync(string identification)
     {
         return await _electricityMarketDatabaseContext.MeteringPoints
@@ -114,7 +151,7 @@ public sealed class ImportHandler : IImportHandler
             .ConfigureAwait(false);
     }
 
-    private MeteringPointEntity Create(string identification)
+    private async Task<MeteringPointEntity> CreateAsync(string identification)
     {
         var entity = new MeteringPointEntity
         {
@@ -122,6 +159,8 @@ public sealed class ImportHandler : IImportHandler
         };
 
         _electricityMarketDatabaseContext.MeteringPoints.Add(entity);
+
+        await _electricityMarketDatabaseContext.SaveChangesAsync().ConfigureAwait(false);
 
         return entity;
     }

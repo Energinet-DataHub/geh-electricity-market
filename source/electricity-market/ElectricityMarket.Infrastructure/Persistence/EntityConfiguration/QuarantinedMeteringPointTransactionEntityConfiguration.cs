@@ -12,12 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
+using System;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public interface ITransactionImporter
+public sealed class QuarantinedMeteringPointTransactionEntityConfiguration : IEntityTypeConfiguration<QuarantinedMeteringPointTransactionEntity>
 {
-    Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction);
+    public void Configure(EntityTypeBuilder<QuarantinedMeteringPointTransactionEntity> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        builder.ToTable("QuarantinedMeteringPointTransaction");
+    }
 }

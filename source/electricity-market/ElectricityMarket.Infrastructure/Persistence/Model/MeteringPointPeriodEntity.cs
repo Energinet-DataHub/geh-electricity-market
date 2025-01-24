@@ -45,4 +45,14 @@ public sealed class MeteringPointPeriodEntity
     public string ProductId { get; set; } = null!;
 
     public int ScheduledMeterReadingMonth { get; set; }
+
+    public long MeteringPointStateId { get; set; }
+
+    public long BusinessTransactionDosId { get; set; }
+
+    public long? RetiredById { get; set; }
+
+    public Instant? RetiredAt { get; set; }
+
+    public MeteringPointPeriodEntity? RetiredBy { get; set; }
 }
