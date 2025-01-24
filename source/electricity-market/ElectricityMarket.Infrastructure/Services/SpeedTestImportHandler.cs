@@ -48,6 +48,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         }
 
         var offset = importState.Offset;
+        var runningSum = 0L;
 
         var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
@@ -84,13 +85,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 .Add(entity);
 
             offset++;
-
-            if (offset % 100000 == 0)
-            {
-                await _electricityMarketDatabaseContext
-                    .SaveChangesAsync()
-                    .ConfigureAwait(false);
-            }
+            runningSum += entity.TransDossId;
         }
 
         if (offset == importState.Offset)
@@ -104,5 +99,10 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         await _electricityMarketDatabaseContext
             .SaveChangesAsync()
             .ConfigureAwait(false);
+
+        if (runningSum > 10)
+        {
+            await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+        }
     }
 }
