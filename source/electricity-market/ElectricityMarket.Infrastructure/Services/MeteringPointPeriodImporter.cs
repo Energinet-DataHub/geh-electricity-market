@@ -73,7 +73,7 @@ public class MeteringPointPeriodImporter : ITransactionImporter
             CreatedAt = meteringPointTransaction.Dh3Created,
             GridAreaCode = meteringPointTransaction.MeteringGridAreaId,
             OwnedBy = "TBD",
-            ConnectionState = ExternalMeteringPointConnectionTypeMapper.Map(meteringPointTransaction.MpConnectionType),
+            ConnectionState = ExternalMeteringPointConnectionTypeMapper.Map(meteringPointTransaction.PhysicalStatusOfMp),
             Type = ExternalMeteringPointTypeMapper.Map(meteringPointTransaction.TypeOfMp),
             SubType = ExternalMeteringPointSubTypeMapper.Map(meteringPointTransaction.SubTypeOfMp),
             Resolution = "TBD",
