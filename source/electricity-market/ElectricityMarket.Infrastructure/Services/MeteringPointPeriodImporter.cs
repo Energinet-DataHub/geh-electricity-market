@@ -27,7 +27,7 @@ public class MeteringPointPeriodImporter : ITransactionImporter
         ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(meteringPointTransaction);
 
-        var latestPeriod = meteringPoint.MeteringPointPeriods.OrderBy(x => x.MeteringPointStateId).LastOrDefault();
+        var latestPeriod = meteringPoint.MeteringPointPeriods.MaxBy(x => x.MeteringPointStateId);
 
         var newPeriod = CreatePeriod(meteringPoint, meteringPointTransaction);
 
