@@ -80,10 +80,6 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 TransDossId = transDossId
             };
 
-            _electricityMarketDatabaseContext
-                .SpeedTestGoldEntities
-                .Add(entity);
-
             offset++;
             runningSum += entity.TransDossId;
         }
