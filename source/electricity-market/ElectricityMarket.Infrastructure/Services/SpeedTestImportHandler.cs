@@ -48,11 +48,12 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         }
 
         var offset = importState.Offset;
+        var runningSum = 0L;
 
         var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
                 $"""
-                 SELECT *
+                 SELECT metering_point_id, valid_from_date, valid_to_date, dh3_created, metering_grid_area_id, metering_point_state_id, btd_business_trans_doss_id
                  FROM migrations_electricity_market.electricity_market_metering_points_view_v2
                  WHERE btd_business_trans_doss_id <= 339762452 
                  """).Build(),
@@ -79,18 +80,8 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 TransDossId = transDossId
             };
 
-            _electricityMarketDatabaseContext
-                .SpeedTestGoldEntities
-                .Add(entity);
-
             offset++;
-
-            if (offset % 100000 == 0)
-            {
-                await _electricityMarketDatabaseContext
-                    .SaveChangesAsync()
-                    .ConfigureAwait(false);
-            }
+            runningSum += entity.TransDossId;
         }
 
         if (offset == importState.Offset)
@@ -104,5 +95,10 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         await _electricityMarketDatabaseContext
             .SaveChangesAsync()
             .ConfigureAwait(false);
+
+        if (runningSum > 10)
+        {
+            await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+        }
     }
 }
