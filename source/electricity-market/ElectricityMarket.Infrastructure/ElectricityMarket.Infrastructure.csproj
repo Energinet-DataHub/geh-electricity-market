@@ -37,4 +37,8 @@ limitations under the License.
     <PackageReference Include="SimplerSoftware.EntityFrameworkCore.SqlServer.NodaTime" Version="8.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ElectricityMarket.Domain\ElectricityMarket.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

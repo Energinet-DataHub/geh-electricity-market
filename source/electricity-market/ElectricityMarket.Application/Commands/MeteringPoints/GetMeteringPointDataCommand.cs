@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+using MediatR;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace ElectricityMarket.Application.Commands.MeteringPoints;
 
-public sealed record MeteringPointDto(long Id, string Identification, IEnumerable<MeteringPointPeriodDto> MeteringPointPeriod);
+public sealed record GetMeteringPointDataCommand(string MeteringPointIdentification) : IRequest<GetMeteringPointDataResponse>;

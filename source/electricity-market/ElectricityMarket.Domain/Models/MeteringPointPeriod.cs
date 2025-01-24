@@ -12,8 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace ElectricityMarket.Domain.Models;
 
-public sealed record MeteringPointDto(long Id, string Identification, IEnumerable<MeteringPointPeriodDto> MeteringPointPeriod);
+public sealed record MeteringPointPeriod(
+    long Id,
+    long MeteringPointId,
+    Instant ValidFrom,
+    Instant ValidTo,
+    Instant CreatedAt,
+    string GridAreaCode,
+    string OwnedBy,
+    string ConnectionState,
+    string Type,
+    string SubType,
+    string Resolution,
+    string Unit,
+    string ProductId,
+    int ScheduledMeterReadingMonth);

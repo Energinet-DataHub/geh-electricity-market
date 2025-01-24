@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.ObjectModel;
+
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
 public sealed class MeteringPointEntity
@@ -19,4 +21,6 @@ public sealed class MeteringPointEntity
     public long Id { get; set; }
 
     public string Identification { get; set; } = null!;
+
+    public Collection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
 }

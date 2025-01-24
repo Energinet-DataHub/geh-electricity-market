@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using ElectricityMarket.Application;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 
@@ -24,6 +25,11 @@ public static class ElectricityMarketWebApiModuleExtensions
         ArgumentNullException.ThrowIfNull(configuration);
 
         services.AddElectricityMarketDatabaseModule();
+
+        services.AddMediatR(config =>
+        {
+            config.RegisterServicesFromAssemblyContaining<ApplicationAssemblyReference>();
+        });
 
         AddHealthChecks(services);
 

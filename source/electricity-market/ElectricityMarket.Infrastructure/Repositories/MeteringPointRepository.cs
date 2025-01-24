@@ -14,8 +14,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Model;
+using ElectricityMarket.Domain.Models;
+using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -38,7 +40,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             .ConfigureAwait(false);
 
         return entity is not null
-            ? new MeteringPoint(entity.Id, new MeteringPointIdentification(entity.Identification))
+            ? MeteringPointMapper.MapFromEntity(entity)
             : null;
     }
 }

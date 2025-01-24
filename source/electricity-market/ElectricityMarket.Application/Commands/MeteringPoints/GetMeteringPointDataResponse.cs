@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Model;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
+namespace ElectricityMarket.Application.Commands.MeteringPoints;
 
-public interface IMeteringPointRepository
-{
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-}
+public sealed record GetMeteringPointDataResponse(MeteringPointDto MeteringPointData);
