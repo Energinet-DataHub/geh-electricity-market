@@ -98,6 +98,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
             return;
         }
 
+        importState.Enabled = false;
         importState.Offset = offset;
 
         await _electricityMarketDatabaseContext
