@@ -12,23 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
+using System;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public interface IElectricityMarketDatabaseContext
+public sealed class SpeedTestGoldEntityConfiguration : IEntityTypeConfiguration<SpeedTestGoldEntity>
 {
-    DatabaseFacade Database { get; }
-    DbSet<MeteringPointEntity> MeteringPoints { get; }
-    DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; }
-    DbSet<CommercialRelationEntity> CommercialRelations { get; }
-    DbSet<ImportStateEntity> ImportStates { get; }
-
-    DbSet<SpeedTestImportEntity> SpeedTestImportEntities { get; }
-    DbSet<SpeedTestGoldEntity> SpeedTestGoldEntities { get; }
-
-    Task<int> SaveChangesAsync();
+    public void Configure(EntityTypeBuilder<SpeedTestGoldEntity> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        builder.ToTable("SpeedTestGold");
+    }
 }

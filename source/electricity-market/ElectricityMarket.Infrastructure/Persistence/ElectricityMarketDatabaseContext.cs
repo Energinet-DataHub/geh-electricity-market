@@ -36,6 +36,9 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     public DbSet<CommercialRelationEntity> CommercialRelations { get; private set; } = null!;
     public DbSet<ImportStateEntity> ImportStates { get; private set; } = null!;
 
+    public DbSet<SpeedTestImportEntity> SpeedTestImportEntities { get; private set; } = null!;
+    public DbSet<SpeedTestGoldEntity> SpeedTestGoldEntities { get; private set; } = null!;
+
     public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -46,6 +49,10 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
         modelBuilder.ApplyConfiguration(new MeteringPointEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MeteringPointPeriodEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CommercialRelationEntityConfiguration());
+
+        modelBuilder.ApplyConfiguration(new SpeedTestImportEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SpeedTestGoldEntityConfiguration());
+
         base.OnModelCreating(modelBuilder);
     }
 }
