@@ -15,56 +15,52 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
 public class MeteringPointPeriodImporter : ITransactionImporter
 {
-    private readonly IElectricityMarketDatabaseContext _context;
-
-    public MeteringPointPeriodImporter(IElectricityMarketDatabaseContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
+    public Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(meteringPointTransaction);
 
-        var query =
-            from meteringPointPeriod in _context.MeteringPointPeriods
-            where meteringPointPeriod.MeteringPointId == meteringPoint.Id &&
-                  meteringPointPeriod.ValidTo == Instant.MaxValue
-            orderby meteringPointPeriod.ValidFrom descending
-            select meteringPointPeriod;
+        var latestPeriod = meteringPoint.MeteringPointPeriods.OrderBy(x => x.MeteringPointStateId).LastOrDefault();
 
-        var latestMeteringPointPeriod = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+        var newPeriod = CreatePeriod(meteringPoint, meteringPointTransaction);
 
-        if (latestMeteringPointPeriod is null)
+        if (latestPeriod is null)
         {
-            _context.MeteringPointPeriods.Add(CreatePeriod(meteringPoint, meteringPointTransaction));
-            await _context.SaveChangesAsync().ConfigureAwait(false);
-
-            return new TransactionImporterResult(TransactionImporterResultStatus.Handled);
+            meteringPoint.MeteringPointPeriods.Add(newPeriod);
+            return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
 
-        if (latestMeteringPointPeriod.ValidFrom >= meteringPointTransaction.ValidFrom)
+        if (latestPeriod.ValidFrom > meteringPointTransaction.ValidFrom)
         {
-            return new TransactionImporterResult(TransactionImporterResultStatus.Error, "HTX");
+            return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Error, "HTX"));
         }
 
-        await RetireAsync(latestMeteringPointPeriod, meteringPointTransaction).ConfigureAwait(false);
+        if (IsLatestPeriodRetired(latestPeriod, newPeriod))
+        {
+            latestPeriod.RetiredBy = newPeriod;
+            meteringPoint.MeteringPointPeriods.Add(newPeriod);
+            return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
+        }
 
-        _context.MeteringPointPeriods.Add(CreatePeriod(meteringPoint, meteringPointTransaction));
+        if (latestPeriod.ValidTo != Instant.MaxValue && newPeriod.ValidFrom > latestPeriod.ValidFrom)
+        {
+            meteringPoint.MeteringPointPeriods.Add(newPeriod);
+            return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
+        }
 
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Unhandled));
+    }
 
-        return new TransactionImporterResult(TransactionImporterResultStatus.Handled);
+    private static bool IsLatestPeriodRetired(MeteringPointPeriodEntity latestMeteringPointPeriod, MeteringPointPeriodEntity incomingMeteringPointPeriod)
+    {
+        return latestMeteringPointPeriod.ValidTo == Instant.MaxValue && incomingMeteringPointPeriod.ValidFrom == latestMeteringPointPeriod.ValidFrom;
     }
 
     private static MeteringPointPeriodEntity CreatePeriod(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
@@ -86,33 +82,5 @@ public class MeteringPointPeriodImporter : ITransactionImporter
             ScheduledMeterReadingMonth = 1,
             MeteringPointStateId = meteringPointTransaction.MeteringPointStateId,
         };
-    }
-
-    private async Task RetireAsync(MeteringPointPeriodEntity latestMeteringPointPeriod, MeteringPointTransaction meteringPointTransaction)
-    {
-        var copy = new MeteringPointPeriodEntity
-        {
-            MeteringPointId = latestMeteringPointPeriod.MeteringPointId,
-            ValidFrom = latestMeteringPointPeriod.ValidFrom,
-            ValidTo = meteringPointTransaction.ValidFrom,
-            CreatedAt = latestMeteringPointPeriod.CreatedAt,
-            GridAreaCode = latestMeteringPointPeriod.GridAreaCode,
-            OwnedBy = latestMeteringPointPeriod.OwnedBy,
-            ConnectionState = latestMeteringPointPeriod.ConnectionState,
-            Type = latestMeteringPointPeriod.Type,
-            SubType = latestMeteringPointPeriod.SubType,
-            Resolution = latestMeteringPointPeriod.Resolution,
-            Unit = latestMeteringPointPeriod.Unit,
-            ProductId = latestMeteringPointPeriod.ProductId,
-            ScheduledMeterReadingMonth = latestMeteringPointPeriod.ScheduledMeterReadingMonth,
-            MeteringPointStateId = meteringPointTransaction.MeteringPointStateId,
-            BusinessTransactionDosId = meteringPointTransaction.BusinessTransactionDosId,
-        };
-
-        _context.MeteringPointPeriods.Add(copy);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
-
-        latestMeteringPointPeriod.RetiredById = copy.Id;
-        latestMeteringPointPeriod.RetiredAt = SystemClock.Instance.GetCurrentInstant();
     }
 }

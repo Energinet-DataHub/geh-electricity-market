@@ -66,7 +66,7 @@ public sealed class ImportHandler : IImportHandler
                         $"""
                          SELECT *
                          FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         WHERE metering_point_state_id > {importState.Offset} and valid_to_date is null
+                         WHERE metering_point_state_id > {importState.Offset}
                          ORDER BY metering_point_state_id
                          LIMIT {limit} OFFSET 0
                          """).Build(),

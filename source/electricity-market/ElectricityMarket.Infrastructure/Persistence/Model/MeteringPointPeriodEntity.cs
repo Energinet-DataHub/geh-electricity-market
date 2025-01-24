@@ -53,4 +53,6 @@ public sealed class MeteringPointPeriodEntity
     public long? RetiredById { get; set; }
 
     public Instant? RetiredAt { get; set; }
+
+    public MeteringPointPeriodEntity? RetiredBy { get; set; }
 }

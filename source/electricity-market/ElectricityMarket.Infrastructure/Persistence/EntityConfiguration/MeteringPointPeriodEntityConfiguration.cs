@@ -25,5 +25,9 @@ public sealed class MeteringPointPeriodEntityConfiguration : IEntityTypeConfigur
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
         builder.ToTable("MeteringPointPeriod");
+        builder
+            .HasOne(x => x.RetiredBy)
+            .WithOne()
+            .HasForeignKey<MeteringPointPeriodEntity>(x => x.RetiredById);
     }
 }
