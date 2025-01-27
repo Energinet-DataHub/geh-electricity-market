@@ -68,7 +68,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 
         var connString = _electricityMarketDatabaseContext.Database.GetConnectionString();
 
-        using var bulkCopy = new SqlBulkCopy(connString, SqlBulkCopyOptions.TableLock);
+        using var bulkCopy = new SqlBulkCopy(connString, SqlBulkCopyOptions.TableLock | SqlBulkCopyOptions.UseInternalTransaction);
         bulkCopy.DestinationTableName = "electricitymarket.SpeedTestGold";
 
         var batch = new DataTable();
@@ -122,8 +122,12 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 
         if (batch.Rows.Count != 0)
         {
+            _speedtestLogger.LogWarning("Job before final batch: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
             await previousJob.ConfigureAwait(false);
+
+            _speedtestLogger.LogWarning("Final batch beings: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
             await bulkCopy.WriteToServerAsync(batch, cancellationToken).ConfigureAwait(false);
+            _speedtestLogger.LogWarning("Final batch done: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
         }
 
         batch.Dispose();
