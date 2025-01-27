@@ -75,7 +75,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         ConfigureColumns(batch);
         var previousJob = Task.CompletedTask;
 
-        await foreach (var record in results)
+        await foreach (var record in results.ConfigureAwait(false))
         {
             if (timeToFirstResult)
             {
@@ -83,7 +83,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 timeToFirstResult = false;
             }
 
-            if (batch.Rows.Count == 100000)
+            if (batch.Rows.Count == 1000000)
             {
                 _speedtestLogger.LogWarning("Batch ready at: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
 
@@ -91,7 +91,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 _speedtestLogger.LogWarning("Done waiting for previous job: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
 
                 var capture = batch;
-                previousJob = bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default);
+                previousJob = Task.Run(() => bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default), cancellationToken);
                 _speedtestLogger.LogWarning("Done scheduling new job: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
 
                 batch = new DataTable();
