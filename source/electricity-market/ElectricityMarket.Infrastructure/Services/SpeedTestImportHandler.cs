@@ -13,11 +13,12 @@
 // limitations under the License.
 
 using System;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
@@ -48,7 +49,6 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         }
 
         var offset = importState.Offset;
-        var runningSum = 0L;
 
         var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
@@ -59,8 +59,25 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                  """).Build(),
             cancellationToken);
 
+        var connString = _electricityMarketDatabaseContext.Database.GetConnectionString();
+
+        using var bulkCopy = new SqlBulkCopy(connString, SqlBulkCopyOptions.TableLock);
+        bulkCopy.DestinationTableName = "electricitymarket.SpeedTestGold";
+
+        var batch = new DataTable();
+        var previousJob = Task.CompletedTask;
+
         await foreach (var record in results)
         {
+            if (batch.Rows.Count == 100000)
+            {
+                await previousJob.ConfigureAwait(false);
+
+                var capture = batch;
+                previousJob = bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default);
+                batch = new DataTable();
+            }
+
             var meteringPointId = (string)record.metering_point_id;
             var validFrom = (DateTimeOffset)record.valid_from_date;
             var validTo = record.valid_to_date == null ? DateTimeOffset.MaxValue : (DateTimeOffset)record.valid_to_date;
@@ -69,25 +86,26 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
             var stateId = (long)record.metering_point_state_id;
             var transDossId = (long)record.btd_business_trans_doss_id;
 
-            var entity = new SpeedTestGoldEntity
-            {
-                MeteringPointId = meteringPointId,
-                ValidFrom = validFrom,
-                ValidTo = validTo,
-                CreatedDate = createdDate,
-                GridArea = gridArea,
-                StateId = stateId,
-                TransDossId = transDossId
-            };
+            var row = batch.NewRow();
+            row[0] = meteringPointId;
+            row[1] = validFrom;
+            row[2] = validTo;
+            row[3] = createdDate;
+            row[4] = gridArea;
+            row[5] = stateId;
+            row[6] = transDossId;
 
+            batch.Rows.Add(row);
             offset++;
-            runningSum += entity.TransDossId;
         }
 
-        if (offset == importState.Offset)
+        if (batch.Rows.Count != 0)
         {
-            return;
+            await previousJob.ConfigureAwait(false);
+            await bulkCopy.WriteToServerAsync(batch, cancellationToken).ConfigureAwait(false);
         }
+
+        batch.Dispose();
 
         importState.Enabled = false;
         importState.Offset = offset;
@@ -95,10 +113,5 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         await _electricityMarketDatabaseContext
             .SaveChangesAsync()
             .ConfigureAwait(false);
-
-        if (runningSum > 10)
-        {
-            await Task.Delay(1, cancellationToken).ConfigureAwait(false);
-        }
     }
 }
