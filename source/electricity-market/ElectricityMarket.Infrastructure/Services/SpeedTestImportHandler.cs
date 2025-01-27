@@ -55,7 +55,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 $"""
                  SELECT metering_point_id, valid_from_date, valid_to_date, dh3_created, metering_grid_area_id, metering_point_state_id, btd_business_trans_doss_id
                  FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                 WHERE btd_business_trans_doss_id <= 339762452 
+                 WHERE btd_business_trans_doss_id <= 339762452
                  """).Build(),
             cancellationToken);
 
@@ -65,6 +65,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         bulkCopy.DestinationTableName = "electricitymarket.SpeedTestGold";
 
         var batch = new DataTable();
+        ConfigureColumns(batch);
         var previousJob = Task.CompletedTask;
 
         await foreach (var record in results)
@@ -76,6 +77,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 var capture = batch;
                 previousJob = bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default);
                 batch = new DataTable();
+                ConfigureColumns(batch);
             }
 
             var meteringPointId = (string)record.metering_point_id;
@@ -87,13 +89,14 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
             var transDossId = (long)record.btd_business_trans_doss_id;
 
             var row = batch.NewRow();
-            row[0] = meteringPointId;
-            row[1] = validFrom;
-            row[2] = validTo;
-            row[3] = createdDate;
-            row[4] = gridArea;
-            row[5] = stateId;
-            row[6] = transDossId;
+            row[0] = 0;
+            row[1] = meteringPointId;
+            row[2] = validFrom;
+            row[3] = validTo;
+            row[4] = createdDate;
+            row[5] = gridArea;
+            row[6] = stateId;
+            row[7] = transDossId;
 
             batch.Rows.Add(row);
             offset++;
@@ -113,5 +116,17 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         await _electricityMarketDatabaseContext
             .SaveChangesAsync()
             .ConfigureAwait(false);
+    }
+
+    private static void ConfigureColumns(DataTable batch)
+    {
+        batch.Columns.Add("Id", typeof(int));
+        batch.Columns.Add("MeteringPointId", typeof(string));
+        batch.Columns.Add("ValidFrom", typeof(DateTimeOffset));
+        batch.Columns.Add("ValidTo", typeof(DateTimeOffset));
+        batch.Columns.Add("CreatedDate", typeof(DateTimeOffset));
+        batch.Columns.Add("GridArea", typeof(string));
+        batch.Columns.Add("StateId", typeof(long));
+        batch.Columns.Add("TransDossId", typeof(long));
     }
 }
