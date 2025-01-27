@@ -13,11 +13,12 @@
 // limitations under the License.
 
 using System;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
@@ -48,19 +49,37 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         }
 
         var offset = importState.Offset;
-        var runningSum = 0L;
 
         var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
                 $"""
                  SELECT metering_point_id, valid_from_date, valid_to_date, dh3_created, metering_grid_area_id, metering_point_state_id, btd_business_trans_doss_id
                  FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                 WHERE btd_business_trans_doss_id <= 339762452 
+                 WHERE btd_business_trans_doss_id <= 339762452
                  """).Build(),
             cancellationToken);
 
+        var connString = _electricityMarketDatabaseContext.Database.GetConnectionString();
+
+        using var bulkCopy = new SqlBulkCopy(connString, SqlBulkCopyOptions.TableLock);
+        bulkCopy.DestinationTableName = "electricitymarket.SpeedTestGold";
+
+        var batch = new DataTable();
+        ConfigureColumns(batch);
+        var previousJob = Task.CompletedTask;
+
         await foreach (var record in results)
         {
+            if (batch.Rows.Count == 100000)
+            {
+                await previousJob.ConfigureAwait(false);
+
+                var capture = batch;
+                previousJob = bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default);
+                batch = new DataTable();
+                ConfigureColumns(batch);
+            }
+
             var meteringPointId = (string)record.metering_point_id;
             var validFrom = (DateTimeOffset)record.valid_from_date;
             var validTo = record.valid_to_date == null ? DateTimeOffset.MaxValue : (DateTimeOffset)record.valid_to_date;
@@ -69,25 +88,27 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
             var stateId = (long)record.metering_point_state_id;
             var transDossId = (long)record.btd_business_trans_doss_id;
 
-            var entity = new SpeedTestGoldEntity
-            {
-                MeteringPointId = meteringPointId,
-                ValidFrom = validFrom,
-                ValidTo = validTo,
-                CreatedDate = createdDate,
-                GridArea = gridArea,
-                StateId = stateId,
-                TransDossId = transDossId
-            };
+            var row = batch.NewRow();
+            row[0] = 0;
+            row[1] = meteringPointId;
+            row[2] = validFrom;
+            row[3] = validTo;
+            row[4] = createdDate;
+            row[5] = gridArea;
+            row[6] = stateId;
+            row[7] = transDossId;
 
+            batch.Rows.Add(row);
             offset++;
-            runningSum += entity.TransDossId;
         }
 
-        if (offset == importState.Offset)
+        if (batch.Rows.Count != 0)
         {
-            return;
+            await previousJob.ConfigureAwait(false);
+            await bulkCopy.WriteToServerAsync(batch, cancellationToken).ConfigureAwait(false);
         }
+
+        batch.Dispose();
 
         importState.Enabled = false;
         importState.Offset = offset;
@@ -95,10 +116,17 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
         await _electricityMarketDatabaseContext
             .SaveChangesAsync()
             .ConfigureAwait(false);
+    }
 
-        if (runningSum > 10)
-        {
-            await Task.Delay(1, cancellationToken).ConfigureAwait(false);
-        }
+    private static void ConfigureColumns(DataTable batch)
+    {
+        batch.Columns.Add("Id", typeof(int));
+        batch.Columns.Add("MeteringPointId", typeof(string));
+        batch.Columns.Add("ValidFrom", typeof(DateTimeOffset));
+        batch.Columns.Add("ValidTo", typeof(DateTimeOffset));
+        batch.Columns.Add("CreatedDate", typeof(DateTimeOffset));
+        batch.Columns.Add("GridArea", typeof(string));
+        batch.Columns.Add("StateId", typeof(long));
+        batch.Columns.Add("TransDossId", typeof(long));
     }
 }
