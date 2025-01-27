@@ -14,12 +14,14 @@
 
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
@@ -27,13 +29,16 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 {
     private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
+    private readonly ILogger<SpeedTestImportHandler> _speedtestLogger;
 
     public SpeedTestImportHandler(
         IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
-        DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
+        DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
+        ILogger<SpeedTestImportHandler> speedtestLogger)
     {
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
+        _speedtestLogger = speedtestLogger;
     }
 
     public async Task ImportAsync(CancellationToken cancellationToken)
@@ -48,7 +53,9 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
             return;
         }
 
+        var sw = Stopwatch.StartNew();
         var offset = importState.Offset;
+        var timeToFirstResult = true;
 
         var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
@@ -70,12 +77,23 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 
         await foreach (var record in results)
         {
+            if (timeToFirstResult)
+            {
+                _speedtestLogger.LogWarning("Time to first result: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
+                timeToFirstResult = false;
+            }
+
             if (batch.Rows.Count == 100000)
             {
+                _speedtestLogger.LogWarning("Batch ready at: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
+
                 await previousJob.ConfigureAwait(false);
+                _speedtestLogger.LogWarning("Done waiting for previous job: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
 
                 var capture = batch;
                 previousJob = bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default);
+                _speedtestLogger.LogWarning("Done scheduling new job: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
+
                 batch = new DataTable();
                 ConfigureColumns(batch);
             }
