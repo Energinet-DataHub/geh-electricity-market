@@ -122,8 +122,12 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 
         if (batch.Rows.Count != 0)
         {
+            _speedtestLogger.LogWarning("Job before final batch: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
             await previousJob.ConfigureAwait(false);
+
+            _speedtestLogger.LogWarning("Final batch beings: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
             await bulkCopy.WriteToServerAsync(batch, cancellationToken).ConfigureAwait(false);
+            _speedtestLogger.LogWarning("Final batch done: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
         }
 
         batch.Dispose();

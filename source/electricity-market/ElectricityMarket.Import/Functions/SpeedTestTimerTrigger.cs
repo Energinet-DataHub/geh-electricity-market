@@ -14,16 +14,21 @@
 
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 
 namespace ElectricityMarket.Import.Functions;
 
 internal sealed class SpeedTestTimerTrigger
 {
     private readonly ISpeedTestImportHandler _speedTestImportHandler;
+    private readonly ILogger<SpeedTestTimerTrigger> _logger;
 
-    public SpeedTestTimerTrigger(ISpeedTestImportHandler speedTestImportHandler)
+    public SpeedTestTimerTrigger(
+        ISpeedTestImportHandler speedTestImportHandler,
+        ILogger<SpeedTestTimerTrigger> logger)
     {
         _speedTestImportHandler = speedTestImportHandler;
+        _logger = logger;
     }
 
     [Function(nameof(SpeedTestAsync))]
@@ -40,9 +45,10 @@ internal sealed class SpeedTestTimerTrigger
         {
             await _speedTestImportHandler.ImportAsync(cancellationTokenSource.Token).ConfigureAwait(false);
         }
-        catch (TaskCanceledException)
+        catch (Exception ex)
         {
-            // ignore
+            _logger.LogError(ex, "Crash");
+            throw;
         }
     }
 }
