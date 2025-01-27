@@ -7,7 +7,7 @@ CREATE TABLE [electricitymarket].[CommercialRelation]
     [StartDate]          datetimeoffset NOT NULL,
     [EndDate]            datetimeoffset NOT NULL,
     [ModifiedAt]         datetimeoffset NOT NULL,
-    [EnergySupplier]     varchar(64) NOT NULL
+    [EnergySupplier]     varchar(16) NOT NULL
 
     CONSTRAINT PK_CommercialRelation PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_CommercialRelation_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID])
