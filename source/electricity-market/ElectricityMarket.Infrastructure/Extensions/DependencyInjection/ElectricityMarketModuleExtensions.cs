@@ -16,7 +16,6 @@ using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -25,7 +24,7 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.Dependen
 
 public static class ElectricityMarketModuleExtensions
 {
-    public static IServiceCollection AddElectricityMarketDatabaseModule(this IServiceCollection services)
+    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services)
     {
         services.AddOptions();
 
@@ -46,15 +45,6 @@ public static class ElectricityMarketModuleExtensions
 
         // Repositories
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
-
-        // Services
-        services.AddScoped<IImportHandler, ImportHandler>();
-        services.AddScoped<ISpeedTestImportHandler, SpeedTestImportHandler>();
-        services.AddScoped<IQuarantineZone, QuarantineZone>();
-
-        // importers
-        services.AddScoped<ITransactionImporter, MeteringPointPeriodImporter>();
-        services.AddScoped<ITransactionImporter, CommercialRelationImporter>();
 
         return services;
     }
