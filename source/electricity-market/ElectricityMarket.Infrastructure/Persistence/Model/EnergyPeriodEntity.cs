@@ -12,24 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public sealed class CommercialRelationEntity
+public sealed class EnergyPeriodEntity
 {
     public long Id { get; set; }
 
-    public long MeteringPointId { get; set; }
-
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
-
+    public long CommercialRelationId { get; set; }
+    public Instant ValidFrom { get; set; }
+    public Instant ValidTo { get; set; }
+    public Instant? RetiredAt { get; set; }
+    public long? RetiredById { get; set; }
+    public MeteringPointPeriodEntity? RetiredBy { get; set; }
+    public long BusinessTransactionDosId { get; set; }
+    public string WebAccessCode { get; set; } = null!;
     public string EnergySupplier { get; set; } = null!;
-
-    public Instant ModifiedAt { get; set; }
-    public ICollection<EnergyPeriodEntity> EnergyPeriods { get; init; } = [];
-
 }

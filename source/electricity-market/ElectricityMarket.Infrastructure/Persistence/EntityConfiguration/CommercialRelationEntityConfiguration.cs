@@ -25,5 +25,8 @@ public sealed class CommercialRelationEntityConfiguration : IEntityTypeConfigura
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
         builder.ToTable("CommercialRelation");
+        builder.HasMany(x => x.EnergyPeriods)
+            .WithOne()
+            .HasForeignKey(x => x.CommercialRelationId);
     }
 }

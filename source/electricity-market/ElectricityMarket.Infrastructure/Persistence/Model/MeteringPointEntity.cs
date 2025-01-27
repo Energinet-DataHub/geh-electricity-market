@@ -23,4 +23,5 @@ public sealed class MeteringPointEntity
     public string Identification { get; set; } = null!;
 
     public ICollection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
+    public ICollection<CommercialRelationEntity> CommercialRelations { get; } = [];
 }
