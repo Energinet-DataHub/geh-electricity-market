@@ -26,7 +26,7 @@ internal sealed class ImportTimerTrigger
         _importHandler = importHandler;
     }
 
-    [Function(nameof(ImportAsync))]
+    // [Function(nameof(ImportAsync))]
     public async Task ImportAsync(
         [TimerTrigger("0 */5 * * * *", RunOnStartup = true)]
         TimerInfo timer,
