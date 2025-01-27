@@ -68,7 +68,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 
         var connString = _electricityMarketDatabaseContext.Database.GetConnectionString();
 
-        using var bulkCopy = new SqlBulkCopy(connString, SqlBulkCopyOptions.TableLock | SqlBulkCopyOptions.UseInternalTransaction);
+        using var bulkCopy = new SqlBulkCopy(connString, SqlBulkCopyOptions.TableLock);
         bulkCopy.DestinationTableName = "electricitymarket.SpeedTestGold";
 
         var batch = new DataTable();
