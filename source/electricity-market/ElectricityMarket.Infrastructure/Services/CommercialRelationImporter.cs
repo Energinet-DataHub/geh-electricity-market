@@ -73,7 +73,6 @@ public class CommercialRelationImporter : ITransactionImporter
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
 
-
         return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Unhandled));
     }
 

@@ -32,5 +32,4 @@ public sealed class CommercialRelationEntity
 
     public DateTimeOffset ModifiedAt { get; set; }
     public ICollection<EnergyPeriodEntity> EnergyPeriods { get; init; } = [];
-
 }
