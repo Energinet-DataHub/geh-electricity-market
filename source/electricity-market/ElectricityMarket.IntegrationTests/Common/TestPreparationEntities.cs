@@ -31,14 +31,16 @@ public static class TestPreparationEntities
 
     public static MeteringPointEntity ValidMeteringPoint => new()
     {
+#pragma warning disable CA5394
         Identification = new string(Enumerable.Range(0, 18).Select(_ => (char)('0' + Random.Shared.Next(10))).ToArray())
+#pragma warning restore CA5394
     };
 
     public static MeteringPointPeriodEntity ValidMeteringPointPeriod => new()
     {
-        ValidFrom = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
-        ValidTo = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
-        CreatedAt = SystemClock.Instance.GetCurrentInstant(),
+        ValidFrom = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero),
+        ValidTo = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero),
+        CreatedAt = SystemClock.Instance.GetCurrentInstant().ToDateTimeOffset(),
         GridAreaCode = (_gridAreaCount++ % 1000).ToString(CultureInfo.InvariantCulture).PadLeft(3, '0'),
         OwnedBy = "4672928796219",
         ConnectionState = ConnectionState.Connected.ToString(),
@@ -56,11 +58,12 @@ public static class TestPreparationEntities
         EnergySupplier = "2334379799509",
         StartDate = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
         EndDate = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
-        ModifiedAt = SystemClock.Instance.GetCurrentInstant()
+        ModifiedAt = SystemClock.Instance.GetCurrentInstant(),
     };
 
     public static T Patch<T>(this T entity, Action<T> action)
     {
+        ArgumentNullException.ThrowIfNull(action);
         action(entity);
         return entity;
     }

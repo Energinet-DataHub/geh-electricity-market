@@ -31,5 +31,7 @@ public sealed class MeteringPointEntityConfiguration : IEntityTypeConfiguration<
         builder.HasMany(x => x.CommercialRelations)
             .WithOne()
             .HasForeignKey(x => x.MeteringPointId);
+        builder.Navigation(x => x.MeteringPointPeriods)
+            .AutoInclude();
     }
 }

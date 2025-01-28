@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,6 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
@@ -66,8 +66,15 @@ public sealed class ImportHandler : IImportHandler
                         $"""
                          SELECT *
                          FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         WHERE metering_point_state_id > {importState.Offset}
-                         ORDER BY metering_point_state_id
+                         WHERE btd_business_trans_doss_id > {importState.Offset} and
+                         (
+                            metering_point_id = '571313180401280099' or
+                            metering_point_id = '571313180401280556' or
+                            metering_point_id = '571313180401280044' or
+                            metering_point_id = '571313180401280792' or
+                            metering_point_id = '571313180401280815'
+                         )
+                         order by btd_business_trans_doss_id, metering_point_state_id
                          LIMIT {limit} OFFSET 0
                          """).Build(),
                     cancellationToken);
@@ -76,7 +83,7 @@ public sealed class ImportHandler : IImportHandler
                 {
                     var meteringPointTransaction = (MeteringPointTransaction)CreateMeteringPointTransaction(record);
 
-                    offset = meteringPointTransaction.MeteringPointStateId;
+                    offset = meteringPointTransaction.BusinessTransactionDosId;
 
                     if (await _quarantineZone.IsQuarantinedAsync(meteringPointTransaction).ConfigureAwait(false))
                     {
@@ -109,9 +116,9 @@ public sealed class ImportHandler : IImportHandler
     {
         return new MeteringPointTransaction(
             record.metering_point_id,
-            Instant.FromDateTimeOffset(record.valid_from_date),
-            record.valid_to_date is not null ? Instant.FromDateTimeOffset(record.valid_to_date) : Instant.MaxValue,
-            Instant.FromDateTimeOffset(record.dh3_created),
+            record.valid_from_date,
+            record.valid_to_date ?? DateTimeOffset.MaxValue,
+            record.dh3_created,
             record.metering_grid_area_id,
             record.metering_point_state_id,
             record.btd_business_trans_doss_id,

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+using System;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
@@ -22,11 +22,11 @@ public sealed class MeteringPointPeriodEntity
 
     public long MeteringPointId { get; set; }
 
-    public Instant ValidFrom { get; set; }
+    public DateTimeOffset ValidFrom { get; set; }
 
-    public Instant ValidTo { get; set; }
+    public DateTimeOffset ValidTo { get; set; }
 
-    public Instant CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     public string GridAreaCode { get; set; } = null!;
 
@@ -52,7 +52,7 @@ public sealed class MeteringPointPeriodEntity
 
     public long? RetiredById { get; set; }
 
-    public Instant? RetiredAt { get; set; }
+    public DateTimeOffset? RetiredAt { get; set; }
 
     public MeteringPointPeriodEntity? RetiredBy { get; set; }
 }

@@ -70,6 +70,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 
         using var bulkCopy = new SqlBulkCopy(connString, SqlBulkCopyOptions.TableLock);
         bulkCopy.DestinationTableName = "electricitymarket.SpeedTestGold";
+        bulkCopy.BulkCopyTimeout = 0;
 
         var batch = new DataTable();
         ConfigureColumns(batch);
