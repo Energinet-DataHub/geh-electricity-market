@@ -15,7 +15,6 @@
 using ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElectricityMarket.WebAPI.Controllers;
@@ -32,7 +31,6 @@ public class ElectricityMarketController : ControllerBase
     }
 
     [HttpGet("{meteringPointIdentification}")]
-    [AllowAnonymous]
     public async Task<ActionResult<MeteringPointDto>> GetMeteringPointDataAsync(string meteringPointIdentification)
     {
         var getMeteringPointDataCommand = new GetMeteringPointDataCommand(meteringPointIdentification);

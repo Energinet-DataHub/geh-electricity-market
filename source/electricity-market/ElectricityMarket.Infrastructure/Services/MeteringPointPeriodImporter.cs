@@ -16,7 +16,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
@@ -49,7 +48,7 @@ public class MeteringPointPeriodImporter : ITransactionImporter
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
 
-        if (latestPeriod.ValidTo != Instant.MaxValue && newPeriod.ValidFrom > latestPeriod.ValidFrom)
+        if (latestPeriod.ValidTo != DateTimeOffset.MaxValue && newPeriod.ValidFrom > latestPeriod.ValidFrom)
         {
             meteringPoint.MeteringPointPeriods.Add(newPeriod);
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
@@ -60,7 +59,7 @@ public class MeteringPointPeriodImporter : ITransactionImporter
 
     private static bool IsLatestPeriodRetired(MeteringPointPeriodEntity latestMeteringPointPeriod, MeteringPointPeriodEntity incomingMeteringPointPeriod)
     {
-        return latestMeteringPointPeriod.ValidTo == Instant.MaxValue && incomingMeteringPointPeriod.ValidFrom == latestMeteringPointPeriod.ValidFrom;
+        return latestMeteringPointPeriod.ValidTo == DateTimeOffset.MaxValue && incomingMeteringPointPeriod.ValidFrom == latestMeteringPointPeriod.ValidFrom;
     }
 
     private static MeteringPointPeriodEntity CreatePeriod(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)

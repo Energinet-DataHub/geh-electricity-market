@@ -35,9 +35,7 @@ builder.Services
 builder.Services
     .AddApiVersioningForWebApp(new ApiVersion(1, 0))
     .AddSwaggerForWebApp(Assembly.GetExecutingAssembly(), "electricity-market")
-    .AddJwtBearerAuthenticationForWebApp(builder.Configuration)
     .AddNodaTimeForApplication()
-    .AddPermissionAuthorizationForWebApp()
     .AddElectricityMarketWebApiModule(builder.Configuration)
     .AddRevisionLogIntegrationModule(builder.Configuration)
     .AddRevisionLogIntegrationWebApiModule<DefaultRevisionLogEntryHandler>(new Guid("1fc93427-e6fb-45db-bf92-b6efefe5aad9"));
@@ -53,9 +51,7 @@ app.UseRouting();
 app.UseSwaggerForWebApp();
 app.UseHttpsRedirection();
 app.UseLoggingScope();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers().RequireAuthorization();
+app.MapControllers();
 app.MapLiveHealthChecks();
 app.MapReadyHealthChecks();
 app.MapStatusHealthChecks();
