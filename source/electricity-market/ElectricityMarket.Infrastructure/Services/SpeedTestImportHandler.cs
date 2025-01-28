@@ -84,7 +84,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 timeToFirstResult = false;
             }
 
-            if (batch.Rows.Count == 2000000)
+            if (batch.Rows.Count == 1000000)
             {
                 _speedtestLogger.LogWarning("Batch ready at: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
 
