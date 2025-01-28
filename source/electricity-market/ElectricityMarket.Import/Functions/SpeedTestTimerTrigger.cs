@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
@@ -50,9 +51,11 @@ internal sealed class SpeedTestTimerTrigger
             return;
         }
 
+        var sw = Stopwatch.StartNew();
         await _goldenImportHandler.ImportAsync().ConfigureAwait(false);
 
         importState.Enabled = false;
+        importState.Offset = (int)sw.Elapsed.TotalSeconds;
 
         await _electricityMarketDatabaseContext
             .SaveChangesAsync()
