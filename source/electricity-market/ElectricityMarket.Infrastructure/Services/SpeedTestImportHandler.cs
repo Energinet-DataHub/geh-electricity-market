@@ -70,6 +70,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
 
         using var bulkCopy = new SqlBulkCopy(connString, SqlBulkCopyOptions.TableLock);
         bulkCopy.DestinationTableName = "electricitymarket.SpeedTestGold";
+        bulkCopy.BulkCopyTimeout = 0;
 
         var batch = new DataTable();
         ConfigureColumns(batch);
@@ -83,7 +84,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 timeToFirstResult = false;
             }
 
-            if (batch.Rows.Count == 100000)
+            if (batch.Rows.Count == 2000000)
             {
                 _speedtestLogger.LogWarning("Batch ready at: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
 
