@@ -56,9 +56,9 @@ public static class TestPreparationEntities
     public static CommercialRelationEntity ValidCommercialRelation => new()
     {
         EnergySupplier = "2334379799509",
-        StartDate = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
-        EndDate = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero).ToInstant(),
-        ModifiedAt = SystemClock.Instance.GetCurrentInstant(),
+        StartDate = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero),
+        EndDate = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero),
+        ModifiedAt = DateTimeOffset.UtcNow,
     };
 
     public static T Patch<T>(this T entity, Action<T> action)

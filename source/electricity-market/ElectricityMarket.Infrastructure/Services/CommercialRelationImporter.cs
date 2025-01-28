@@ -40,7 +40,7 @@ public class CommercialRelationImporter : ITransactionImporter
 
         var latestEnergyPeriod = latestRelation?
             .EnergyPeriods
-            .Single(x => x.ValidTo == Instant.MaxValue && x.RetiredById is null);
+            .Single(x => x.ValidTo == DateTimeOffset.MaxValue && x.RetiredById is null);
 
         var newRelation = CreateRelation(meteringPoint, meteringPointTransaction);
         var newEnergyPeriod = CreateEnergyPeriod(meteringPointTransaction);
@@ -57,7 +57,7 @@ public class CommercialRelationImporter : ITransactionImporter
             // MoveIn
             meteringPoint.CommercialRelations.Add(newRelation);
             latestRelation.EndDate = meteringPointTransaction.ValidFrom;
-            latestRelation.ModifiedAt = SystemClock.Instance.GetCurrentInstant();
+            latestRelation.ModifiedAt = DateTimeOffset.UtcNow;
         }
         else if (!string.Equals(meteringPointTransaction.EnergySupplier, latestRelation.EnergySupplier, StringComparison.OrdinalIgnoreCase))
         {
@@ -65,7 +65,7 @@ public class CommercialRelationImporter : ITransactionImporter
             newRelation.CustomerId = latestRelation.CustomerId;
             meteringPoint.CommercialRelations.Add(newRelation);
             latestRelation.EndDate = meteringPointTransaction.ValidFrom;
-            latestRelation.ModifiedAt = SystemClock.Instance.GetCurrentInstant();
+            latestRelation.ModifiedAt = DateTimeOffset.UtcNow;
         }
         else if (latestEnergyPeriod is not null && IsLatestPeriodRetired(latestEnergyPeriod, newEnergyPeriod))
         {
@@ -80,7 +80,7 @@ public class CommercialRelationImporter : ITransactionImporter
 
     private static bool IsLatestPeriodRetired(EnergyPeriodEntity latestEnergyPeriod, EnergyPeriodEntity incomingEnergyPeriod)
     {
-        return latestEnergyPeriod.ValidTo == Instant.MaxValue && incomingEnergyPeriod.ValidFrom == latestEnergyPeriod.ValidFrom;
+        return latestEnergyPeriod.ValidTo == DateTimeOffset.MaxValue && incomingEnergyPeriod.ValidFrom == latestEnergyPeriod.ValidFrom;
     }
 
     private static CommercialRelationEntity CreateRelation(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
@@ -92,7 +92,7 @@ public class CommercialRelationImporter : ITransactionImporter
             EndDate = meteringPointTransaction.ValidTo,
             EnergySupplier = meteringPointTransaction.EnergySupplier,
             CustomerId = Guid.NewGuid().ToString(),
-            ModifiedAt = SystemClock.Instance.GetCurrentInstant(),
+            ModifiedAt = DateTimeOffset.UtcNow,
             EnergyPeriods = new List<EnergyPeriodEntity>
             {
                 CreateEnergyPeriod(meteringPointTransaction)

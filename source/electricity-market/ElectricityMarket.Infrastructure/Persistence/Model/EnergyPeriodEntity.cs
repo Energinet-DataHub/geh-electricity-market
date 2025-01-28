@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
@@ -21,9 +22,9 @@ public sealed class EnergyPeriodEntity
     public long Id { get; set; }
 
     public long CommercialRelationId { get; set; }
-    public Instant ValidFrom { get; set; }
-    public Instant ValidTo { get; set; }
-    public Instant? RetiredAt { get; set; }
+    public DateTimeOffset ValidFrom { get; set; }
+    public DateTimeOffset ValidTo { get; set; }
+    public DateTimeOffset? RetiredAt { get; set; }
     public long? RetiredById { get; set; }
     public EnergyPeriodEntity? RetiredBy { get; set; }
     public long BusinessTransactionDosId { get; set; }

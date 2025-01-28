@@ -28,5 +28,7 @@ public sealed class CommercialRelationEntityConfiguration : IEntityTypeConfigura
         builder.HasMany(x => x.EnergyPeriods)
             .WithOne()
             .HasForeignKey(x => x.CommercialRelationId);
+        builder.Navigation(x => x.EnergyPeriods)
+            .AutoInclude();
     }
 }

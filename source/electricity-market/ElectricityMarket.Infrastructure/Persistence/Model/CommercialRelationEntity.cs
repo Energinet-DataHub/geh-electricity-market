@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
 using NodaTime;
 
@@ -24,13 +25,13 @@ public sealed class CommercialRelationEntity
 
     public long MeteringPointId { get; set; }
 
-    public Instant StartDate { get; set; }
+    public DateTimeOffset StartDate { get; set; }
 
-    public Instant EndDate { get; set; }
+    public DateTimeOffset EndDate { get; set; }
 
     public string EnergySupplier { get; set; } = null!;
 
-    public Instant ModifiedAt { get; set; }
+    public DateTimeOffset ModifiedAt { get; set; }
     public ICollection<EnergyPeriodEntity> EnergyPeriods { get; init; } = [];
 
 }
