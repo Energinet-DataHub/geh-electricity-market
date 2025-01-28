@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -116,9 +117,9 @@ public sealed class ImportHandler : IImportHandler
     {
         return new MeteringPointTransaction(
             record.metering_point_id,
-            Instant.FromDateTimeOffset(record.valid_from_date),
-            record.valid_to_date is not null ? Instant.FromDateTimeOffset(record.valid_to_date) : Instant.MaxValue,
-            Instant.FromDateTimeOffset(record.dh3_created),
+            record.valid_from_date,
+            record.valid_to_date ?? DateTimeOffset.MaxValue,
+            record.dh3_created,
             record.metering_grid_area_id,
             record.metering_point_state_id,
             record.btd_business_trans_doss_id,
