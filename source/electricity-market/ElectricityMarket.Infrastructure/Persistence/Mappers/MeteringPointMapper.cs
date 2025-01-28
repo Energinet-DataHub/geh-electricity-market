@@ -15,6 +15,7 @@
 using System.Linq;
 using ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 
@@ -33,9 +34,9 @@ internal sealed class MeteringPointMapper
         return new MeteringPointPeriod(
             from.Id,
             from.MeteringPointId,
-            from.ValidFrom,
-            from.ValidTo,
-            from.CreatedAt,
+            from.ValidFrom.ToInstant(),
+            from.ValidTo.ToInstant(),
+            from.CreatedAt.ToInstant(),
             from.GridAreaCode,
             from.OwnedBy,
             from.ConnectionState,
