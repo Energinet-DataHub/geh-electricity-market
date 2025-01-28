@@ -91,7 +91,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
                 _speedtestLogger.LogWarning("Done waiting for previous job: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
 
                 var capture = batch;
-                previousJob = Task.Run(() => bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default), cancellationToken);
+                previousJob = bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default);
                 _speedtestLogger.LogWarning("Done scheduling new job: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
 
                 batch = new DataTable();
@@ -126,8 +126,7 @@ public sealed class SpeedTestImportHandler : ISpeedTestImportHandler
             await previousJob.ConfigureAwait(false);
 
             _speedtestLogger.LogWarning("Final batch beings: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
-            var capture = batch;
-            await Task.Run(() => bulkCopy.WriteToServerAsync(capture, cancellationToken).ContinueWith(_ => capture.Dispose(), TaskScheduler.Default), cancellationToken).ConfigureAwait(false);
+            await bulkCopy.WriteToServerAsync(batch, cancellationToken).ConfigureAwait(false);
             _speedtestLogger.LogWarning("Final batch done: {ElapsedMs} ms.", sw.ElapsedMilliseconds);
         }
 
