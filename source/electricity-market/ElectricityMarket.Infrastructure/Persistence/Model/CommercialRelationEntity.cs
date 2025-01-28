@@ -20,6 +20,7 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 public sealed class CommercialRelationEntity
 {
     public long Id { get; set; }
+    public string CustomerId { get; set; } = null!;
 
     public long MeteringPointId { get; set; }
 

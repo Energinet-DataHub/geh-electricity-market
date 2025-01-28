@@ -54,11 +54,14 @@ public class CommercialRelationImporter : ITransactionImporter
         if (!string.Equals(meteringPointTransaction.WebAccessCode, latestEnergyPeriod?.WebAccessCode, StringComparison.OrdinalIgnoreCase))
         {
             // MoveIn
+            meteringPoint.CommercialRelations.Add(newRelation);
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
         else if (!string.Equals(meteringPointTransaction.EnergySupplier, latestRelation.EnergySupplier, StringComparison.OrdinalIgnoreCase))
         {
             // ChangeSupplier
+            newRelation.CustomerId = latestRelation.CustomerId;
+            latestRelation.EndDate = meteringPointTransaction.ValidFrom;
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
 
@@ -73,6 +76,7 @@ public class CommercialRelationImporter : ITransactionImporter
             StartDate = meteringPointTransaction.ValidFrom,
             EndDate = meteringPointTransaction.ValidTo,
             EnergySupplier = meteringPointTransaction.EnergySupplier,
+            CustomerId = Guid.NewGuid().ToString(),
             ModifiedAt = SystemClock.Instance.GetCurrentInstant(),
             EnergyPeriods = new List<EnergyPeriodEntity>
             {

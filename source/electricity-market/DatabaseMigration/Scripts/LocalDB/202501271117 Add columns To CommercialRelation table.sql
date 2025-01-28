@@ -1,17 +1,15 @@
-DROP TABLE  [electricitymarket].[EnergySupplyPeriod]
-CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
+DROP TABLE [electricitymarket].[CommercialRelation]
+CREATE TABLE [electricitymarket].[CommercialRelation]
 (
-    [Id]                   bigint IDENTITY(1,1) NOT NULL,
-    [CommercialRelationId] bigint NOT NULL,
-    [ValidFrom]            datetimeoffset NOT NULL,
-    [ValidTo]              datetimeoffset NOT NULL,
-    [RetiredById]          bigint NULL,
-    [RetiredAt]            datetimeoffset NULL,
-    [CreatedAt]            datetimeoffset NOT NULL,
-    [WebAccessCode]        varchar(64) NOT NULL,
-    [EnergySupplier]       varchar(16) NOT NULL
+    [Id]                 bigint IDENTITY(1,1) NOT NULL,
+    [MeteringPointId]    bigint NOT NULL,
+    [EnergySupplier]     varchar(16) NOT NULL,
+    [StartDate]          datetimeoffset NOT NULL,
+    [EndDate]            datetimeoffset NOT NULL,
+    [ModifiedAt]         datetimeoffset NOT NULL,
+    [EnergySupplier]     varchar(16) NOT NULL,
+    [CustomerId]         [uniqueidentifier] NOT NULL
 
-    CONSTRAINT PK_EnergySupplyPeriod PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
-    CONSTRAINT FK_EnergySupplyPeriod_CommercialRelation FOREIGN KEY (CommercialRelationId) REFERENCES [electricitymarket].[CommercialRelation]([ID])
-)
+    CONSTRAINT PK_CommercialRelation PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT FK_CommercialRelation_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID])
+    )
