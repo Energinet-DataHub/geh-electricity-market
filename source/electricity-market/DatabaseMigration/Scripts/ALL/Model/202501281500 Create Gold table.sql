@@ -5,13 +5,13 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [valid_from_date]                 DATETIMEOFFSET NOT NULL,
     [valid_to_date]                   DATETIMEOFFSET NOT NULL,
     [dh2_created]                     DATETIMEOFFSET NOT NULL,
-    [metering_grid_area_id]           VARCHAR(3)     NOT NULL,
+    [metering_grid_area_id]           CHAR(3)        NOT NULL,
     [metering_point_state_id]         BIGINT         NOT NULL,
     [btd_business_trans_doss_id]      BIGINT         NOT NULL,
-    [physical_status_of_mp]           VARCHAR(64)    NOT NULL,
-    [type_of_mp]                      VARCHAR(64)    NOT NULL,
-    [sub_type_of_mp]                  VARCHAR(64)    NOT NULL,
-    [energy_timeseries_measure_unit]  VARCHAR(64)    NOT NULL
+    [physical_status_of_mp]           CHAR(8)        NOT NULL,
+    [type_of_mp]                      CHAR(8)        NOT NULL,
+    [sub_type_of_mp]                  CHAR(8)        NOT NULL,
+    [energy_timeseries_measure_unit]  CHAR(8)        NOT NULL
 );
 
 CREATE INDEX [IX_GoldenImport_metering_point_id]

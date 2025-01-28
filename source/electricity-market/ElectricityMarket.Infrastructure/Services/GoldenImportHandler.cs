@@ -180,5 +180,5 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         public string sub_type_of_mp { get; init; }
         public string energy_timeseries_measure_unit { get; init; }
     }
-#pragma warning enable SA1300, CA1707
+#pragma warning restore SA1300, CA1707
 }
