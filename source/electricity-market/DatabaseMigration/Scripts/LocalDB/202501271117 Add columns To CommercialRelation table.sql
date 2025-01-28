@@ -7,7 +7,6 @@ CREATE TABLE [electricitymarket].[CommercialRelation]
     [StartDate]          datetimeoffset NOT NULL,
     [EndDate]            datetimeoffset NOT NULL,
     [ModifiedAt]         datetimeoffset NOT NULL,
-    [EnergySupplier]     varchar(16) NOT NULL,
     [CustomerId]         [uniqueidentifier] NOT NULL
 
     CONSTRAINT PK_CommercialRelation PRIMARY KEY CLUSTERED (Id),
