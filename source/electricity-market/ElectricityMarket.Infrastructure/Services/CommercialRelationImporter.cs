@@ -43,6 +43,7 @@ public class CommercialRelationImporter : ITransactionImporter
             .Single(x => x.ValidTo == Instant.MaxValue && x.RetiredById is null);
 
         var newRelation = CreateRelation(meteringPoint, meteringPointTransaction);
+        var newEnergyPeriod = CreateEnergyPeriod(meteringPointTransaction);
 
         // This is the first time we encounter this metering point, so we have no current relations
         if (latestRelation is null)
@@ -55,17 +56,31 @@ public class CommercialRelationImporter : ITransactionImporter
         {
             // MoveIn
             meteringPoint.CommercialRelations.Add(newRelation);
-            return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
+            latestRelation.EndDate = meteringPointTransaction.ValidFrom;
+            latestRelation.ModifiedAt = SystemClock.Instance.GetCurrentInstant();
         }
         else if (!string.Equals(meteringPointTransaction.EnergySupplier, latestRelation.EnergySupplier, StringComparison.OrdinalIgnoreCase))
         {
             // ChangeSupplier
             newRelation.CustomerId = latestRelation.CustomerId;
+            meteringPoint.CommercialRelations.Add(newRelation);
             latestRelation.EndDate = meteringPointTransaction.ValidFrom;
+            latestRelation.ModifiedAt = SystemClock.Instance.GetCurrentInstant();
+        }
+        else if (latestEnergyPeriod is not null && IsLatestPeriodRetired(latestEnergyPeriod, newEnergyPeriod))
+        {
+            latestEnergyPeriod.RetiredBy = newEnergyPeriod;
+            latestRelation.EnergyPeriods.Add(newEnergyPeriod);
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
 
+
         return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Unhandled));
+    }
+
+    private static bool IsLatestPeriodRetired(EnergyPeriodEntity latestEnergyPeriod, EnergyPeriodEntity incomingEnergyPeriod)
+    {
+        return latestEnergyPeriod.ValidTo == Instant.MaxValue && incomingEnergyPeriod.ValidFrom == latestEnergyPeriod.ValidFrom;
     }
 
     private static CommercialRelationEntity CreateRelation(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)

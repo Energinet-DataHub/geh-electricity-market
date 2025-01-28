@@ -25,7 +25,7 @@ public sealed class EnergyPeriodEntity
     public Instant ValidTo { get; set; }
     public Instant? RetiredAt { get; set; }
     public long? RetiredById { get; set; }
-    public MeteringPointPeriodEntity? RetiredBy { get; set; }
+    public EnergyPeriodEntity? RetiredBy { get; set; }
     public long BusinessTransactionDosId { get; set; }
     public string WebAccessCode { get; set; } = null!;
     public string EnergySupplier { get; set; } = null!;
