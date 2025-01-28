@@ -15,7 +15,6 @@
 using System;
 using System.Data;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
