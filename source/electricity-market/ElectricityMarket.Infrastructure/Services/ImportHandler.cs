@@ -66,8 +66,15 @@ public sealed class ImportHandler : IImportHandler
                         $"""
                          SELECT *
                          FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         WHERE metering_point_state_id > {importState.Offset}
-                         ORDER BY metering_point_state_id
+                         WHERE metering_point_state_id > {importState.Offset} and
+                         (
+                            metering_point_id = '571313180401280099' or
+                            metering_point_id = '571313180401280556' or
+                            metering_point_id = '571313180401280044' or
+                            metering_point_id = '571313180401280792' or
+                            metering_point_id = '571313180401280815'
+                         )
+                         order by btd_business_trans_doss_id, metering_point_state_id
                          LIMIT {limit} OFFSET 0
                          """).Build(),
                     cancellationToken);
