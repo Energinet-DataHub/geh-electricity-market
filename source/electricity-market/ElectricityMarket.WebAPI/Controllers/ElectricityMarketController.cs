@@ -39,6 +39,6 @@ public class ElectricityMarketController : ControllerBase
             .Send(getMeteringPointDataCommand)
             .ConfigureAwait(false);
 
-        return Ok(meteringPoint);
+        return Ok(meteringPoint.MeteringPointData);
     }
 }
