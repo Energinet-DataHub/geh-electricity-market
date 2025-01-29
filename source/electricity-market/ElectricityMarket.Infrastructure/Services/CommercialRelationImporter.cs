@@ -68,7 +68,10 @@ public class CommercialRelationImporter : ITransactionImporter
         }
         else if (latestEnergyPeriod is not null && IsLatestPeriodRetired(latestEnergyPeriod, newEnergyPeriod))
         {
-            latestEnergyPeriod.RetiredBy = newEnergyPeriod;
+            var copy = CreateEnergyPeriodCopy(latestEnergyPeriod);
+            copy.ValidTo = meteringPointTransaction.ValidFrom;
+            latestEnergyPeriod.RetiredBy = copy;
+            latestRelation.EnergyPeriods.Add(copy);
             latestRelation.EnergyPeriods.Add(newEnergyPeriod);
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
@@ -78,7 +81,7 @@ public class CommercialRelationImporter : ITransactionImporter
 
     private static bool IsLatestPeriodRetired(EnergyPeriodEntity latestEnergyPeriod, EnergyPeriodEntity incomingEnergyPeriod)
     {
-        return latestEnergyPeriod.ValidTo == DateTimeOffset.MaxValue && incomingEnergyPeriod.ValidFrom == latestEnergyPeriod.ValidFrom;
+        return latestEnergyPeriod.ValidTo == DateTimeOffset.MaxValue && incomingEnergyPeriod.ValidFrom >= latestEnergyPeriod.ValidFrom;
     }
 
     private static CommercialRelationEntity CreateRelation(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
@@ -107,6 +110,18 @@ public class CommercialRelationImporter : ITransactionImporter
             EnergySupplier = meteringPointTransaction.EnergySupplier,
             WebAccessCode = meteringPointTransaction.WebAccessCode,
             BusinessTransactionDosId = meteringPointTransaction.BusinessTransactionDosId,
+        };
+    }
+
+    private static EnergyPeriodEntity CreateEnergyPeriodCopy(EnergyPeriodEntity energyPeriodEntity)
+    {
+        return new EnergyPeriodEntity
+        {
+            ValidFrom = energyPeriodEntity.ValidFrom,
+            ValidTo = energyPeriodEntity.ValidTo,
+            EnergySupplier = energyPeriodEntity.EnergySupplier,
+            WebAccessCode = energyPeriodEntity.WebAccessCode,
+            BusinessTransactionDosId = energyPeriodEntity.BusinessTransactionDosId,
         };
     }
 }
