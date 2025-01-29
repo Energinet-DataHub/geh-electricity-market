@@ -61,6 +61,16 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         _submitCollection.Dispose();
     }
 
+    private static async Task ConfigureTraceAsync(SqlConnection connection)
+    {
+        var toggleFlagCommand = new SqlCommand("DBCC TRACEON(610)", connection);
+
+        await using (toggleFlagCommand.ConfigureAwait(false))
+        {
+            await toggleFlagCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
+        }
+    }
+
     private async Task ImportDataAsync(long maximumBusinessTransDossId)
     {
         var query = DatabricksStatement.FromRawSql(
@@ -106,7 +116,7 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
 
     private void PackageRecords()
     {
-        const int capacity = 575000;
+        const int capacity = 750000;
 
         var sw = Stopwatch.StartNew();
         var batch = new List<MeteringPointGoldenTransaction>(capacity);
@@ -146,21 +156,27 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
 
     private async Task BulkInsertAsync()
     {
-        using var bulkCopy = new SqlBulkCopy(
-            _electricityMarketDatabaseContext.Database.GetConnectionString(),
-            SqlBulkCopyOptions.TableLock);
+        var connection = new SqlConnection(_electricityMarketDatabaseContext.Database.GetConnectionString());
 
-        bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";
-        bulkCopy.BulkCopyTimeout = 0;
-
-        foreach (var batch in _submitCollection)
+        await using (connection.ConfigureAwait(false))
         {
-            var sw = Stopwatch.StartNew();
+            await connection.OpenAsync().ConfigureAwait(false);
+            await ConfigureTraceAsync(connection).ConfigureAwait(false);
 
-            await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
-            batch.Dispose();
+            using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.TableLock, null);
 
-            _logger.LogWarning("A batch was inserted in {InsertTime} ms.", sw.ElapsedMilliseconds);
+            bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";
+            bulkCopy.BulkCopyTimeout = 0;
+
+            foreach (var batch in _submitCollection)
+            {
+                var sw = Stopwatch.StartNew();
+
+                await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
+                batch.Dispose();
+
+                _logger.LogWarning("A batch was inserted in {InsertTime} ms.", sw.ElapsedMilliseconds);
+            }
         }
     }
 
