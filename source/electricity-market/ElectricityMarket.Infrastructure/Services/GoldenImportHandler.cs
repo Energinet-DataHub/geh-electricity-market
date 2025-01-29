@@ -77,16 +77,6 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         _submitCollection.Dispose();
     }
 
-    private static async Task ConfigureTraceAsync(SqlConnection connection)
-    {
-        var toggleFlagCommand = new SqlCommand("DBCC TRACEON(610)", connection);
-
-        await using (toggleFlagCommand.ConfigureAwait(false))
-        {
-            await toggleFlagCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
-        }
-    }
-
     private async Task ImportDataAsync(long maximumBusinessTransDossId)
     {
         var query = DatabricksStatement.FromRawSql(
@@ -172,27 +162,21 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
 
     private async Task BulkInsertAsync()
     {
-        var connection = new SqlConnection(_electricityMarketDatabaseContext.Database.GetConnectionString());
+        using var bulkCopy = new SqlBulkCopy(
+            _electricityMarketDatabaseContext.Database.GetConnectionString(),
+            SqlBulkCopyOptions.TableLock);
 
-        await using (connection.ConfigureAwait(false))
+        bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";
+        bulkCopy.BulkCopyTimeout = 0;
+
+        foreach (var batch in _submitCollection.GetConsumingEnumerable())
         {
-            await connection.OpenAsync().ConfigureAwait(false);
-            await ConfigureTraceAsync(connection).ConfigureAwait(false);
+            var sw = Stopwatch.StartNew();
 
-            using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.TableLock, null);
+            await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
+            batch.Dispose();
 
-            bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";
-            bulkCopy.BulkCopyTimeout = 0;
-
-            foreach (var batch in _submitCollection.GetConsumingEnumerable())
-            {
-                var sw = Stopwatch.StartNew();
-
-                await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
-                batch.Dispose();
-
-                _logger.LogWarning("A batch was inserted in {InsertTime} ms.", sw.ElapsedMilliseconds);
-            }
+            _logger.LogWarning("A batch was inserted in {InsertTime} ms.", sw.ElapsedMilliseconds);
         }
     }
 
