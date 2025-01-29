@@ -10,3 +10,6 @@ ALTER TABLE [electricitymarket].[CommercialRelation]
 
 ALTER TABLE [electricitymarket].[CommercialRelation] 
     ADD CONSTRAINT FK_CommercialRelation_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID]);
+
+ALTER TABLE [electricitymarket].[EnergySupplyPeriod] ADD
+    CONSTRAINT FK_EnergySupplyPeriod_CommercialRelation FOREIGN KEY (CommercialRelationId) REFERENCES [electricitymarket].[CommercialRelation]([ID]);
