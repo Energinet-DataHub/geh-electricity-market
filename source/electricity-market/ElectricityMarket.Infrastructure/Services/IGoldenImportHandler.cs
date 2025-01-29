@@ -12,18 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Threading.Tasks;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
-public sealed class SpeedTestGoldEntityConfiguration : IEntityTypeConfiguration<SpeedTestGoldEntity>
+public interface IGoldenImportHandler
 {
-    public void Configure(EntityTypeBuilder<SpeedTestGoldEntity> builder)
-    {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        builder.ToTable("SpeedTestGold");
-    }
+    Task ImportAsync();
 }

@@ -35,7 +35,7 @@ public static class ElectricityMarketImportModuleExtensions
 
         // Services
         services.AddScoped<IImportHandler, ImportHandler>();
-        services.AddScoped<ISpeedTestImportHandler, SpeedTestImportHandler>();
+        services.AddScoped<IGoldenImportHandler, GoldenImportHandler>();
         services.AddScoped<IQuarantineZone, QuarantineZone>();
 
         // importers

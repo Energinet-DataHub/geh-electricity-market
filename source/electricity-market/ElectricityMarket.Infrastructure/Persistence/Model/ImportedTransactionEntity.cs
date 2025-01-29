@@ -13,24 +13,22 @@
 // limitations under the License.
 
 using System;
+#pragma warning disable SA1300, CA1707
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public sealed class SpeedTestGoldEntity
+public sealed class ImportedTransactionEntity
 {
     public int Id { get; set; }
-
-    public string MeteringPointId { get; set; } = null!;
-
-    public DateTimeOffset ValidFrom { get; set; }
-
-    public DateTimeOffset ValidTo { get; set; }
-
-    public DateTimeOffset CreatedDate { get; set; }
-
-    public string GridArea { get; set; } = null!;
-
-    public long StateId { get; set; }
-
-    public long TransDossId { get; set; }
+    public long metering_point_id { get; set; }
+    public DateTimeOffset valid_from_date { get; set; }
+    public DateTimeOffset valid_to_date { get; set; }
+    public DateTimeOffset dh2_created { get; set; }
+    public string metering_grid_area_id { get; set; } = null!;
+    public long metering_point_state_id { get; set; }
+    public long btd_business_trans_doss_id { get; set; }
+    public string physical_status_of_mp { get; set; } = null!;
+    public string type_of_mp { get; set; } = null!;
+    public string sub_type_of_mp { get; set; } = null!;
+    public string energy_timeseries_measure_unit { get; set; } = null!;
 }
