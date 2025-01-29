@@ -29,8 +29,24 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
 public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
 {
-    private readonly BlockingCollection<dynamic> _importCollection = new(1000000);
-    private readonly BlockingCollection<IDataReader> _submitCollection = new(3);
+    private static readonly string[] _columnOrder =
+    [
+        "Id",
+        "metering_point_id",
+        "valid_from_date",
+        "valid_to_date",
+        "dh2_created",
+        "metering_grid_area_id",
+        "metering_point_state_id",
+        "btd_business_trans_doss_id",
+        "physical_status_of_mp",
+        "type_of_mp",
+        "sub_type_of_mp",
+        "energy_timeseries_measure_unit",
+    ];
+
+    private readonly BlockingCollection<dynamic> _importCollection = new(5000000);
+    private readonly BlockingCollection<IDataReader> _submitCollection = new(10);
 
     private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
@@ -121,11 +137,11 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         var sw = Stopwatch.StartNew();
         var batch = new List<MeteringPointGoldenTransaction>(capacity);
 
-        foreach (var record in _importCollection)
+        foreach (var record in _importCollection.GetConsumingEnumerable())
         {
             if (batch.Count == capacity)
             {
-                _submitCollection.Add(ObjectReader.Create(batch));
+                _submitCollection.Add(ObjectReader.Create(batch, _columnOrder));
                 _logger.LogWarning("A batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
 
                 sw = Stopwatch.StartNew();
@@ -148,7 +164,7 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
             });
         }
 
-        _submitCollection.Add(ObjectReader.Create(batch));
+        _submitCollection.Add(ObjectReader.Create(batch, _columnOrder));
         _logger.LogWarning("Final batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
 
         _submitCollection.CompleteAdding();
@@ -168,7 +184,7 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
             bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";
             bulkCopy.BulkCopyTimeout = 0;
 
-            foreach (var batch in _submitCollection)
+            foreach (var batch in _submitCollection.GetConsumingEnumerable())
             {
                 var sw = Stopwatch.StartNew();
 
