@@ -1,9 +1,11 @@
-TRUNCATE TABLE [electricitymarket].[EnergySupplyPeriod]
-
 ALTER TABLE [electricitymarket].[EnergySupplyPeriod]
-    DROP CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod 
+DROP CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod 
     DROP CONSTRAINT FK_EnergySupplyPeriod_CommercialRelation
 GO
+
+TRUNCATE TABLE [electricitymarket].[EnergySupplyPeriod]
+GO
+
 
 ALTER TABLE [electricitymarket].[EnergySupplyPeriod] ADD
     [WebAccessCode]        varchar(64) NOT NULL,

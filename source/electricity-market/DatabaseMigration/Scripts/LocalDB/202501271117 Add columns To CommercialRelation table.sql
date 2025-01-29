@@ -1,8 +1,9 @@
-TRUNCATE TABLE [electricitymarket].[CommercialRelation]
-
 ALTER TABLE [electricitymarket].[CommercialRelation]
-    DROP CONSTRAINT FK_CommercialRelation_MeteringPoint
+DROP CONSTRAINT FK_CommercialRelation_MeteringPoint
 GO
+
+TRUNCATE TABLE [electricitymarket].[CommercialRelation]
+    GO
 
 ALTER TABLE [electricitymarket].[CommercialRelation] 
     ADD  [CustomerId]         [uniqueidentifier] NOT NULL,
