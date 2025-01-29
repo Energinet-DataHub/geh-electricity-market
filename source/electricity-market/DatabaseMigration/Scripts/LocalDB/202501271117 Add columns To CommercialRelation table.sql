@@ -1,14 +1,4 @@
-DROP TABLE [electricitymarket].[CommercialRelation]
-CREATE TABLE [electricitymarket].[CommercialRelation]
-(
-    [Id]                 bigint IDENTITY(1,1) NOT NULL,
-    [MeteringPointId]    bigint NOT NULL,
-    [EnergySupplier]     varchar(16) NOT NULL,
-    [StartDate]          datetimeoffset NOT NULL,
-    [EndDate]            datetimeoffset NOT NULL,
-    [ModifiedAt]         datetimeoffset NOT NULL,
-    [CustomerId]         [uniqueidentifier] NOT NULL
+TRUNCATE TABLE [electricitymarket].[CommercialRelation]
 
-    CONSTRAINT PK_CommercialRelation PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_CommercialRelation_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID])
-    )
+ALTER TABLE [electricitymarket].[CommercialRelation] ADD
+    [CustomerId]         [uniqueidentifier] NOT NULL;

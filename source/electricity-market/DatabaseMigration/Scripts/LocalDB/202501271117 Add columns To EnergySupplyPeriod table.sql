@@ -1,17 +1,5 @@
-DROP TABLE  [electricitymarket].[EnergySupplyPeriod]
-CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
-(
-    [Id]                   bigint IDENTITY(1,1) NOT NULL,
-    [CommercialRelationId] bigint NOT NULL,
-    [ValidFrom]            datetimeoffset NOT NULL,
-    [ValidTo]              datetimeoffset NOT NULL,
-    [RetiredById]          bigint NULL,
-    [RetiredAt]            datetimeoffset NULL,
-    [CreatedAt]            datetimeoffset NOT NULL,
-    [WebAccessCode]        varchar(64) NOT NULL,
-    [EnergySupplier]       varchar(16) NOT NULL
+TRUNCATE TABLE [electricitymarket].[EnergySupplyPeriod]
 
-    CONSTRAINT PK_EnergySupplyPeriod PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
-    CONSTRAINT FK_EnergySupplyPeriod_CommercialRelation FOREIGN KEY (CommercialRelationId) REFERENCES [electricitymarket].[CommercialRelation]([ID])
-    )
+ALTER TABLE [electricitymarket].[CommercialRelation] ADD
+    [WebAccessCode]        varchar(64) NOT NULL,
+    [EnergySupplier]       varchar(16) NOT NULL;
