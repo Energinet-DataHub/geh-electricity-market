@@ -1,5 +1,8 @@
 ALTER TABLE [electricitymarket].[EnergySupplyPeriod]
-DROP CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod 
+    DROP CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod
+GO
+
+ALTER TABLE [electricitymarket].[EnergySupplyPeriod]
     DROP CONSTRAINT FK_EnergySupplyPeriod_CommercialRelation
 GO
 

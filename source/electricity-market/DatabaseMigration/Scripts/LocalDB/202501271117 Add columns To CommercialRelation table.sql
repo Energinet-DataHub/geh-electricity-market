@@ -1,5 +1,5 @@
 ALTER TABLE [electricitymarket].[CommercialRelation]
-DROP CONSTRAINT FK_CommercialRelation_MeteringPoint
+    DROP CONSTRAINT FK_CommercialRelation_MeteringPoint
 GO
 
 TRUNCATE TABLE [electricitymarket].[CommercialRelation]
