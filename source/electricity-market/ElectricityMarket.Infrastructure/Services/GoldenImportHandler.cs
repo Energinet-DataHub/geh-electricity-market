@@ -122,7 +122,7 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
 
     private void PackageRecords()
     {
-        const int capacity = 750000;
+        const int capacity = 50000;
 
         var sw = Stopwatch.StartNew();
         var batch = new List<MeteringPointGoldenTransaction>(capacity);
