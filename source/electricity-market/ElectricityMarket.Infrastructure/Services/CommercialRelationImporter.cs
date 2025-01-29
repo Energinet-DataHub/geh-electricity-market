@@ -71,6 +71,7 @@ public class CommercialRelationImporter : ITransactionImporter
             var copy = CreateEnergyPeriodCopy(latestEnergyPeriod);
             copy.ValidTo = meteringPointTransaction.ValidFrom;
             latestEnergyPeriod.RetiredBy = copy;
+            latestEnergyPeriod.RetiredAt = DateTimeOffset.UtcNow;
             latestRelation.EnergyPeriods.Add(copy);
             latestRelation.EnergyPeriods.Add(newEnergyPeriod);
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
