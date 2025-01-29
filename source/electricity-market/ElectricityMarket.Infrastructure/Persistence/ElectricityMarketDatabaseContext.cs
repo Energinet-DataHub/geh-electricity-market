@@ -37,9 +37,9 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     public DbSet<ImportStateEntity> ImportStates { get; private set; } = null!;
     public DbSet<QuarantinedMeteringPointEntity> QuarantinedMeteringPointEntities { get; private set; } = null!;
     public DbSet<QuarantinedMeteringPointTransactionEntity> QuarantinedMeteringPointTransactionEntities { get; private set; } = null!;
+    public DbSet<ImportedTransactionEntity> ImportedTransactions { get; private set; } = null!;
 
     public DbSet<SpeedTestImportEntity> SpeedTestImportEntities { get; private set; } = null!;
-    public DbSet<SpeedTestGoldEntity> SpeedTestGoldEntities { get; private set; } = null!;
 
     public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 
@@ -52,7 +52,7 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
         modelBuilder.ApplyConfiguration(new MeteringPointPeriodEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CommercialRelationEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SpeedTestImportEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new SpeedTestGoldEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ImportedTransactionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new QuarantinedMeteringPointEntityConfiguration());
         modelBuilder.ApplyConfiguration(new QuarantinedMeteringPointTransactionEntityConfiguration());
         base.OnModelCreating(modelBuilder);

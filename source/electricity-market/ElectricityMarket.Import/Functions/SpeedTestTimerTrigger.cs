@@ -12,23 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace ElectricityMarket.Import.Functions;
 
 internal sealed class SpeedTestTimerTrigger
 {
-    private readonly ISpeedTestImportHandler _speedTestImportHandler;
-    private readonly ILogger<SpeedTestTimerTrigger> _logger;
+    private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
+    private readonly IGoldenImportHandler _goldenImportHandler;
 
     public SpeedTestTimerTrigger(
-        ISpeedTestImportHandler speedTestImportHandler,
-        ILogger<SpeedTestTimerTrigger> logger)
+        IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
+        IGoldenImportHandler goldenImportHandler)
     {
-        _speedTestImportHandler = speedTestImportHandler;
-        _logger = logger;
+        _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
+        _goldenImportHandler = goldenImportHandler;
     }
 
     [Function(nameof(SpeedTestAsync))]
@@ -39,16 +41,24 @@ internal sealed class SpeedTestTimerTrigger
     {
         ArgumentNullException.ThrowIfNull(executionContext);
 
-        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(28));
+        var importState = await _electricityMarketDatabaseContext
+            .SpeedTestImportEntities
+            .SingleAsync()
+            .ConfigureAwait(false);
 
-        try
+        if (!importState.Enabled)
         {
-            await _speedTestImportHandler.ImportAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            return;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Crash");
-            throw;
-        }
+
+        var sw = Stopwatch.StartNew();
+        await _goldenImportHandler.ImportAsync().ConfigureAwait(false);
+
+        importState.Enabled = false;
+        importState.Offset = (int)sw.Elapsed.TotalSeconds;
+
+        await _electricityMarketDatabaseContext
+            .SaveChangesAsync()
+            .ConfigureAwait(false);
     }
 }

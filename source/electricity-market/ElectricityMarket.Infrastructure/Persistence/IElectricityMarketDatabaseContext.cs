@@ -27,7 +27,6 @@ public interface IElectricityMarketDatabaseContext
     DbSet<CommercialRelationEntity> CommercialRelations { get; }
     DbSet<ImportStateEntity> ImportStates { get; }
     DbSet<SpeedTestImportEntity> SpeedTestImportEntities { get; }
-    DbSet<SpeedTestGoldEntity> SpeedTestGoldEntities { get; }
     DbSet<QuarantinedMeteringPointEntity> QuarantinedMeteringPointEntities { get; }
     DbSet<QuarantinedMeteringPointTransactionEntity> QuarantinedMeteringPointTransactionEntities { get; }
 
