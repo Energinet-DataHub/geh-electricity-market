@@ -1,0 +1,19 @@
+{
+  "version": "2.0",
+  "extensions": {
+    "durableTask": {
+      "storageProvider": {
+        "connectionStringName": "DURABLETASK_STORAGE_CONNECTION_STRING"
+      }
+    }
+  },
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      },
+      "enableLiveMetricsFilters": true
+    }
+  }
+}
