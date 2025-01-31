@@ -16,7 +16,7 @@ using System;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public sealed class EnergyPeriodEntity
+public sealed class EnergySupplyPeriodEntity
 {
     public long Id { get; set; }
 
@@ -25,7 +25,7 @@ public sealed class EnergyPeriodEntity
     public DateTimeOffset ValidTo { get; set; }
     public DateTimeOffset? RetiredAt { get; set; }
     public long? RetiredById { get; set; }
-    public EnergyPeriodEntity? RetiredBy { get; set; }
+    public EnergySupplyPeriodEntity? RetiredBy { get; set; }
     public long BusinessTransactionDosId { get; set; }
     public string WebAccessCode { get; set; } = null!;
     public string EnergySupplier { get; set; } = null!;
