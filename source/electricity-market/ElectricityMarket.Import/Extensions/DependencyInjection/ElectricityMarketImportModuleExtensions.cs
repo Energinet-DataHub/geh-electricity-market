@@ -40,8 +40,8 @@ public static class ElectricityMarketImportModuleExtensions
 
         // importers
         services.AddScoped<ITransactionImporter, MeteringPointPeriodImporter>();
-        services.AddScoped<ITransactionImporter, CommercialRelationImporter>();
 
+        // services.AddScoped<ITransactionImporter, CommercialRelationImporter>();
         AddHealthChecks(services, configuration);
 
         return services;

@@ -33,7 +33,7 @@ internal sealed class SpeedTestTimerTrigger
         _goldenImportHandler = goldenImportHandler;
     }
 
-    [Function(nameof(SpeedTestAsync))]
+    // [Function(nameof(SpeedTestAsync))]
     public async Task SpeedTestAsync(
         [TimerTrigger("0 */5 * * * *", RunOnStartup = true)]
         TimerInfo timer,
