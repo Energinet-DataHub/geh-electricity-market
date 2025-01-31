@@ -108,6 +108,7 @@ public class CommercialRelationImporter : ITransactionImporter
         {
             ValidFrom = meteringPointTransaction.ValidFrom,
             ValidTo = meteringPointTransaction.ValidTo,
+            CreatedAt = DateTimeOffset.UtcNow,
             EnergySupplier = meteringPointTransaction.EnergySupplier,
             WebAccessCode = meteringPointTransaction.WebAccessCode,
             BusinessTransactionDosId = meteringPointTransaction.BusinessTransactionDosId,
@@ -120,6 +121,7 @@ public class CommercialRelationImporter : ITransactionImporter
         {
             ValidFrom = energyPeriodEntity.ValidFrom,
             ValidTo = energyPeriodEntity.ValidTo,
+            CreatedAt = DateTimeOffset.UtcNow,
             EnergySupplier = energyPeriodEntity.EnergySupplier,
             WebAccessCode = energyPeriodEntity.WebAccessCode,
             BusinessTransactionDosId = energyPeriodEntity.BusinessTransactionDosId,

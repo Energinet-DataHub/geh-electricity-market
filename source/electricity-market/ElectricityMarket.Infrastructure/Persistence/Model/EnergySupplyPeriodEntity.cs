@@ -23,6 +23,7 @@ public sealed class EnergySupplyPeriodEntity
     public long CommercialRelationId { get; set; }
     public DateTimeOffset ValidFrom { get; set; }
     public DateTimeOffset ValidTo { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? RetiredAt { get; set; }
     public long? RetiredById { get; set; }
     public EnergySupplyPeriodEntity? RetiredBy { get; set; }
