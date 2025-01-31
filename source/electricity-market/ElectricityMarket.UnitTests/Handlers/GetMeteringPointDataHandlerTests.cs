@@ -55,6 +55,7 @@ public sealed class GetMeteringPointDataHandlerTests
         var meteringPoint = new MeteringPoint(
             123,
             new MeteringPointIdentification(meteringPointIdentification),
+            [],
             []);
         meteringPointRepository
             .Setup(repo => repo.GetAsync(new MeteringPointIdentification(meteringPointIdentification)))
