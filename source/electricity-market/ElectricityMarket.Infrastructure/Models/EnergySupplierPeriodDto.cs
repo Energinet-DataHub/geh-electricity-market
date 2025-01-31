@@ -12,8 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+using System;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
-public sealed record MeteringPointDto(long Id, string Identification, IEnumerable<MeteringPointPeriodDto> MeteringPointPeriod, IEnumerable<CommercialRelationDto> CommercialRelations);
+public sealed record EnergySupplierPeriodDto(
+    long Id,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidTo,
+    DateTimeOffset? RetiredAt,
+    long? RetiredById,
+    long BusinessTransactionDosId,
+    string WebAccessCode,
+    string EnergySupplier);
