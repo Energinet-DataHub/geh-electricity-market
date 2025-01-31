@@ -62,7 +62,7 @@ runs:
           --configuration Release \
           --output '${{ inputs.output_path }}\functions\import'
 
-    - name: Publish MP Import Durable Function
+    - name: Publish Import Orchestrator
       shell: bash
       run: |
         dotnet publish \

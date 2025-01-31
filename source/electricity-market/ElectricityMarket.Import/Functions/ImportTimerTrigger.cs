@@ -15,7 +15,7 @@
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
 
-namespace ElectricityMarket.ImportOrchestrator.Functions;
+namespace ElectricityMarket.Import.Functions;
 
 internal sealed class ImportTimerTrigger
 {
