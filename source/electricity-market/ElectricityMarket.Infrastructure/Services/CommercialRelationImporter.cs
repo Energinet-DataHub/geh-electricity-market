@@ -38,7 +38,7 @@ public class CommercialRelationImporter : ITransactionImporter
             .MaxBy(x => x.EndDate);
 
         var latestEnergyPeriod = latestRelation?
-            .EnergyPeriods
+            .EnergySupplierPeriods
             .Single(x => x.ValidTo == DateTimeOffset.MaxValue && x.RetiredById is null);
 
         var newRelation = CreateRelation(meteringPoint, meteringPointTransaction);
@@ -47,7 +47,7 @@ public class CommercialRelationImporter : ITransactionImporter
         // This is the first time we encounter this metering point, so we have no current relations
         if (latestRelation is null)
         {
-            newRelation.EnergyPeriods.Add(newEnergyPeriod);
+            newRelation.EnergySupplierPeriods.Add(newEnergyPeriod);
             meteringPoint.CommercialRelations.Add(newRelation);
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
@@ -55,7 +55,7 @@ public class CommercialRelationImporter : ITransactionImporter
         if (!string.Equals(meteringPointTransaction.WebAccessCode, latestEnergyPeriod?.WebAccessCode, StringComparison.OrdinalIgnoreCase))
         {
             // MoveIn
-            newRelation.EnergyPeriods.Add(newEnergyPeriod);
+            newRelation.EnergySupplierPeriods.Add(newEnergyPeriod);
             meteringPoint.CommercialRelations.Add(newRelation);
             latestRelation.EndDate = meteringPointTransaction.ValidFrom;
             latestRelation.ModifiedAt = DateTimeOffset.UtcNow;
@@ -63,7 +63,7 @@ public class CommercialRelationImporter : ITransactionImporter
         else if (!string.Equals(meteringPointTransaction.EnergySupplier, latestRelation.EnergySupplier, StringComparison.OrdinalIgnoreCase))
         {
             // ChangeSupplier
-            newRelation.EnergyPeriods.Add(newEnergyPeriod);
+            newRelation.EnergySupplierPeriods.Add(newEnergyPeriod);
             newRelation.CustomerId = latestRelation.CustomerId;
             meteringPoint.CommercialRelations.Add(newRelation);
             latestRelation.EndDate = meteringPointTransaction.ValidFrom;
@@ -75,8 +75,8 @@ public class CommercialRelationImporter : ITransactionImporter
             copy.ValidTo = meteringPointTransaction.ValidFrom;
             latestEnergyPeriod.RetiredBy = copy;
             latestEnergyPeriod.RetiredAt = DateTimeOffset.UtcNow;
-            latestRelation.EnergyPeriods.Add(copy);
-            latestRelation.EnergyPeriods.Add(newEnergyPeriod);
+            latestRelation.EnergySupplierPeriods.Add(copy);
+            latestRelation.EnergySupplierPeriods.Add(newEnergyPeriod);
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
 
@@ -98,7 +98,7 @@ public class CommercialRelationImporter : ITransactionImporter
             EnergySupplier = meteringPointTransaction.EnergySupplier,
             CustomerId = Guid.NewGuid().ToString(),
             ModifiedAt = DateTimeOffset.UtcNow,
-            EnergyPeriods = new List<EnergySupplyPeriodEntity>(),
+            EnergySupplierPeriods = new List<EnergySupplyPeriodEntity>(),
         };
     }
 

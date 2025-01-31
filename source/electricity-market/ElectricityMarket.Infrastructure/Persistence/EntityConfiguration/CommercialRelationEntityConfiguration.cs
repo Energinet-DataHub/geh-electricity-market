@@ -25,10 +25,10 @@ public sealed class CommercialRelationEntityConfiguration : IEntityTypeConfigura
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
         builder.ToTable("CommercialRelation");
-        builder.HasMany(x => x.EnergyPeriods)
+        builder.HasMany(x => x.EnergySupplierPeriods)
             .WithOne()
             .HasForeignKey(x => x.CommercialRelationId);
-        builder.Navigation(x => x.EnergyPeriods)
+        builder.Navigation(x => x.EnergySupplierPeriods)
             .AutoInclude();
     }
 }
