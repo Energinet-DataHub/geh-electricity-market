@@ -13,23 +13,20 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public sealed class CommercialRelationEntity
+public sealed class EnergyPeriodEntity
 {
     public long Id { get; set; }
-    public string CustomerId { get; set; } = null!;
 
-    public long MeteringPointId { get; set; }
-
-    public DateTimeOffset StartDate { get; set; }
-
-    public DateTimeOffset EndDate { get; set; }
-
+    public long CommercialRelationId { get; set; }
+    public DateTimeOffset ValidFrom { get; set; }
+    public DateTimeOffset ValidTo { get; set; }
+    public DateTimeOffset? RetiredAt { get; set; }
+    public long? RetiredById { get; set; }
+    public EnergyPeriodEntity? RetiredBy { get; set; }
+    public long BusinessTransactionDosId { get; set; }
+    public string WebAccessCode { get; set; } = null!;
     public string EnergySupplier { get; set; } = null!;
-
-    public DateTimeOffset ModifiedAt { get; set; }
-    public ICollection<EnergyPeriodEntity> EnergyPeriods { get; init; } = [];
 }

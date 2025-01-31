@@ -27,4 +27,6 @@ public sealed record MeteringPointTransaction(
     string PhysicalStatusOfMp,
     string TypeOfMp,
     string SubTypeOfMp,
-    string EnergyTimeseriesMeasureUnit);
+    string EnergyTimeseriesMeasureUnit,
+    string WebAccessCode,
+    string EnergySupplier);

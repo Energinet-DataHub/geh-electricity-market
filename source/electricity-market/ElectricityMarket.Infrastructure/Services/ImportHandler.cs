@@ -125,7 +125,9 @@ public sealed class ImportHandler : IImportHandler
             record.physical_status_of_mp,
             record.type_of_mp,
             record.sub_type_of_mp,
-            record.energy_timeseries_measure_unit);
+            record.energy_timeseries_measure_unit,
+            record.web_access_code,
+            record.balance_supplier_id);
     }
 
     private async Task RunImportChainAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
