@@ -12,10 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using NodaTime;
+
 namespace ElectricityMarket.Domain.Models;
 
-public sealed record MeteringPoint(
+public sealed record CommercialRelation(
     long Id,
-    MeteringPointIdentification Identification,
-    IEnumerable<MeteringPointPeriod> MeteringPointPeriods,
-    IEnumerable<CommercialRelation> CommercialRelations);
+    string CustomerId,
+    long MeteringPointId,
+    Instant StartDate,
+    Instant EndDate,
+    string EnergySupplier,
+    Instant ModifiedAt,
+    ICollection<EnergySupplierPeriod> EnergyPeriods);

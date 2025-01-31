@@ -19,33 +19,31 @@ using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 
-internal sealed class MeteringPointMapper
+internal sealed class CommercialRelationMapper
 {
-    public static MeteringPoint MapFromEntity(MeteringPointEntity from)
+    public static CommercialRelation MapFromEntity(CommercialRelationEntity from)
     {
-        return new MeteringPoint(
+        return new CommercialRelation(
             from.Id,
-            new MeteringPointIdentification(from.Identification),
-            from.MeteringPointPeriods.Select(MapFromEntity),
-            from.CommercialRelations.Select(CommercialRelationMapper.MapFromEntity));
+            from.CustomerId,
+            from.MeteringPointId,
+            from.StartDate.ToInstant(),
+            from.EndDate.ToInstant(),
+            from.EnergySupplier,
+            from.ModifiedAt.ToInstant(),
+            from.EnergyPeriods.Select(MapFromEntity).ToList());
     }
 
-    public static MeteringPointPeriod MapFromEntity(MeteringPointPeriodEntity from)
+    public static EnergySupplierPeriod MapFromEntity(EnergySupplyPeriodEntity from)
     {
-        return new MeteringPointPeriod(
+        return new EnergySupplierPeriod(
             from.Id,
-            from.MeteringPointId,
             from.ValidFrom.ToInstant(),
             from.ValidTo.ToInstant(),
-            from.CreatedAt.ToInstant(),
-            from.GridAreaCode,
-            from.OwnedBy,
-            from.ConnectionState,
-            from.Type,
-            from.SubType,
-            from.Resolution,
-            from.Unit,
-            from.ProductId,
-            from.ScheduledMeterReadingMonth);
+            from.RetiredAt?.ToInstant(),
+            from.RetiredById,
+            from.BusinessTransactionDosId,
+            from.WebAccessCode,
+            from.EnergySupplier);
     }
 }

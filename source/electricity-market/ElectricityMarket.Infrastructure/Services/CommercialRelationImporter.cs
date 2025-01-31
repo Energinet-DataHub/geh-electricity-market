@@ -30,7 +30,7 @@ public class CommercialRelationImporter : ITransactionImporter
 
         if (!_validMeteringPointTypes.Contains(ExternalMeteringPointTypeMapper.Map(meteringPointTransaction.TypeOfMp)))
         {
-            return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
+            return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Unhandled));
         }
 
         var latestRelation = meteringPoint.CommercialRelations
@@ -47,6 +47,7 @@ public class CommercialRelationImporter : ITransactionImporter
         // This is the first time we encounter this metering point, so we have no current relations
         if (latestRelation is null)
         {
+            newRelation.EnergyPeriods.Add(newEnergyPeriod);
             meteringPoint.CommercialRelations.Add(newRelation);
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
@@ -54,6 +55,7 @@ public class CommercialRelationImporter : ITransactionImporter
         if (!string.Equals(meteringPointTransaction.WebAccessCode, latestEnergyPeriod?.WebAccessCode, StringComparison.OrdinalIgnoreCase))
         {
             // MoveIn
+            newRelation.EnergyPeriods.Add(newEnergyPeriod);
             meteringPoint.CommercialRelations.Add(newRelation);
             latestRelation.EndDate = meteringPointTransaction.ValidFrom;
             latestRelation.ModifiedAt = DateTimeOffset.UtcNow;
@@ -61,6 +63,7 @@ public class CommercialRelationImporter : ITransactionImporter
         else if (!string.Equals(meteringPointTransaction.EnergySupplier, latestRelation.EnergySupplier, StringComparison.OrdinalIgnoreCase))
         {
             // ChangeSupplier
+            newRelation.EnergyPeriods.Add(newEnergyPeriod);
             newRelation.CustomerId = latestRelation.CustomerId;
             meteringPoint.CommercialRelations.Add(newRelation);
             latestRelation.EndDate = meteringPointTransaction.ValidFrom;
@@ -80,7 +83,7 @@ public class CommercialRelationImporter : ITransactionImporter
         return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Unhandled));
     }
 
-    private static bool IsLatestPeriodRetired(EnergyPeriodEntity latestEnergyPeriod, EnergyPeriodEntity incomingEnergyPeriod)
+    private static bool IsLatestPeriodRetired(EnergySupplyPeriodEntity latestEnergyPeriod, EnergySupplyPeriodEntity incomingEnergyPeriod)
     {
         return latestEnergyPeriod.ValidTo == DateTimeOffset.MaxValue && incomingEnergyPeriod.ValidFrom >= latestEnergyPeriod.ValidFrom;
     }
@@ -95,16 +98,13 @@ public class CommercialRelationImporter : ITransactionImporter
             EnergySupplier = meteringPointTransaction.EnergySupplier,
             CustomerId = Guid.NewGuid().ToString(),
             ModifiedAt = DateTimeOffset.UtcNow,
-            EnergyPeriods = new List<EnergyPeriodEntity>
-            {
-                CreateEnergyPeriod(meteringPointTransaction)
-            }
+            EnergyPeriods = new List<EnergySupplyPeriodEntity>(),
         };
     }
 
-    private static EnergyPeriodEntity CreateEnergyPeriod(MeteringPointTransaction meteringPointTransaction)
+    private static EnergySupplyPeriodEntity CreateEnergyPeriod(MeteringPointTransaction meteringPointTransaction)
     {
-        return new EnergyPeriodEntity
+        return new EnergySupplyPeriodEntity
         {
             ValidFrom = meteringPointTransaction.ValidFrom,
             ValidTo = meteringPointTransaction.ValidTo,
@@ -114,9 +114,9 @@ public class CommercialRelationImporter : ITransactionImporter
         };
     }
 
-    private static EnergyPeriodEntity CreateEnergyPeriodCopy(EnergyPeriodEntity energyPeriodEntity)
+    private static EnergySupplyPeriodEntity CreateEnergyPeriodCopy(EnergySupplyPeriodEntity energyPeriodEntity)
     {
-        return new EnergyPeriodEntity
+        return new EnergySupplyPeriodEntity
         {
             ValidFrom = energyPeriodEntity.ValidFrom,
             ValidTo = energyPeriodEntity.ValidTo,
