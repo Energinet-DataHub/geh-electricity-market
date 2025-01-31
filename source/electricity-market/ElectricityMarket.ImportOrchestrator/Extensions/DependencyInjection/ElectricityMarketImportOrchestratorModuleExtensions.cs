@@ -17,30 +17,19 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution.Diagnostics.HealthChecks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ElectricityMarket.ImportOrchestrator.Extensions.DependencyInjection;
 
-public static class ElectricityMarketImportModuleExtensions
+public static class ElectricityMarketImportOrchestratorModuleExtensions
 {
-    public static IServiceCollection AddElectricityMarketImportModule(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddElectricityMarketImportOrchestratorModule(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
         services.AddElectricityMarketModule();
-
         services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
-
-        // Services
-        services.AddScoped<IImportHandler, ImportHandler>();
-        services.AddScoped<IGoldenImportHandler, GoldenImportHandler>();
-        services.AddScoped<IQuarantineZone, QuarantineZone>();
-
-        // importers
-        services.AddScoped<ITransactionImporter, MeteringPointPeriodImporter>();
-        services.AddScoped<ITransactionImporter, CommercialRelationImporter>();
 
         AddHealthChecks(services, configuration);
 

@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+
+    "Database:ConnectionString": "",
+
+    "Databricks:WorkspaceUrl": "",
+    "Databricks:WorkspaceToken": "",
+    "Databricks:WarehouseId": "",
+
+    "EnableDatabricksHealthCheck": true
+  }
+}

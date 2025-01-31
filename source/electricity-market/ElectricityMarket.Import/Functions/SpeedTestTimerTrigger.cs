@@ -18,7 +18,7 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 
-namespace ElectricityMarket.Import.Functions;
+namespace ElectricityMarket.ImportOrchestrator.Functions;
 
 internal sealed class SpeedTestTimerTrigger
 {

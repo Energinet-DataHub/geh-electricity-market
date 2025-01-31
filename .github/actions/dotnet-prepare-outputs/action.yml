@@ -61,3 +61,13 @@ runs:
           --no-restore \
           --configuration Release \
           --output '${{ inputs.output_path }}\functions\import'
+
+    - name: Publish MP Import Durable Function
+      shell: bash
+      run: |
+        dotnet publish \
+          '.\source\electricity-market\ElectricityMarket.ImportOrchestrator\ElectricityMarket.ImportOrchestrator.csproj' \
+          --no-build \
+          --no-restore \
+          --configuration Release \
+          --output '${{ inputs.output_path }}\functions\mp-import-df'

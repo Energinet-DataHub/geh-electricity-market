@@ -31,12 +31,12 @@ var host = new HostBuilder()
         // Shared by modules
         services.AddNodaTimeForApplication();
 
-        // revision log
+        // Revision log
         services.AddRevisionLogIntegrationModule(context.Configuration);
 
         // Modules
         services.AddElectricityMarketModule();
-        services.AddElectricityMarketImportModule(context.Configuration);
+        services.AddElectricityMarketImportOrchestratorModule(context.Configuration);
     })
     .ConfigureLogging((hostingContext, logging) =>
     {
