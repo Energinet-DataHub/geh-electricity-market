@@ -27,10 +27,10 @@ internal sealed class MeteringPointMapper
             from.Id,
             new MeteringPointIdentification(from.Identification),
             from.MeteringPointPeriods.Select(MapFromEntity),
-            from.CommercialRelations.Select(CommercialRelationMapper.MapFromEntity));
+            []);
     }
 
-    public static MeteringPointPeriod MapFromEntity(MeteringPointPeriodEntity from)
+    private static MeteringPointPeriod MapFromEntity(MeteringPointPeriodEntity from)
     {
         return new MeteringPointPeriod(
             from.Id,

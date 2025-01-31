@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+using System;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
-public sealed class MeteringPointEntity
-{
-    public long Id { get; set; }
-
-    public string Identification { get; set; } = null!;
-
-    public ICollection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
-
-    // public ICollection<CommercialRelationEntity> CommercialRelations { get; } = [];
-}
+public sealed record EnergySupplierPeriodDto(
+    long Id,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidTo,
+    DateTimeOffset? RetiredAt,
+    long? RetiredById,
+    long BusinessTransactionDosId,
+    string WebAccessCode,
+    string EnergySupplier);
