@@ -45,7 +45,7 @@ public static class TestCommercialRelationPreparationHelper
         }
 
         commercialRelationEntity.MeteringPointId = meteringPointEntity.Id;
-        commercialRelationEntity.EnergySupplierPeriods.Add(energySupplyPeriodEntity);
+        commercialRelationEntity.EnergySupplyPeriods.Add(energySupplyPeriodEntity);
 
         await context.CommercialRelations.AddAsync(commercialRelationEntity);
         await context.SaveChangesAsync();
