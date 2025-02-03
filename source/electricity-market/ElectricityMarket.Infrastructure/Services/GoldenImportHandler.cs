@@ -150,7 +150,9 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
                 physical_status_of_mp = record.physical_status_of_mp,
                 type_of_mp = record.type_of_mp,
                 sub_type_of_mp = record.sub_type_of_mp,
-                energy_timeseries_measure_unit = record.energy_timeseries_measure_unit
+                energy_timeseries_measure_unit = record.energy_timeseries_measure_unit,
+                web_access_code = record.web_access_code,
+                balance_supplier_id = record.balance_supplier_id,
             });
         }
 
@@ -195,6 +197,8 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         public string type_of_mp { get; init; }
         public string sub_type_of_mp { get; init; }
         public string energy_timeseries_measure_unit { get; init; }
+        public string web_access_code { get; init; }
+        public string balance_supplier_id { get; init; }
     }
 #pragma warning restore SA1300, CA1707
 }

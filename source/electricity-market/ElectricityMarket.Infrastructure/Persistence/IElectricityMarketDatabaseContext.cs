@@ -30,6 +30,7 @@ public interface IElectricityMarketDatabaseContext
     DbSet<SpeedTestImportEntity> SpeedTestImportEntities { get; }
     DbSet<QuarantinedMeteringPointEntity> QuarantinedMeteringPointEntities { get; }
     DbSet<QuarantinedMeteringPointTransactionEntity> QuarantinedMeteringPointTransactionEntities { get; }
+    DbSet<ImportedTransactionEntity> ImportedTransactions { get; }
 
     Task<int> SaveChangesAsync();
 }

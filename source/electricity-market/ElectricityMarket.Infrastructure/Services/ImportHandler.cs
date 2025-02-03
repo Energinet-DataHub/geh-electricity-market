@@ -14,9 +14,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
@@ -27,24 +27,21 @@ public sealed class ImportHandler : IImportHandler
 {
     private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly IQuarantineZone _quarantineZone;
-    private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
     private readonly IEnumerable<ITransactionImporter> _transactionImporters;
 
     public ImportHandler(
         IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
         IQuarantineZone quarantineZone,
-        DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
         IEnumerable<ITransactionImporter> transactionImporters)
     {
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
         _quarantineZone = quarantineZone;
-        _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
         _transactionImporters = transactionImporters;
     }
 
     public async Task ImportAsync(CancellationToken cancellationToken)
     {
-        const int limit = 1_000;
+        const int limit = 10_000;
 
         do
         {
@@ -61,27 +58,19 @@ public sealed class ImportHandler : IImportHandler
 
                 var offset = importState.Offset;
 
-                var results = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
-                    DatabricksStatement.FromRawSql(
-                        $"""
-                         SELECT *
-                         FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-                         WHERE btd_business_trans_doss_id > {importState.Offset} and
-                         (
-                            metering_point_id = '571313180401280099' or
-                            metering_point_id = '571313180401280556' or
-                            metering_point_id = '571313180401280044' or
-                            metering_point_id = '571313180401280792' or
-                            metering_point_id = '571313180401280815'
-                         )
-                         order by btd_business_trans_doss_id, metering_point_state_id
-                         LIMIT {limit} OFFSET 0
-                         """).Build(),
-                    cancellationToken);
+#pragma warning disable EF1002
+                var results = await _electricityMarketDatabaseContext.Database.SqlQueryRaw<MeteringPointGoldenTransactionEntity>(
+#pragma warning restore EF1002
+                    $"""
+                     SELECT TOP {limit} *
+                     FROM electricitymarket.GoldenImport
+                     WHERE btd_business_trans_doss_id > {importState.Offset}
+                     ORDER BY btd_business_trans_doss_id, metering_point_state_id
+                     """).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-                await foreach (var record in results)
+                foreach (var record in results)
                 {
-                    var meteringPointTransaction = (MeteringPointTransaction)CreateMeteringPointTransaction(record);
+                    var meteringPointTransaction = CreateMeteringPointTransaction(record);
 
                     offset = meteringPointTransaction.BusinessTransactionDosId;
 
@@ -99,6 +88,9 @@ public sealed class ImportHandler : IImportHandler
 
                 if (offset == importState.Offset)
                 {
+                    importState.Enabled = false;
+                    await _electricityMarketDatabaseContext.SaveChangesAsync().ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                     return;
                 }
 
@@ -112,13 +104,13 @@ public sealed class ImportHandler : IImportHandler
         while (!cancellationToken.IsCancellationRequested);
     }
 
-    private static MeteringPointTransaction CreateMeteringPointTransaction(dynamic record)
+    private static MeteringPointTransaction CreateMeteringPointTransaction(MeteringPointGoldenTransactionEntity record)
     {
         return new MeteringPointTransaction(
-            record.metering_point_id,
+            record.metering_point_id.ToString(CultureInfo.InvariantCulture),
             record.valid_from_date,
-            record.valid_to_date ?? DateTimeOffset.MaxValue,
-            record.dh3_created,
+            record.valid_to_date,
+            record.dh2_created,
             record.metering_grid_area_id,
             record.metering_point_state_id,
             record.btd_business_trans_doss_id,
@@ -173,4 +165,26 @@ public sealed class ImportHandler : IImportHandler
 
         return entity;
     }
+
+#pragma warning disable SA1300, CA1707
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private sealed class MeteringPointGoldenTransactionEntity
+    {
+        public int Id { get; init; }
+        public long metering_point_id { get; init; }
+        public DateTimeOffset valid_from_date { get; init; }
+        public DateTimeOffset valid_to_date { get; init; }
+        public DateTimeOffset dh2_created { get; init; }
+        public string metering_grid_area_id { get; init; }
+        public long metering_point_state_id { get; init; }
+        public long btd_business_trans_doss_id { get; init; }
+        public string physical_status_of_mp { get; init; }
+        public string type_of_mp { get; init; }
+        public string sub_type_of_mp { get; init; }
+        public string energy_timeseries_measure_unit { get; init; }
+        public string web_access_code { get; init; }
+        public string balance_supplier_id { get; init; }
+    }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning restore SA1300, CA1707
 }
