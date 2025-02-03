@@ -12,12 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.ComponentModel.DataAnnotations;
 using ElectricityMarket.Application.Commands.Contacts;
-using ElectricityMarket.Application.Commands.MeteringPoints;
-using ElectricityMarket.Application.Mappers;
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Repositories;
 using MediatR;
 
 namespace ElectricityMarket.Application.Handlers;
