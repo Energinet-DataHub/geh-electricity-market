@@ -14,4 +14,4 @@
 
 namespace ElectricityMarket.Application.Commands.Contacts;
 
-public sealed record ContactCprRequestDto(long ContactId, string ActorGln, string UserRole);
+public sealed record ContactCprRequestDto(string ActorGln, string UserRole);

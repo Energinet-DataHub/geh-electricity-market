@@ -21,25 +21,25 @@ using Microsoft.AspNetCore.Mvc;
 namespace ElectricityMarket.WebAPI.Controllers;
 
 [ApiController]
-[Route("electricity-market")]
-public class ElectricityMarketController : ControllerBase
+[Route("metering-point")]
+public class MeteringPointController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public ElectricityMarketController(IMediator mediator)
+    public MeteringPointController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [HttpGet("{meteringPointIdentification}")]
-    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointDataAsync(string meteringPointIdentification)
+    [HttpGet("contact/{contactId:long}/")]
+    public async Task<ActionResult<string>> GetContactCprAsync(long contactId, [FromBody]ContactCprRequestDto contactCprRequest)
     {
-        var getMeteringPointDataCommand = new GetMeteringPointDataCommand(meteringPointIdentification);
+        var getMeteringPointDataCommand = new GetContactCprCommand(contactId, contactCprRequest);
 
-        var meteringPoint = await _mediator
+        var cpr = await _mediator
             .Send(getMeteringPointDataCommand)
             .ConfigureAwait(false);
 
-        return Ok(meteringPoint.MeteringPointData);
+        return Ok(cpr);
     }
 }
