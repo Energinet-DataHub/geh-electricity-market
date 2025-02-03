@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using ElectricityMarket.Application.Commands.Contacts;
 using ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 using MediatR;
@@ -42,10 +43,10 @@ public class ElectricityMarketController : ControllerBase
         return Ok(meteringPoint.MeteringPointData);
     }
 
-    [HttpGet("cpr/{contactId}")]
-    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointDataAsync(long contactId)
+    [HttpGet("cpr/")]
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointDataAsync([FromBody]ContactCprRequestDto contactCprRequest)
     {
-        var getMeteringPointDataCommand = new GetContactCprCommand(contactId);
+        var getMeteringPointDataCommand = new GetContactCprCommand(contactCprRequest);
 
         var cpr = await _mediator
             .Send(getMeteringPointDataCommand)

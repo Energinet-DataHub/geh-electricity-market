@@ -14,6 +14,6 @@
 
 using MediatR;
 
-namespace ElectricityMarket.Application.Commands.MeteringPoints;
+namespace ElectricityMarket.Application.Commands.Contacts;
 
-public sealed record GetContactCprCommand(long ContactId) : IRequest<string>;
+public sealed record GetContactCprCommand(ContactCprRequestDto ContactCprRequest) : IRequest<string>;
