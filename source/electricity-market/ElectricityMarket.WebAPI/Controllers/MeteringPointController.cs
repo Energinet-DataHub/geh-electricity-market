@@ -13,6 +13,9 @@
 // limitations under the License.
 
 using ElectricityMarket.Application.Commands.Contacts;
+using ElectricityMarket.Domain.Models;
+using ElectricityMarket.WebAPI.Revision;
+using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,6 +33,7 @@ public class MeteringPointController : ControllerBase
     }
 
     [HttpGet("contact/{contactId:long}/")]
+    [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
     public async Task<ActionResult<string>> GetContactCprAsync(long contactId, [FromBody]ContactCprRequestDto contactCprRequest)
     {
         var command = new GetContactCprCommand(contactId, contactCprRequest);
