@@ -41,4 +41,16 @@ public class ElectricityMarketController : ControllerBase
 
         return Ok(meteringPoint.MeteringPointData);
     }
+
+    [HttpGet("cpr/{contactId}")]
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointDataAsync(long contactId)
+    {
+        var getMeteringPointDataCommand = new GetContactCprCommand(contactId);
+
+        var cpr = await _mediator
+            .Send(getMeteringPointDataCommand)
+            .ConfigureAwait(false);
+
+        return Ok(cpr);
+    }
 }
