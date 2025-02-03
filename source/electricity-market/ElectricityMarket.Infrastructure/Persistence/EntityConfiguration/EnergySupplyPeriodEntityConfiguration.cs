@@ -19,16 +19,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public sealed class CommercialRelationEntityConfiguration : IEntityTypeConfiguration<CommercialRelationEntity>
+public sealed class EnergySupplyPeriodEntityConfiguration : IEntityTypeConfiguration<EnergySupplyPeriodEntity>
 {
-    public void Configure(EntityTypeBuilder<CommercialRelationEntity> builder)
+    public void Configure(EntityTypeBuilder<EnergySupplyPeriodEntity> builder)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        builder.ToTable("CommercialRelation");
-        builder.HasMany(x => x.EnergySupplyPeriods)
+        builder.ToTable("EnergySupplyPeriod");
+        builder
+            .HasOne(x => x.RetiredBy)
             .WithOne()
-            .HasForeignKey(x => x.CommercialRelationId);
-        builder.Navigation(x => x.EnergySupplyPeriods)
-            .AutoInclude();
+            .HasForeignKey<EnergySupplyPeriodEntity>(x => x.RetiredById);
     }
 }

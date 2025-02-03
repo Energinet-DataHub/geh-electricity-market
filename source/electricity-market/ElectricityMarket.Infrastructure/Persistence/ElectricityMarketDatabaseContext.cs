@@ -34,6 +34,7 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
     public DbSet<MeteringPointEntity> MeteringPoints { get; private set; } = null!;
     public DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; private set; } = null!;
     public DbSet<CommercialRelationEntity> CommercialRelations { get; private set; } = null!;
+    public DbSet<EnergySupplyPeriodEntity> EnergySupplyPeriods { get; private set; } = null!;
     public DbSet<ImportStateEntity> ImportStates { get; private set; } = null!;
     public DbSet<QuarantinedMeteringPointEntity> QuarantinedMeteringPointEntities { get; private set; } = null!;
     public DbSet<QuarantinedMeteringPointTransactionEntity> QuarantinedMeteringPointTransactionEntities { get; private set; } = null!;
@@ -55,6 +56,7 @@ public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDat
         modelBuilder.ApplyConfiguration(new ImportedTransactionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new QuarantinedMeteringPointEntityConfiguration());
         modelBuilder.ApplyConfiguration(new QuarantinedMeteringPointTransactionEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new EnergySupplyPeriodEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

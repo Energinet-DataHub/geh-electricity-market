@@ -31,7 +31,7 @@ internal sealed class CommercialRelationMapper
             from.EndDate.ToInstant(),
             from.EnergySupplier,
             from.ModifiedAt.ToInstant(),
-            from.EnergyPeriods.Select(MapFromEntity).ToList());
+            from.EnergySupplyPeriods.Select(MapFromEntity).ToList());
     }
 
     public static EnergySupplierPeriod MapFromEntity(EnergySupplyPeriodEntity from)

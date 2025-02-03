@@ -62,6 +62,15 @@ public static class TestPreparationEntities
         CustomerId = Guid.NewGuid().ToString()
     };
 
+    public static EnergySupplyPeriodEntity ValidEnergySupplyPeriodEntity => new()
+    {
+        EnergySupplier = "2334379799509",
+        ValidFrom = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero),
+        ValidTo = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero),
+        CreatedAt = SystemClock.Instance.GetCurrentInstant().ToDateTimeOffset(),
+        WebAccessCode = "test1",
+    };
+
     public static T Patch<T>(this T entity, Action<T> action)
     {
         ArgumentNullException.ThrowIfNull(action);

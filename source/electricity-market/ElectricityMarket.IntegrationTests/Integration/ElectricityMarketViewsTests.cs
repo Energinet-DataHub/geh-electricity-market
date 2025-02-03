@@ -71,7 +71,7 @@ public sealed class ElectricityMarketViewsTests
         {
             var mp = await _fixture.PrepareMeteringPointAsync(meteringPointEntity);
             await _fixture.PrepareMeteringPointPeriodAsync(mp, TestPreparationEntities.ValidMeteringPointPeriod);
-            await _fixture.PrepareCommercialRelationAsync(mp, TestPreparationEntities.ValidCommercialRelation);
+            await _fixture.PrepareCommercialRelationAsync(mp, TestPreparationEntities.ValidCommercialRelation, TestPreparationEntities.ValidEnergySupplyPeriodEntity);
         }
 
         await using var scope = _fixture.BeginScope();
