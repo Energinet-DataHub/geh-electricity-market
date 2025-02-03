@@ -44,7 +44,7 @@ public class ElectricityMarketController : ControllerBase
     }
 
     [HttpGet("cpr/")]
-    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointDataAsync([FromBody]ContactCprRequestDto contactCprRequest)
+    public async Task<ActionResult<string>> GetContactCprAsync([FromBody]ContactCprRequestDto contactCprRequest)
     {
         var getMeteringPointDataCommand = new GetContactCprCommand(contactCprRequest);
 
