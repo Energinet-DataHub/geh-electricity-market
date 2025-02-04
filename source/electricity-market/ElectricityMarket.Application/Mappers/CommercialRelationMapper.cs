@@ -42,6 +42,7 @@ internal sealed class CommercialRelationMapper
             periodEntity.RetiredById,
             periodEntity.BusinessTransactionDosId,
             periodEntity.WebAccessCode,
-            periodEntity.EnergySupplier);
+            periodEntity.EnergySupplier,
+            []);
     }
 }
