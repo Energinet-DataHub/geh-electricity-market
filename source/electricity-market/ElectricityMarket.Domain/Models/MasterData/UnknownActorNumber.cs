@@ -12,18 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.MasterData;
-using NodaTime;
+namespace ElectricityMarket.Domain.Models.MasterData;
 
-namespace ElectricityMarket.Domain.Repositories;
-
-public interface IMeteringPointRepository
+public sealed record UnknownActorNumber : ActorNumber
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-
-    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
+    public UnknownActorNumber(string value)
+        : base(value)
+    {
+    }
 }

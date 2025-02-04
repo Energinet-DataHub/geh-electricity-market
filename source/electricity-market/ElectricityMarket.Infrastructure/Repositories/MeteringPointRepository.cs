@@ -13,12 +13,17 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ElectricityMarket.Domain.Models;
+using ElectricityMarket.Domain.Models.MasterData;
 using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
@@ -42,5 +47,36 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return entity is not null
             ? MeteringPointMapper.MapFromEntity(entity)
             : null;
+    }
+
+    public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(string meteringPointIdentification, DateTimeOffset startDate, DateTimeOffset enddDate)
+    {
+        var query =
+            from change in _context.MeteringPoints
+            join mpp in _context.MeteringPointPeriods on change.Id equals mpp.MeteringPointId
+            where change.Identification == meteringPointIdentification &&
+                  mpp.ValidFrom <= startDate &&
+                  mpp.ValidTo > enddDate
+            orderby mpp.ValidFrom
+            select new MeteringPointMasterData
+            {
+                Identification = new MeteringPointIdentification(change.Identification),
+                ValidFrom = mpp.ValidFrom.ToInstant(),
+                ValidTo = mpp.ValidTo.ToInstant(),
+                GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
+                GridAccessProvider = ActorNumber.Create(mpp.OwnedBy),
+                NeighborGridAreaOwners = Array.Empty<ActorNumber>(),
+                ConnectionState = Enum.Parse<ConnectionState>(mpp.ConnectionState),
+                Type = Enum.Parse<MeteringPointType>(mpp.Type),
+                SubType = Enum.Parse<MeteringPointSubType>(mpp.SubType),
+                Resolution = new Resolution(mpp.Resolution),
+                Unit = Enum.Parse<MeasureUnit>(mpp.Unit),
+                ProductId = Enum.Parse<ProductId>(mpp.ProductId),
+                ParentIdentification = mpp.ParentIdentification != null
+                    ? new MeteringPointIdentification(mpp.ParentIdentification)
+                    : null,
+            };
+
+        return query.AsAsyncEnumerable();
     }
 }

@@ -12,18 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.MasterData;
-using NodaTime;
+namespace ElectricityMarket.Domain.Models.MasterData;
 
-namespace ElectricityMarket.Domain.Repositories;
-
-public interface IMeteringPointRepository
+public sealed record Resolution
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
+    public Resolution(string value)
+    {
+        Value = value;
+    }
 
-    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
+    public string Value { get; }
 }
