@@ -12,23 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 
 namespace ElectricityMarket.Import.Orchestration.Activities;
 
 public sealed class ImportGoldModelActivity
 {
+    private readonly ILogger<ImportGoldModelActivity> _logger;
     private readonly IGoldenImportHandler _goldenImportHandler;
 
-    public ImportGoldModelActivity(IGoldenImportHandler goldenImportHandler)
+    public ImportGoldModelActivity(ILogger<ImportGoldModelActivity> logger, IGoldenImportHandler goldenImportHandler)
     {
+        _logger = logger;
         _goldenImportHandler = goldenImportHandler;
     }
 
     [Function(nameof(ImportGoldModelActivity))]
-    public async Task RunAsync([ActivityTrigger] NoInput input)
+    public async Task RunAsync([ActivityTrigger] ActivityInput input)
     {
-        await _goldenImportHandler.ImportAsync().ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(input);
+
+        var sw = Stopwatch.StartNew();
+
+        // todo - just move logic to this class?
+        await _goldenImportHandler.ImportAsync(input.MaxTransDossId).ConfigureAwait(false);
+
+        _logger.LogWarning("Gold model imported in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
     }
+
+#pragma warning disable CA1034
+    public class ActivityInput
+    {
+        public long MaxTransDossId { get; set; }
+    }
+#pragma warning restore CA1034
 }

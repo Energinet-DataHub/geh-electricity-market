@@ -12,25 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ElectricityMarket.Import.Orchestration.Activities;
 
 public sealed class TruncateGoldModelActivity
 {
+    private readonly ILogger<TruncateGoldModelActivity> _logger;
     private readonly IElectricityMarketDatabaseContext _databaseContext;
 
-    public TruncateGoldModelActivity(IElectricityMarketDatabaseContext databaseContext)
+    public TruncateGoldModelActivity(ILogger<TruncateGoldModelActivity> logger, IElectricityMarketDatabaseContext databaseContext)
     {
+        _logger = logger;
         _databaseContext = databaseContext;
     }
 
     [Function(nameof(TruncateGoldModelActivity))]
     public async Task RunAsync([ActivityTrigger] NoInput input)
     {
+        var sw = Stopwatch.StartNew();
+
         await _databaseContext.Database.ExecuteSqlRawAsync(
             "TRUNCATE TABLE [electricitymarket].[GoldenImport];").ConfigureAwait(false);
+
+        _logger.LogWarning("Gold model truncated in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
     }
 }

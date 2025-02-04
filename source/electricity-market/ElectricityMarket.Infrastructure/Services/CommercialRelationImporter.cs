@@ -95,7 +95,7 @@ public class CommercialRelationImporter : ITransactionImporter
             MeteringPointId = meteringPoint.Id,
             StartDate = meteringPointTransaction.ValidFrom,
             EndDate = meteringPointTransaction.ValidTo,
-            EnergySupplier = meteringPointTransaction.EnergySupplier,
+            EnergySupplier = meteringPointTransaction.EnergySupplier ?? "NULL",
             CustomerId = Guid.NewGuid().ToString(),
             ModifiedAt = DateTimeOffset.UtcNow,
             EnergySupplyPeriods = new List<EnergySupplyPeriodEntity>(),
@@ -109,8 +109,8 @@ public class CommercialRelationImporter : ITransactionImporter
             ValidFrom = meteringPointTransaction.ValidFrom,
             ValidTo = meteringPointTransaction.ValidTo,
             CreatedAt = DateTimeOffset.UtcNow,
-            EnergySupplier = meteringPointTransaction.EnergySupplier,
-            WebAccessCode = meteringPointTransaction.WebAccessCode,
+            EnergySupplier = meteringPointTransaction.EnergySupplier ?? "NULL",
+            WebAccessCode = meteringPointTransaction.WebAccessCode ?? "NULL",
             BusinessTransactionDosId = meteringPointTransaction.BusinessTransactionDosId,
         };
     }

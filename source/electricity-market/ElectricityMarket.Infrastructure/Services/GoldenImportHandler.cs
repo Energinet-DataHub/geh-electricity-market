@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using FastMember;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,8 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         "type_of_mp",
         "sub_type_of_mp",
         "energy_timeseries_measure_unit",
+        "web_access_code",
+        "balance_supplier_id",
     ];
 
     private readonly BlockingCollection<dynamic> _importCollection = new(5000000);
@@ -62,10 +65,34 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         _logger = logger;
     }
 
-    public async Task ImportAsync()
+    public async Task ImportAsync(long maxTransDossId)
     {
-        var importSilver = Task.Run(() => ImportDataAsync(339762452));
-        var goldTransform = Task.Run(PackageRecords);
+        var importSilver = Task.Run(async () =>
+        {
+            try
+            {
+                await ImportDataAsync(maxTransDossId).ConfigureAwait(false);
+            }
+            catch
+            {
+                _importCollection.Dispose();
+                throw;
+            }
+        });
+
+        var goldTransform = Task.Run(() =>
+        {
+            try
+            {
+                PackageRecords();
+            }
+            catch
+            {
+                _submitCollection.Dispose();
+                throw;
+            }
+        });
+
         var bulkInsert = Task.Run(BulkInsertAsync);
 
         await Task.WhenAll(importSilver, goldTransform, bulkInsert).ConfigureAwait(false);
@@ -92,7 +119,9 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
                 physical_status_of_mp,
                 type_of_mp,
                 sub_type_of_mp,
-                energy_timeseries_measure_unit
+                energy_timeseries_measure_unit,
+                web_access_code,
+                balance_supplier_id
 
              FROM migrations_electricity_market.electricity_market_metering_points_view_v2
              WHERE btd_business_trans_doss_id < {maximumBusinessTransDossId}
@@ -125,7 +154,7 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         const int capacity = 50000;
 
         var sw = Stopwatch.StartNew();
-        var batch = new List<MeteringPointGoldenTransaction>(capacity);
+        var batch = new List<ImportedTransactionEntity>(capacity);
 
         foreach (var record in _importCollection.GetConsumingEnumerable())
         {
@@ -135,10 +164,10 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
                 _logger.LogWarning("A batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
 
                 sw = Stopwatch.StartNew();
-                batch = new List<MeteringPointGoldenTransaction>(capacity);
+                batch = new List<ImportedTransactionEntity>(capacity);
             }
 
-            batch.Add(new MeteringPointGoldenTransaction
+            batch.Add(new ImportedTransactionEntity
             {
                 metering_point_id = record.metering_point_id,
                 valid_from_date = record.valid_from_date,
@@ -181,24 +210,4 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
             _logger.LogWarning("A batch was inserted in {InsertTime} ms.", sw.ElapsedMilliseconds);
         }
     }
-
-#pragma warning disable SA1300, CA1707
-    private readonly struct MeteringPointGoldenTransaction
-    {
-        public int Id { get; init; }
-        public long metering_point_id { get; init; }
-        public DateTimeOffset valid_from_date { get; init; }
-        public DateTimeOffset valid_to_date { get; init; }
-        public DateTimeOffset dh2_created { get; init; }
-        public string metering_grid_area_id { get; init; }
-        public long metering_point_state_id { get; init; }
-        public long btd_business_trans_doss_id { get; init; }
-        public string physical_status_of_mp { get; init; }
-        public string type_of_mp { get; init; }
-        public string sub_type_of_mp { get; init; }
-        public string energy_timeseries_measure_unit { get; init; }
-        public string web_access_code { get; init; }
-        public string balance_supplier_id { get; init; }
-    }
-#pragma warning restore SA1300, CA1707
 }

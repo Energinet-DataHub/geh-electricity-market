@@ -18,5 +18,5 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
 public interface IGoldenImportHandler
 {
-    Task ImportAsync();
+    Task ImportAsync(long maxTransDossId);
 }

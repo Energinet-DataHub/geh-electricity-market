@@ -12,23 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 
 namespace ElectricityMarket.Import.Orchestration.Activities;
 
 public sealed class FindMaxTransDossIdActivity
 {
+    private readonly ILogger<FindMaxTransDossIdActivity> _logger;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
 
-    public FindMaxTransDossIdActivity(DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
+    public FindMaxTransDossIdActivity(ILogger<FindMaxTransDossIdActivity> logger, DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
     {
+        _logger = logger;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
     }
 
     [Function(nameof(FindMaxTransDossIdActivity))]
     public async Task<long> RunAsync([ActivityTrigger] NoInput input)
     {
+        var sw = Stopwatch.StartNew();
+
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
                 """
@@ -37,6 +43,7 @@ public sealed class FindMaxTransDossIdActivity
 
         await foreach (var r in result)
         {
+            _logger.LogWarning("MaxTransDossId fetched in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
             return r.trans_dos_id;
         }
 

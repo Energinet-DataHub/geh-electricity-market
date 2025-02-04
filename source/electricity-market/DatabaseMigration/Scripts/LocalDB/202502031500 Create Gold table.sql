@@ -14,8 +14,8 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [type_of_mp]                      CHAR(8)        NOT NULL,
     [sub_type_of_mp]                  CHAR(8)        NOT NULL,
     [energy_timeseries_measure_unit]  CHAR(8)        NOT NULL,
-    [web_access_code]                 VARCHAR(64)    NOT NULL,
-    [balance_supplier_id]             VARCHAR(16)    NOT NULL
+    [web_access_code]                 CHAR(10)       NULL,
+    [balance_supplier_id]             CHAR(16)       NULL
 );
 
 CREATE INDEX [IX_GoldenImport_metering_point_id]

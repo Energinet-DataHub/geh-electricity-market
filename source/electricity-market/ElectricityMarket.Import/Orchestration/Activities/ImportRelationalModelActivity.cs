@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics;
 using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
@@ -26,104 +27,99 @@ public sealed class ImportRelationalModelActivity
 {
     private readonly ILogger<ImportRelationalModelActivity> _logger;
     private readonly IDbContextFactory<ElectricityMarketDatabaseContext> _contextFactory;
-    private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
-    private readonly IQuarantineZone _quarantineZone;
     private readonly IEnumerable<ITransactionImporter> _transactionImporters;
 
     public ImportRelationalModelActivity(
         ILogger<ImportRelationalModelActivity> logger,
         IDbContextFactory<ElectricityMarketDatabaseContext> contextFactory,
-        IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
-        IQuarantineZone quarantineZone,
         IEnumerable<ITransactionImporter> transactionImporters)
     {
         _contextFactory = contextFactory;
         _logger = logger;
-        _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
-        _quarantineZone = quarantineZone;
         _transactionImporters = transactionImporters;
     }
 
     [Function(nameof(ImportRelationalModelActivity))]
     public async Task RunAsync([ActivityTrigger] ActivityInput input)
     {
-        _logger.LogWarning("Hash: {Hash}", _electricityMarketDatabaseContext.GetHashCode());
-
         ArgumentNullException.ThrowIfNull(input);
-        var transaction = await _electricityMarketDatabaseContext.Database.BeginTransactionAsync().ConfigureAwait(false);
 
-        await using (transaction.ConfigureAwait(false))
+        _logger.LogWarning("Import started {skip} - {take}", input.MeteringPointRange.Skip, input.MeteringPointRange.Take);
+
+        var sw = Stopwatch.StartNew();
+
+        var writeContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        writeContext.ChangeTracker.AutoDetectChangesEnabled = false;
+        writeContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+        var transaction = await writeContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+
+        await using (writeContext)
         {
-            var (skip, take) = input.MeteringPointRange;
-
-            var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
-
-            await using (readContext)
+            await using (transaction.ConfigureAwait(false))
             {
-#pragma warning disable EF1002
-                var result = readContext.ImportedTransactions.FromSqlRaw(
-#pragma warning restore EF1002
-                    $"""
-                     WITH SelectedGroups AS (
-                         SELECT DISTINCT metering_point_id
-                         FROM electricitymarket.GoldenImport
-                         ORDER BY metering_point_id
-                         OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY
-                     )
-                     SELECT i.*
-                     FROM electricitymarket.GoldenImport i
-                     JOIN SelectedGroups sg ON i.metering_point_id = sg.metering_point_id
-                     ORDER BY i.metering_point_id, i.btd_business_trans_doss_id, i.metering_point_state_id;
-                     """).AsAsyncEnumerable();
+                var (skip, take) = input.MeteringPointRange;
 
-                var currentMeteringPointId = string.Empty;
-                var list = new List<MeteringPointTransaction>();
+                var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
 
-                await foreach (var record in result)
+                await using (readContext)
                 {
-                    var meteringPointTransaction = CreateMeteringPointTransaction(record);
+                    var meteringPointsQuery = readContext.ImportedTransactions
+                        .AsNoTracking()
+                        .Select(t => t.metering_point_id)
+                        .Distinct()
+                        .OrderBy(x => x)
+                        .Skip(skip)
+                        .Take(take);
 
-                    if (list.Count != 0 && currentMeteringPointId != meteringPointTransaction.Identification)
+                    var query = readContext.ImportedTransactions
+                        .AsNoTracking()
+                        .Join(
+                            meteringPointsQuery,
+                            outer => outer.metering_point_id,
+                            inner => inner,
+                            (entity, _) => entity)
+                        .OrderBy(t => t.metering_point_id)
+                        .ThenBy(t => t.btd_business_trans_doss_id)
+                        .ThenBy(t => t.metering_point_state_id)
+                        .AsAsyncEnumerable();
+
+
+                    var currentMeteringPointId = string.Empty;
+                    var list = new List<MeteringPointTransaction>();
+
+                    await foreach (var record in query)
                     {
-                        // persist batch
-                        var mp = new MeteringPointEntity
-                        {
-                            Identification = currentMeteringPointId,
-                        };
+                        var meteringPointTransaction = CreateMeteringPointTransaction(record);
 
-                        foreach (var mpt in list)
+                        if (list.Count != 0 && currentMeteringPointId != meteringPointTransaction.Identification)
                         {
-                            await RunImportChainAsync(mp, mpt).ConfigureAwait(false);
+                            var mp = new MeteringPointEntity
+                            {
+                                Identification = currentMeteringPointId,
+                            };
+
+                            foreach (var mpt in list)
+                            {
+                                await RunImportChainAsync(mp, mpt).ConfigureAwait(false);
+                            }
+
+                            writeContext.MeteringPoints.Add(mp);
+
+                            list.Clear();
+                            currentMeteringPointId = meteringPointTransaction.Identification;
                         }
 
-                        _electricityMarketDatabaseContext.MeteringPoints.Add(mp);
-
-                        list.Clear();
-                        currentMeteringPointId = meteringPointTransaction.Identification;
+                        list.Add(meteringPointTransaction);
                     }
 
-                    list.Add(meteringPointTransaction);
+                    await writeContext.SaveChangesAsync().ConfigureAwait(false);
 
-                    // currentMeteringPointId = meteringPointTransaction.Identification;
-                    //
-                    // if (await _quarantineZone.IsQuarantinedAsync(meteringPointTransaction).ConfigureAwait(false))
-                    // {
-                    //     await _quarantineZone.QuarantineAsync(meteringPointTransaction, "Previously quarantined").ConfigureAwait(false);
-                    //     continue;
-                    // }
-                    //
-                    // var meteringPoint = await GetAsync(meteringPointTransaction.Identification).ConfigureAwait(false) ??
-                    //                     await CreateAsync(meteringPointTransaction.Identification).ConfigureAwait(false);
-                    //
-                    // await RunImportChainAsync(meteringPoint, meteringPointTransaction).ConfigureAwait(false);
+                    await transaction.CommitAsync().ConfigureAwait(false);
                 }
 
-                await _electricityMarketDatabaseContext.SaveChangesAsync().ConfigureAwait(false);
-
-                await transaction.CommitAsync().ConfigureAwait(false);
+                _logger.LogWarning("Imported batch {skip} - {take} in {ElapsedMilliseconds} ms", skip, take, sw.ElapsedMilliseconds);
             }
-
-            _logger.LogWarning($"Done {input.MeteringPointRange.Skip} {input.MeteringPointRange.Take}");
         }
     }
 
@@ -134,15 +130,15 @@ public sealed class ImportRelationalModelActivity
             record.valid_from_date,
             record.valid_to_date,
             record.dh2_created,
-            record.metering_grid_area_id,
+            record.metering_grid_area_id.TrimEnd(),
             record.metering_point_state_id,
             record.btd_business_trans_doss_id,
-            record.physical_status_of_mp,
-            record.type_of_mp,
-            record.sub_type_of_mp,
-            record.energy_timeseries_measure_unit,
-            record.web_access_code,
-            record.balance_supplier_id);
+            record.physical_status_of_mp.TrimEnd(),
+            record.type_of_mp.TrimEnd(),
+            record.sub_type_of_mp.TrimEnd(),
+            record.energy_timeseries_measure_unit.TrimEnd(),
+            record.web_access_code?.TrimEnd() ?? "NULL",
+            record.balance_supplier_id?.TrimEnd() ?? "NULL");
     }
 
     private async Task RunImportChainAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
@@ -153,39 +149,13 @@ public sealed class ImportRelationalModelActivity
         {
             var result = await transactionImporter.ImportAsync(meteringPoint, meteringPointTransaction).ConfigureAwait(false);
 
-            // if (result.Status == TransactionImporterResultStatus.Error)
-            // {
-            //     await _quarantineZone.QuarantineAsync(meteringPointTransaction, result.Message).ConfigureAwait(false);
-            //     return;
-            // }
             handled |= result.Status == TransactionImporterResultStatus.Handled;
         }
 
-        // if (!handled)
-        // {
-        //     await _quarantineZone.QuarantineAsync(meteringPointTransaction, "Unhandled").ConfigureAwait(false);
-        // }
-    }
-
-    private async Task<MeteringPointEntity?> GetAsync(string identification)
-    {
-        return await _electricityMarketDatabaseContext.MeteringPoints
-            .FirstOrDefaultAsync(x => x.Identification == identification)
-            .ConfigureAwait(false);
-    }
-
-    private async Task<MeteringPointEntity> CreateAsync(string identification)
-    {
-        var entity = new MeteringPointEntity
+        if (!handled)
         {
-            Identification = identification,
-        };
-
-        _electricityMarketDatabaseContext.MeteringPoints.Add(entity);
-
-        await _electricityMarketDatabaseContext.SaveChangesAsync().ConfigureAwait(false);
-
-        return entity;
+            _logger.LogWarning("Unhandled transaction trans_dos_id: {TransactionId} state_id: {StateId}", meteringPointTransaction.BusinessTransactionDosId, meteringPointTransaction.MeteringPointStateId);
+        }
     }
 
 #pragma warning disable CA1034
@@ -198,7 +168,7 @@ public sealed class ImportRelationalModelActivity
             public int Skip { get; set; }
             public int Take { get; set; }
 
-            public void Deconstruct(out object skip, out object take)
+            public void Deconstruct(out int skip, out int take)
             {
                 skip = Skip;
                 take = Take;

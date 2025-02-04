@@ -12,24 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask.Client;
+using Microsoft.EntityFrameworkCore;
 
 namespace ElectricityMarket.Import.Orchestration;
 
 public sealed class InitiateImportOrchestrationTimerTrigger
 {
+    private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
+
+    public InitiateImportOrchestrationTimerTrigger(IElectricityMarketDatabaseContext electricityMarketDatabaseContext)
+    {
+        _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
+    }
+
     [Function(nameof(InitiateImportOrchestrationAsync))]
     public async Task InitiateImportOrchestrationAsync(
-        [TimerTrigger("0 */60 * * * *", RunOnStartup = true)]
+        [TimerTrigger("0 */1 * * * *", RunOnStartup = true)]
         TimerInfo timer,
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-#pragma warning disable CA2007
-        await client.ScheduleNewOrchestrationInstanceAsync(nameof(InitialImportOrchestrator.OrchestrateInitalImportAsync));
-#pragma warning restore CA2007
+        var importState = await _electricityMarketDatabaseContext
+            .ImportStates
+            .SingleAsync()
+            .ConfigureAwait(false);
+
+        if (!importState.Enabled)
+        {
+            return;
+        }
+
+        importState.Enabled = false;
+
+        await client.ScheduleNewOrchestrationInstanceAsync(nameof(InitialImportOrchestrator.OrchestrateInitalImportAsync)).ConfigureAwait(false);
+
+        await _electricityMarketDatabaseContext.SaveChangesAsync().ConfigureAwait(false);
     }
 }

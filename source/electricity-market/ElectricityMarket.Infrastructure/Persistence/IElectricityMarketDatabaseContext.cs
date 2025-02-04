@@ -15,6 +15,7 @@
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
@@ -22,6 +23,7 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 public interface IElectricityMarketDatabaseContext
 {
     DatabaseFacade Database { get; }
+    ChangeTracker ChangeTracker { get; }
     DbSet<MeteringPointEntity> MeteringPoints { get; }
     DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; }
     DbSet<CommercialRelationEntity> CommercialRelations { get; }

@@ -34,13 +34,11 @@ public static class ElectricityMarketImportModuleExtensions
         services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
         // Services
-        services.AddScoped<IImportHandler, ImportHandler>();
         services.AddScoped<IGoldenImportHandler, GoldenImportHandler>();
-        services.AddScoped<IQuarantineZone, QuarantineZone>();
 
         // importers
         services.AddScoped<ITransactionImporter, MeteringPointPeriodImporter>();
-        services.AddScoped<ITransactionImporter, CommercialRelationImporter>();
+        // services.AddScoped<ITransactionImporter, CommercialRelationImporter>();
 
         AddHealthChecks(services, configuration);
 
