@@ -8,10 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ElectricityMarket.Infrastructure\ElectricityMarket.Infrastructure.csproj" />
+    <ProjectReference Include="..\ElectricityMarket.Domain\ElectricityMarket.Domain.csproj" />
   </ItemGroup>
 
 </Project>

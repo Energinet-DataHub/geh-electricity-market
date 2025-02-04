@@ -14,19 +14,14 @@
 
 using System;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace ElectricityMarket.Application.Models;
 
-public sealed record MeteringPointPeriodDto(
+public sealed record EnergySupplierPeriodDto(
     long Id,
     DateTimeOffset ValidFrom,
     DateTimeOffset ValidTo,
-    DateTimeOffset CreatedAt,
-    string GridAreaCode,
-    string OwnenBy,
-    string ConnectionState,
-    string Type,
-    string SubType,
-    string Resolution,
-    string Unit,
-    string ProductId,
-    int ScheduledMeterReadingMonth);
+    DateTimeOffset? RetiredAt,
+    long? RetiredById,
+    long BusinessTransactionDosId,
+    string WebAccessCode,
+    string EnergySupplier);

@@ -12,8 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
+using ElectricityMarket.Domain.Models.MasterData;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace ElectricityMarket.Application.Models;
 
-public sealed record MeteringPointDto(long Id, string Identification, IEnumerable<MeteringPointPeriodDto> MeteringPointPeriod, IEnumerable<CommercialRelationDto> CommercialRelations);
+public sealed record MeteringPointMasterDataDto(
+    string Identification,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidTo,
+    string GridAreaCode,
+    string GridAccessProvider,
+    IReadOnlyCollection<string> NeighborGridAreaOwners,
+    ConnectionState ConnectionState,
+    MeteringPointType Type,
+    MeteringPointSubType SubType,
+    string Resolution,
+    MeasureUnit Unit,
+    ProductId ProductId,
+    string? ParentIdentification);

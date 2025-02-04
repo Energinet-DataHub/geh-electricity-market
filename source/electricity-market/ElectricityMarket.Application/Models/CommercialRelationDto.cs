@@ -13,15 +13,16 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace ElectricityMarket.Application.Models;
 
-public sealed record EnergySupplierPeriodDto(
+public sealed record CommercialRelationDto(
     long Id,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    DateTimeOffset? RetiredAt,
-    long? RetiredById,
-    long BusinessTransactionDosId,
-    string WebAccessCode,
-    string EnergySupplier);
+    string CustomerId,
+    long MeteringPointId,
+    DateTimeOffset StartDate,
+    DateTimeOffset EndDate,
+    string EnergySupplier,
+    DateTimeOffset ModifiedAt,
+    IEnumerable<EnergySupplierPeriodDto> EnergyPeriods);
