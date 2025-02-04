@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using ElectricityMarket.Application.Commands.MeteringPoints;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+using ElectricityMarket.Application.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

@@ -13,10 +13,10 @@
 // limitations under the License.
 
 using ElectricityMarket.Application.Commands.MasterData;
+using ElectricityMarket.Application.Mappers;
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Repositories;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace ElectricityMarket.Application.Handlers;
 
@@ -40,6 +40,6 @@ public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeter
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return new GetMeteringPointMasterDataResponse();
+        return new GetMeteringPointMasterDataResponse(masterData.Select(MasterDataMapper.Map));
     }
 }
