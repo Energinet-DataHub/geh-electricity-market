@@ -13,9 +13,10 @@
 // limitations under the License.
 
 using System.Collections.Generic;
+using ElectricityMarket.Domain.Models.MasterData;
 using NodaTime;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Models.Common;
 
 public sealed class MeteringPointMasterData
 {

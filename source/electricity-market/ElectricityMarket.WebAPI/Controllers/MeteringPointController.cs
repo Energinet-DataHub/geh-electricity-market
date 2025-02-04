@@ -58,4 +58,16 @@ public class MeteringPointController : ControllerBase
 
         return Ok(response.MasterData);
     }
+
+    [HttpPost("energy-suppliers")]
+    public async Task<ActionResult<IEnumerable<MeteringPointEnergySupplierDto>>> GetMeteringPointEnergySuppliersAsync([FromBody] MeteringPointMasterDataRequestDto request)
+    {
+        var command = new GetMeteringPointEnergySuppliersCommand(request);
+
+        var response = await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok(response.EnergySuppliers);
+    }
 }

@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ElectricityMarket.Domain.Models;
+using ElectricityMarket.Domain.Models.Common;
 using ElectricityMarket.Domain.Models.MasterData;
 using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
