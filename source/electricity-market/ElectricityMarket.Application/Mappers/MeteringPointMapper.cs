@@ -57,7 +57,7 @@ internal sealed class MeteringPointMapper
             "TBD",
             null,
             "TBD",
-            "TBD",
+            50,
             "TBD",
             "TBD",
             "TBD",
