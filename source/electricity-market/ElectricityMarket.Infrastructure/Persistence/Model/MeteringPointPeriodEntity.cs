@@ -55,4 +55,5 @@ public sealed class MeteringPointPeriodEntity
     public DateTimeOffset? RetiredAt { get; set; }
 
     public MeteringPointPeriodEntity? RetiredBy { get; set; }
+    public string? ParentIdentification { get; internal set; }
 }

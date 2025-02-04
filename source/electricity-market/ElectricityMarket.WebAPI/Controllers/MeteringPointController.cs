@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using ElectricityMarket.Application.Commands.Contacts;
+using ElectricityMarket.Application.Commands.MasterData;
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.WebAPI.Revision;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
@@ -34,7 +35,7 @@ public class MeteringPointController : ControllerBase
 
     [HttpGet("contact/{contactId:long}/")]
     [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
-    public async Task<ActionResult<string>> GetContactCprAsync(long contactId, [FromBody]ContactCprRequestDto contactCprRequest)
+    public async Task<ActionResult<string>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
     {
         var command = new GetContactCprCommand(contactId, contactCprRequest);
 
@@ -43,5 +44,17 @@ public class MeteringPointController : ControllerBase
             .ConfigureAwait(false);
 
         return Ok(cpr);
+    }
+
+    [HttpPost("master-data")]
+    public async Task<ActionResult<GetMeteringPointMasterDataResponse>> GetMeteringPointMasterDataChangesAsync([FromBody] MeteringPointMasterDataRequestDto request)
+    {
+        var command = new GetMeteringPointMasterDataCommand(request);
+
+        var response = await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok(response);
     }
 }
