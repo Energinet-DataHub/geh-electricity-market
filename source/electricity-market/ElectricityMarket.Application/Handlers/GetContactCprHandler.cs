@@ -24,6 +24,6 @@ public sealed class GetContactCprHandler : IRequestHandler<GetContactCprCommand,
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
         // We currently don't have contact data imported, so we return a placeholder value
-        return await Task.FromResult("TBD").ConfigureAwait(false);
+        return await Task.FromResult("1111111546").ConfigureAwait(false);
     }
 }
