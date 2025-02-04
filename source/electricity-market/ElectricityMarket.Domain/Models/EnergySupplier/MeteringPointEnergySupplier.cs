@@ -12,24 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.Common;
-using ElectricityMarket.Domain.Models.EnergySupplier;
 using NodaTime;
 
-namespace ElectricityMarket.Domain.Repositories;
+namespace ElectricityMarket.Domain.Models.EnergySupplier;
 
-public interface IMeteringPointRepository
+public sealed class MeteringPointEnergySupplier
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
+    public MeteringPointIdentification Identification { get; set; } = null!;
 
-    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
+    public ActorNumber EnergySupplier { get; set; } = null!;
 
-    IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
+    public Instant StartDate { get; set; }
+
+    public Instant EndDate { get; internal set; }
 }

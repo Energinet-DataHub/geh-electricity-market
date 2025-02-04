@@ -14,8 +14,8 @@
 
 using ElectricityMarket.Application.Models;
 using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.MasterData;
-
+using ElectricityMarket.Domain.Models.Common;
+using ElectricityMarket.Domain.Models.EnergySupplier;
 
 namespace ElectricityMarket.Application.Mappers;
 
@@ -37,5 +37,14 @@ internal sealed class MasterDataMapper
             entity.Unit,
             entity.ProductId,
             entity.ParentIdentification?.Value);
+    }
+
+    public static MeteringPointEnergySupplierDto Map(MeteringPointEnergySupplier entity)
+    {
+        return new MeteringPointEnergySupplierDto(
+            entity.Identification.Value,
+            entity.EnergySupplier.Value,
+            entity.StartDate.ToDateTimeOffset(),
+            entity.EndDate.ToDateTimeOffset());
     }
 }
