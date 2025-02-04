@@ -43,7 +43,7 @@ public sealed record MeteringPointPeriodDto(
     string NetSettlementGroup,
     MeteringPointPeriodDto? ParentMeteringPoint, // TODO: Check if this is correct
     string PhysicalStatus,
-    string PowerLimitA,
+    long PowerLimitA,
     string PowerPlantGsrn,
     string ProductCode,
     string ProductionObligation,
