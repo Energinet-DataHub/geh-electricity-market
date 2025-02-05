@@ -21,4 +21,5 @@ namespace ElectricityMarket.Domain.Repositories;
 public interface IActorRepository
 {
     Task<Actor?> GetActorByAsync(ActorNumber actorNumber);
+    Task<Actor?> GetAsync(ActorId actorId);
 }

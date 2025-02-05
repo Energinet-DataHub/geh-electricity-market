@@ -49,4 +49,16 @@ public sealed class ActorRepository : IActorRepository
 
         return actor is null ? null : ActorMapper.MapFromEntity(actor);
     }
+
+    public async Task<Actor?> GetAsync(ActorId actorId)
+    {
+        var foundActor = await _context
+            .Actors
+            .FirstOrDefaultAsync(actor => actor.Id == actorId.Value)
+            .ConfigureAwait(false);
+
+        return foundActor == null
+            ? null
+            : ActorMapper.MapFromEntity(foundActor);
+    }
 }

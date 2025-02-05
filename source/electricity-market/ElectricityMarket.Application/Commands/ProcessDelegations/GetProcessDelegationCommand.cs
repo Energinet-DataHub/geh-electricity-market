@@ -12,13 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.Actor;
-using ElectricityMarket.Domain.Models.Common;
+using ElectricityMarket.Application.Models;
+using MediatR;
 
-namespace ElectricityMarket.Domain.Repositories;
+namespace ElectricityMarket.Application.Commands.ProcessDelegations;
 
-public interface IProcessDelegationRepository
-{
-    Task<ProcessDelegation?> GetProcessDelegationAsync(ActorId actorId, DelegatedProcess delegatedProcess);
-}
+public sealed record GetProcessDelegationCommand(ProcessDelegationRequestDto ProcessDelegationRequest) : IRequest<ProcessDelegationDto>;

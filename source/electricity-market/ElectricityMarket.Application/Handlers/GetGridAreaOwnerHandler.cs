@@ -24,23 +24,23 @@ namespace ElectricityMarket.Application.Handlers;
 
 public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCommand, GridAreaOwnerDto>
 {
-    private readonly IGridAreaRepository _participantRepository;
+    private readonly IGridAreaRepository _gridAreaRepository;
 
     public GetGridAreaOwnerHandler(IGridAreaRepository participantRepository)
     {
-        _participantRepository = participantRepository;
+        _gridAreaRepository = participantRepository;
     }
 
     public async Task<GridAreaOwnerDto> Handle(GetGridAreaOwnerCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var gridArea = await _participantRepository.GetGridAreaAsync(new GridAreaCode(request.GridAreaCode)).ConfigureAwait(false);
+        var gridArea = await _gridAreaRepository.GetGridAreaAsync(new GridAreaCode(request.GridAreaCode)).ConfigureAwait(false);
 
         if (gridArea == null)
             throw new ValidationException($"The grid area with code: {request.GridAreaCode} was not found");
 
-        var domainEvents = await _participantRepository.GetGridAreaOwnershipAssignedEventsAsync().ToListAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var domainEvents = await _gridAreaRepository.GetGridAreaOwnershipAssignedEventsAsync().ToListAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var gridAreaAssignedEvent = domainEvents.FirstOrDefault(x => x.GridAreaId == gridArea.Id);
 

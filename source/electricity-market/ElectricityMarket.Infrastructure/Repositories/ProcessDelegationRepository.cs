@@ -13,21 +13,15 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.Common;
-using ElectricityMarket.Domain.Models.GridArea;
-using ElectricityMarket.Domain.Models.MasterData;
 using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
-using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
@@ -40,12 +34,12 @@ public sealed class ProcessDelegationRepository : IProcessDelegationRepository
         _context = context;
     }
 
-    public async Task<ProcessDelegation?> GetProcessDelegationAsync(ProcessDelegationId actorId, DelegatedProcess delegatedProcess)
+    public async Task<ProcessDelegation?> GetProcessDelegationAsync(ActorId actorId, DelegatedProcess delegatedProcess)
     {
         ArgumentNullException.ThrowIfNull(actorId, nameof(actorId));
 
         var processDelegation = await _context.ProcessDelegations
-            .SingleOrDefaultAsync(x => x.DelegatedByActorId == actorId.Value)
+            .SingleOrDefaultAsync(x => x.DelegatedByActorId == actorId.Value && x.DelegatedProcess == delegatedProcess)
             .ConfigureAwait(false);
 
         return processDelegation is null
