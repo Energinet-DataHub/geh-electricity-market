@@ -23,4 +23,4 @@ public sealed record ElectricalHeatingPeriodDto(
     DateTimeOffset? RetiredAt,
     long? RetiredById,
     long BusinessTransactionDosId,
-    string TransactionType);
+    string? TransactionType);
