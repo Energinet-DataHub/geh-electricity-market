@@ -12,14 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.GridArea;
+namespace ElectricityMarket.Application.Models;
 
-namespace ElectricityMarket.Domain.Repositories;
-
-public interface IMarketParticipantRepository
-{
-    IAsyncEnumerable<GridAreaOwnershipAssignedEvent> GetGridAreaOwnershipAssignedEventsAsync();
-
-    Task<GridArea?> GetGridAreaAsync(GridAreaCode code);
-}
+public sealed record GridAreaOwnerDto(string GridAccessProviderGln);

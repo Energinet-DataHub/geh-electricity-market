@@ -43,10 +43,8 @@ public sealed class MarketParticipantRepository : IMarketParticipantRepository
         _context = context;
     }
 
-    public async IAsyncEnumerable<GridAreaOwnershipAssignedEvent> GetAsync(string gridAreaCode)
+    public async IAsyncEnumerable<GridAreaOwnershipAssignedEvent> GetGridAreaOwnershipAssignedEventsAsync()
     {
-        ArgumentNullException.ThrowIfNull(gridAreaCode);
-
         var events = await _context.DomainEvents
             .Where(x => x.EventTypeName == "GridAreaOwnershipAssigned" && x.IsSent)
             .OrderByDescending(x => x.Timestamp)
@@ -62,16 +60,16 @@ public sealed class MarketParticipantRepository : IMarketParticipantRepository
             if (gridOwnershipEvent != null)
                 yield return gridOwnershipEvent;
 
-            throw new InvalidOperationException($"Could not deserialize event: {domainEvent.EntityId}")
+            throw new InvalidOperationException($"Could not deserialize event: {domainEvent.EntityId}");
         }
     }
 
-    public async Task<GridArea?> GetAsync(GridAreaId id)
+    public async Task<GridArea?> GetGridAreaAsync(GridAreaCode code)
     {
-        ArgumentNullException.ThrowIfNull(id, nameof(id));
+        ArgumentNullException.ThrowIfNull(code, nameof(code));
 
         var gridArea = await _context.GridAreas
-            .FindAsync(id.Value)
+            .SingleOrDefaultAsync(x => x.Code == code.Value)
             .ConfigureAwait(false);
 
         return gridArea is null ? null : GridAreaMapper.MapFromEntity(gridArea);
