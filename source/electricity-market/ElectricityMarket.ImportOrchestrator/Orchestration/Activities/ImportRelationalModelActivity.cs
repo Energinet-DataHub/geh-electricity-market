@@ -82,7 +82,6 @@ public sealed class ImportRelationalModelActivity
                         .ThenBy(t => t.metering_point_state_id)
                         .AsAsyncEnumerable();
 
-
                     var currentMeteringPointId = string.Empty;
                     var list = new List<MeteringPointTransaction>();
 

@@ -17,7 +17,6 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution.Diagnostics.HealthChecks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
