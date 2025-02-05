@@ -39,10 +39,10 @@ public class CommercialRelationImporter : ITransactionImporter
 
         var latestEnergyPeriod = latestRelation?
             .EnergySupplyPeriods
-            .Single(x => x.ValidTo == DateTimeOffset.MaxValue && x.RetiredById is null);
+            .Single(x => x.ValidTo == DateTimeOffset.MaxValue && x.RetiredBy is null);
 
-        var newRelation = CreateRelation(meteringPoint, meteringPointTransaction);
-        var newEnergyPeriod = CreateEnergyPeriod(meteringPointTransaction);
+        var newRelation = CreateCommercialRelation(meteringPoint, meteringPointTransaction);
+        var newEnergyPeriod = CreateEnergySupplyPeriod(meteringPointTransaction);
 
         // This is the first time we encounter this metering point, so we have no current relations
         if (latestRelation is null)
@@ -88,29 +88,29 @@ public class CommercialRelationImporter : ITransactionImporter
         return latestEnergyPeriod.ValidTo == DateTimeOffset.MaxValue && incomingEnergyPeriod.ValidFrom >= latestEnergyPeriod.ValidFrom;
     }
 
-    private static CommercialRelationEntity CreateRelation(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
+    private static CommercialRelationEntity CreateCommercialRelation(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
     {
         return new CommercialRelationEntity
         {
             MeteringPointId = meteringPoint.Id,
             StartDate = meteringPointTransaction.ValidFrom,
-            EndDate = meteringPointTransaction.ValidTo,
-            EnergySupplier = meteringPointTransaction.EnergySupplier,
+            EndDate = DateTimeOffset.MaxValue,
+            EnergySupplier = meteringPointTransaction.EnergySupplier ?? "NULL",
             CustomerId = Guid.NewGuid().ToString(),
             ModifiedAt = DateTimeOffset.UtcNow,
             EnergySupplyPeriods = new List<EnergySupplyPeriodEntity>(),
         };
     }
 
-    private static EnergySupplyPeriodEntity CreateEnergyPeriod(MeteringPointTransaction meteringPointTransaction)
+    private static EnergySupplyPeriodEntity CreateEnergySupplyPeriod(MeteringPointTransaction meteringPointTransaction)
     {
         return new EnergySupplyPeriodEntity
         {
             ValidFrom = meteringPointTransaction.ValidFrom,
-            ValidTo = meteringPointTransaction.ValidTo,
+            ValidTo = DateTimeOffset.MaxValue,
             CreatedAt = DateTimeOffset.UtcNow,
-            EnergySupplier = meteringPointTransaction.EnergySupplier,
-            WebAccessCode = meteringPointTransaction.WebAccessCode,
+            EnergySupplier = meteringPointTransaction.EnergySupplier ?? "NULL",
+            WebAccessCode = meteringPointTransaction.WebAccessCode ?? "NULL",
             BusinessTransactionDosId = meteringPointTransaction.BusinessTransactionDosId,
         };
     }

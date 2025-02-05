@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS [electricitymarket].[GoldenImport];
+
 CREATE TABLE [electricitymarket].[GoldenImport]
 (
     [Id]                              INT            NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -11,7 +13,9 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [physical_status_of_mp]           CHAR(8)        NOT NULL,
     [type_of_mp]                      CHAR(8)        NOT NULL,
     [sub_type_of_mp]                  CHAR(8)        NOT NULL,
-    [energy_timeseries_measure_unit]  CHAR(8)        NOT NULL
+    [energy_timeseries_measure_unit]  CHAR(8)        NOT NULL,
+    [web_access_code]                 CHAR(10)       NULL,
+    [balance_supplier_id]             CHAR(16)       NULL
 );
 
 CREATE INDEX [IX_GoldenImport_metering_point_id]

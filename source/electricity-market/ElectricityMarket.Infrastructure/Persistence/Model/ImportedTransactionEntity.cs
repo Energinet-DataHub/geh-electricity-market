@@ -31,4 +31,6 @@ public sealed class ImportedTransactionEntity
     public string type_of_mp { get; set; } = null!;
     public string sub_type_of_mp { get; set; } = null!;
     public string energy_timeseries_measure_unit { get; set; } = null!;
+    public string? web_access_code { get; init; }
+    public string? balance_supplier_id { get; init; }
 }
