@@ -22,7 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ElectricityMarket.Import.Extensions.DependencyInjection;
 
-public static class ElectricityMarketImportOrchestratorModuleExtensions
+public static class ElectricityMarketImportModuleExtensions
 {
     public static IServiceCollection AddElectricityMarketImportModule(this IServiceCollection services, IConfiguration configuration)
     {
