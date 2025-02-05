@@ -24,6 +24,6 @@ public sealed record EnergySupplierPeriodDto(
     DateTimeOffset? RetiredAt,
     long? RetiredById,
     long BusinessTransactionDosId,
-    string? WebAccessCode,
-    string? EnergySupplier,
+    string WebAccessCode,
+    string EnergySupplier,
     IEnumerable<ContactDto> Contacts);

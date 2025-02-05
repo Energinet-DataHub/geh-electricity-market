@@ -16,16 +16,16 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
 public sealed record ContactAddressDto(
     long Id,
-    string? StreetName,
-    string? StreetCode,
-    string? BuildingNumber,
-    string? CityName,
-    string? CitySubDivisionName,
-    string? DarReference,
+    string StreetName,
+    string StreetCode,
+    string BuildingNumber,
+    string CityName,
+    string CitySubDivisionName,
+    string DarReference,
     bool IsProtectedAddress,
-    string? CountryCode,
-    string? Floor,
-    string? Room,
-    string? PostBox,
-    string? PostCode,
-    string? MunicipalityCode);
+    string CountryCode,
+    string Floor,
+    string Room,
+    string PostBox,
+    string PostCode,
+    string MunicipalityCode);
