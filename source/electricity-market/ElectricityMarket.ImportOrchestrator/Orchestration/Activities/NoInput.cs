@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
-
-public interface IGoldenImportHandler
-{
-    Task ImportAsync();
-}
+public sealed record NoInput;

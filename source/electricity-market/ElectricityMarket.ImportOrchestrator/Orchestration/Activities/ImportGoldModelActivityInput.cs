@@ -12,12 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Tasks;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
-
-public interface IQuarantineZone
+public class ImportGoldModelActivityInput
 {
-    Task<bool> IsQuarantinedAsync(MeteringPointTransaction meteringPointTransaction);
-    Task QuarantineAsync(MeteringPointTransaction meteringPointTransaction, string message);
+    public long MaxTransDossId { get; set; }
 }

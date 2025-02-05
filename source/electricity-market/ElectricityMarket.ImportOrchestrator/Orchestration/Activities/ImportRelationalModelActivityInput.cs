@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading;
-using System.Threading.Tasks;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
-
-public interface IImportHandler
+public class ImportRelationalModelActivityInput
 {
-    Task ImportAsync(CancellationToken cancellationToken);
+    public int Skip { get; set; }
+    public int Take { get; set; }
 }

@@ -1,12 +1,5 @@
 {
   "version": "2.0",
-  "extensions": {
-    "durableTask": {
-      "storageProvider": {
-        "connectionStringName": "DURABLETASK_STORAGE_CONNECTION_STRING"
-      }
-    }
-  },
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
@@ -14,6 +7,12 @@
         "excludedTypes": "Request"
       },
       "enableLiveMetricsFilters": true
+    }
+  },
+  "extensions": {
+    "durableTask": {
+      "maxConcurrentActivityFunctions": 20,
+      "maxConcurrentOrchestratorFunctions": 1
     }
   }
 }

@@ -12,37 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Diagnostics;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.DurableTask.Client;
 using Microsoft.EntityFrameworkCore;
 
-namespace ElectricityMarket.Import.Functions;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
-internal sealed class SpeedTestTimerTrigger
+public sealed class InitiateImportOrchestrationTimerTrigger
 {
     private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
-    private readonly IGoldenImportHandler _goldenImportHandler;
 
-    public SpeedTestTimerTrigger(
-        IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
-        IGoldenImportHandler goldenImportHandler)
+    public InitiateImportOrchestrationTimerTrigger(IElectricityMarketDatabaseContext electricityMarketDatabaseContext)
     {
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
-        _goldenImportHandler = goldenImportHandler;
     }
 
-    // [Function(nameof(SpeedTestAsync))]
-    public async Task SpeedTestAsync(
-        [TimerTrigger("0 */5 * * * *", RunOnStartup = true)]
+    [Function(nameof(InitiateImportOrchestrationAsync))]
+    public async Task InitiateImportOrchestrationAsync(
+        [TimerTrigger("0 */1 * * * *", RunOnStartup = true)]
         TimerInfo timer,
+        [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
-        ArgumentNullException.ThrowIfNull(executionContext);
+        ArgumentNullException.ThrowIfNull(client);
 
         var importState = await _electricityMarketDatabaseContext
-            .SpeedTestImportEntities
+            .ImportStates
             .SingleAsync()
             .ConfigureAwait(false);
 
@@ -51,14 +47,10 @@ internal sealed class SpeedTestTimerTrigger
             return;
         }
 
-        var sw = Stopwatch.StartNew();
-        await _goldenImportHandler.ImportAsync().ConfigureAwait(false);
-
         importState.Enabled = false;
-        importState.Offset = (int)sw.Elapsed.TotalSeconds;
 
-        await _electricityMarketDatabaseContext
-            .SaveChangesAsync()
-            .ConfigureAwait(false);
+        await client.ScheduleNewOrchestrationInstanceAsync(nameof(InitialImportOrchestrator.OrchestrateInitalImportAsync)).ConfigureAwait(false);
+
+        await _electricityMarketDatabaseContext.SaveChangesAsync().ConfigureAwait(false);
     }
 }
