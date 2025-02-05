@@ -39,7 +39,7 @@ public sealed class TruncateRelationalModelActivity
         await _databaseContext.Database.ExecuteSqlRawAsync(
             """
             DELETE FROM [electricitymarket].[EnergySupplyPeriod];
-            DELETE FROM [electricitymarket].[CommercialRealtion];
+            DELETE FROM [electricitymarket].[CommercialRelation];
             DELETE FROM [electricitymarket].[MeteringPointPeriod];
             DELETE FROM [electricitymarket].[MeteringPoint];
             """).ConfigureAwait(false);
