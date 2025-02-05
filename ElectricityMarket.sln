@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.Domain", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.ImportOrchestrator", "source\electricity-market\ElectricityMarket.ImportOrchestrator\ElectricityMarket.ImportOrchestrator.csproj", "{8973DFB9-B071-418B-9EEB-08629646DC26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.Import", "source\electricity-market\ElectricityMarket.Import\ElectricityMarket.Import.csproj", "{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{8973DFB9-B071-418B-9EEB-08629646DC26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8973DFB9-B071-418B-9EEB-08629646DC26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8973DFB9-B071-418B-9EEB-08629646DC26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{DA632F90-2298-40BA-A9C7-520AD7C7BED5} = {693EB24E-1DFB-4348-8FD0-8A103385F610}
 		{AC7E764C-12EF-492A-A60D-2E284AF2D31D} = {B7F4F1FB-15F3-408B-BD98-59D27D23518F}
 		{8973DFB9-B071-418B-9EEB-08629646DC26} = {B7F4F1FB-15F3-408B-BD98-59D27D23518F}
+		{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3} = {B7F4F1FB-15F3-408B-BD98-59D27D23518F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FDCE37D-9697-414A-BB98-DAD75154D454}
