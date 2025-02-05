@@ -12,18 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.MasterData;
-using NodaTime;
+using ElectricityMarket.Domain.Models.GridArea;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 
-namespace ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 
-public interface IMeteringPointRepository
+internal sealed class GridAreaMapper
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-
-    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
+    public static GridArea MapFromEntity(GridAreaEntity from)
+    {
+        return new GridArea(
+            new GridAreaId(from.Id),
+            new GridAreaName(from.Name),
+            new GridAreaCode(from.Code),
+            from.PriceAreaCode,
+            from.Type,
+            from.ValidFrom,
+            from.ValidTo);
+    }
 }

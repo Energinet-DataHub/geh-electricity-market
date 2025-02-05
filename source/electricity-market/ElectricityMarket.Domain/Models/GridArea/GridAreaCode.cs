@@ -12,18 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.MasterData;
-using NodaTime;
+namespace ElectricityMarket.Domain.Models.GridArea;
 
-namespace ElectricityMarket.Domain.Repositories;
-
-public interface IMeteringPointRepository
-{
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-
-    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
-}
+public sealed record GridAreaCode(string Value);

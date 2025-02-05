@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Models.Common;
 
-public sealed record GridAreaCode(string Value);
+public enum PriceAreaCode
+{
+    Dk1 = 1,
+    Dk2 = 2
+}

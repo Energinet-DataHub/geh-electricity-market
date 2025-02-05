@@ -12,18 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.MasterData;
-using NodaTime;
+namespace ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Repositories;
-
-public interface IMeteringPointRepository
+public enum EicFunction
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-
-    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
+    BalanceResponsibleParty = 1,
+    BillingAgent = 3,
+    EnergySupplier = 12,
+    GridAccessProvider = 14,
+    ImbalanceSettlementResponsible = 15,
+    MeterOperator = 22,
+    MeteredDataAdministrator = 23,
+    MeteredDataResponsible = 26,
+    MeteringPointAdministrator = 27,
+    SystemOperator = 45,
+    DanishEnergyAgency = 48,
+    DataHubAdministrator = 50,
+    IndependentAggregator = 51,
+    SerialEnergyTrader = 52,
+    Delegated = 53,
+    ItSupplier = 54,
 }

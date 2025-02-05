@@ -14,7 +14,6 @@
 
 using ElectricityMarket.Application.Models;
 using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.Common;
 using ElectricityMarket.Domain.Models.MasterData;
 
 namespace ElectricityMarket.Application.Mappers;

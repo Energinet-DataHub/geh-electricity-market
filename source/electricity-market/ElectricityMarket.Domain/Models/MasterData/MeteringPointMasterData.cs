@@ -13,10 +13,11 @@
 // limitations under the License.
 
 using System.Collections.Generic;
-using ElectricityMarket.Domain.Models.MasterData;
+using ElectricityMarket.Domain.Models.Common;
+using ElectricityMarket.Domain.Models.GridArea;
 using NodaTime;
 
-namespace ElectricityMarket.Domain.Models.Common;
+namespace ElectricityMarket.Domain.Models.MasterData;
 
 public sealed class MeteringPointMasterData
 {

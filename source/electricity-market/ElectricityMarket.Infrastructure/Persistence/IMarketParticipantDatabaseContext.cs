@@ -12,18 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.MasterData;
-using NodaTime;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
+using Microsoft.EntityFrameworkCore;
 
-namespace ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 
-public interface IMeteringPointRepository
+public interface IMarketParticipantDatabaseContext
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-
-    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
+    DbSet<DomainEventEntity> DomainEvents { get; }
+    DbSet<GridAreaEntity> GridAreas { get; }
 }
