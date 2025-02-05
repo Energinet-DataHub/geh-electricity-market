@@ -25,4 +25,4 @@ public sealed record ContactDto(
     string Email,
     string Attention,
     bool IsProtectedName,
-    ContactAddressDto Contact);
+    ContactAddressDto Address);
