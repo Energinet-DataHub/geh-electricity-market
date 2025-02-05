@@ -31,4 +31,5 @@ public sealed record MeteringPointMasterDataDto(
     string Resolution,
     MeasureUnit Unit,
     ProductId ProductId,
-    string? ParentIdentification);
+    string? ParentIdentification,
+    MeteringPointEnergySupplierDto EnergySupplier);

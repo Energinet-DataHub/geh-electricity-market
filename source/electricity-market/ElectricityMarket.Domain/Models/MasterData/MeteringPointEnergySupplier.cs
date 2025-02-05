@@ -12,8 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using MediatR;
+using ElectricityMarket.Domain.Models.Common;
+using NodaTime;
 
-namespace ElectricityMarket.Application.Commands.MasterData;
+namespace ElectricityMarket.Domain.Models.MasterData;
 
-public sealed record GetMeteringPointEnergySuppliersCommand(MeteringPointMasterDataRequestDto Request) : IRequest<GetMeteringPointEnergySuppliersResponse>;
+public sealed class MeteringPointEnergySupplier
+{
+    public ActorNumber EnergySupplier { get; set; } = null!;
+
+    public Instant StartDate { get; set; }
+
+    public Instant EndDate { get; set; }
+}

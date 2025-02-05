@@ -74,7 +74,7 @@ public sealed record GlnActorNumber : ActorNumber
                 sumOfOddNumbers += currentNumber;
         }
 
-        var sum = sumOfEvenNumbers * 3 + sumOfOddNumbers;
+        var sum = (sumOfEvenNumbers * 3) + sumOfOddNumbers;
 
         var equalOrHigherMultipleOf = (int)(Math.Ceiling(sum / 10.0) * 10);
         return equalOrHigherMultipleOf - sum;

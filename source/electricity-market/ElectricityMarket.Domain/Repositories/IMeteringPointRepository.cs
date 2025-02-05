@@ -14,7 +14,7 @@
 
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.Common;
-using ElectricityMarket.Domain.Models.EnergySupplier;
+using ElectricityMarket.Domain.Models.MasterData;
 using NodaTime;
 
 namespace ElectricityMarket.Domain.Repositories;
@@ -24,11 +24,6 @@ public interface IMeteringPointRepository
     Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
 
     IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset enddDate);
-
-    IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(
         string meteringPointIdentification,
         DateTimeOffset startDate,
         DateTimeOffset enddDate);

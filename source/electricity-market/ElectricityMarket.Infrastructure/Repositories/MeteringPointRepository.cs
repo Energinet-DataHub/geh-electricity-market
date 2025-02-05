@@ -53,15 +53,17 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(string meteringPointIdentification, DateTimeOffset startDate, DateTimeOffset enddDate)
     {
         var query =
-            from change in _context.MeteringPoints
-            join mpp in _context.MeteringPointPeriods on change.Id equals mpp.MeteringPointId
-            where change.Identification == meteringPointIdentification &&
+            from mp in _context.MeteringPoints
+            join mpp in _context.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
+            join cr in _context.CommercialRelations on mp.Id equals cr.MeteringPointId
+            where mp.Identification == meteringPointIdentification &&
                   mpp.ValidFrom <= startDate &&
-                  mpp.ValidTo > enddDate
+                  mpp.ValidTo > enddDate &&
+                  cr.StartDate < cr.EndDate
             orderby mpp.ValidFrom
             select new MeteringPointMasterData
             {
-                Identification = new MeteringPointIdentification(change.Identification),
+                Identification = new MeteringPointIdentification(mp.Identification),
                 ValidFrom = mpp.ValidFrom.ToInstant(),
                 ValidTo = mpp.ValidTo.ToInstant(),
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
@@ -76,6 +78,12 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                 ParentIdentification = mpp.ParentIdentification != null
                     ? new MeteringPointIdentification(mpp.ParentIdentification)
                     : null,
+                EnergySupplier = new MeteringPointEnergySupplier
+                {
+                    EnergySupplier = ActorNumber.Create(cr.EnergySupplier),
+                    StartDate = cr.StartDate.ToInstant(),
+                    EndDate = cr.EndDate.ToInstant(),
+                }
             };
 
         return query.AsAsyncEnumerable();

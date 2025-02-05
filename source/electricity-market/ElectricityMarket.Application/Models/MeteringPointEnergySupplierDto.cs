@@ -19,7 +19,6 @@ using ElectricityMarket.Domain.Models.MasterData;
 namespace ElectricityMarket.Application.Models;
 
 public sealed record MeteringPointEnergySupplierDto(
-    string Identification,
     string EnergySupplier,
     DateTimeOffset StartDate,
     DateTimeOffset EndDate);
