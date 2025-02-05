@@ -12,16 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+using ElectricityMarket.Domain.Models.GridArea;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Repositories;
 
-public sealed class MeteringPointEnergySupplier
+public interface IActorRepository
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
-
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    Task<Actor?> GetActorByAsync(ActorNumber actorNumber);
 }

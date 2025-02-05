@@ -29,7 +29,7 @@ using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
-public sealed class MarketParticipantRepository : IMarketParticipantRepository
+public sealed class GridAreaRepository : IGridAreaRepository
 {
     private readonly IMarketParticipantDatabaseContext _context;
 
@@ -38,7 +38,7 @@ public sealed class MarketParticipantRepository : IMarketParticipantRepository
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    public MarketParticipantRepository(IMarketParticipantDatabaseContext context)
+    public GridAreaRepository(IMarketParticipantDatabaseContext context)
     {
         _context = context;
     }

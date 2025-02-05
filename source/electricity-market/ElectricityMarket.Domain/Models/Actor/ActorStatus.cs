@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+namespace ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
-
-public sealed class MeteringPointEnergySupplier
+public enum ActorStatus
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
-
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    New = 1,
+    Active = 2,
+    Inactive = 3,
+    Passive = 4
 }

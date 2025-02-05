@@ -12,23 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Models.Actor;
 
-namespace ElectricityMarket.Domain.Models.Common;
-
-public abstract record ActorNumber
-{
-    protected ActorNumber(string value)
-    {
-        Value = value;
-    }
-
-    public string Value { get; }
-
-    public static ActorNumber Create(string value) => value switch
-    {
-        _ when EicActorNumber.TryCreate(value, out var eic) => eic,
-        _ when GlnActorNumber.TryCreate(value, out var gln) => gln,
-        _ => new UnknownActorNumber(value),
-    };
-}
+public sealed record ActorName(string Value);

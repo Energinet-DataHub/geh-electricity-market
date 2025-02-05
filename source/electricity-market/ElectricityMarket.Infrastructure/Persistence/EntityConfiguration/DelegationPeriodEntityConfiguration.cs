@@ -12,16 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public interface IMarketParticipantDatabaseContext
+public sealed class DelegationPeriodEntityConfiguration : IEntityTypeConfiguration<DelegationPeriodEntity>
 {
-    DbSet<DomainEventEntity> DomainEvents { get; }
-    DbSet<GridAreaEntity> GridAreas { get; }
-    DbSet<ActorEntity> Actors { get; }
-    DbSet<ProcessDelegationEntity> ProcessDelegations { get; }
-    DbSet<DelegationPeriodEntity> DelegationPeriods { get; }
+    public void Configure(EntityTypeBuilder<DelegationPeriodEntity> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.ToTable("DelegationPeriod");
+        builder.HasKey(d => d.Id);
+    }
 }

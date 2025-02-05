@@ -12,16 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+using System;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Models;
 
-public sealed class MeteringPointEnergySupplier
+public sealed record ProcessDelegationId
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
+    public ProcessDelegationId(Guid value)
+    {
+        Value = value;
+    }
 
-    public Instant StartDate { get; set; }
+    public Guid Value { get; }
 
-    public Instant EndDate { get; set; }
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
 }

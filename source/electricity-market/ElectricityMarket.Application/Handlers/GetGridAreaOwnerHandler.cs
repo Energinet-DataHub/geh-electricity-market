@@ -24,9 +24,9 @@ namespace ElectricityMarket.Application.Handlers;
 
 public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCommand, GridAreaOwnerDto>
 {
-    private readonly IMarketParticipantRepository _participantRepository;
+    private readonly IGridAreaRepository _participantRepository;
 
-    public GetGridAreaOwnerHandler(IMarketParticipantRepository participantRepository)
+    public GetGridAreaOwnerHandler(IGridAreaRepository participantRepository)
     {
         _participantRepository = participantRepository;
     }

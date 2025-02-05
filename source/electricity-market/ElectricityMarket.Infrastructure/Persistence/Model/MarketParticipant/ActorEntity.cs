@@ -12,14 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.GridArea;
+using System;
+using System.Collections.ObjectModel;
+using ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 
-public interface IMarketParticipantRepository
+public sealed class ActorEntity
 {
-    IAsyncEnumerable<GridAreaOwnershipAssignedEvent> GetGridAreaOwnershipAssignedEventsAsync();
+    public Guid Id { get; set; }
+    public Guid? ActorId { get; set; }
+    public Guid OrganizationId { get; set; }
 
-    Task<GridArea?> GetGridAreaAsync(GridAreaCode code);
+    public bool IsFas { get; set; }
+    public string ActorNumber { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public ActorStatus Status { get; set; }
+    public MarketRoleEntity MarketRole { get; set; } = null!;
 }

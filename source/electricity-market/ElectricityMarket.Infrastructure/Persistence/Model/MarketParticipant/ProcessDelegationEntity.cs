@@ -12,24 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.Common;
+using System;
+using System.Collections.ObjectModel;
+using ElectricityMarket.Domain.Models.Common;
 
-public enum EicFunction
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
+
+public sealed class ProcessDelegationEntity
 {
-    BalanceResponsibleParty = 1,
-    BillingAgent = 3,
-    EnergySupplier = 12,
-    GridAccessProvider = 14,
-    ImbalanceSettlementResponsible = 15,
-    MeterOperator = 22,
-    MeteredDataAdministrator = 23,
-    MeteredDataResponsible = 26,
-    MeteringPointAdministrator = 27,
-    SystemOperator = 45,
-    DanishEnergyAgency = 48,
-    DataHubAdministrator = 50,
-    IndependentAggregator = 51,
-    SerialEnergyTrader = 52,
-    Delegated = 53,
-    ItSupplier = 54,
+    public Guid Id { get; set; }
+    public Guid DelegatedByActorId { get; set; }
+    public DelegatedProcess DelegatedProcess { get; set; }
+
+    public Collection<DelegationPeriodEntity> Delegations { get; } = new();
 }

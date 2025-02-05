@@ -12,16 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Models.Actor;
 
-public sealed class MeteringPointEnergySupplier
+public sealed class ActorMarketRole
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
+    public ActorMarketRole(EicFunction eic, IEnumerable<ActorGridArea> gridAreas, string? comment)
+    {
+        GridAreas = gridAreas.ToList();
+        Function = eic;
+        Comment = comment;
+    }
 
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    public IReadOnlyCollection<ActorGridArea> GridAreas { get; }
+    public EicFunction Function { get; }
+    public string? Comment { get; }
 }

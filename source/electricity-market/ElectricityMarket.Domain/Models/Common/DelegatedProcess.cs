@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+namespace ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
-
-public sealed class MeteringPointEnergySupplier
+public enum DelegatedProcess
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
-
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    RequestEnergyResults = 1,
+    ReceiveEnergyResults,
+    RequestWholesaleResults,
+    ReceiveWholesaleResults,
+    RequestMeteringPointData,
+    ReceiveMeteringPointData,
 }

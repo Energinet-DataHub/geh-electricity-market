@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+using System;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 
-public sealed class MeteringPointEnergySupplier
+public sealed class DelegationPeriodEntity
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
-
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    public Guid Id { get; set; }
+    public Guid ProcessDelegationId { get; set; }
+    public Guid DelegatedToActorId { get; set; }
+    public Guid GridAreaId { get; set; }
+    public DateTimeOffset StartsAt { get; set; }
+    public DateTimeOffset? StopsAt { get; set; }
 }

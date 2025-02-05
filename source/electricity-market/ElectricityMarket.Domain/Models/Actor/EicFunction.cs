@@ -12,16 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
-
-public sealed class MeteringPointEnergySupplier
+public enum EicFunction
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
-
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    BalanceResponsibleParty = 1,
+    BillingAgent = 3,
+    EnergySupplier = 12,
+    GridAccessProvider = 14,
+    ImbalanceSettlementResponsible = 15,
+    MeterOperator = 22,
+    MeteredDataAdministrator = 23,
+    MeteredDataResponsible = 26,
+    MeteringPointAdministrator = 27,
+    SystemOperator = 45,
+    DanishEnergyAgency = 48,
+    DataHubAdministrator = 50,
+    IndependentAggregator = 51,
+    SerialEnergyTrader = 52,
+    Delegated = 53,
+    ItSupplier = 54,
 }

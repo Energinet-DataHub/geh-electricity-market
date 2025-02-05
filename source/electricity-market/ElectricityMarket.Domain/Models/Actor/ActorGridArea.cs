@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ElectricityMarket.Domain.Models.GridArea;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Models.Actor;
 
-public sealed class MeteringPointEnergySupplier
+public sealed class ActorGridArea
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
+    public ActorGridArea(GridAreaId id)
+    {
+        Id = id;
+    }
 
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    public GridAreaId Id { get; }
 }

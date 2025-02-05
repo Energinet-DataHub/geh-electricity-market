@@ -12,35 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.ComponentModel;
-using System.Text.Json.Serialization;
 using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.GridArea;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 using NodaTime;
 
-namespace ElectricityMarket.Domain.Models;
+namespace ElectricityMarket.Domain;
 
-public sealed class GridAreaOwnershipAssignedEvent
+public sealed class DelegationPeriod
 {
-    public GridAreaOwnershipAssignedEvent(
-        Guid eventId,
-        ActorNumber actorNumber,
-        EicFunction actorRole,
+    public DelegationPeriod(
+        ActorId delegatedToActorId,
         GridAreaId gridAreaId,
-        Instant validFrom)
+        Instant startsAt,
+        Instant? stopsAt)
     {
-        EventId = eventId;
-        ActorNumber = actorNumber;
-        ActorRole = actorRole;
+        DelegatedToActorId = delegatedToActorId;
         GridAreaId = gridAreaId;
-        ValidFrom = validFrom;
+        StartsAt = startsAt;
+        StopsAt = stopsAt;
     }
 
-    public Guid EventId { get; init; }
-    public ActorNumber ActorNumber { get; }
-    public EicFunction ActorRole { get; }
+    public ActorId DelegatedToActorId { get; }
     public GridAreaId GridAreaId { get; }
-    public Instant ValidFrom { get; }
+    public Instant StartsAt { get; }
+    public Instant? StopsAt { get; }
 }

@@ -12,16 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+using ElectricityMarket.Domain.Models.Common;
+using ElectricityMarket.Domain.Models.MasterData;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Models.Actor;
 
-public sealed class MeteringPointEnergySupplier
+public abstract record ActorNumber
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
+    protected ActorNumber(string value)
+    {
+        Value = value;
+    }
 
-    public Instant StartDate { get; set; }
+    public string Value { get; }
 
-    public Instant EndDate { get; set; }
+    public static ActorNumber Create(string value) => value switch
+    {
+        _ when EicActorNumber.TryCreate(value, out var eic) => eic,
+        _ when GlnActorNumber.TryCreate(value, out var gln) => gln,
+        _ => new UnknownActorNumber(value),
+    };
 }

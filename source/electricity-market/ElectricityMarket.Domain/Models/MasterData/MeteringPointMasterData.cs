@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using System.Collections.Generic;
-using ElectricityMarket.Domain.Models.Common;
+using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.GridArea;
 using NodaTime;
 

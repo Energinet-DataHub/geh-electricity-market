@@ -12,16 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actor;
-using NodaTime;
+using ElectricityMarket.Domain.Models;
+using ElectricityMarket.Domain.Models.Common;
+using ElectricityMarket.Domain.Models.GridArea;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace ElectricityMarket.Domain.Repositories;
 
-public sealed class MeteringPointEnergySupplier
+public interface IProcessDelegationRepository
 {
-    public ActorNumber EnergySupplier { get; set; } = null!;
-
-    public Instant StartDate { get; set; }
-
-    public Instant EndDate { get; set; }
+    Task<ProcessDelegation?> GetProcessDelegationAsync(ProcessDelegationId actorId, DelegatedProcess delegatedProcess);
 }
