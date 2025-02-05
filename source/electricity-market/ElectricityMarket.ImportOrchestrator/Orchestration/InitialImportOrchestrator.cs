@@ -38,8 +38,8 @@ public sealed class InitialImportOrchestrator
     {
         var maxTransDosId = await orchestrationContext.CallActivityAsync<long>(nameof(FindMaxTransDossIdActivity));
 
-        await orchestrationContext.CallActivityAsync(nameof(TruncateGoldModelActivity));
-
+        // todo - missing permissions
+        // await orchestrationContext.CallActivityAsync(nameof(TruncateGoldModelActivity));
         await orchestrationContext.CallActivityAsync(nameof(ImportGoldModelActivity), new ImportGoldModelActivityInput
         {
             MaxTransDossId = maxTransDosId,
