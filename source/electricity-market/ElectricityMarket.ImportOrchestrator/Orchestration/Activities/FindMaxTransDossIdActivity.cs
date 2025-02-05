@@ -17,7 +17,7 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
-namespace ElectricityMarket.Import.Orchestration.Activities;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class FindMaxTransDossIdActivity
 {
@@ -47,6 +47,6 @@ public sealed class FindMaxTransDossIdActivity
             return r.trans_dos_id;
         }
 
-        throw new InvalidOperationException();
+        throw new InvalidOperationException("No rows found in silver model");
     }
 }

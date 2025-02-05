@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Import.Orchestration.Activities;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed record NoInput;
+public class ImportRelationalModelActivityInput
+{
+    public int Skip { get; set; }
+    public int Take { get; set; }
+}

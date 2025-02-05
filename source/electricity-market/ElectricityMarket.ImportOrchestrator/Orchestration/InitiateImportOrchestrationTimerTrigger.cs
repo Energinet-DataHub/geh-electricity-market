@@ -17,7 +17,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask.Client;
 using Microsoft.EntityFrameworkCore;
 
-namespace ElectricityMarket.Import.Orchestration;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
 public sealed class InitiateImportOrchestrationTimerTrigger
 {

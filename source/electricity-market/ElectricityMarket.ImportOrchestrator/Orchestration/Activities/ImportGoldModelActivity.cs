@@ -12,23 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using FastMember;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
+public sealed class ImportGoldModelActivity : IDisposable
 {
     private static readonly string[] _columnOrder =
     [
@@ -53,19 +51,37 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
 
     private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
-    private readonly ILogger<GoldenImportHandler> _logger;
+    private readonly ILogger<ImportGoldModelActivity> _logger;
 
-    public GoldenImportHandler(
+    public ImportGoldModelActivity(
         IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
         DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
-        ILogger<GoldenImportHandler> logger)
+        ILogger<ImportGoldModelActivity> logger)
     {
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
         _logger = logger;
     }
 
-    public async Task ImportAsync(long maxTransDossId)
+    [Function(nameof(ImportGoldModelActivity))]
+    public async Task RunAsync([ActivityTrigger] ImportGoldModelActivityInput input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        var sw = Stopwatch.StartNew();
+
+        await ImportAsync(input.MaxTransDossId).ConfigureAwait(false);
+
+        _logger.LogWarning("Gold model imported in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
+    }
+
+    public void Dispose()
+    {
+        _importCollection.Dispose();
+        _submitCollection.Dispose();
+    }
+
+    private async Task ImportAsync(long maxTransDossId)
     {
         var importSilver = Task.Run(async () =>
         {
@@ -96,12 +112,6 @@ public sealed class GoldenImportHandler : IGoldenImportHandler, IDisposable
         var bulkInsert = Task.Run(BulkInsertAsync);
 
         await Task.WhenAll(importSilver, goldTransform, bulkInsert).ConfigureAwait(false);
-    }
-
-    public void Dispose()
-    {
-        _importCollection.Dispose();
-        _submitCollection.Dispose();
     }
 
     private async Task ImportDataAsync(long maximumBusinessTransDossId)

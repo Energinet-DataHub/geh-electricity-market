@@ -18,7 +18,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ElectricityMarket.Import.Orchestration.Activities;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class TruncateRelationalModelActivity
 {

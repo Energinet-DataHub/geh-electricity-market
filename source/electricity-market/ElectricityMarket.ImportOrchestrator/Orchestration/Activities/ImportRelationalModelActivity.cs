@@ -21,7 +21,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ElectricityMarket.Import.Orchestration.Activities;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class ImportRelationalModelActivity
 {
@@ -40,11 +40,11 @@ public sealed class ImportRelationalModelActivity
     }
 
     [Function(nameof(ImportRelationalModelActivity))]
-    public async Task RunAsync([ActivityTrigger] ActivityInput input)
+    public async Task RunAsync([ActivityTrigger] ImportRelationalModelActivityInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        _logger.LogWarning("Import started {skip} - {take}", input.MeteringPointRange.Skip, input.MeteringPointRange.Take);
+        _logger.LogWarning("Import started {skip} - {take}", input.Skip, input.Take);
 
         var sw = Stopwatch.StartNew();
 
@@ -58,8 +58,6 @@ public sealed class ImportRelationalModelActivity
         {
             await using (transaction.ConfigureAwait(false))
             {
-                var (skip, take) = input.MeteringPointRange;
-
                 var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
 
                 await using (readContext)
@@ -69,8 +67,8 @@ public sealed class ImportRelationalModelActivity
                         .Select(t => t.metering_point_id)
                         .Distinct()
                         .OrderBy(x => x)
-                        .Skip(skip)
-                        .Take(take);
+                        .Skip(input.Skip)
+                        .Take(input.Take);
 
                     var query = readContext.ImportedTransactions
                         .AsNoTracking()
@@ -118,7 +116,7 @@ public sealed class ImportRelationalModelActivity
                     await transaction.CommitAsync().ConfigureAwait(false);
                 }
 
-                _logger.LogWarning("Imported batch {skip} - {take} in {ElapsedMilliseconds} ms", skip, take, sw.ElapsedMilliseconds);
+                _logger.LogWarning("Imported batch {skip} - {take} in {ElapsedMilliseconds} ms", input.Skip, input.Take, sw.ElapsedMilliseconds);
             }
         }
     }
@@ -137,8 +135,8 @@ public sealed class ImportRelationalModelActivity
             record.type_of_mp.TrimEnd(),
             record.sub_type_of_mp.TrimEnd(),
             record.energy_timeseries_measure_unit.TrimEnd(),
-            record.web_access_code?.TrimEnd() ?? "NULL",
-            record.balance_supplier_id?.TrimEnd() ?? "NULL");
+            record.web_access_code?.TrimEnd(),
+            record.balance_supplier_id?.TrimEnd());
     }
 
     private async Task RunImportChainAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
@@ -157,23 +155,4 @@ public sealed class ImportRelationalModelActivity
             _logger.LogWarning("Unhandled transaction trans_dos_id: {TransactionId} state_id: {StateId}", meteringPointTransaction.BusinessTransactionDosId, meteringPointTransaction.MeteringPointStateId);
         }
     }
-
-#pragma warning disable CA1034
-    public class ActivityInput
-    {
-        public Page MeteringPointRange { get; set; } = null!;
-
-        public record Page
-        {
-            public int Skip { get; set; }
-            public int Take { get; set; }
-
-            public void Deconstruct(out int skip, out int take)
-            {
-                skip = Skip;
-                take = Take;
-            }
-        }
-    }
-#pragma warning restore CA1034
 }

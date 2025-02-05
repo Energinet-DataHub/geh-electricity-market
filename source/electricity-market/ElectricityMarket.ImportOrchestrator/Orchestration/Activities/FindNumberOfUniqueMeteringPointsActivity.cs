@@ -16,7 +16,7 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 
-namespace ElectricityMarket.Import.Orchestration.Activities;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class FindNumberOfUniqueMeteringPointsActivity
 {

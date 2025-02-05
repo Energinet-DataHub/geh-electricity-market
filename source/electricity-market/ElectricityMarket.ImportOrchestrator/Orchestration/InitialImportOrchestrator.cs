@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Import.Orchestration.Activities;
+using ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using RetryContext = Microsoft.DurableTask.RetryContext;
 
-namespace ElectricityMarket.Import.Orchestration;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
 #pragma warning disable CA2007
 public sealed class InitialImportOrchestrator
@@ -30,43 +30,48 @@ public sealed class InitialImportOrchestrator
         ArgumentNullException.ThrowIfNull(orchestrationContext);
         ArgumentNullException.ThrowIfNull(executionContext);
 
+        await ImportGoldModelAsync(orchestrationContext);
+        await ImportRelationalModelAsync(orchestrationContext);
+    }
+
+    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext)
+    {
         var maxTransDosId = await orchestrationContext.CallActivityAsync<long>(nameof(FindMaxTransDossIdActivity));
 
         await orchestrationContext.CallActivityAsync(nameof(TruncateGoldModelActivity));
 
-        await orchestrationContext.CallActivityAsync(nameof(ImportGoldModelActivity), new ImportGoldModelActivity.ActivityInput
+        await orchestrationContext.CallActivityAsync(nameof(ImportGoldModelActivity), new ImportGoldModelActivityInput
         {
             MaxTransDossId = maxTransDosId,
         });
+    }
+
+    private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
+    {
         await orchestrationContext.CallActivityAsync(nameof(TruncateRelationalModelActivity));
 
-        var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
         var batchSize = 50_000;
+        var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
         var activityCount = (int)Math.Ceiling(numberOfMeteringPoints / (double)batchSize);
-        var offsets = Enumerable.Range(0, activityCount)
-            .Select(i =>
-                (skip: i * batchSize, take: i == activityCount - 1 ? numberOfMeteringPoints - (i * batchSize) : batchSize)).ToList();
-
         var dataSourceExceptionHandler = TaskOptions.FromRetryHandler(HandleDataSourceExceptions);
 
-        var tasks = offsets.Select(offset => orchestrationContext.CallActivityAsync(
-            nameof(ImportRelationalModelActivity),
-            new ImportRelationalModelActivity.ActivityInput
-            {
-                MeteringPointRange = new ImportRelationalModelActivity.ActivityInput.Page
+        var tasks = Enumerable.Range(0, activityCount)
+            .Select(i => (skip: i * batchSize, take: i == activityCount - 1 ? numberOfMeteringPoints - (i * batchSize) : batchSize))
+            .Select(offset => orchestrationContext.CallActivityAsync(
+                nameof(ImportRelationalModelActivity),
+                new ImportRelationalModelActivityInput
                 {
                     Skip = offset.skip,
                     Take = offset.take,
                 },
-            },
-            dataSourceExceptionHandler));
+                dataSourceExceptionHandler));
 
         await Task.WhenAll(tasks);
-    }
 
-    private static bool HandleDataSourceExceptions(RetryContext context)
-    {
-        return context.LastAttemptNumber < 20;
+        static bool HandleDataSourceExceptions(RetryContext context)
+        {
+            return context.LastAttemptNumber < 20;
+        }
     }
 }
 #pragma warning restore CA2007
