@@ -32,7 +32,6 @@ public sealed record MeteringPointPeriodDto(
     int ScheduledMeterReadingMonth,
     string AssetType,
     string DisconnectionType,
-    string MeasurementUnitType,
     string FuelType,
     string FromGridAreaCode,
     string ToGridAreaCode,
@@ -42,7 +41,6 @@ public sealed record MeteringPointPeriodDto(
     string ConnectionType,
     string NetSettlementGroup,
     MeteringPointPeriodDto? ParentMeteringPoint, // TODO: Check if this is correct
-    string PhysicalStatus,
     long PowerLimitA,
     string PowerPlantGsrn,
     string ProductCode,
