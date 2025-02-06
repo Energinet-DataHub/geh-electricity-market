@@ -29,7 +29,7 @@ internal sealed class CommercialRelationMapper
             entity.EndDate.ToDateTimeOffset(),
             entity.EnergySupplier,
             entity.ModifiedAt.ToDateTimeOffset(),
-            entity.EnergyPeriods.Select(Map),
+            entity.EnergySupplyPeriods.Select(Map),
             entity.ElectricalHeatingPeriods.Select(Map));
     }
 
