@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.ObjectModel;
-using ElectricityMarket.Domain.Models.Actor;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 

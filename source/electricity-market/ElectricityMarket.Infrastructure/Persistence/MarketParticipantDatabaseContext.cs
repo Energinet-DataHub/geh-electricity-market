@@ -36,6 +36,8 @@ public class MarketParticipantDatabaseContext : DbContext, IMarketParticipantDat
     public DbSet<ActorEntity> Actors { get; private set; } = null!;
     public DbSet<ProcessDelegationEntity> ProcessDelegations { get; private set; } = null!;
     public DbSet<DelegationPeriodEntity> DelegationPeriods { get; private set; } = null!;
+    public DbSet<MarketRoleEntity> MarketRoles { get; private set; } = null!;
+    public DbSet<MarketRoleGridAreaEntity> MarketRoleGridAreas { get; private set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +47,8 @@ public class MarketParticipantDatabaseContext : DbContext, IMarketParticipantDat
         modelBuilder.ApplyConfiguration(new ActorEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ProcessDelegationEntityConfiguration());
         modelBuilder.ApplyConfiguration(new DelegationPeriodEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MarketRoleEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MarketRoleGridAreaEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }
