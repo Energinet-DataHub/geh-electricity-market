@@ -52,7 +52,7 @@ public sealed class TruncateRelationalModelActivity
 #pragma warning disable EF1002
                 affectedRows = await _databaseContext.Database.ExecuteSqlRawAsync(
 #pragma warning restore EF1002
-                    $"DELETE TOP (50000) FROM [electricitymarket].[{table}];").ConfigureAwait(false);
+                    $"DELETE TOP (5000) FROM [electricitymarket].[{table}];").ConfigureAwait(false);
             }
             while (affectedRows > 0);
         }
