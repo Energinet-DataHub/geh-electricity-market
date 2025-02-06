@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Text.Json.Serialization;
 using ElectricityMarket.Domain.Models.Common;
 
 namespace ElectricityMarket.Domain.Models.Actor;
 
+[JsonDerivedType(typeof(EicActorNumber), typeDiscriminator: "eic")]
+[JsonDerivedType(typeof(GlnActorNumber), typeDiscriminator: "gln")]
+[JsonDerivedType(typeof(UnknownActorNumber), typeDiscriminator: "unknown")]
 public abstract record ActorNumber
 {
     protected ActorNumber(string value)

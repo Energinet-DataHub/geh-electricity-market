@@ -20,7 +20,7 @@ namespace ElectricityMarket.Domain.Models.Common;
 
 public sealed record GlnActorNumber : ActorNumber
 {
-    private GlnActorNumber(string value)
+    public GlnActorNumber(string value)
         : base(value)
     {
         if (!IsValid(value))

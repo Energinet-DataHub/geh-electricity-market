@@ -19,7 +19,7 @@ namespace ElectricityMarket.Domain.Models.Common;
 
 internal sealed record EicActorNumber : ActorNumber
 {
-    private EicActorNumber(string value)
+    public EicActorNumber(string value)
         : base(value)
     {
         if (!IsValid(value))
