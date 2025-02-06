@@ -50,7 +50,7 @@ public sealed class InitialImportOrchestrator
         await orchestrationContext.CallActivityAsync(nameof(TruncateRelationalModelActivity));
         var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
 
-        var batchSize = 50_000;
+        var batchSize = 5_000;
         var activityCount = (int)Math.Ceiling(numberOfMeteringPoints / (double)batchSize);
         var dataSourceExceptionHandler = TaskOptions.FromRetryHandler(HandleDataSourceExceptions);
 
