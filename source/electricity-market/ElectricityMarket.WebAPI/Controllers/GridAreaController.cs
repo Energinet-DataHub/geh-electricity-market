@@ -31,7 +31,7 @@ public class GridAreaController : ControllerBase
     }
 
     [HttpGet("owner/{gridAreaCode}")]
-    public async Task<ActionResult<GridAreaOwnerDto>> GetMeteringPointMasterDataChangesAsync(string gridAreaCode)
+    public async Task<ActionResult<GridAreaOwnerDto>> GetGridAreaOwnerAsync(string gridAreaCode)
     {
         var command = new GetGridAreaOwnerCommand(gridAreaCode);
 

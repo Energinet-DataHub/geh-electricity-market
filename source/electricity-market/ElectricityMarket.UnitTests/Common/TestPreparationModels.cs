@@ -13,11 +13,9 @@
 // limitations under the License.
 
 using System;
-using System.Linq;
 using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.Common;
 using ElectricityMarket.Domain.Models.GridArea;
-using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Models;
-
 namespace ElectricityMarket.Application.Models;
 
 public sealed record MeteringPointPeriodDto(

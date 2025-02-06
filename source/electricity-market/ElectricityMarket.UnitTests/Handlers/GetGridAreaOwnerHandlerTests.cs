@@ -19,7 +19,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ElectricityMarket.Application.Commands.GridArea;
-using ElectricityMarket.Application.Commands.MeteringPoints;
 using ElectricityMarket.Application.Handlers;
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.Actor;
