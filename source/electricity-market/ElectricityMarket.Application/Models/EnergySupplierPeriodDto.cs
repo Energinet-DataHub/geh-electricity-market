@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Application.Models;
+using System;
+using System.Collections.Generic;
+
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
 public sealed record EnergySupplierPeriodDto(
     long Id,
@@ -22,4 +25,5 @@ public sealed record EnergySupplierPeriodDto(
     long? RetiredById,
     long BusinessTransactionDosId,
     string WebAccessCode,
-    string EnergySupplier);
+    string EnergySupplier,
+    IEnumerable<ContactDto> Contacts);

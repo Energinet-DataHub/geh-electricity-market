@@ -12,18 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Commands.Contacts;
-using MediatR;
+using NodaTime;
 
-namespace ElectricityMarket.Application.Handlers;
+namespace ElectricityMarket.Domain.Models;
 
-public sealed class GetContactCprHandler : IRequestHandler<GetContactCprCommand, string>
-{
-    public async Task<string> Handle(GetContactCprCommand request, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-
-        // We currently don't have contact data imported, so we return a placeholder value
-        return await Task.FromResult("1111111546").ConfigureAwait(false);
-    }
-}
+public sealed record ElectricalHeatingPeriod(
+    long Id,
+    Instant ValidFrom,
+    Instant ValidTo,
+    Instant? RetiredAt,
+    long? RetiredById,
+    long BusinessTransactionDosId,
+    string TransactionType);

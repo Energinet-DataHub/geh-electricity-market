@@ -31,7 +31,7 @@ var host = new HostBuilder()
         // Shared by modules
         services.AddNodaTimeForApplication();
 
-        // revision log
+        // Revision log
         services.AddRevisionLogIntegrationModule(context.Configuration);
 
         // Modules

@@ -34,7 +34,7 @@ public class MeteringPointController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpGet("contact/{contactId:long}/")]
+    [HttpGet("contact/{contactId:long}/cpr")]
     [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
     public async Task<ActionResult<string>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
     {

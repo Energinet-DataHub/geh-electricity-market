@@ -29,7 +29,8 @@ internal sealed class CommercialRelationMapper
             entity.EndDate.ToDateTimeOffset(),
             entity.EnergySupplier,
             entity.ModifiedAt.ToDateTimeOffset(),
-            entity.EnergyPeriods.Select(Map));
+            entity.EnergySupplyPeriods.Select(Map),
+            entity.ElectricalHeatingPeriods.Select(Map));
     }
 
     public static EnergySupplierPeriodDto Map(EnergySupplierPeriod periodEntity)
@@ -42,6 +43,19 @@ internal sealed class CommercialRelationMapper
             periodEntity.RetiredById,
             periodEntity.BusinessTransactionDosId,
             periodEntity.WebAccessCode,
-            periodEntity.EnergySupplier);
+            periodEntity.EnergySupplier,
+            []);
+    }
+
+    public static ElectricalHeatingPeriodDto Map(ElectricalHeatingPeriod periodEntity)
+    {
+        return new ElectricalHeatingPeriodDto(
+            periodEntity.Id,
+            periodEntity.ValidFrom.ToDateTimeOffset(),
+            periodEntity.ValidTo.ToDateTimeOffset(),
+            periodEntity.RetiredAt?.ToDateTimeOffset(),
+            periodEntity.RetiredById,
+            periodEntity.BusinessTransactionDosId,
+            periodEntity.TransactionType);
     }
 }

@@ -12,18 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Commands.Contacts;
-using MediatR;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-namespace ElectricityMarket.Application.Handlers;
-
-public sealed class GetContactCprHandler : IRequestHandler<GetContactCprCommand, string>
+public class ImportRelationalModelActivityInput
 {
-    public async Task<string> Handle(GetContactCprCommand request, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-
-        // We currently don't have contact data imported, so we return a placeholder value
-        return await Task.FromResult("1111111546").ConfigureAwait(false);
-    }
+    public int Skip { get; set; }
+    public int Take { get; set; }
 }

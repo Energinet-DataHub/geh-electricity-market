@@ -14,4 +14,8 @@
 
 namespace ElectricityMarket.Application.Models;
 
-public sealed record MeteringPointDto(long Id, string Identification, IEnumerable<MeteringPointPeriodDto> MeteringPointPeriod, IEnumerable<CommercialRelationDto> CommercialRelations);
+public sealed record MeteringPointDto(
+    long Id,
+    string Identification,
+    IEnumerable<MeteringPointPeriodDto> MeteringPointPeriod,
+    IEnumerable<CommercialRelationDto> CommercialRelations);

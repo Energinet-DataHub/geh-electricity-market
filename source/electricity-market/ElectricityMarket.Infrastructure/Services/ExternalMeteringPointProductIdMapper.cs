@@ -12,18 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Commands.Contacts;
-using MediatR;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
-namespace ElectricityMarket.Application.Handlers;
-
-public sealed class GetContactCprHandler : IRequestHandler<GetContactCprCommand, string>
+public static class ExternalMeteringPointProductIdMapper
 {
-    public async Task<string> Handle(GetContactCprCommand request, CancellationToken cancellationToken)
+    public static string Map(string externalValue)
     {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-
-        // We currently don't have contact data imported, so we return a placeholder value
-        return await Task.FromResult("1111111546").ConfigureAwait(false);
+        return externalValue switch
+        {
+            "5790001330590" => "Tariff",
+            "5790001330606" => "FuelQuantity",
+            "8716867000016" => "PowerActive",
+            "8716867000023" => "PowerReactive",
+            "8716867000030" => "EnergyActive",
+            "8716867000047" => "EnergyReactive",
+            _ => $"Unmapped: {externalValue}",
+        };
     }
 }
