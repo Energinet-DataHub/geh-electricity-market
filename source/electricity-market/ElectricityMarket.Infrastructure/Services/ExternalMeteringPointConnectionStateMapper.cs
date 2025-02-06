@@ -20,8 +20,8 @@ public static class ExternalMeteringPointConnectionStateMapper
     {
         return externalValue switch
         {
-            "D01" => "Not used",
-            "D02" => "Closed down",
+            "D01" => "NotUsed",
+            "D02" => "ClosedDown",
             "D03" => "New",
             "E22" => "Connected",
             "E23" => "Disconnected",

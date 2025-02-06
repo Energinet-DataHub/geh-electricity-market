@@ -25,5 +25,5 @@ public sealed record CommercialRelationDto(
     DateTimeOffset EndDate,
     string EnergySupplier,
     DateTimeOffset ModifiedAt,
-    IEnumerable<EnergySupplierPeriodDto> EnergyPeriods,
+    IEnumerable<EnergySupplierPeriodDto> EnergySupplyPeriods,
     IEnumerable<ElectricalHeatingPeriodDto> ElectricalHeatingPeriods);

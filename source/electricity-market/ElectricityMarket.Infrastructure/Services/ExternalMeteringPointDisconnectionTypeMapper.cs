@@ -20,8 +20,8 @@ public static class ExternalMeteringPointDisconnectionTypeMapper
     {
         return externalValue switch
         {
-            "D01" => "Remote disconnection",
-            "D02" => "Manual disconnection",
+            "D01" => "RemoteDisconnection",
+            "D02" => "ManualDisconnection",
             _ => $"Unmapped: {externalValue}",
         };
     }

@@ -20,9 +20,9 @@ public static class ExternalMeteringPointSettlementMethodMapper
     {
         return externalValue switch
         {
-            "D01" => "Flex settled",
+            "D01" => "FlexSettled",
             "E01" => "Profiled",
-            "E02" => "Non profiled",
+            "E02" => "NonProfiled",
             _ => $"Unmapped: {externalValue}",
         };
     }

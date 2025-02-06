@@ -24,5 +24,5 @@ public sealed record CommercialRelation(
     Instant EndDate,
     string EnergySupplier,
     Instant ModifiedAt,
-    ICollection<EnergySupplierPeriod> EnergyPeriods,
+    ICollection<EnergySupplierPeriod> EnergySupplyPeriods,
     ICollection<ElectricalHeatingPeriod> ElectricalHeatingPeriods);

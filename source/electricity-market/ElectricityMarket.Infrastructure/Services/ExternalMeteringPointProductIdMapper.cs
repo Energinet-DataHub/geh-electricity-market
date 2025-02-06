@@ -21,11 +21,11 @@ public static class ExternalMeteringPointProductIdMapper
         return externalValue switch
         {
             "5790001330590" => "Tariff",
-            "5790001330606" => "Fuel quantity",
-            "8716867000016" => "Power active",
-            "8716867000023" => "Power reactive",
-            "8716867000030" => "Energy active",
-            "8716867000047" => "Energy reactive",
+            "5790001330606" => "FuelQuantity",
+            "8716867000016" => "PowerActive",
+            "8716867000023" => "PowerReactive",
+            "8716867000030" => "EnergyActive",
+            "8716867000047" => "EnergyReactive",
             _ => $"Unmapped: {externalValue}",
         };
     }
