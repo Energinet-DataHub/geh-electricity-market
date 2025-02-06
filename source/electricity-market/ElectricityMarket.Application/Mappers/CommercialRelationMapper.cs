@@ -14,6 +14,7 @@
 
 using ElectricityMarket.Application.Models;
 using ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
 namespace ElectricityMarket.Application.Mappers;
 

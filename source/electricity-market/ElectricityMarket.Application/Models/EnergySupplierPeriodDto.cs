@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace ElectricityMarket.Application.Models;
 
 public sealed record EnergySupplierPeriodDto(
     long Id,
