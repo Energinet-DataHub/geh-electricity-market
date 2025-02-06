@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
 using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.GridArea;
 using NodaTime;

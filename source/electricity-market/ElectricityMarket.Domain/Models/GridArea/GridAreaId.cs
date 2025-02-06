@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-
 namespace ElectricityMarket.Domain.Models.GridArea;
 
 public sealed record GridAreaId(Guid Value);

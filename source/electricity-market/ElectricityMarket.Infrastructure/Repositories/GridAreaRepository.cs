@@ -19,13 +19,10 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.GridArea;
-using ElectricityMarket.Domain.Models.MasterData;
 using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
-using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 

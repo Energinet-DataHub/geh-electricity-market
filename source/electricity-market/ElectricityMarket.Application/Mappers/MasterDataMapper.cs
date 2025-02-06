@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using ElectricityMarket.Application.Models;
-using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.MasterData;
 
 namespace ElectricityMarket.Application.Mappers;

@@ -12,14 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Commands.Contacts;
 using ElectricityMarket.Application.Commands.GridArea;
-using ElectricityMarket.Application.Commands.MasterData;
 using ElectricityMarket.Application.Models;
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.GridArea;
-using ElectricityMarket.WebAPI.Revision;
-using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

@@ -14,7 +14,6 @@
 
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.MasterData;
-using NodaTime;
 
 namespace ElectricityMarket.Domain.Repositories;
 

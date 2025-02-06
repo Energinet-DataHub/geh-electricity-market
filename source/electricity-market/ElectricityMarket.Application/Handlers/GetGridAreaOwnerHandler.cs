@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System.ComponentModel.DataAnnotations;
-using ElectricityMarket.Application.Commands.Contacts;
 using ElectricityMarket.Application.Commands.GridArea;
 using ElectricityMarket.Application.Models;
 using ElectricityMarket.Domain.Models.GridArea;

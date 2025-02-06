@@ -14,7 +14,6 @@
 
 using ElectricityMarket.Application.Commands.MasterData;
 using ElectricityMarket.Application.Mappers;
-using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Repositories;
 using MediatR;
 

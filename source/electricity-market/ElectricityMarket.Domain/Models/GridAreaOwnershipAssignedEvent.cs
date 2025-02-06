@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.ComponentModel;
-using System.Text.Json.Serialization;
 using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.GridArea;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
