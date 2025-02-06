@@ -23,6 +23,8 @@ using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
@@ -38,6 +40,7 @@ public sealed class GridAreaRepository : IGridAreaRepository
     public GridAreaRepository(IMarketParticipantDatabaseContext context)
     {
         _context = context;
+        _jsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
     }
 
     public async IAsyncEnumerable<GridAreaOwnershipAssignedEvent> GetGridAreaOwnershipAssignedEventsAsync()
@@ -54,10 +57,12 @@ public sealed class GridAreaRepository : IGridAreaRepository
                 domainEvent.Event,
                 _jsonSerializerOptions);
 
-            if (gridOwnershipEvent != null)
-                yield return gridOwnershipEvent;
+            if (gridOwnershipEvent == null)
+            {
+                throw new InvalidOperationException($"Could not deserialize event: {domainEvent.EntityId}");
+            }
 
-            throw new InvalidOperationException($"Could not deserialize event: {domainEvent.EntityId}");
+            yield return gridOwnershipEvent;
         }
     }
 

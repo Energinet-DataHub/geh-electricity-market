@@ -42,10 +42,13 @@ public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDele
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var delegatedByActor = await _actorRepository.GetActorByAsync(ActorNumber.Create(request.ProcessDelegationRequest.ActorNumber)).ConfigureAwait(false);
+        var actors = await _actorRepository.GetActorsByNumberAsync(ActorNumber.Create(request.ProcessDelegationRequest.ActorNumber)).ConfigureAwait(false);
+        if (actors == null)
+            throw new ValidationException($"No actors with number: {request.ProcessDelegationRequest.ActorNumber} found");
 
+        var delegatedByActor = actors.SingleOrDefault(x => x.MarketRole.Function == request.ProcessDelegationRequest.ActorRole);
         if (delegatedByActor == null)
-            throw new ValidationException($"The actor with actor number: {request.ProcessDelegationRequest.ActorNumber} was not found");
+            throw new ValidationException($"Market role: {request.ProcessDelegationRequest.ActorRole} was not found for actor: {request.ProcessDelegationRequest.ActorNumber}");
 
         var gridArea = await _gridAreaRepository.GetGridAreaAsync(new GridAreaCode(request.ProcessDelegationRequest.GridAreaCode)).ConfigureAwait(false);
 

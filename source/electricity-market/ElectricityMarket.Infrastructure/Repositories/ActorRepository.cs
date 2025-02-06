@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ElectricityMarket.Domain.Models.Actor;
@@ -32,15 +33,16 @@ public sealed class ActorRepository : IActorRepository
         _context = context;
     }
 
-    public async Task<Actor?> GetActorByAsync(ActorNumber actorNumber)
+    public async Task<IEnumerable<Actor>> GetActorsByNumberAsync(ActorNumber actorNumber)
     {
         ArgumentNullException.ThrowIfNull(actorNumber, nameof(actorNumber));
 
-        var actor = await _context.Actors
-            .SingleOrDefaultAsync(x => x.ActorNumber == actorNumber.Value)
+        var actors = await _context.Actors
+            .Where(x => x.ActorNumber == actorNumber.Value)
+            .ToListAsync()
             .ConfigureAwait(false);
 
-        return actor is null ? null : ActorMapper.MapFromEntity(actor);
+        return actors.Select(ActorMapper.MapFromEntity);
     }
 
     public async Task<Actor?> GetAsync(ActorId actorId)
