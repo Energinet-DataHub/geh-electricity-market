@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
-
 namespace ElectricityMarket.Domain.Models.Actor;
 
 public sealed class ActorMarketRole

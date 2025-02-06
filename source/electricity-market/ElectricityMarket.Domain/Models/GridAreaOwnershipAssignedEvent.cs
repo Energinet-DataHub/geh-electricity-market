@@ -15,7 +15,6 @@
 using System.Text.Json.Serialization;
 using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.GridArea;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 using NodaTime;
 
 namespace ElectricityMarket.Domain.Models;
