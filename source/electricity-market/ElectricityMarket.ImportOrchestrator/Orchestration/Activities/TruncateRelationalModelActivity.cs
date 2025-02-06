@@ -36,12 +36,33 @@ public sealed class TruncateRelationalModelActivity
     {
         var sw = Stopwatch.StartNew();
 
+        _databaseContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(30));
+
+        await NullRetiredByIdAsync("EnergySupplyPeriod").ConfigureAwait(false);
         await TruncateTableAsync("EnergySupplyPeriod").ConfigureAwait(false);
+
         await TruncateTableAsync("CommercialRelation").ConfigureAwait(false);
+
+        await NullRetiredByIdAsync("MeteringPointPeriod").ConfigureAwait(false);
         await TruncateTableAsync("MeteringPointPeriod").ConfigureAwait(false);
+
         await TruncateTableAsync("MeteringPoint").ConfigureAwait(false);
 
         _logger.LogWarning("Relational model truncated in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
+
+        async Task NullRetiredByIdAsync(string table)
+        {
+            int affectedRows;
+
+            do
+            {
+#pragma warning disable EF1002
+                affectedRows = await _databaseContext.Database.ExecuteSqlRawAsync(
+#pragma warning restore EF1002
+                    $"UPDATE TOP (5000) [electricitymarket].[{table}] SET RetiredById = NULL WHERE RetiredById IS NOT NULL;").ConfigureAwait(false);
+            }
+            while (affectedRows > 0);
+        }
 
         async Task TruncateTableAsync(string table)
         {

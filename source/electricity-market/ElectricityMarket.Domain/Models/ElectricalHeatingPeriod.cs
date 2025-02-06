@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
+using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace ElectricityMarket.Domain.Models;
 
-public sealed record ElectricalHeatingPeriodDto(
+public sealed record ElectricalHeatingPeriod(
     long Id,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    DateTimeOffset? RetiredAt,
+    Instant ValidFrom,
+    Instant ValidTo,
+    Instant? RetiredAt,
     long? RetiredById,
     long BusinessTransactionDosId,
     string TransactionType);
