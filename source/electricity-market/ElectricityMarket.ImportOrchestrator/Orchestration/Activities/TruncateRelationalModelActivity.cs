@@ -36,12 +36,31 @@ public sealed class TruncateRelationalModelActivity
     {
         var sw = Stopwatch.StartNew();
 
+        await NullRetiredByIdAsync("EnergySupplyPeriod").ConfigureAwait(false);
         await TruncateTableAsync("EnergySupplyPeriod").ConfigureAwait(false);
+
         await TruncateTableAsync("CommercialRelation").ConfigureAwait(false);
+
+        await NullRetiredByIdAsync("MeteringPointPeriod").ConfigureAwait(false);
         await TruncateTableAsync("MeteringPointPeriod").ConfigureAwait(false);
+
         await TruncateTableAsync("MeteringPoint").ConfigureAwait(false);
 
         _logger.LogWarning("Relational model truncated in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
+
+        async Task NullRetiredByIdAsync(string table)
+        {
+            int affectedRows;
+
+            do
+            {
+#pragma warning disable EF1002
+                affectedRows = await _databaseContext.Database.ExecuteSqlRawAsync(
+#pragma warning restore EF1002
+                    $"UPDATE TOP (5000) [electricitymarket].[{table}] SET RetiredById = NULL WHERE RetiredById IS NOT NULL;").ConfigureAwait(false);
+            }
+            while (affectedRows > 0);
+        }
 
         async Task TruncateTableAsync(string table)
         {
@@ -52,7 +71,7 @@ public sealed class TruncateRelationalModelActivity
 #pragma warning disable EF1002
                 affectedRows = await _databaseContext.Database.ExecuteSqlRawAsync(
 #pragma warning restore EF1002
-                    $"DELETE TOP (50000) FROM [electricitymarket].[{table}];").ConfigureAwait(false);
+                    $"DELETE TOP (5000) FROM [electricitymarket].[{table}];").ConfigureAwait(false);
             }
             while (affectedRows > 0);
         }
