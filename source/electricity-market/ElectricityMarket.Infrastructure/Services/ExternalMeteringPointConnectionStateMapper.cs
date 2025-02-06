@@ -12,15 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
-
-public sealed record ElectricalHeatingPeriodDto(
-    long Id,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    DateTimeOffset? RetiredAt,
-    long? RetiredById,
-    long BusinessTransactionDosId,
-    string TransactionType);
+public static class ExternalMeteringPointConnectionStateMapper
+{
+    public static string Map(string externalValue)
+    {
+        return externalValue switch
+        {
+            "D01" => "NotUsed",
+            "D02" => "ClosedDown",
+            "D03" => "New",
+            "E22" => "Connected",
+            "E23" => "Disconnected",
+            _ => $"Unmapped: {externalValue}",
+        };
+    }
+}
