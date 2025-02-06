@@ -41,7 +41,7 @@ public sealed class TruncateGoldModelActivity
         do
         {
             affectedRows = await _databaseContext.Database.ExecuteSqlRawAsync(
-                "DELETE TOP (500000) FROM [electricitymarket].[GoldenImport];").ConfigureAwait(false);
+                "DELETE TOP (50000) FROM [electricitymarket].[GoldenImport];").ConfigureAwait(false);
         }
         while (affectedRows > 0);
 
