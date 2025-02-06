@@ -18,17 +18,6 @@ namespace ElectricityMarket.Domain.Models.GridArea;
 
 public sealed class GridArea
 {
-    public GridArea(GridAreaName name, GridAreaCode code, PriceAreaCode priceAreaCode, GridAreaType gridAreaType, DateTimeOffset validFrom, DateTimeOffset? validTo)
-    {
-        Id = new GridAreaId(Guid.Empty);
-        Name = name;
-        Code = code;
-        PriceAreaCode = priceAreaCode;
-        Type = gridAreaType;
-        ValidFrom = validFrom;
-        ValidTo = validTo;
-    }
-
     public GridArea(GridAreaId id, GridAreaName name, GridAreaCode code, PriceAreaCode priceAreaCode, GridAreaType gridAreaType, DateTimeOffset validFrom, DateTimeOffset? validTo)
     {
         Id = id;
