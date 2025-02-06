@@ -15,6 +15,8 @@
 using System;
 using System.Linq;
 using ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.Common;
+using ElectricityMarket.Domain.Models.GridArea;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Common;
@@ -38,4 +40,13 @@ internal static class TestPreparationModels
         new MockedGln(),
         new ActorMarketRole(EicFunction.GridAccessProvider, [], null),
         new ActorName("Racoon Power"));
+
+    public static GridArea MockedGridArea() => new(
+        new GridAreaId(Guid.NewGuid()),
+        new GridAreaName("Raccoon City"),
+        new GridAreaCode("420"),
+        PriceAreaCode.Dk1,
+        GridAreaType.Distribution,
+        DateTimeOffset.MinValue,
+        null);
 }
