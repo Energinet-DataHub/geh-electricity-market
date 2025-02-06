@@ -36,8 +36,14 @@ public sealed class TruncateGoldModelActivity
     {
         var sw = Stopwatch.StartNew();
 
-        await _databaseContext.Database.ExecuteSqlRawAsync(
-            "TRUNCATE TABLE [electricitymarket].[GoldenImport];").ConfigureAwait(false);
+        int affectedRows;
+
+        do
+        {
+            affectedRows = await _databaseContext.Database.ExecuteSqlRawAsync(
+                "DELETE TOP (500000) FROM [electricitymarket].[GoldenImport];").ConfigureAwait(false);
+        }
+        while (affectedRows > 0);
 
         _logger.LogWarning("Gold model truncated in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
     }
