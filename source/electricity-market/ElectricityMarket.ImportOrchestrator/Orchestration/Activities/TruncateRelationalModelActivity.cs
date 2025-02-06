@@ -36,6 +36,8 @@ public sealed class TruncateRelationalModelActivity
     {
         var sw = Stopwatch.StartNew();
 
+        _databaseContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(30));
+
         await NullRetiredByIdAsync("EnergySupplyPeriod").ConfigureAwait(false);
         await TruncateTableAsync("EnergySupplyPeriod").ConfigureAwait(false);
 
