@@ -49,7 +49,7 @@ public sealed class InitiateImportOrchestrationTimerTrigger
 
         importState.Enabled = false;
 
-        await client.ScheduleNewOrchestrationInstanceAsync(nameof(InitialImportOrchestrator.OrchestrateInitalImportAsync)).ConfigureAwait(false);
+        await client.ScheduleNewOrchestrationInstanceAsync(nameof(InitialImportOrchestrator.OrchestrateInitialImportAsync)).ConfigureAwait(false);
 
         await _electricityMarketDatabaseContext.SaveChangesAsync().ConfigureAwait(false);
     }
