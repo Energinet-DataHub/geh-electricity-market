@@ -32,7 +32,6 @@ public sealed record MeteringPointPeriodDto(
     int ScheduledMeterReadingMonth,
     string AssetType,
     string DisconnectionType,
-    string MeasurementUnitType,
     string FuelType,
     string FromGridAreaCode,
     string ToGridAreaCode,
@@ -41,12 +40,11 @@ public sealed record MeteringPointPeriodDto(
     string Capacity,
     string ConnectionType,
     string NetSettlementGroup,
-    MeteringPointPeriodDto? ParentMeteringPoint, // TODO: Check if this is correct
-    string PhysicalStatus,
-    long PowerLimitA,
+    MeteringPointPeriodDto? ParentMeteringPoint,
+    long PowerLimitKw,
     string PowerPlantGsrn,
     string ProductCode,
-    string ProductionObligation,
+    string ProductionObligation, // TODO: This is a string in databricks, but it looks like it should be a boolean if you look at the data, but i don't know what to map it to
     string ScheduledMeterReading,
     InstallationAddressDto InstallationAddress,
     string CalculationType,
