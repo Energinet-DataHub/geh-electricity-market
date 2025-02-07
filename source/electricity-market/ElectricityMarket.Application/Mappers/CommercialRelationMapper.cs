@@ -16,7 +16,7 @@ using ElectricityMarket.Application.Models;
 using ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
-namespace ElectricityMarket.Application.Mappers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Mappers;
 
 internal sealed class CommercialRelationMapper
 {

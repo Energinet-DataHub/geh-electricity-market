@@ -15,6 +15,6 @@
 using ElectricityMarket.Domain.Models.Actors;
 using ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Application.Commands.ProcessDelegations;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
 
 public sealed record ProcessDelegationRequestDto(string ActorNumber, EicFunction ActorRole, string GridAreaCode, DelegatedProcess ProcessType);

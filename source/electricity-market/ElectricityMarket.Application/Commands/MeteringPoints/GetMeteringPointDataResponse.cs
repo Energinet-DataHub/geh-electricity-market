@@ -14,6 +14,6 @@
 
 using ElectricityMarket.Application.Models;
 
-namespace ElectricityMarket.Application.Commands.MeteringPoints;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 
 public sealed record GetMeteringPointDataResponse(MeteringPointDto MeteringPointData);

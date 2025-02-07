@@ -17,7 +17,7 @@ using ElectricityMarket.Application.Mappers;
 using ElectricityMarket.Domain.Repositories;
 using MediatR;
 
-namespace ElectricityMarket.Application.Handlers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
 public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeteringPointMasterDataCommand, GetMeteringPointMasterDataResponse>
 {

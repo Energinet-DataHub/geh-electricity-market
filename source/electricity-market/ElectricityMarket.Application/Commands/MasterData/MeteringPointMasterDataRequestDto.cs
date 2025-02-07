@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Application.Commands.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
 
 public sealed record MeteringPointMasterDataRequestDto(string MeteringPointIdentification, DateTimeOffset StartDate, DateTimeOffset EndDate);

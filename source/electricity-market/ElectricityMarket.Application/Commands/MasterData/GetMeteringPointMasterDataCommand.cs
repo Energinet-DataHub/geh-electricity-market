@@ -14,6 +14,6 @@
 
 using MediatR;
 
-namespace ElectricityMarket.Application.Commands.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
 
 public sealed record GetMeteringPointMasterDataCommand(MeteringPointMasterDataRequestDto Request) : IRequest<GetMeteringPointMasterDataResponse>;

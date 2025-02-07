@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Application.Commands.Contacts;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 
 public sealed record ContactCprRequestDto(string ActorGln, string UserRole);

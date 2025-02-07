@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record GridAreaOwnerDto(string GridAccessProviderGln);

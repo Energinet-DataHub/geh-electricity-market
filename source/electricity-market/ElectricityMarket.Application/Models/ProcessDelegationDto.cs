@@ -14,6 +14,6 @@
 
 using ElectricityMarket.Domain.Models.Actors;
 
-namespace ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record ProcessDelegationDto(string ActorNumber, EicFunction ActorRole);

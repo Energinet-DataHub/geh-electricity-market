@@ -15,7 +15,7 @@
 using ElectricityMarket.Application.Models;
 using ElectricityMarket.Domain.Models;
 
-namespace ElectricityMarket.Application.Mappers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Mappers;
 
 internal sealed class MeteringPointMapper
 {

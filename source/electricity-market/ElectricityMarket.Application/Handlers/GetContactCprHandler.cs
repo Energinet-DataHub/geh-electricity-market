@@ -15,7 +15,7 @@
 using ElectricityMarket.Application.Commands.Contacts;
 using MediatR;
 
-namespace ElectricityMarket.Application.Handlers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
 public sealed class GetContactCprHandler : IRequestHandler<GetContactCprCommand, string>
 {

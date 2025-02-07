@@ -84,13 +84,13 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     public IAsyncEnumerable<MeteringPointRecipient> GetMeteringPointRecipientsAsync(
         string meteringPointIdentification,
         DateTimeOffset startDate,
-        DateTimeOffset enddDate)
+        DateTimeOffset endDate)
     {
         var query =
             from mp in _context.MeteringPoints
             join cr in _context.CommercialRelations on mp.Id equals cr.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
-                  cr.StartDate <= enddDate &&
+                  cr.StartDate <= endDate &&
                   cr.EndDate > startDate &&
                   cr.StartDate < cr.EndDate
             select new MeteringPointRecipient
