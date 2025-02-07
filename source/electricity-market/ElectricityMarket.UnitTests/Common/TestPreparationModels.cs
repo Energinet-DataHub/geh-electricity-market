@@ -13,8 +13,6 @@
 // limitations under the License.
 
 using System;
-using ElectricityMarket.Domain.Models.Actors;
-using ElectricityMarket.Domain.Models.Common;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;

@@ -18,8 +18,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ElectricityMarket.Domain.Models.Actors;
-using ElectricityMarket.Domain.Models.Common;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
 using Energinet.DataHub.ElectricityMarket.Application.Handlers;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;

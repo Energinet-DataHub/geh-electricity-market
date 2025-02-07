@@ -13,10 +13,10 @@
 // limitations under the License.
 
 using System.ComponentModel.DataAnnotations;
-using ElectricityMarket.Domain.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
 

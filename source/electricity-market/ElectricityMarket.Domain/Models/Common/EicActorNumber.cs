@@ -66,7 +66,7 @@ internal sealed record EicActorNumber : ActorNumber
             .All(c =>
                 c is '-'
                 || char.IsDigit(c)
-                || char.IsLetterOrDigit(c) && char.IsUpper(c));
+                || (char.IsLetterOrDigit(c) && char.IsUpper(c)));
     }
 
     private static bool ValidateCheckCharacter(string energyIdentificationCode)
