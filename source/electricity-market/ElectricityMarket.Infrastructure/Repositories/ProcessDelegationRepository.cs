@@ -15,10 +15,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.Actors;
-using ElectricityMarket.Domain.Models.Common;
-using ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
+using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Mappers;

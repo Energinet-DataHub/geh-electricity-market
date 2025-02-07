@@ -13,11 +13,11 @@
 // limitations under the License.
 
 using System.Text.Json.Serialization;
-using ElectricityMarket.Domain.Models.Actors;
-using ElectricityMarket.Domain.Models.GridAreas;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 using NodaTime;
 
-namespace ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed class GridAreaOwnershipAssignedEvent
 {

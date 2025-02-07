@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Actors;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using NodaTime;
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
 
 public sealed class MeteringPointEnergySupplier
 {

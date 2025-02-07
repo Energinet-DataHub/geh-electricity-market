@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Common;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Models.GridAreas;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 
 public sealed class GridArea
 {

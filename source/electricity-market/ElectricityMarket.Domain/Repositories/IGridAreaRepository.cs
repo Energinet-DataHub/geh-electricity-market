@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.GridAreas;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 
-namespace ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 
 public interface IGridAreaRepository
 {

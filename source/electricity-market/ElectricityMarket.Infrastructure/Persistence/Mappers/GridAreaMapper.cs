@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.GridAreas;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;

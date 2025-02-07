@@ -13,9 +13,9 @@
 // limitations under the License.
 
 using System.Text.Json.Serialization;
-using ElectricityMarket.Domain.Models.Common;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Models.Actors;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 
 [JsonDerivedType(typeof(EicActorNumber), typeDiscriminator: "eic")]
 [JsonDerivedType(typeof(GlnActorNumber), typeDiscriminator: "gln")]

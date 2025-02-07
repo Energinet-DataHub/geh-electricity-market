@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
 
 public enum MeteringPointSubType
 {

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.Common;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Models.Actors;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 
 public sealed class Actor
 {

@@ -14,9 +14,9 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using ElectricityMarket.Domain.Models.Actors;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 
-namespace ElectricityMarket.Domain.Models.Common;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
 
 public sealed record GlnActorNumber : ActorNumber
 {
@@ -73,7 +73,7 @@ public sealed record GlnActorNumber : ActorNumber
                 sumOfOddNumbers += currentNumber;
         }
 
-        var sum = (sumOfEvenNumbers * 3) + sumOfOddNumbers;
+        var sum = sumOfEvenNumbers * 3 + sumOfOddNumbers;
 
         var equalOrHigherMultipleOf = (int)(Math.Ceiling(sum / 10.0) * 10);
         return equalOrHigherMultipleOf - sum;

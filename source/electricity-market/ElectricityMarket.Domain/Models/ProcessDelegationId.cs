@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed record ProcessDelegationId
 {

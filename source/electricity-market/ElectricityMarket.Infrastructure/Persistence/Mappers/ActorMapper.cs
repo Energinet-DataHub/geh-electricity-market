@@ -16,6 +16,7 @@ using System.Linq;
 using ElectricityMarket.Domain.Models.Actors;
 using ElectricityMarket.Domain.Models.Common;
 using ElectricityMarket.Domain.Models.GridAreas;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;

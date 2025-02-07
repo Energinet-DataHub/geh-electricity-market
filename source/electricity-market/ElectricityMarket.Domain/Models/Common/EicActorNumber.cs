@@ -13,9 +13,9 @@
 // limitations under the License.
 
 using System.Diagnostics.CodeAnalysis;
-using ElectricityMarket.Domain.Models.Actors;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 
-namespace ElectricityMarket.Domain.Models.Common;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
 
 internal sealed record EicActorNumber : ActorNumber
 {
@@ -66,7 +66,7 @@ internal sealed record EicActorNumber : ActorNumber
             .All(c =>
                 c is '-'
                 || char.IsDigit(c)
-                || (char.IsLetterOrDigit(c) && char.IsUpper(c)));
+                || char.IsLetterOrDigit(c) && char.IsUpper(c));
     }
 
     private static bool ValidateCheckCharacter(string energyIdentificationCode)

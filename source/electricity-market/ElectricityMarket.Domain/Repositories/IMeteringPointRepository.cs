@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.MasterData;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
 
-namespace ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 
 public interface IMeteringPointRepository
 {

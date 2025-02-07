@@ -14,7 +14,7 @@
 
 using NodaTime;
 
-namespace ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed record MeteringPointPeriod(
     long Id,

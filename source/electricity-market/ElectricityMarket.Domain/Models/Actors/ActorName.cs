@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.Actors;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 
 public sealed record ActorName(string Value);

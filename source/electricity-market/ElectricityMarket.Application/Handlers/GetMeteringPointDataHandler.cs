@@ -14,9 +14,9 @@
 
 using System.ComponentModel.DataAnnotations;
 using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Mappers;
+using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;

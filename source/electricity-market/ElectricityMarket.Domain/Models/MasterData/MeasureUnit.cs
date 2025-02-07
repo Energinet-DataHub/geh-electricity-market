@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
 
 public enum MeasureUnit
 {
-// ReSharper disable InconsistentNaming
+    // ReSharper disable InconsistentNaming
 #pragma warning disable SA1300
     Ampere,
     STK,
@@ -29,5 +29,5 @@ public enum MeasureUnit
     MVAr,
     DanishTariffCode,
 #pragma warning restore SA1300
-// ReSharper restore InconsistentNaming
+    // ReSharper restore InconsistentNaming
 }
