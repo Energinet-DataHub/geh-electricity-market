@@ -19,13 +19,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{693EB24E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{B7F4F1FB-15F3-408B-BD98-59D27D23518F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElectricityMarket.Application", "source\electricity-market\ElectricityMarket.Application\ElectricityMarket.Application.csproj", "{35AD67ED-ECF9-4546-9A74-9A37B3081473}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.Application", "source\electricity-market\ElectricityMarket.Application\ElectricityMarket.Application.csproj", "{35AD67ED-ECF9-4546-9A74-9A37B3081473}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElectricityMarket.Domain", "source\electricity-market\ElectricityMarket.Domain\ElectricityMarket.Domain.csproj", "{1D8AEC9F-156D-4672-83D7-84F3EE04F07B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.Domain", "source\electricity-market\ElectricityMarket.Domain\ElectricityMarket.Domain.csproj", "{1D8AEC9F-156D-4672-83D7-84F3EE04F07B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElectricityMarket.ImportOrchestrator", "source\electricity-market\ElectricityMarket.ImportOrchestrator\ElectricityMarket.ImportOrchestrator.csproj", "{8973DFB9-B071-418B-9EEB-08629646DC26}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.ImportOrchestrator", "source\electricity-market\ElectricityMarket.ImportOrchestrator\ElectricityMarket.ImportOrchestrator.csproj", "{8973DFB9-B071-418B-9EEB-08629646DC26}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElectricityMarket.Import", "source\electricity-market\ElectricityMarket.Import\ElectricityMarket.Import.csproj", "{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricityMarket.DataApi", "source\electricity-market\ElectricityMarket.DataApi\ElectricityMarket.DataApi.csproj", "{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -56,11 +56,21 @@ runs:
       shell: bash
       run: |
         dotnet publish \
-          '.\source\electricity-market\ElectricityMarket.Import\ElectricityMarket.Import.csproj' \
+          '.\source\electricity-market\ElectricityMarket.DataApi\ElectricityMarket.DataApi.csproj' \
           --no-build \
           --no-restore \
           --configuration Release \
           --output '${{ inputs.output_path }}\functions\import'
+
+    - name: Publish Data Api
+      shell: bash
+      run: |
+        dotnet publish \
+          '.\source\electricity-market\ElectricityMarket.DataApi\ElectricityMarket.DataApi.csproj' \
+          --no-build \
+          --no-restore \
+          --configuration Release \
+          --output '${{ inputs.output_path }}\functions\data-api'
 
     - name: Publish Import Orchestrator
       shell: bash
