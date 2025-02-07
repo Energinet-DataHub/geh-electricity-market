@@ -12,23 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
-using ElectricityMarket.Domain.Models.MasterData;
+using ElectricityMarket.Domain.Models.Actors;
 
 namespace ElectricityMarket.Application.Models;
 
-public sealed record MeteringPointMasterDataDto(
-    string Identification,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    string GridAreaCode,
-    string GridAccessProvider,
-    IReadOnlyCollection<string> NeighborGridAreaOwners,
-    ConnectionState ConnectionState,
-    MeteringPointType Type,
-    MeteringPointSubType SubType,
-    string Resolution,
-    MeasureUnit Unit,
-    ProductId ProductId,
-    string? ParentIdentification,
-    IReadOnlyCollection<MeteringPointRecipientDto> Recipients);
+public sealed record MeteringPointRecipientDto(
+    string ActorNumber,
+    DateTimeOffset StartDate,
+    DateTimeOffset EndDate,
+    EicFunction Function);

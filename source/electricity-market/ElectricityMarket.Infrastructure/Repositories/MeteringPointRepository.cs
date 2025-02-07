@@ -24,6 +24,7 @@ using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -55,11 +56,9 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         var query =
             from mp in _context.MeteringPoints
             join mpp in _context.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
-            join cr in _context.CommercialRelations on mp.Id equals cr.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
                   mpp.ValidFrom <= startDate &&
-                  mpp.ValidTo > enddDate &&
-                  cr.StartDate < cr.EndDate
+                  mpp.ValidTo > enddDate
             orderby mpp.ValidFrom
             select new MeteringPointMasterData
             {
@@ -69,21 +68,39 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
                 GridAccessProvider = ActorNumber.Create(mpp.OwnedBy),
                 NeighborGridAreaOwners = Array.Empty<ActorNumber>(),
-                ConnectionState = Enum.Parse<ConnectionState>(mpp.ConnectionState),
+                ConnectionState = ConnectionState.Connected, //Enum.Parse<ConnectionState>(mpp.ConnectionState),
                 Type = Enum.Parse<MeteringPointType>(mpp.Type),
                 SubType = Enum.Parse<MeteringPointSubType>(mpp.SubType),
                 Resolution = new Resolution(mpp.Resolution),
                 Unit = Enum.Parse<MeasureUnit>(mpp.Unit),
-                ProductId = Enum.Parse<ProductId>(mpp.ProductId),
+                ProductId = ProductId.Tariff, //Enum.Parse<ProductId>(mpp.ProductId),
                 ParentIdentification = mpp.ParentIdentification != null
                     ? new MeteringPointIdentification(mpp.ParentIdentification)
                     : null,
-                EnergySupplier = new MeteringPointEnergySupplier
-                {
-                    EnergySupplier = ActorNumber.Create(cr.EnergySupplier),
-                    StartDate = cr.StartDate.ToInstant(),
-                    EndDate = cr.EndDate.ToInstant(),
-                }
+            };
+
+        return query.AsAsyncEnumerable();
+    }
+
+    public IAsyncEnumerable<MeteringPointRecipient> GetMeteringPointRecipientssAsync(
+        string meteringPointIdentification,
+        DateTimeOffset startDate,
+        DateTimeOffset enddDate)
+    {
+        var query =
+            from mp in _context.MeteringPoints
+            join cr in _context.CommercialRelations on mp.Id equals cr.MeteringPointId
+            where mp.Identification == meteringPointIdentification &&
+                  cr.StartDate <= startDate &&
+                  cr.EndDate > enddDate &&
+                  cr.StartDate < cr.EndDate
+            select new MeteringPointRecipient
+            {
+                Identification = new MeteringPointIdentification(mp.Identification),
+                ActorNumber = ActorNumber.Create(cr.EnergySupplier),
+                StartDate = cr.StartDate.ToInstant(),
+                EndDate = cr.EndDate.ToInstant(),
+                Function = EicFunction.EnergySupplier // hardcoded for now
             };
 
         return query.AsAsyncEnumerable();

@@ -39,6 +39,19 @@ public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeter
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        var recipients = await _meteringPointRepository.GetMeteringPointRecipientssAsync(
+            request.Request.MeteringPointIdentification,
+            request.Request.StartDate,
+            request.Request.EndDate)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        foreach (var meteringPoint in masterData)
+        {
+            var meteringPointRecipient = recipients.Where(x => x.Identification == meteringPoint.Identification);
+            meteringPoint.Recipients = meteringPointRecipient.ToList();
+        }
+
         return new GetMeteringPointMasterDataResponse(masterData.Select(MasterDataMapper.Map));
     }
 }

@@ -35,14 +35,15 @@ internal sealed class MasterDataMapper
             entity.Unit,
             entity.ProductId,
             entity.ParentIdentification?.Value,
-            Map(entity.EnergySupplier));
+            entity.Recipients.Select(Map).ToList());
     }
 
-    public static MeteringPointEnergySupplierDto Map(MeteringPointEnergySupplier entity)
+    public static MeteringPointRecipientDto Map(MeteringPointRecipient entity)
     {
-        return new MeteringPointEnergySupplierDto(
-            entity.EnergySupplier.Value,
+        return new MeteringPointRecipientDto(
+            entity.ActorNumber.Value,
             entity.StartDate.ToDateTimeOffset(),
-            entity.EndDate.ToDateTimeOffset());
+            entity.EndDate.ToDateTimeOffset(),
+            entity.Function);
     }
 }

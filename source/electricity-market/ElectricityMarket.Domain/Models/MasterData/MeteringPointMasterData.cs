@@ -46,5 +46,5 @@ public sealed class MeteringPointMasterData
 
     public MeteringPointIdentification? ParentIdentification { get; set; }
 
-    public MeteringPointEnergySupplier EnergySupplier { get; set; } = null!;
+    public IReadOnlyCollection<MeteringPointRecipient> Recipients { get; set; } = [];
 }
