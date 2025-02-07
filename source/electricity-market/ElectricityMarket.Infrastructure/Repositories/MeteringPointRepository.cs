@@ -56,8 +56,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             from mp in _context.MeteringPoints
             join mpp in _context.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
-                  mpp.ValidFrom <= startDate &&
-                  mpp.ValidTo > endDate
+                  mpp.ValidFrom <= endDate &&
+                  mpp.ValidTo > startDate
             orderby mpp.ValidFrom
             select new MeteringPointMasterData
             {
@@ -90,8 +90,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             from mp in _context.MeteringPoints
             join cr in _context.CommercialRelations on mp.Id equals cr.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
-                  cr.StartDate <= startDate &&
-                  cr.EndDate > enddDate &&
+                  cr.StartDate <= enddDate &&
+                  cr.EndDate > startDate &&
                   cr.StartDate < cr.EndDate
             select new MeteringPointRecipient
             {
