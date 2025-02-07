@@ -12,20 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 
-public sealed record ContactAddressDto(
-    long Id,
-    string StreetName,
-    string StreetCode,
-    string BuildingNumber,
-    string CityName,
-    string CitySubDivisionName,
-    string DarReference,
-    bool IsProtectedAddress,
-    string CountryCode,
-    string Floor,
-    string Room,
-    string PostBox,
-    string PostCode,
-    string MunicipalityCode);
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
+
+public sealed record UnknownActorNumber : ActorNumber
+{
+    public UnknownActorNumber(string value)
+        : base(value)
+    {
+    }
+}

@@ -12,15 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
-
-public sealed record ElectricalHeatingPeriodDto(
-    long Id,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    DateTimeOffset? RetiredAt,
-    long? RetiredById,
-    long BusinessTransactionDosId,
-    string TransactionType);
+public sealed record GridAreaCode(string Value);

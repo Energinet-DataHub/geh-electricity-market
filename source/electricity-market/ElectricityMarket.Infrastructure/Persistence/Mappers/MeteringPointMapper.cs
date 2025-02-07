@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using System.Linq;
-using ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using NodaTime.Extensions;
 

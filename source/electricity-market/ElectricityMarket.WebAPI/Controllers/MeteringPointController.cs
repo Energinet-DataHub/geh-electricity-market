@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Commands.Contacts;
-using ElectricityMarket.Domain.Models;
 using ElectricityMarket.WebAPI.Revision;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +36,7 @@ public class MeteringPointController : ControllerBase
 
     [HttpGet("contact/{contactId:long}/cpr")]
     [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
-    public async Task<ActionResult<string>> GetContactCprAsync(long contactId, [FromBody]ContactCprRequestDto contactCprRequest)
+    public async Task<ActionResult<string>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
     {
         var command = new GetContactCprCommand(contactId, contactCprRequest);
 
@@ -43,5 +45,17 @@ public class MeteringPointController : ControllerBase
             .ConfigureAwait(false);
 
         return Ok(cpr);
+    }
+
+    [HttpPost("master-data")]
+    public async Task<ActionResult<IEnumerable<MeteringPointMasterDataDto>>> GetMeteringPointMasterDataChangesAsync([FromBody] MeteringPointMasterDataRequestDto request)
+    {
+        var command = new GetMeteringPointMasterDataCommand(request);
+
+        var response = await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok(response.MasterData);
     }
 }

@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
-
-public sealed record CommercialRelationDto(
+public sealed record ContactAddressDto(
     long Id,
-    string CustomerId,
-    long MeteringPointId,
-    DateTimeOffset StartDate,
-    DateTimeOffset EndDate,
-    string EnergySupplier,
-    DateTimeOffset ModifiedAt,
-    IEnumerable<EnergySupplierPeriodDto> EnergySupplyPeriods,
-    IEnumerable<ElectricalHeatingPeriodDto> ElectricalHeatingPeriods);
+    string StreetName,
+    string StreetCode,
+    string BuildingNumber,
+    string CityName,
+    string CitySubDivisionName,
+    string DarReference,
+    bool IsProtectedAddress,
+    string CountryCode,
+    string Floor,
+    string Room,
+    string PostBox,
+    string PostCode,
+    string MunicipalityCode);

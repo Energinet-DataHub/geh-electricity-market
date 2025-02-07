@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace ElectricityMarket.Application.Mappers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Mappers;
 
 internal sealed class MeteringPointMapper
 {

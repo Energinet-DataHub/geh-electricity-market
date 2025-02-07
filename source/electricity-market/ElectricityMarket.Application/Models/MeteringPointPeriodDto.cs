@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record MeteringPointPeriodDto(
     long Id,

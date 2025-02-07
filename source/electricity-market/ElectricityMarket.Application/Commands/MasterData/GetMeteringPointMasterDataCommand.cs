@@ -12,18 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
+using MediatR;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
 
-public sealed record EnergySupplierPeriodDto(
-    long Id,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    DateTimeOffset? RetiredAt,
-    long? RetiredById,
-    long BusinessTransactionDosId,
-    string WebAccessCode,
-    string EnergySupplier,
-    IEnumerable<ContactDto> Contacts);
+public sealed record GetMeteringPointMasterDataCommand(MeteringPointMasterDataRequestDto Request) : IRequest<GetMeteringPointMasterDataResponse>;

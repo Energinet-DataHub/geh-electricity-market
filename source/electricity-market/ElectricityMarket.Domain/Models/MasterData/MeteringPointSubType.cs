@@ -12,17 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
 
-public sealed record ContactDto(
-    long Id,
-    string? RelationType,
-    string? DisponentName,
-    string? Cvr,
-    string? Name,
-    string? Phone,
-    string? Mobile,
-    string? Email,
-    string? Attention,
-    bool IsProtectedName,
-    ContactAddressDto Address);
+public enum MeteringPointSubType
+{
+    Physical,
+    Virtual,
+    Calculated,
+}

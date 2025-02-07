@@ -12,20 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 
-public sealed record InstallationAddressDto(
-    long Id,
-    string StreetName,
-    string StreetCode,
-    string BuildingNumber,
-    string CityName,
-    string CitySubDivisionName,
-    string DarReference,
-    string WashInstruction,
-    string CountryCode,
-    string Floor,
-    string Room,
-    string PostCode,
-    string MunicipalityCode,
-    string LocationDescription);
+public sealed record GridAreaName(string Value);

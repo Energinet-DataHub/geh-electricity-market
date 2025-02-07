@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -43,8 +43,21 @@ public static class ElectricityMarketModuleExtensions
             .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
         });
 
+        services.AddDbContext<IMarketParticipantDatabaseContext, MarketParticipantDatabaseContext>((p, o) =>
+        {
+            var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
+            o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
+            {
+                options.UseNodaTime();
+            })
+            .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+        });
+
         // Repositories
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
+        services.AddScoped<IActorRepository, ActorRepository>();
+        services.AddScoped<IGridAreaRepository, GridAreaRepository>();
+        services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();
 
         return services;
     }
