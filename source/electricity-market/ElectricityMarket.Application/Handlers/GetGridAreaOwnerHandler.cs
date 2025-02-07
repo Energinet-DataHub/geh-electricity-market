@@ -15,6 +15,7 @@
 using System.ComponentModel.DataAnnotations;
 using ElectricityMarket.Application.Commands.GridArea;
 using ElectricityMarket.Application.Models;
+using ElectricityMarket.Domain.Models.Actors;
 using ElectricityMarket.Domain.Models.GridAreas;
 using ElectricityMarket.Domain.Repositories;
 using MediatR;
@@ -32,25 +33,6 @@ public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCo
         _actorRepository = actorRepository;
     }
 
-    public async Task<GridAreaOwnerDto> Handle2(GetGridAreaOwnerCommand request, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-
-        var gridArea = await _gridAreaRepository.GetGridAreaAsync(new GridAreaCode(request.GridAreaCode)).ConfigureAwait(false);
-
-        if (gridArea == null)
-            throw new ValidationException($"The grid area with code: {request.GridAreaCode} was not found");
-
-        var domainEvents = await _gridAreaRepository.GetGridAreaOwnershipAssignedEventsAsync().ToListAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        var gridAreaAssignedEvent = domainEvents.FirstOrDefault(x => x.GridAreaId == gridArea.Id);
-
-        if (gridAreaAssignedEvent == null)
-            throw new ValidationException($"No owner assigned for grid area: {gridArea.Id} was found");
-
-        return new GridAreaOwnerDto(gridAreaAssignedEvent.ActorNumber.Value);
-    }
-
     public async Task<GridAreaOwnerDto> Handle(GetGridAreaOwnerCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -62,13 +44,14 @@ public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCo
 
         var actors = await _actorRepository.GetActorsAsync().ConfigureAwait(false);
 
-        var lookup = actors.ToDictionary(x => x, x => x.MarketRole.GridAreas.Select(xx => xx.Id));
+        var lookup = actors.Where(x => x.MarketRole.Function == EicFunction.GridAccessProvider && x.MarketRole.GridAreas.Count != 0)
+            .SelectMany(x => x.MarketRole.GridAreas.Select(xx => new { xx.Id, x.ActorNumber })).ToLookup(x => x.Id, x => x.ActorNumber);
 
-        var actorOwner = lookup.SingleOrDefault(x => x.Value.Contains(gridArea.Id));
+        var actorOwner = lookup[gridArea.Id].FirstOrDefault();
 
-        if (actorOwner.Key == null)
+        if (actorOwner == null)
             throw new ValidationException($"No owner assigned for grid area: {gridArea.Id} was found");
 
-        return new GridAreaOwnerDto(actorOwner.Key.ActorNumber.Value);
+        return new GridAreaOwnerDto(actorOwner.Value);
     }
 }
