@@ -26,7 +26,7 @@ public interface IMeteringPointRepository
         DateTimeOffset startDate,
         DateTimeOffset enddDate);
 
-    IAsyncEnumerable<MeteringPointRecipient> GetMeteringPointRecipientssAsync(
+    IAsyncEnumerable<MeteringPointRecipient> GetMeteringPointRecipientsAsync(
         string meteringPointIdentification,
         DateTimeOffset startDate,
         DateTimeOffset enddDate);

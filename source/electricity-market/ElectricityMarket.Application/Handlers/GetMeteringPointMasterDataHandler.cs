@@ -39,7 +39,7 @@ public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeter
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var recipients = await _meteringPointRepository.GetMeteringPointRecipientssAsync(
+        var recipients = await _meteringPointRepository.GetMeteringPointRecipientsAsync(
             request.Request.MeteringPointIdentification,
             request.Request.StartDate,
             request.Request.EndDate)

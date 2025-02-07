@@ -50,14 +50,14 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             : null;
     }
 
-    public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(string meteringPointIdentification, DateTimeOffset startDate, DateTimeOffset enddDate)
+    public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(string meteringPointIdentification, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var query =
             from mp in _context.MeteringPoints
             join mpp in _context.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
                   mpp.ValidFrom <= startDate &&
-                  mpp.ValidTo > enddDate
+                  mpp.ValidTo > endDate
             orderby mpp.ValidFrom
             select new MeteringPointMasterData
             {
@@ -81,7 +81,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return query.AsAsyncEnumerable();
     }
 
-    public IAsyncEnumerable<MeteringPointRecipient> GetMeteringPointRecipientssAsync(
+    public IAsyncEnumerable<MeteringPointRecipient> GetMeteringPointRecipientsAsync(
         string meteringPointIdentification,
         DateTimeOffset startDate,
         DateTimeOffset enddDate)
