@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Commands.Contacts;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using MediatR;
 
-namespace ElectricityMarket.Application.Handlers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
 public sealed class GetContactCprHandler : IRequestHandler<GetContactCprCommand, string>
 {

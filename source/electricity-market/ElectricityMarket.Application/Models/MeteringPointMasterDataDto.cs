@@ -14,7 +14,7 @@
 
 using ElectricityMarket.Domain.Models.MasterData;
 
-namespace ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record MeteringPointMasterDataDto(
     string Identification,

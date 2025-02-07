@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using MediatR;
 
-namespace ElectricityMarket.Application.Commands.ProcessDelegations;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
 
 public sealed record GetProcessDelegationCommand(ProcessDelegationRequestDto ProcessDelegationRequest) : IRequest<ProcessDelegationDto>;

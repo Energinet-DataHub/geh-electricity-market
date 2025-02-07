@@ -14,6 +14,6 @@
 
 using MediatR;
 
-namespace ElectricityMarket.Application.Commands.MeteringPoints;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 
 public sealed record GetMeteringPointDataCommand(string MeteringPointIdentification) : IRequest<GetMeteringPointDataResponse>;

@@ -13,14 +13,14 @@
 // limitations under the License.
 
 using System.ComponentModel.DataAnnotations;
-using ElectricityMarket.Application.Commands.ProcessDelegations;
-using ElectricityMarket.Application.Models;
 using ElectricityMarket.Domain.Models.Actors;
 using ElectricityMarket.Domain.Models.GridAreas;
 using ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using MediatR;
 
-namespace ElectricityMarket.Application.Handlers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
 public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDelegationCommand, ProcessDelegationDto?>
 {

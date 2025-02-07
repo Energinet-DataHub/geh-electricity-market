@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application.Commands.MasterData;
-using ElectricityMarket.Application.Mappers;
 using ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
+using Energinet.DataHub.ElectricityMarket.Application.Mappers;
 using MediatR;
 
-namespace ElectricityMarket.Application.Handlers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
 public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeteringPointMasterDataCommand, GetMeteringPointMasterDataResponse>
 {

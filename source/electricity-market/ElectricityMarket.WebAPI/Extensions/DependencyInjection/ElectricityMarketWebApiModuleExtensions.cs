@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Application;
+using Energinet.DataHub.ElectricityMarket.Application;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 

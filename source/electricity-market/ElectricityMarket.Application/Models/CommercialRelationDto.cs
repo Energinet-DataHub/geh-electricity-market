@@ -14,7 +14,7 @@
 
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
-namespace ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record CommercialRelationDto(
     long Id,

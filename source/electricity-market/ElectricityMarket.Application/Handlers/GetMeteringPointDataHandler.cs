@@ -13,13 +13,13 @@
 // limitations under the License.
 
 using System.ComponentModel.DataAnnotations;
-using ElectricityMarket.Application.Commands.MeteringPoints;
-using ElectricityMarket.Application.Mappers;
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+using Energinet.DataHub.ElectricityMarket.Application.Mappers;
 using MediatR;
 
-namespace ElectricityMarket.Application.Handlers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
 public sealed class GetMeteringPointDataHandler : IRequestHandler<GetMeteringPointDataCommand, GetMeteringPointDataResponse>
 {
