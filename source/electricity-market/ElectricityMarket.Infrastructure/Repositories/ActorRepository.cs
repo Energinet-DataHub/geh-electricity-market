@@ -56,4 +56,14 @@ public sealed class ActorRepository : IActorRepository
             ? null
             : ActorMapper.MapFromEntity(foundActor);
     }
+
+    public async Task<IEnumerable<Actor>> GetActorsAsync()
+    {
+        var actors = await _context
+            .Actors
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        return actors.Select(ActorMapper.MapFromEntity);
+    }
 }

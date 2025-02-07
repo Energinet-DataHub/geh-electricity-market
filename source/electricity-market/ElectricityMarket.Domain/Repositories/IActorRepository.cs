@@ -20,4 +20,5 @@ public interface IActorRepository
 {
     Task<IEnumerable<Actor>> GetActorsByNumberAsync(ActorNumber actorNumber);
     Task<Actor?> GetAsync(ActorId actorId);
+    Task<IEnumerable<Actor>> GetActorsAsync();
 }

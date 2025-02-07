@@ -23,14 +23,16 @@ namespace ElectricityMarket.Application.Handlers;
 
 public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCommand, GridAreaOwnerDto>
 {
+    private readonly IActorRepository _actorRepository;
     private readonly IGridAreaRepository _gridAreaRepository;
 
-    public GetGridAreaOwnerHandler(IGridAreaRepository participantRepository)
+    public GetGridAreaOwnerHandler(IGridAreaRepository participantRepository, IActorRepository actorRepository)
     {
         _gridAreaRepository = participantRepository;
+        _actorRepository = actorRepository;
     }
 
-    public async Task<GridAreaOwnerDto> Handle(GetGridAreaOwnerCommand request, CancellationToken cancellationToken)
+    public async Task<GridAreaOwnerDto> Handle2(GetGridAreaOwnerCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
@@ -47,5 +49,26 @@ public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCo
             throw new ValidationException($"No owner assigned for grid area: {gridArea.Id} was found");
 
         return new GridAreaOwnerDto(gridAreaAssignedEvent.ActorNumber.Value);
+    }
+
+    public async Task<GridAreaOwnerDto> Handle(GetGridAreaOwnerCommand request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        var gridArea = await _gridAreaRepository.GetGridAreaAsync(new GridAreaCode(request.GridAreaCode)).ConfigureAwait(false);
+
+        if (gridArea == null)
+            throw new ValidationException($"The grid area with code: {request.GridAreaCode} was not found");
+
+        var actors = await _actorRepository.GetActorsAsync().ConfigureAwait(false);
+
+        var lookup = actors.ToDictionary(x => x, x => x.MarketRole.GridAreas.Select(xx => xx.Id));
+
+        var actorOwner = lookup.SingleOrDefault(x => x.Value.Contains(gridArea.Id));
+
+        if (actorOwner.Key == null)
+            throw new ValidationException($"No owner assigned for grid area: {gridArea.Id} was found");
+
+        return new GridAreaOwnerDto(actorOwner.Key.ActorNumber.Value);
     }
 }

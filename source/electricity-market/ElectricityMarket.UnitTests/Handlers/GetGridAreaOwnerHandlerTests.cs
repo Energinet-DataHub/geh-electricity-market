@@ -40,7 +40,8 @@ public sealed class GetGridAreaOwnerHandlerTests
     {
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
-        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object);
+        var actorRepository = new Mock<IActorRepository>();
+        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object, actorRepository.Object);
 
         gridAreaRepository
             .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode(It.IsAny<string>())))
@@ -58,7 +59,8 @@ public sealed class GetGridAreaOwnerHandlerTests
     {
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
-        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object);
+        var actorRepository = new Mock<IActorRepository>();
+        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object, actorRepository.Object);
 
         var gridArea = new GridArea(
             new GridAreaId(Guid.NewGuid()),
@@ -89,7 +91,8 @@ public sealed class GetGridAreaOwnerHandlerTests
     {
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
-        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object);
+        var actorRepository = new Mock<IActorRepository>();
+        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object, actorRepository.Object);
 
         var gridArea = new GridArea(
             new GridAreaId(Guid.NewGuid()),
@@ -126,7 +129,8 @@ public sealed class GetGridAreaOwnerHandlerTests
     {
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
-        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object);
+        var actorRepository = new Mock<IActorRepository>();
+        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object, actorRepository.Object);
 
         var gridArea = new GridArea(
             new GridAreaId(Guid.NewGuid()),
