@@ -16,7 +16,7 @@ using System.Linq;
 using ElectricityMarket.Domain;
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.Actor;
-using ElectricityMarket.Domain.Models.GridArea;
+using ElectricityMarket.Domain.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 using NodaTime.Extensions;
 

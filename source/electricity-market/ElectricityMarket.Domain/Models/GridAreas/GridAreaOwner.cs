@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.GridArea;
+namespace ElectricityMarket.Domain.Models.GridAreas;
 
 public sealed record GridAreaOwner(string Value);

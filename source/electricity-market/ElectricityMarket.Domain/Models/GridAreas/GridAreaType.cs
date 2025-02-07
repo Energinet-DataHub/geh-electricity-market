@@ -12,6 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.GridArea;
+namespace ElectricityMarket.Domain.Models.GridAreas;
 
-public sealed record GridAreaId(Guid Value);
+public enum GridAreaType
+{
+    NotSet = 0,
+    Transmission = 1,
+    Distribution = 2,
+    Other = 3,
+    Test = 4,
+    GridLossDK = 5,
+    GridLossAbroad = 6,
+    Aboard = 7
+}

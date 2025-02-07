@@ -54,5 +54,4 @@ public sealed class Actor
     /// The role (function and permissions) assigned to the current actor.
     /// </summary>
     public ActorMarketRole MarketRole { get; private set; }
-
 }

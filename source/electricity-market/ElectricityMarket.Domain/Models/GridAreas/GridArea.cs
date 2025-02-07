@@ -14,7 +14,7 @@
 
 using ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Models.GridArea;
+namespace ElectricityMarket.Domain.Models.GridAreas;
 
 public sealed class GridArea
 {

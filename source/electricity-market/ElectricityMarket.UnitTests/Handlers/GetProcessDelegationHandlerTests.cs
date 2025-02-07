@@ -22,7 +22,7 @@ using ElectricityMarket.Domain;
 using ElectricityMarket.Domain.Models;
 using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.Common;
-using ElectricityMarket.Domain.Models.GridArea;
+using ElectricityMarket.Domain.Models.GridAreas;
 using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 using Moq;

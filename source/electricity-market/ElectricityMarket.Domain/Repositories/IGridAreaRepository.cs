@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.GridArea;
+using ElectricityMarket.Domain.Models.GridAreas;
 
 namespace ElectricityMarket.Domain.Repositories;
 

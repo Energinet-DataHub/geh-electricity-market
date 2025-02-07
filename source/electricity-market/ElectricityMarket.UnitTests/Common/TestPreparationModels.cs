@@ -15,7 +15,7 @@
 using System;
 using ElectricityMarket.Domain.Models.Actor;
 using ElectricityMarket.Domain.Models.Common;
-using ElectricityMarket.Domain.Models.GridArea;
+using ElectricityMarket.Domain.Models.GridAreas;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 

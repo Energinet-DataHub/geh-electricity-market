@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using ElectricityMarket.Domain.Models.Actor;
-using ElectricityMarket.Domain.Models.GridArea;
+using ElectricityMarket.Domain.Models.GridAreas;
 using NodaTime;
 
 namespace ElectricityMarket.Domain.Models.MasterData;

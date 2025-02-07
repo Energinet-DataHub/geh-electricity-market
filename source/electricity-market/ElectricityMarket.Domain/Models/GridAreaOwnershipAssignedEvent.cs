@@ -14,7 +14,7 @@
 
 using System.Text.Json.Serialization;
 using ElectricityMarket.Domain.Models.Actor;
-using ElectricityMarket.Domain.Models.GridArea;
+using ElectricityMarket.Domain.Models.GridAreas;
 using NodaTime;
 
 namespace ElectricityMarket.Domain.Models;

@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.GridArea;
+using ElectricityMarket.Domain.Models.GridAreas;
 using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
