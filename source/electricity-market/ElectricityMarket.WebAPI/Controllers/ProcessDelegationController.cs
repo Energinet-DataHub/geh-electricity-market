@@ -38,7 +38,8 @@ public class ProcessDelegationController : ControllerBase
         var response = await _mediator
             .Send(command)
             .ConfigureAwait(false);
-
-        return Ok(response);
+        if (response != null)
+            return Ok(response);
+        return NotFound();
     }
 }

@@ -132,8 +132,8 @@ public sealed class GetProcessDelegationHandlerTests
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
 
         // Act + Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() => target.Handle(command, CancellationToken.None));
-        Assert.Equal($"No process delegations for actor: {mockActor.Id} were found", ex.Message);
+        var response = await target.Handle(command, CancellationToken.None);
+        Assert.Null(response);
     }
 
     [Fact]
@@ -164,8 +164,8 @@ public sealed class GetProcessDelegationHandlerTests
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
 
         // Act + Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() => target.Handle(command, CancellationToken.None));
-        Assert.Equal($"No delegated periods for grid area code: {request.GridAreaCode} delegated by actor Id: {mockActor.Id} were found", ex.Message);
+        var response = await target.Handle(command, CancellationToken.None);
+        Assert.Null(response);
     }
 
     [Fact]
@@ -201,8 +201,8 @@ public sealed class GetProcessDelegationHandlerTests
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
 
         // Act + Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() => target.Handle(command, CancellationToken.None));
-        Assert.Equal($"No delegated periods for grid area code: {request.GridAreaCode} delegated by actor Id: {mockActor.Id} were found", ex.Message);
+        var response = await target.Handle(command, CancellationToken.None);
+        Assert.Null(response);
     }
 
     [Fact]

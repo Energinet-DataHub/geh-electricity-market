@@ -22,7 +22,7 @@ using MediatR;
 
 namespace ElectricityMarket.Application.Handlers;
 
-public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDelegationCommand, ProcessDelegationDto>
+public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDelegationCommand, ProcessDelegationDto?>
 {
     private readonly IActorRepository _actorRepository;
     private readonly IGridAreaRepository _gridAreaRepository;
@@ -38,7 +38,7 @@ public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDele
         _processDelegationRepository = processDelegationRepository;
     }
 
-    public async Task<ProcessDelegationDto> Handle(GetProcessDelegationCommand request, CancellationToken cancellationToken)
+    public async Task<ProcessDelegationDto?> Handle(GetProcessDelegationCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
@@ -58,11 +58,11 @@ public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDele
         var processDelegation = await _processDelegationRepository.GetProcessDelegationAsync(delegatedByActor.Id, request.ProcessDelegationRequest.ProcessType).ConfigureAwait(false);
 
         if (processDelegation == null)
-            throw new ValidationException($"No process delegations for actor: {delegatedByActor.Id} were found");
+            return null;
 
         var delegation = processDelegation.DelegatedPeriods.SingleOrDefault(x => x.GridAreaId == gridArea.Id);
         if (delegation == null)
-            throw new ValidationException($"No delegated periods for grid area code: {request.ProcessDelegationRequest.GridAreaCode} delegated by actor Id: {delegatedByActor.Id} were found");
+            return null;
 
         var delegatedToActor = await _actorRepository.GetAsync(delegation.DelegatedToActorId).ConfigureAwait(false);
         if (delegatedToActor == null)
