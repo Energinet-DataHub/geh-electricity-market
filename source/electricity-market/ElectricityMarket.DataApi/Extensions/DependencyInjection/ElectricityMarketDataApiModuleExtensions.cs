@@ -12,41 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Import.Monitor;
-using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
-using Energinet.DataHub.Core.Databricks.SqlStatementExecution.Diagnostics.HealthChecks;
+using Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Monitor;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ElectricityMarket.Import.Extensions.DependencyInjection;
+namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Extensions.DependencyInjection;
 
-public static class ElectricityMarketImportModuleExtensions
+public static class ElectricityMarketDataApiModuleExtensions
 {
-    public static IServiceCollection AddElectricityMarketImportModule(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddElectricityMarketDataApiModule(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
         services.AddElectricityMarketModule();
-        services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
-        AddHealthChecks(services, configuration);
+        AddHealthChecks(services);
 
         return services;
     }
 
-    private static void AddHealthChecks(IServiceCollection services, IConfiguration configuration)
+    private static void AddHealthChecks(IServiceCollection services)
     {
-        services.AddScoped<HealthCheckEndpoint>();
-
-        var healthCheckBuilder = services
+        services
+            .AddScoped<HealthCheckEndpoint>()
             .AddHealthChecks()
             .AddDbContextCheck<ElectricityMarketDatabaseContext>();
-
-        if (configuration.IsSettingEnabled("EnableDatabricksHealthCheck"))
-        {
-            healthCheckBuilder.AddDatabricksSqlStatementApiHealthCheck();
-        }
     }
 }

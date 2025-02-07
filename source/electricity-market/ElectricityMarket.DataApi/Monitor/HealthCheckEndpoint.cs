@@ -16,7 +16,7 @@ using Energinet.DataHub.Core.App.FunctionApp.Diagnostics.HealthChecks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
-namespace ElectricityMarket.Import.Monitor;
+namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Monitor;
 
 public class HealthCheckEndpoint
 {
