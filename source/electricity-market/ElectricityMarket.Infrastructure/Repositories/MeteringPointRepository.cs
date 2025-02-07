@@ -24,7 +24,6 @@ using ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -68,12 +67,12 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
                 GridAccessProvider = ActorNumber.Create(mpp.OwnedBy),
                 NeighborGridAreaOwners = Array.Empty<ActorNumber>(),
-                ConnectionState = ConnectionState.Connected, //Enum.Parse<ConnectionState>(mpp.ConnectionState),
+                ConnectionState = Enum.Parse<ConnectionState>(mpp.ConnectionState),
                 Type = Enum.Parse<MeteringPointType>(mpp.Type),
                 SubType = Enum.Parse<MeteringPointSubType>(mpp.SubType),
                 Resolution = new Resolution(mpp.Resolution),
                 Unit = Enum.Parse<MeasureUnit>(mpp.Unit),
-                ProductId = ProductId.Tariff, //Enum.Parse<ProductId>(mpp.ProductId),
+                ProductId = Enum.Parse<ProductId>(mpp.ProductId),
                 ParentIdentification = mpp.ParentIdentification != null
                     ? new MeteringPointIdentification(mpp.ParentIdentification)
                     : null,
