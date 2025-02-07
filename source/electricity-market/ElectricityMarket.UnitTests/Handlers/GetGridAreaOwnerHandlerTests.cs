@@ -145,21 +145,21 @@ public sealed class GetGridAreaOwnerHandlerTests
             .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode("111")))
             .ReturnsAsync(gridArea);
 
-        var gridAreaOwnership = new GridAreaOwnershipAssignedEvent(
-            Guid.NewGuid(),
-            new MockedGln(),
-            EicFunction.GridAccessProvider,
-            gridArea.Id,
-            NodaTime.Instant.MinValue);
-        gridAreaRepository
-            .Setup(repo => repo.GetGridAreaOwnershipAssignedEventsAsync())
-            .Returns(new[] { gridAreaOwnership }.ToAsyncEnumerable());
+        var actor = new Actor(
+        new ActorId(Guid.NewGuid()),
+        new OrganizationId(Guid.NewGuid()),
+        new MockedGln(),
+        new ActorMarketRole(EicFunction.GridAccessProvider, [new ActorGridArea(gridArea.Id)], null),
+        new ActorName("Racoon Power"));
+        actorRepository
+            .Setup(repo => repo.GetActorsAsync())
+            .ReturnsAsync(new[] { actor });
 
         var command = new GetGridAreaOwnerCommand("111");
 
         // Act + Assert
         var response = await target.Handle(command, CancellationToken.None);
         Assert.NotNull(response);
-        Assert.Equal(gridAreaOwnership.ActorNumber.Value, response.GridAccessProviderGln);
+        Assert.Equal(actor.ActorNumber.Value, response.GridAccessProviderGln);
     }
 }
