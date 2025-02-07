@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using System;
-using ElectricityMarket.Domain.Models.Common;
+using ElectricityMarket.Domain.Models.Actors;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 

@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.Common;
+
+namespace ElectricityMarket.Domain.Models.Actors;
 
 public sealed class Actor
 {

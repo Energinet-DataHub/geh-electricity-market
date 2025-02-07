@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.Actor;
+namespace ElectricityMarket.Domain.Models.Common;
 
 public sealed record OrganizationId
 {

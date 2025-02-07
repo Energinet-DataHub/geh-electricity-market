@@ -12,16 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.Domain.Models.GridAreas;
+namespace ElectricityMarket.Domain.Models.Actors;
 
-namespace ElectricityMarket.Domain.Models.Actor;
-
-public sealed class ActorGridArea
-{
-    public ActorGridArea(GridAreaId id)
-    {
-        Id = id;
-    }
-
-    public GridAreaId Id { get; }
-}
+public sealed record ActorName(string Value);

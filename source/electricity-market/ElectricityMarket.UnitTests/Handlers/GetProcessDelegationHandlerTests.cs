@@ -20,7 +20,7 @@ using ElectricityMarket.Application.Commands.ProcessDelegations;
 using ElectricityMarket.Application.Handlers;
 using ElectricityMarket.Domain;
 using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.Actors;
 using ElectricityMarket.Domain.Models.Common;
 using ElectricityMarket.Domain.Models.GridAreas;
 using ElectricityMarket.Domain.Repositories;
@@ -94,7 +94,6 @@ public sealed class GetProcessDelegationHandlerTests
         gridAreaRepository
             .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode(It.IsAny<string>())))
             .ReturnsAsync((GridArea?)null);
-
 
         var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, mockActor.MarketRole.Function, "111", DelegatedProcess.ReceiveEnergyResults);
         var command = new GetProcessDelegationCommand(request);

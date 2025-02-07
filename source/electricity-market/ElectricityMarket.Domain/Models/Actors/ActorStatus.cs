@@ -12,18 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.Actor;
+namespace ElectricityMarket.Domain.Models.Actors;
 
-public sealed class ActorMarketRole
+public enum ActorStatus
 {
-    public ActorMarketRole(EicFunction eic, IEnumerable<ActorGridArea> gridAreas, string? comment)
-    {
-        GridAreas = gridAreas.ToList();
-        Function = eic;
-        Comment = comment;
-    }
-
-    public IReadOnlyCollection<ActorGridArea> GridAreas { get; }
-    public EicFunction Function { get; }
-    public string? Comment { get; }
+    New = 1,
+    Active = 2,
+    Inactive = 3,
+    Passive = 4
 }

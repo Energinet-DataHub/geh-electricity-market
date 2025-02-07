@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using ElectricityMarket.Application.Commands.GridArea;
 using ElectricityMarket.Application.Handlers;
 using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.Actors;
 using ElectricityMarket.Domain.Models.Common;
 using ElectricityMarket.Domain.Models.GridAreas;
 using ElectricityMarket.Domain.Repositories;

@@ -15,7 +15,7 @@
 using System.ComponentModel.DataAnnotations;
 using ElectricityMarket.Application.Commands.ProcessDelegations;
 using ElectricityMarket.Application.Models;
-using ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.Actors;
 using ElectricityMarket.Domain.Models.GridAreas;
 using ElectricityMarket.Domain.Repositories;
 using MediatR;

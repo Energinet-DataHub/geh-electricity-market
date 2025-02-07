@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.GridAreas;
 
-public sealed record ActorId
+namespace ElectricityMarket.Domain.Models.Actors;
+
+public sealed class ActorGridArea
 {
-    public ActorId(Guid value)
+    public ActorGridArea(GridAreaId id)
     {
-        Value = value;
+        Id = id;
     }
 
-    public Guid Value { get; }
-
-    public override string ToString()
-    {
-        return Value.ToString();
-    }
+    public GridAreaId Id { get; }
 }

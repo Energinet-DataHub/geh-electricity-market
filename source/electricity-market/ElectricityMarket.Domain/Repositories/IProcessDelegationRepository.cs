@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using ElectricityMarket.Domain.Models;
-using ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.Actors;
 using ElectricityMarket.Domain.Models.Common;
 
 namespace ElectricityMarket.Domain.Repositories;

@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.Actors;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 

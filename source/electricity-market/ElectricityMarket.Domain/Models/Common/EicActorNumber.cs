@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using System.Diagnostics.CodeAnalysis;
-using ElectricityMarket.Domain.Models.Actor;
+using ElectricityMarket.Domain.Models.Actors;
 
 namespace ElectricityMarket.Domain.Models.Common;
 

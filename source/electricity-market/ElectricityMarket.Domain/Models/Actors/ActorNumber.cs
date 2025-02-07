@@ -15,7 +15,7 @@
 using System.Text.Json.Serialization;
 using ElectricityMarket.Domain.Models.Common;
 
-namespace ElectricityMarket.Domain.Models.Actor;
+namespace ElectricityMarket.Domain.Models.Actors;
 
 [JsonDerivedType(typeof(EicActorNumber), typeDiscriminator: "eic")]
 [JsonDerivedType(typeof(GlnActorNumber), typeDiscriminator: "gln")]

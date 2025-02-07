@@ -12,24 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.Domain.Models.Actor;
+namespace ElectricityMarket.Domain.Models.Actors;
 
-public enum EicFunction
+public sealed class ActorMarketRole
 {
-    BalanceResponsibleParty = 1,
-    BillingAgent = 3,
-    EnergySupplier = 12,
-    GridAccessProvider = 14,
-    ImbalanceSettlementResponsible = 15,
-    MeterOperator = 22,
-    MeteredDataAdministrator = 23,
-    MeteredDataResponsible = 26,
-    MeteringPointAdministrator = 27,
-    SystemOperator = 45,
-    DanishEnergyAgency = 48,
-    DataHubAdministrator = 50,
-    IndependentAggregator = 51,
-    SerialEnergyTrader = 52,
-    Delegated = 53,
-    ItSupplier = 54,
+    public ActorMarketRole(EicFunction eic, IEnumerable<ActorGridArea> gridAreas, string? comment)
+    {
+        GridAreas = gridAreas.ToList();
+        Function = eic;
+        Comment = comment;
+    }
+
+    public IReadOnlyCollection<ActorGridArea> GridAreas { get; }
+    public EicFunction Function { get; }
+    public string? Comment { get; }
 }
