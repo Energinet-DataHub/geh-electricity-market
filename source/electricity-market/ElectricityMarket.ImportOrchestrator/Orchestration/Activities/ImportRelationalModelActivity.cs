@@ -91,24 +91,16 @@ public sealed class ImportRelationalModelActivity
 
                         if (list.Count != 0 && currentMeteringPointId != meteringPointTransaction.Identification)
                         {
-                            var mp = new MeteringPointEntity
-                            {
-                                Identification = currentMeteringPointId,
-                            };
-
-                            foreach (var mpt in list)
-                            {
-                                await RunImportChainAsync(mp, mpt).ConfigureAwait(false);
-                            }
-
-                            writeContext.MeteringPoints.Add(mp);
+                            await SaveMeteringPointAsync(writeContext, currentMeteringPointId, list).ConfigureAwait(false);
 
                             list.Clear();
-                            currentMeteringPointId = meteringPointTransaction.Identification;
                         }
 
+                        currentMeteringPointId = meteringPointTransaction.Identification;
                         list.Add(meteringPointTransaction);
                     }
+
+                    await SaveMeteringPointAsync(writeContext, currentMeteringPointId, list).ConfigureAwait(false);
 
                     await writeContext.SaveChangesAsync().ConfigureAwait(false);
 
@@ -138,20 +130,35 @@ public sealed class ImportRelationalModelActivity
             record.balance_supplier_id?.TrimEnd());
     }
 
-    private async Task RunImportChainAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
+    private async Task SaveMeteringPointAsync(IElectricityMarketDatabaseContext context, string currentMeteringPointId, List<MeteringPointTransaction> list)
     {
-        var handled = false;
-
-        foreach (var transactionImporter in _transactionImporters)
+        var mp = new MeteringPointEntity
         {
-            var result = await transactionImporter.ImportAsync(meteringPoint, meteringPointTransaction).ConfigureAwait(false);
+            Identification = currentMeteringPointId,
+        };
 
-            handled |= result.Status == TransactionImporterResultStatus.Handled;
+        foreach (var mpt in list)
+        {
+            await RunImportChainAsync(mp, mpt).ConfigureAwait(false);
         }
 
-        if (!handled)
+        context.MeteringPoints.Add(mp);
+
+        async Task RunImportChainAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
         {
-            _logger.LogWarning("Unhandled transaction trans_dos_id: {TransactionId} state_id: {StateId}", meteringPointTransaction.BusinessTransactionDosId, meteringPointTransaction.MeteringPointStateId);
+            var handled = false;
+
+            foreach (var transactionImporter in _transactionImporters)
+            {
+                var result = await transactionImporter.ImportAsync(meteringPoint, meteringPointTransaction).ConfigureAwait(false);
+
+                handled |= result.Status == TransactionImporterResultStatus.Handled;
+            }
+
+            if (!handled)
+            {
+                _logger.LogWarning("Unhandled transaction trans_dos_id: {TransactionId} state_id: {StateId}", meteringPointTransaction.BusinessTransactionDosId, meteringPointTransaction.MeteringPointStateId);
+            }
         }
     }
 }
