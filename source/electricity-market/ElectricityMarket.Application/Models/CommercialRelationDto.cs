@@ -54,7 +54,6 @@ public sealed class CommercialRelationDto
         ElectricalHeatingPeriods.FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.Now && x.ValidTo >= DateTimeOffset.Now) ??
         ElectricalHeatingPeriods.OrderByDescending(x => x.ValidFrom).FirstOrDefault();
 
-
     public EnergySupplierPeriodDto? CurrentEnergySupplierPeriod =>
         EnergySupplyPeriods.FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.Now && x.ValidTo >= DateTimeOffset.Now) ??
         EnergySupplyPeriods.OrderByDescending(x => x.ValidFrom).FirstOrDefault();
