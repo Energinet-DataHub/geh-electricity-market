@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
 
-public enum MeteringPointSubType
+public sealed record UnknownActorNumber : ActorNumber
 {
-    Physical,
-    Virtual,
-    Calculated,
+    public UnknownActorNumber(string value)
+        : base(value)
+    {
+    }
 }

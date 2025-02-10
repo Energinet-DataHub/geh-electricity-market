@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ElectricityMarket.Domain\ElectricityMarket.Domain.csproj" />
+    <ProjectReference Include="..\ElectricityMarket.Integration\ElectricityMarket.Integration.csproj" />
   </ItemGroup>
 
 </Project>

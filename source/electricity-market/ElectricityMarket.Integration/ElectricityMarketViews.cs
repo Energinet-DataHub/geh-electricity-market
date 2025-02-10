@@ -14,79 +14,45 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Integration.Models;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
-using Microsoft.EntityFrameworkCore;
 using NodaTime;
-using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public sealed class ElectricityMarketViews : IElectricityMarketViews
 {
     private readonly ElectricityMarketDatabaseContext _context;
+    private readonly HttpClient _apiHttpClient;
 
-    internal ElectricityMarketViews(ElectricityMarketDatabaseContext context)
+    internal ElectricityMarketViews(ElectricityMarketDatabaseContext context, HttpClient apiHttpClient)
     {
         _context = context;
+        _apiHttpClient = apiHttpClient;
     }
 
-    public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
+    public async Task<IEnumerable<MeteringPointMasterData>> GetMeteringPointMasterDataChangesAsync(
         MeteringPointIdentification meteringPointId,
         Interval period)
     {
+        ArgumentNullException.ThrowIfNull(meteringPointId);
+
         var f = period.Start.ToDateTimeOffset();
         var t = period.End.ToDateTimeOffset();
 
-        var query =
-            from change in _context.MeteringPointChanges
-            where change.Identification == meteringPointId.Value &&
-                  change.ValidFrom <= t &&
-                  change.ValidTo > f
-            orderby change.ValidFrom
-            select new MeteringPointMasterData
-            {
-                Identification = new MeteringPointIdentification(change.Identification),
-                ValidFrom = change.ValidFrom.ToInstant(),
-                ValidTo = change.ValidTo.ToInstant(),
-                GridAreaCode = new GridAreaCode(change.GridAreaCode),
-                GridAccessProvider = ActorNumber.Create(change.GridAccessProvider),
-                NeighborGridAreaOwners = Array.Empty<ActorNumber>(),
-                ConnectionState = Enum.Parse<ConnectionState>(change.ConnectionState),
-                Type = Enum.Parse<MeteringPointType>(change.Type),
-                SubType = Enum.Parse<MeteringPointSubType>(change.SubType),
-                Resolution = new Resolution(change.Resolution),
-                Unit = Enum.Parse<MeasureUnit>(change.Unit),
-                ProductId = Enum.Parse<ProductId>(change.ProductId),
-                ParentIdentification = change.ParentIdentification != null
-                    ? new MeteringPointIdentification(change.ParentIdentification)
-                    : null,
-            };
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/get-metering-point-master-data");
+        request.Content = JsonContent.Create(new MeteringPointMasterDataRequestDto(meteringPointId.Value, f, t));
+        using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
-        return query.AsAsyncEnumerable();
-    }
+        response.EnsureSuccessStatusCode();
 
-    public IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(
-        MeteringPointIdentification meteringPointId,
-        Interval period)
-    {
-        var f = period.Start.ToDateTimeOffset();
-        var t = period.End.ToDateTimeOffset();
+        var result = await response.Content
+            .ReadFromJsonAsync<IEnumerable<MeteringPointMasterData>>()
+            .ConfigureAwait(false) ?? [];
 
-        var query =
-            from es in _context.MeteringPointEnergySuppliers
-            where es.Identification == meteringPointId.Value &&
-                  es.StartDate <= t &&
-                  es.EndDate > f
-            orderby es.StartDate
-            select new MeteringPointEnergySupplier
-            {
-                Identification = new MeteringPointIdentification(es.Identification),
-                EnergySupplier = ActorNumber.Create(es.EnergySupplier),
-                StartDate = es.StartDate.ToInstant(),
-                EndDate = es.EndDate.ToInstant(),
-            };
-
-        return query.AsAsyncEnumerable();
+        return result;
     }
 }

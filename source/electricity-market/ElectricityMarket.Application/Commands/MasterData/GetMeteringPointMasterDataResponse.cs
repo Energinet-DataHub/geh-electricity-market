@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Integration.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
 
-public sealed record GetMeteringPointMasterDataResponse(IEnumerable<MeteringPointMasterDataDto> MasterData);
+public sealed record GetMeteringPointMasterDataResponse(IEnumerable<MeteringPointMasterData> MasterData);

@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+using System;
+using System.ComponentModel.DataAnnotations;
 
-public enum ConnectionState
+namespace Energinet.DataHub.ElectricityMarket.Integration.Options;
+
+public sealed class ApiClientOptions
 {
-    NotUsed,
-    ClosedDown,
-    New,
-    Connected,
-    Disconnected,
+    [Required]
+    public Uri BaseUrl { get; set; } = null!;
 }

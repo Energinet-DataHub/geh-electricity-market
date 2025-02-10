@@ -12,12 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
 
-public sealed record UnknownActorNumber : ActorNumber
+public enum EicFunction
 {
-    public UnknownActorNumber(string value)
-        : base(value)
-    {
-    }
+    BalanceResponsibleParty = 1,
+    BillingAgent = 3,
+    EnergySupplier = 12,
+    GridAccessProvider = 14,
+    ImbalanceSettlementResponsible = 15,
+    MeterOperator = 22,
+    MeteredDataAdministrator = 23,
+    MeteredDataResponsible = 26,
+    MeteringPointAdministrator = 27,
+    SystemOperator = 45,
+    DanishEnergyAgency = 48,
+    DataHubAdministrator = 50,
+    IndependentAggregator = 51,
+    SerialEnergyTrader = 52,
+    Delegated = 53,
+    ItSupplier = 54,
 }

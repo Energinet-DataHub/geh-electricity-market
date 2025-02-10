@@ -46,16 +46,4 @@ public class MeteringPointController : ControllerBase
 
         return Ok(cpr);
     }
-
-    [HttpPost("master-data")]
-    public async Task<ActionResult<IEnumerable<MeteringPointMasterDataDto>>> GetMeteringPointMasterDataChangesAsync([FromBody] MeteringPointMasterDataRequestDto request)
-    {
-        var command = new GetMeteringPointMasterDataCommand(request);
-
-        var response = await _mediator
-            .Send(command)
-            .ConfigureAwait(false);
-
-        return Ok(response.MasterData);
-    }
 }

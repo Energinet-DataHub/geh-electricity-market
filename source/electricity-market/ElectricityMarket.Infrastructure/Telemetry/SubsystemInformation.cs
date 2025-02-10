@@ -12,17 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+using System;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Telemetry;
 
-public sealed class MeteringPointEnergySupplier
+public static class SubsystemInformation
 {
-    public MeteringPointIdentification Identification { get; internal set; } = null!;
-
-    public ActorNumber EnergySupplier { get; internal set; } = null!;
-
-    public Instant StartDate { get; internal set; }
-
-    public Instant EndDate { get; internal set; }
+    public static readonly Guid Id = Guid.Parse("1fc93427-e6fb-45db-bf92-b6efefe5aad9");
 }

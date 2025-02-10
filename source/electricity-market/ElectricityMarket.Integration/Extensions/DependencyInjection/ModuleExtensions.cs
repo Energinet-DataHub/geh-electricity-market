@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Net.Http;
 using Energinet.DataHub.ElectricityMarket.Integration.Options;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,11 @@ public static class ModuleExtensions
             .BindConfiguration(nameof(DatabaseOptions))
             .ValidateDataAnnotations();
 
+        services
+            .AddOptions<ApiClientOptions>()
+            .BindConfiguration(nameof(ApiClientOptions))
+            .ValidateDataAnnotations();
+
         services.AddDbContext<ElectricityMarketDatabaseContext>((s, o) =>
         {
             var dbSettings = s.GetRequiredService<IOptions<DatabaseOptions>>();
@@ -39,9 +45,17 @@ public static class ModuleExtensions
             });
         });
 
-        services.AddScoped<IElectricityMarketViews, ElectricityMarketViews>(s =>
-            new ElectricityMarketViews(s.GetRequiredService<ElectricityMarketDatabaseContext>()));
+        services.AddHttpClient("ElectricityMarketClient", (provider, client) =>
+        {
+            var options = provider.GetRequiredService<IOptions<ApiClientOptions>>();
+            client.BaseAddress = options.Value.BaseUrl;
+        });
 
+        services.AddScoped<IElectricityMarketViews, ElectricityMarketViews>(s =>
+        {
+            var client = s.GetRequiredService<IHttpClientFactory>().CreateClient("ElectricityMarketClient");
+            return new ElectricityMarketViews(s.GetRequiredService<ElectricityMarketDatabaseContext>(), client);
+        });
         return services;
     }
 }

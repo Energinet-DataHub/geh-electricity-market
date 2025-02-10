@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
+using System;
+using System.Collections.Generic;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
 
-public sealed record MeteringPointMasterDataDto(
+public sealed record MeteringPointMasterDataApiDto(
     string Identification,
     DateTimeOffset ValidFrom,
     DateTimeOffset ValidTo,
@@ -30,4 +31,4 @@ public sealed record MeteringPointMasterDataDto(
     MeasureUnit Unit,
     ProductId ProductId,
     string? ParentIdentification,
-    IReadOnlyCollection<MeteringPointRecipientDto> Recipients);
+    IReadOnlyCollection<MeteringPointRecipientApiDto> Recipients);

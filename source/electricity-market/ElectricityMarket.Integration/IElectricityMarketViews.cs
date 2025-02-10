@@ -13,6 +13,8 @@
 // limitations under the License.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Integration.Models;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
@@ -25,17 +27,7 @@ public interface IElectricityMarketViews
     /// <param name="meteringPointId">The identifier of the metering point.</param>
     /// <param name="period">The period in which to look up master data changes for the given metering point.</param>
     /// <returns>The list of metering point master data changes within the specified period.</returns>
-    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        MeteringPointIdentification meteringPointId,
-        Interval period);
-
-    /// <summary>
-    /// Gets the energy suppliers for the specified metering point in the specified period.
-    /// </summary>
-    /// <param name="meteringPointId">The identifier of the metering point.</param>
-    /// <param name="period">The period in which to look up energy suppliers for the given metering point.</param>
-    /// <returns>The energy supplier for the metering point at the specified date; or NULL.</returns>
-    IAsyncEnumerable<MeteringPointEnergySupplier> GetMeteringPointEnergySuppliersAsync(
+    Task<IEnumerable<MeteringPointMasterData>> GetMeteringPointMasterDataChangesAsync(
         MeteringPointIdentification meteringPointId,
         Interval period);
 }
