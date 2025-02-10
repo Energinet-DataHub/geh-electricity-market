@@ -16,13 +16,46 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed record CommercialRelationDto(
-    long Id,
-    string CustomerId,
-    long MeteringPointId,
-    DateTimeOffset StartDate,
-    DateTimeOffset EndDate,
-    string EnergySupplier,
-    DateTimeOffset ModifiedAt,
-    IEnumerable<EnergySupplierPeriodDto> EnergySupplyPeriods,
-    IEnumerable<ElectricalHeatingPeriodDto> ElectricalHeatingPeriods);
+public sealed class CommercialRelationDto
+{
+    public CommercialRelationDto(
+        long id,
+        string customerId,
+        long meteringPointId,
+        DateTimeOffset startDate,
+        DateTimeOffset endDate,
+        string energySupplier,
+        DateTimeOffset modifiedAt,
+        IEnumerable<EnergySupplierPeriodDto> energySupplyPeriods,
+        IEnumerable<ElectricalHeatingPeriodDto> electricalHeatingPeriods)
+    {
+        Id = id;
+        CustomerId = customerId;
+        MeteringPointId = meteringPointId;
+        StartDate = startDate;
+        EndDate = endDate;
+        EnergySupplier = energySupplier;
+        ModifiedAt = modifiedAt;
+        EnergySupplyPeriods = energySupplyPeriods;
+        ElectricalHeatingPeriods = electricalHeatingPeriods;
+    }
+
+    public long Id { get; init; }
+    public string CustomerId { get; init; }
+    public long MeteringPointId { get; init; }
+    public DateTimeOffset StartDate { get; init; }
+    public DateTimeOffset EndDate { get; init; }
+    public string EnergySupplier { get; init; }
+    public DateTimeOffset ModifiedAt { get; init; }
+    public IEnumerable<EnergySupplierPeriodDto> EnergySupplyPeriods { get; init; }
+    public IEnumerable<ElectricalHeatingPeriodDto> ElectricalHeatingPeriods { get; init; }
+
+    public ElectricalHeatingPeriodDto? CurrentElectricalHeatingPeriod =>
+        ElectricalHeatingPeriods.FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.Now && x.ValidTo >= DateTimeOffset.Now) ??
+        ElectricalHeatingPeriods.OrderByDescending(x => x.ValidFrom).FirstOrDefault();
+
+
+    public EnergySupplierPeriodDto? CurrentEnergySupplierPeriod =>
+        EnergySupplyPeriods.FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.Now && x.ValidTo >= DateTimeOffset.Now) ??
+        EnergySupplyPeriods.OrderByDescending(x => x.ValidFrom).FirstOrDefault();
+}
