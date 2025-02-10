@@ -14,15 +14,11 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed record ContactDto(
-    long Id,
-    CustomerRelation RelationType,
-    string? DisponentName,
-    string? Cvr,
-    string? Name,
-    string? Phone,
-    string? Mobile,
-    string? Email,
-    string? Attention,
-    bool IsProtectedName,
-    ContactAddressDto Address);
+public enum CustomerRelation
+{
+    Unknown,
+    Legal,
+    Technical,
+    Primary,
+    Secondary,
+}
