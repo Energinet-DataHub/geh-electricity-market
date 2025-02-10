@@ -1,4 +1,4 @@
-﻿// Copyright 2020 Energinet DataHub A/S
+// Copyright 2020 Energinet DataHub A/S
 //
 // Licensed under the Apache License, Version 2.0 (the "License2");
 // you may not use this file except in compliance with the License.
@@ -14,15 +14,11 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed record ContactDto(
-    long Id,
-    CustomerRelation RelationType,
-    string? DisponentName,
-    string? Cvr,
-    string? Name,
-    string? Phone,
-    string? Mobile,
-    string? Email,
-    string? Attention,
-    bool IsProtectedName,
-    ContactAddressDto Address);
+public enum CustomerRelation
+{
+    Legal,
+    Technical,
+    Primary,
+    Secondary,
+    Unknown
+}
