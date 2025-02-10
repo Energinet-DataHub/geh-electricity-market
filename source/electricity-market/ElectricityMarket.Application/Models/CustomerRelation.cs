@@ -16,9 +16,9 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public enum CustomerRelation
 {
+    Unknown,
     Legal,
     Technical,
     Primary,
     Secondary,
-    Unknown
 }
