@@ -22,6 +22,8 @@ public sealed class MeteringPointPeriodEntity
 
     public long MeteringPointId { get; set; }
 
+    public string? ParentIdentification { get; set; }
+
     public DateTimeOffset ValidFrom { get; set; }
 
     public DateTimeOffset ValidTo { get; set; }
@@ -44,16 +46,17 @@ public sealed class MeteringPointPeriodEntity
 
     public string ProductId { get; set; } = null!;
 
+    public int? SettlementGroup { get; set; }
+
     public int ScheduledMeterReadingMonth { get; set; }
 
     public long MeteringPointStateId { get; set; }
 
     public long BusinessTransactionDosId { get; set; }
 
-    public long? RetiredById { get; set; }
-
     public DateTimeOffset? RetiredAt { get; set; }
 
+    public long? RetiredById { get; set; }
+
     public MeteringPointPeriodEntity? RetiredBy { get; set; }
-    public string? ParentIdentification { get; internal set; }
 }

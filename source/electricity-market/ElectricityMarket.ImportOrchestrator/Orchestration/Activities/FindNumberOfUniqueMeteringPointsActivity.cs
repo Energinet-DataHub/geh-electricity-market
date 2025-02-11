@@ -20,9 +20,9 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class FindNumberOfUniqueMeteringPointsActivity
 {
-    private readonly IElectricityMarketDatabaseContext _databaseContext;
+    private readonly ElectricityMarketDatabaseContext _databaseContext;
 
-    public FindNumberOfUniqueMeteringPointsActivity(IElectricityMarketDatabaseContext databaseContext)
+    public FindNumberOfUniqueMeteringPointsActivity(ElectricityMarketDatabaseContext databaseContext)
     {
         _databaseContext = databaseContext;
     }

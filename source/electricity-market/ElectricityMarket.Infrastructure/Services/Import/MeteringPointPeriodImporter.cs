@@ -17,18 +17,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
-public class MeteringPointPeriodImporter : ITransactionImporter
+public sealed class MeteringPointPeriodImporter : ITransactionImporter
 {
-    public Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
+    public Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, ImportedTransactionEntity importedTransactionEntity)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
-        ArgumentNullException.ThrowIfNull(meteringPointTransaction);
+        ArgumentNullException.ThrowIfNull(importedTransactionEntity);
 
         var latestPeriod = meteringPoint.MeteringPointPeriods.MaxBy(x => x.MeteringPointStateId);
 
-        var newPeriod = CreatePeriod(meteringPoint, meteringPointTransaction);
+        var newPeriod = CreatePeriod(meteringPoint, importedTransactionEntity);
 
         if (latestPeriod is null)
         {
@@ -36,10 +36,8 @@ public class MeteringPointPeriodImporter : ITransactionImporter
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
         }
 
-        if (latestPeriod.ValidFrom > meteringPointTransaction.ValidFrom)
-        {
+        if (latestPeriod.ValidFrom > importedTransactionEntity.valid_from_date)
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Error, "HTX"));
-        }
 
         if (IsLatestPeriodRetired(latestPeriod, newPeriod))
         {
@@ -62,24 +60,24 @@ public class MeteringPointPeriodImporter : ITransactionImporter
         return latestMeteringPointPeriod.ValidTo == DateTimeOffset.MaxValue && incomingMeteringPointPeriod.ValidFrom == latestMeteringPointPeriod.ValidFrom;
     }
 
-    private static MeteringPointPeriodEntity CreatePeriod(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
+    private static MeteringPointPeriodEntity CreatePeriod(MeteringPointEntity meteringPoint, ImportedTransactionEntity importedTransactionEntity)
     {
         return new MeteringPointPeriodEntity
         {
             MeteringPointId = meteringPoint.Id,
-            ValidFrom = meteringPointTransaction.ValidFrom,
-            ValidTo = meteringPointTransaction.ValidTo,
-            CreatedAt = meteringPointTransaction.Dh3Created,
-            GridAreaCode = meteringPointTransaction.MeteringGridAreaId,
+            ValidFrom = importedTransactionEntity.valid_from_date,
+            ValidTo = importedTransactionEntity.valid_to_date,
+            CreatedAt = importedTransactionEntity.dh2_created,
+            GridAreaCode = importedTransactionEntity.metering_grid_area_id,
             OwnedBy = "TBD",
-            ConnectionState = ExternalMeteringPointConnectionStateMapper.Map(meteringPointTransaction.PhysicalStatusOfMp),
-            Type = ExternalMeteringPointTypeMapper.Map(meteringPointTransaction.TypeOfMp),
-            SubType = ExternalMeteringPointSubTypeMapper.Map(meteringPointTransaction.SubTypeOfMp),
+            ConnectionState = ExternalMeteringPointConnectionStateMapper.Map(importedTransactionEntity.physical_status_of_mp.TrimEnd()),
+            Type = ExternalMeteringPointTypeMapper.Map(importedTransactionEntity.type_of_mp.TrimEnd()),
+            SubType = ExternalMeteringPointSubTypeMapper.Map(importedTransactionEntity.sub_type_of_mp.TrimEnd()),
             Resolution = "TBD",
-            Unit = ExternalMeteringPointUnitMapper.Map(meteringPointTransaction.EnergyTimeseriesMeasureUnit),
+            Unit = ExternalMeteringPointUnitMapper.Map(importedTransactionEntity.energy_timeseries_measure_unit.TrimEnd()),
             ProductId = "TBD",
             ScheduledMeterReadingMonth = 1,
-            MeteringPointStateId = meteringPointTransaction.MeteringPointStateId,
+            MeteringPointStateId = importedTransactionEntity.metering_point_state_id,
         };
     }
 }

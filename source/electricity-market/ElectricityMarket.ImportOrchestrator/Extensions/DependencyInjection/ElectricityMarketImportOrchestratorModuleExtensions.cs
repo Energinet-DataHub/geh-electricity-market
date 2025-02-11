@@ -18,7 +18,7 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution.Diagnostics.Health
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,6 +47,7 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
         services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
         // importers
+        services.AddScoped<IMeteringPointImporter, MeteringPointImporter>();
         services.AddScoped<ITransactionImporter, MeteringPointPeriodImporter>();
         services.AddScoped<ITransactionImporter, CommercialRelationImporter>();
 
