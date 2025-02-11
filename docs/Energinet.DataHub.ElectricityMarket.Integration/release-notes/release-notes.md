@@ -2,6 +2,10 @@
 
 ## Version 4.1.0
 
+- updated httpclient urls
+
+## Version 4.1.0
+
 - Removed GetMeteringPointEnergySuppliersAsync (Breaking change)
 - Added "EnergySuppliers" property to MasterDataDTO to replace the above removed function
 - Added GetProcessDelegationAsync
