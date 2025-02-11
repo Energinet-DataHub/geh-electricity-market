@@ -43,7 +43,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         var f = period.Start.ToDateTimeOffset();
         var t = period.End.ToDateTimeOffset();
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/get-metering-point-master-data");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/get-metering-point-master-data");
         request.Content = JsonContent.Create(new MeteringPointMasterDataRequestDto(meteringPointId.Value, f, t));
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
@@ -62,7 +62,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         string gridAreaCode,
         DelegatedProcess processType)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/get-process-delegation");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/get-process-delegation");
         request.Content = JsonContent.Create(new ProcessDelegationRequestDto(actorNumber, actorRole, gridAreaCode, processType));
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
@@ -80,7 +80,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
 
     public async Task<GridAreaOwnerDto?> GetGridAreaOwnerAsync(string gridAreaCode)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/get-grid-area-owner?gridAreaCode=" + gridAreaCode);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/get-grid-area-owner?gridAreaCode=" + gridAreaCode);
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
         response.EnsureSuccessStatusCode();
