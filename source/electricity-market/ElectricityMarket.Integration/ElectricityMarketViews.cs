@@ -17,12 +17,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Integration.Models;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
-using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;

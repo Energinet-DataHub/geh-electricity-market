@@ -14,7 +14,6 @@
 
 using System.Net;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
-using Energinet.DataHub.ElectricityMarket.Integration.Models;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;

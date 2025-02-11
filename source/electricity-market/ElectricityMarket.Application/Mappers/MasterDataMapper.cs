@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
-using Energinet.DataHub.ElectricityMarket.Integration.Models;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using ConnectionState = Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData.ConnectionState;
 using MeasureUnit = Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData.MeasureUnit;
