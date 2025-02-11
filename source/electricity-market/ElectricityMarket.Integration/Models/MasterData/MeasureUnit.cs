@@ -12,12 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-
-public sealed record MeteringPointRecipientDto(
-    string ActorNumber,
-    DateTimeOffset StartDate,
-    DateTimeOffset EndDate,
-    EicFunction Function);
+public enum MeasureUnit
+{
+// ReSharper disable InconsistentNaming
+#pragma warning disable SA1300
+    Ampere,
+    STK,
+    kVArh,
+    kWh,
+    kW,
+    MW,
+    MWh,
+    Tonne,
+    MVAr,
+    DanishTariffCode,
+#pragma warning restore SA1300
+// ReSharper restore InconsistentNaming
+}

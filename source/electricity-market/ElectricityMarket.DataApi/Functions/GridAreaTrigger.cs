@@ -12,33 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Net;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
-using Energinet.DataHub.ElectricityMarket.Application.Models;
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 
-namespace ElectricityMarket.WebAPI.Controllers;
+namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Functions;
 
-[ApiController]
-[Route("grid-area")]
-public class GridAreaController : ControllerBase
+internal sealed class GridAreaTrigger
 {
     private readonly IMediator _mediator;
 
-    public GridAreaController(IMediator mediator)
+    public GridAreaTrigger(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [HttpGet("owner/{gridAreaCode}")]
-    public async Task<ActionResult<GridAreaOwnerDto>> GetGridAreaOwnerAsync(string gridAreaCode)
+    [Function(nameof(GetGridAreaAsync))]
+    public async Task<HttpResponseData> GetGridAreaAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "get-grid-area-owner")]
+        HttpRequestData req,
+        string gridAreaCode,
+        FunctionContext executionContext)
     {
         var command = new GetGridAreaOwnerCommand(gridAreaCode);
 
-        var response = await _mediator
+        var result = await _mediator
             .Send(command)
             .ConfigureAwait(false);
 
-        return Ok(response);
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        await response
+            .WriteAsJsonAsync(result)
+            .ConfigureAwait(false);
+
+        return response;
     }
 }

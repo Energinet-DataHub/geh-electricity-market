@@ -12,8 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
-
-public sealed record GetMeteringPointMasterDataResponse(IEnumerable<MeteringPointMasterData> MasterData);
+public enum DelegatedProcess
+{
+    RequestEnergyResults = 1,
+    ReceiveEnergyResults,
+    RequestWholesaleResults,
+    ReceiveWholesaleResults,
+    RequestMeteringPointData,
+    ReceiveMeteringPointData,
+}

@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-public sealed record GridAreaCode(string Value);
+public enum MeteringPointSubType
+{
+    Physical,
+    Virtual,
+    Calculated,
+}

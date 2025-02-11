@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-public sealed class MeteringPointMasterDataDto
+public sealed class MeteringPointMasterDataApiDto
 {
-    public MeteringPointMasterDataDto(
+    public MeteringPointMasterDataApiDto(
         string identification,
         DateTimeOffset validFrom,
         DateTimeOffset validTo,
@@ -32,7 +34,7 @@ public sealed class MeteringPointMasterDataDto
         MeasureUnit unit,
         ProductId productId,
         string? parentIdentification,
-        IReadOnlyCollection<MeteringPointRecipientDto> recipients)
+        IReadOnlyCollection<MeteringPointRecipientApiDto> recipients)
     {
         Identification = identification;
         ValidFrom = validFrom;
@@ -63,8 +65,8 @@ public sealed class MeteringPointMasterDataDto
     public MeasureUnit Unit { get; init; }
     public ProductId ProductId { get; init; }
     public string? ParentIdentification { get; init; }
-    public IReadOnlyCollection<MeteringPointRecipientDto> Recipients { get; init; }
+    public IReadOnlyCollection<MeteringPointRecipientApiDto> Recipients { get; init; }
 
-    public MeteringPointRecipientDto? CurrentRecipient =>
+    public MeteringPointRecipientApiDto? CurrentRecipient =>
         Recipients.FirstOrDefault(x => x.StartDate <= DateTimeOffset.Now && x.EndDate >= DateTimeOffset.Now) ?? Recipients.OrderByDescending(x => x.StartDate).FirstOrDefault();
 }

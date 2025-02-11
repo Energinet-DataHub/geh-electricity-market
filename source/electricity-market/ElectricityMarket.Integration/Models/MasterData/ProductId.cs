@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-public enum MeteringPointSubType
+public enum ProductId
 {
-    Physical,
-    Virtual,
-    Calculated,
+    Tariff,
+    FuelQuantity,
+    PowerActive,
+    PowerReactive,
+    EnergyActivate,
+    EnergyReactive,
 }
