@@ -17,18 +17,55 @@ using System.Collections.Generic;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-public sealed record MeteringPointMasterDataApiDto(
-    string Identification,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    string GridAreaCode,
-    string GridAccessProvider,
-    IReadOnlyCollection<string> NeighborGridAreaOwners,
-    ConnectionState ConnectionState,
-    MeteringPointType Type,
-    MeteringPointSubType SubType,
-    string Resolution,
-    MeasureUnit Unit,
-    ProductId ProductId,
-    string? ParentIdentification,
-    IReadOnlyCollection<MeteringPointRecipientApiDto> Recipients);
+public sealed class MeteringPointMasterDataDto
+{
+    public MeteringPointMasterDataDto(
+        string identification,
+        DateTimeOffset validFrom,
+        DateTimeOffset validTo,
+        string gridAreaCode,
+        string gridAccessProvider,
+        IReadOnlyCollection<string> neighborGridAreaOwners,
+        ConnectionState connectionState,
+        MeteringPointType type,
+        MeteringPointSubType subType,
+        string resolution,
+        MeasureUnit unit,
+        ProductId productId,
+        string? parentIdentification,
+        IReadOnlyCollection<MeteringPointRecipientDto> recipients)
+    {
+        Identification = identification;
+        ValidFrom = validFrom;
+        ValidTo = validTo;
+        GridAreaCode = gridAreaCode;
+        GridAccessProvider = gridAccessProvider;
+        NeighborGridAreaOwners = neighborGridAreaOwners;
+        ConnectionState = connectionState;
+        Type = type;
+        SubType = subType;
+        Resolution = resolution;
+        Unit = unit;
+        ProductId = productId;
+        ParentIdentification = parentIdentification;
+        Recipients = recipients;
+    }
+
+    public string Identification { get; init; }
+    public DateTimeOffset ValidFrom { get; init; }
+    public DateTimeOffset ValidTo { get; init; }
+    public string GridAreaCode { get; init; }
+    public string GridAccessProvider { get; init; }
+    public IReadOnlyCollection<string> NeighborGridAreaOwners { get; init; }
+    public ConnectionState ConnectionState { get; init; }
+    public MeteringPointType Type { get; init; }
+    public MeteringPointSubType SubType { get; init; }
+    public string Resolution { get; init; }
+    public MeasureUnit Unit { get; init; }
+    public ProductId ProductId { get; init; }
+    public string? ParentIdentification { get; init; }
+    public IReadOnlyCollection<MeteringPointRecipientDto> Recipients { get; init; }
+
+    public MeteringPointRecipientDto? CurrentRecipient =>
+        Recipients.FirstOrDefault(x => x.StartDate <= DateTimeOffset.Now && x.EndDate >= DateTimeOffset.Now) ?? Recipients.OrderByDescending(x => x.StartDate).FirstOrDefault();
+}
