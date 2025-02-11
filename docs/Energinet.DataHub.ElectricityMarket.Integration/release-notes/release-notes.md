@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.1.1
+
+- updated httpclient urls
+
 ## Version 4.1.0
 
 - Removed GetMeteringPointEnergySuppliersAsync (Breaking change)
