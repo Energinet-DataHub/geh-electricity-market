@@ -12,6 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-public sealed record GridAreaOwnerDto(string GridAccessProviderGln);
+public enum ProductId
+{
+    Tariff,
+    FuelQuantity,
+    PowerActive,
+    PowerReactive,
+    EnergyActivate,
+    EnergyReactive,
+}

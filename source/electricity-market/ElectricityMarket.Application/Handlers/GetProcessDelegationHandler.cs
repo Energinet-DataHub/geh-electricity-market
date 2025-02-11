@@ -14,11 +14,12 @@
 
 using System.ComponentModel.DataAnnotations;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
+using Energinet.DataHub.ElectricityMarket.Application.Mappers;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using MediatR;
+using ActorNumber = Energinet.DataHub.ElectricityMarket.Domain.Models.Actors.ActorNumber;
+using GridAreaCode = Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas.GridAreaCode;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
@@ -46,7 +47,7 @@ public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDele
         if (!actors.Any())
             throw new ValidationException($"No actors with number: {request.ProcessDelegationRequest.ActorNumber} found");
 
-        var delegatedByActor = actors.SingleOrDefault(x => x.MarketRole.Function == request.ProcessDelegationRequest.ActorRole);
+        var delegatedByActor = actors.SingleOrDefault(x => EicFunctionMapper.Map(x.MarketRole.Function) == request.ProcessDelegationRequest.ActorRole);
         if (delegatedByActor == null)
             throw new ValidationException($"Market role: {request.ProcessDelegationRequest.ActorRole} was not found for actor: {request.ProcessDelegationRequest.ActorNumber}");
 
@@ -55,7 +56,7 @@ public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDele
         if (gridArea == null)
             throw new ValidationException($"The grid area with code: {request.ProcessDelegationRequest.GridAreaCode} was not found");
 
-        var processDelegation = await _processDelegationRepository.GetProcessDelegationAsync(delegatedByActor.Id, request.ProcessDelegationRequest.ProcessType).ConfigureAwait(false);
+        var processDelegation = await _processDelegationRepository.GetProcessDelegationAsync(delegatedByActor.Id, DelegationProcessMapper.Map(request.ProcessDelegationRequest.ProcessType)).ConfigureAwait(false);
 
         if (processDelegation == null)
             return null;
@@ -68,6 +69,6 @@ public sealed class GetProcessDelegationHandler : IRequestHandler<GetProcessDele
         if (delegatedToActor == null)
             throw new ValidationException($"The delegated to actor with Id: {delegation.DelegatedToActorId} was not found");
 
-        return new ProcessDelegationDto(delegatedToActor.ActorNumber.Value, delegatedToActor.MarketRole.Function);
+        return new ProcessDelegationDto(delegatedToActor.ActorNumber.Value, EicFunctionMapper.Map(delegatedToActor.MarketRole.Function));
     }
 }

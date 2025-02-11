@@ -54,7 +54,7 @@ public static class ModuleExtensions
         services.AddScoped<IElectricityMarketViews, ElectricityMarketViews>(s =>
         {
             var client = s.GetRequiredService<IHttpClientFactory>().CreateClient("ElectricityMarketClient");
-            return new ElectricityMarketViews(s.GetRequiredService<ElectricityMarketDatabaseContext>(), client);
+            return new ElectricityMarketViews(client);
         });
         return services;
     }

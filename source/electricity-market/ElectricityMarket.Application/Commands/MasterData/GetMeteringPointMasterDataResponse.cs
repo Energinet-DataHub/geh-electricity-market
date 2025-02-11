@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Integration.Models;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
 

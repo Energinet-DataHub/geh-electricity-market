@@ -12,14 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
 
-public sealed record Resolution
-{
-    public Resolution(string value)
-    {
-        Value = value;
-    }
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 
-    public string Value { get; }
-}
+public sealed record ProcessDelegationRequestDto(string ActorNumber, EicFunction ActorRole, string GridAreaCode, DelegatedProcess ProcessType);

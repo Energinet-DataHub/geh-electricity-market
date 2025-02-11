@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-public sealed record MeteringPointIdentification(string Value);
+public sealed record UnknownActorNumber : ActorNumber
+{
+    public UnknownActorNumber(string value)
+        : base(value)
+    {
+    }
+}

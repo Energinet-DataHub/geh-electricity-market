@@ -16,7 +16,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
 internal sealed record EicActorNumber : ActorNumber
 {

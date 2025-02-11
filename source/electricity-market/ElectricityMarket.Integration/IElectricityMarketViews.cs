@@ -15,6 +15,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Integration.Models;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
@@ -30,4 +34,25 @@ public interface IElectricityMarketViews
     Task<IEnumerable<MeteringPointMasterData>> GetMeteringPointMasterDataChangesAsync(
         MeteringPointIdentification meteringPointId,
         Interval period);
+
+    /// <summary>
+    /// Gets the master data changes in the specified period for the specified metering point.
+    /// </summary>
+    /// <param name="actorNumber">The GLN number of the actor to get delegations for.</param>
+    /// <param name="actorRole">The EIC function of the actor.</param>
+    /// <param name="gridAreaCode">The grid area code for which you want delegations.</param>
+    /// <param name="processType">The type of delegation that you want.</param>
+    /// <returns>If a delegations exists it is returned, otherwise null.</returns>
+    Task<ProcessDelegationDto?> GetProcessDelegationAsync(
+        string actorNumber,
+        EicFunction actorRole,
+        string gridAreaCode,
+        DelegatedProcess processType);
+
+    /// <summary>
+    /// Gets the owner of a specific grid area.
+    /// </summary>
+    /// <param name="gridAreaCode">The grid area code for which you want the owner.</param>
+    /// <returns>info about the owner of the grid area.</returns>
+    Task<GridAreaOwnerDto?> GetGridAreaOwnerAsync(string gridAreaCode);
 }

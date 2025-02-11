@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
 
-public sealed record UnknownActorNumber : ActorNumber
-{
-    public UnknownActorNumber(string value)
-        : base(value)
-    {
-    }
-}
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
+
+public sealed record ProcessDelegationDto(string ActorNumber, EicFunction ActorRole);

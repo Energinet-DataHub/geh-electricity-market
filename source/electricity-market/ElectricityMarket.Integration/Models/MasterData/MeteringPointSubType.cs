@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
-
-public sealed record ProcessDelegationRequestDto(string ActorNumber, EicFunction ActorRole, string GridAreaCode, DelegatedProcess ProcessType);
+public enum MeteringPointSubType
+{
+    Physical,
+    Virtual,
+    Calculated,
+}

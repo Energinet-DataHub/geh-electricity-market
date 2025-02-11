@@ -14,8 +14,10 @@
 
 using Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
 using Energinet.DataHub.ElectricityMarket.Integration.Models;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using ConnectionState = Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData.ConnectionState;
 using MeasureUnit = Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData.MeasureUnit;
+using MeteringPointEnergySupplier = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointEnergySupplier;
 using MeteringPointMasterData = Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData.MeteringPointMasterData;
 using MeteringPointSubType = Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData.MeteringPointSubType;
 using MeteringPointType = Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData.MeteringPointType;
@@ -25,9 +27,9 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Mappers;
 
 internal sealed class MasterDataMapper
 {
-    public static Integration.Models.MeteringPointMasterData Map(MeteringPointMasterData entity)
+    public static Integration.Models.MasterData.MeteringPointMasterData Map(MeteringPointMasterData entity)
     {
-        return new Integration.Models.MeteringPointMasterData()
+        return new Integration.Models.MasterData.MeteringPointMasterData()
         {
             Identification = new MeteringPointIdentification(entity.Identification.Value),
             ValidFrom = entity.ValidFrom,
@@ -46,9 +48,9 @@ internal sealed class MasterDataMapper
         };
     }
 
-    private static Integration.Models.MeteringPointEnergySupplier Map(MeteringPointRecipient entity)
+    private static MeteringPointEnergySupplier Map(MeteringPointRecipient entity)
     {
-        return new Integration.Models.MeteringPointEnergySupplier()
+        return new MeteringPointEnergySupplier()
         {
             Identification = new MeteringPointIdentification(entity.Identification.Value),
             EnergySupplier = ActorNumber.Create(entity.ActorNumber.Value),
@@ -57,94 +59,70 @@ internal sealed class MasterDataMapper
         };
     }
 
-    private static Integration.Models.MeasureUnit Map(MeasureUnit inputUnit)
+    private static Integration.Models.MasterData.MeasureUnit Map(MeasureUnit inputUnit)
     {
         return inputUnit switch
         {
-            MeasureUnit.MW => Integration.Models.MeasureUnit.MW,
-            MeasureUnit.MWh => Integration.Models.MeasureUnit.MWh,
-            MeasureUnit.Ampere => Integration.Models.MeasureUnit.Ampere,
-            MeasureUnit.kW => Integration.Models.MeasureUnit.kW,
-            MeasureUnit.kWh => Integration.Models.MeasureUnit.kWh,
-            MeasureUnit.Tonne => Integration.Models.MeasureUnit.Tonne,
-            MeasureUnit.kVArh => Integration.Models.MeasureUnit.kVArh,
-            MeasureUnit.DanishTariffCode => Integration.Models.MeasureUnit.DanishTariffCode,
-            MeasureUnit.MVAr => Integration.Models.MeasureUnit.MVAr,
-            MeasureUnit.STK => Integration.Models.MeasureUnit.STK,
+            MeasureUnit.MW => Integration.Models.MasterData.MeasureUnit.MW,
+            MeasureUnit.MWh => Integration.Models.MasterData.MeasureUnit.MWh,
+            MeasureUnit.Ampere => Integration.Models.MasterData.MeasureUnit.Ampere,
+            MeasureUnit.kW => Integration.Models.MasterData.MeasureUnit.kW,
+            MeasureUnit.kWh => Integration.Models.MasterData.MeasureUnit.kWh,
+            MeasureUnit.Tonne => Integration.Models.MasterData.MeasureUnit.Tonne,
+            MeasureUnit.kVArh => Integration.Models.MasterData.MeasureUnit.kVArh,
+            MeasureUnit.DanishTariffCode => Integration.Models.MasterData.MeasureUnit.DanishTariffCode,
+            MeasureUnit.MVAr => Integration.Models.MasterData.MeasureUnit.MVAr,
+            MeasureUnit.STK => Integration.Models.MasterData.MeasureUnit.STK,
             _ => throw new ArgumentOutOfRangeException(nameof(inputUnit), inputUnit, null),
         };
     }
 
-    private static Integration.Models.MeteringPointSubType Map(MeteringPointSubType inputMeteringPointType)
+    private static Integration.Models.MasterData.MeteringPointSubType Map(MeteringPointSubType inputMeteringPointType)
     {
         return inputMeteringPointType switch
         {
-            MeteringPointSubType.Calculated => Integration.Models.MeteringPointSubType.Calculated,
-            MeteringPointSubType.Physical => Integration.Models.MeteringPointSubType.Physical,
-            MeteringPointSubType.Virtual => Integration.Models.MeteringPointSubType.Virtual,
+            MeteringPointSubType.Calculated => Integration.Models.MasterData.MeteringPointSubType.Calculated,
+            MeteringPointSubType.Physical => Integration.Models.MasterData.MeteringPointSubType.Physical,
+            MeteringPointSubType.Virtual => Integration.Models.MasterData.MeteringPointSubType.Virtual,
             _ => throw new ArgumentOutOfRangeException(nameof(inputMeteringPointType), inputMeteringPointType, null),
         };
     }
 
-    private static Integration.Models.MeteringPointType Map(MeteringPointType inputMeteringPointType)
+    private static Integration.Models.MasterData.MeteringPointType Map(MeteringPointType inputMeteringPointType)
     {
         return inputMeteringPointType switch
         {
-            MeteringPointType.Consumption => Integration.Models.MeteringPointType.Consumption,
-            MeteringPointType.Production => Integration.Models.MeteringPointType.Production,
-            MeteringPointType.Exchange => Integration.Models.MeteringPointType.Exchange,
+            MeteringPointType.Consumption => Integration.Models.MasterData.MeteringPointType.Consumption,
+            MeteringPointType.Production => Integration.Models.MasterData.MeteringPointType.Production,
+            MeteringPointType.Exchange => Integration.Models.MasterData.MeteringPointType.Exchange,
             _ => throw new ArgumentOutOfRangeException(nameof(inputMeteringPointType), inputMeteringPointType, null),
         };
     }
 
-    private static Integration.Models.ConnectionState Map(ConnectionState inputConnectionState)
+    private static Integration.Models.MasterData.ConnectionState Map(ConnectionState inputConnectionState)
     {
         return inputConnectionState switch
         {
-            ConnectionState.NotUsed => Integration.Models.ConnectionState.NotUsed,
-            ConnectionState.ClosedDown => Integration.Models.ConnectionState.ClosedDown,
-            ConnectionState.New => Integration.Models.ConnectionState.New,
-            ConnectionState.Connected => Integration.Models.ConnectionState.Connected,
-            ConnectionState.Disconnected => Integration.Models.ConnectionState.Disconnected,
+            ConnectionState.NotUsed => Integration.Models.MasterData.ConnectionState.NotUsed,
+            ConnectionState.ClosedDown => Integration.Models.MasterData.ConnectionState.ClosedDown,
+            ConnectionState.New => Integration.Models.MasterData.ConnectionState.New,
+            ConnectionState.Connected => Integration.Models.MasterData.ConnectionState.Connected,
+            ConnectionState.Disconnected => Integration.Models.MasterData.ConnectionState.Disconnected,
             _ => throw new ArgumentOutOfRangeException(nameof(inputConnectionState), inputConnectionState, null),
         };
     }
 
-    private static Integration.Models.ProductId Map(ProductId inputProductId)
+    private static Integration.Models.MasterData.ProductId Map(ProductId inputProductId)
     {
         return inputProductId switch
         {
-            ProductId.Tariff => Integration.Models.ProductId.Tariff,
-            ProductId.FuelQuantity => Integration.Models.ProductId.FuelQuantity,
-            ProductId.PowerActive => Integration.Models.ProductId.Tariff,
-            ProductId.PowerReactive => Integration.Models.ProductId.PowerReactive,
-            ProductId.EnergyActivate => Integration.Models.ProductId.EnergyActivate,
-            ProductId.EnergyReactive => Integration.Models.ProductId.EnergyReactive,
+            ProductId.Tariff => Integration.Models.MasterData.ProductId.Tariff,
+            ProductId.FuelQuantity => Integration.Models.MasterData.ProductId.FuelQuantity,
+            ProductId.PowerActive => Integration.Models.MasterData.ProductId.Tariff,
+            ProductId.PowerReactive => Integration.Models.MasterData.ProductId.PowerReactive,
+            ProductId.EnergyActivate => Integration.Models.MasterData.ProductId.EnergyActivate,
+            ProductId.EnergyReactive => Integration.Models.MasterData.ProductId.EnergyReactive,
             _ => throw new ArgumentOutOfRangeException(nameof(inputProductId), inputProductId, null),
-        };
-    }
-
-    private static EicFunction Map(Domain.Models.Actors.EicFunction inputFunction)
-    {
-        return inputFunction switch
-        {
-            Domain.Models.Actors.EicFunction.GridAccessProvider => EicFunction.GridAccessProvider,
-            Domain.Models.Actors.EicFunction.BalanceResponsibleParty => EicFunction.BalanceResponsibleParty,
-            Domain.Models.Actors.EicFunction.BillingAgent => EicFunction.BillingAgent,
-            Domain.Models.Actors.EicFunction.EnergySupplier => EicFunction.EnergySupplier,
-            Domain.Models.Actors.EicFunction.ImbalanceSettlementResponsible => EicFunction.ImbalanceSettlementResponsible,
-            Domain.Models.Actors.EicFunction.MeterOperator => EicFunction.MeterOperator,
-            Domain.Models.Actors.EicFunction.MeteredDataAdministrator => EicFunction.MeteredDataAdministrator,
-            Domain.Models.Actors.EicFunction.MeteredDataResponsible => EicFunction.MeteredDataResponsible,
-            Domain.Models.Actors.EicFunction.MeteringPointAdministrator => EicFunction.MeteringPointAdministrator,
-            Domain.Models.Actors.EicFunction.SystemOperator => EicFunction.SystemOperator,
-            Domain.Models.Actors.EicFunction.DanishEnergyAgency => EicFunction.DanishEnergyAgency,
-            Domain.Models.Actors.EicFunction.DataHubAdministrator => EicFunction.DataHubAdministrator,
-            Domain.Models.Actors.EicFunction.IndependentAggregator => EicFunction.IndependentAggregator,
-            Domain.Models.Actors.EicFunction.SerialEnergyTrader => EicFunction.SerialEnergyTrader,
-            Domain.Models.Actors.EicFunction.Delegated => EicFunction.Delegated,
-            Domain.Models.Actors.EicFunction.ItSupplier => EicFunction.ItSupplier,
-            _ => throw new ArgumentOutOfRangeException(nameof(inputFunction), inputFunction, null),
         };
     }
 }

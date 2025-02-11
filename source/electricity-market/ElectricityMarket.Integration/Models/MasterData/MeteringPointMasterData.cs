@@ -15,7 +15,7 @@
 using System.Collections.Generic;
 using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
 public sealed class MeteringPointMasterData
 {

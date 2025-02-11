@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
-
-public sealed record MeteringPointRecipientApiDto(
-    string ActorNumber,
-    DateTimeOffset StartDate,
-    DateTimeOffset EndDate,
-    EicFunction Function);
+public enum MeteringPointType
+{
+    Consumption,
+    Production,
+    Exchange,
+}

@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
+using System;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
 
-public enum ProductId
-{
-    Tariff,
-    FuelQuantity,
-    PowerActive,
-    PowerReactive,
-    EnergyActivate,
-    EnergyReactive,
-}
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
+
+public sealed record MeteringPointRecipientApiDto(
+    string ActorNumber,
+    DateTimeOffset StartDate,
+    DateTimeOffset EndDate,
+    EicFunction Function);

@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
 public sealed record MeteringPointMasterDataApiDto(
     string Identification,

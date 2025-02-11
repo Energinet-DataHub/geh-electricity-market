@@ -18,6 +18,10 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Integration.Models;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
 using NodaTime;
 
@@ -25,12 +29,10 @@ namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public sealed class ElectricityMarketViews : IElectricityMarketViews
 {
-    private readonly ElectricityMarketDatabaseContext _context;
     private readonly HttpClient _apiHttpClient;
 
-    internal ElectricityMarketViews(ElectricityMarketDatabaseContext context, HttpClient apiHttpClient)
+    internal ElectricityMarketViews(HttpClient apiHttpClient)
     {
-        _context = context;
         _apiHttpClient = apiHttpClient;
     }
 
@@ -52,6 +54,42 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         var result = await response.Content
             .ReadFromJsonAsync<IEnumerable<MeteringPointMasterData>>()
             .ConfigureAwait(false) ?? [];
+
+        return result;
+    }
+
+    public async Task<ProcessDelegationDto?> GetProcessDelegationAsync(
+        string actorNumber,
+        EicFunction actorRole,
+        string gridAreaCode,
+        DelegatedProcess processType)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/get-process-delegation");
+        request.Content = JsonContent.Create(new ProcessDelegationRequestDto(actorNumber, actorRole, gridAreaCode, processType));
+        using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
+
+        response.EnsureSuccessStatusCode();
+
+        if (response.Content.Headers.ContentLength == 0)
+            return null;
+
+        var result = await response.Content
+            .ReadFromJsonAsync<ProcessDelegationDto>()
+            .ConfigureAwait(false) ?? null;
+
+        return result;
+    }
+
+    public async Task<GridAreaOwnerDto?> GetGridAreaOwnerAsync(string gridAreaCode)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/get-grid-area-owner?gridAreaCode=" + gridAreaCode);
+        using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
+
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content
+            .ReadFromJsonAsync<GridAreaOwnerDto>()
+            .ConfigureAwait(false);
 
         return result;
     }
