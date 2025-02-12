@@ -14,8 +14,6 @@
 
 using System.Net.Http;
 using Energinet.DataHub.ElectricityMarket.Integration.Options;
-using Energinet.DataHub.ElectricityMarket.Integration.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -26,24 +24,9 @@ public static class ModuleExtensions
     public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services)
     {
         services
-            .AddOptions<DatabaseOptions>()
-            .BindConfiguration(nameof(DatabaseOptions))
-            .ValidateDataAnnotations();
-
-        services
             .AddOptions<ApiClientOptions>()
             .BindConfiguration(nameof(ApiClientOptions))
             .ValidateDataAnnotations();
-
-        services.AddDbContext<ElectricityMarketDatabaseContext>((s, o) =>
-        {
-            var dbSettings = s.GetRequiredService<IOptions<DatabaseOptions>>();
-            o.UseSqlServer(dbSettings.Value.ConnectionString, builder =>
-            {
-                builder.UseNodaTime();
-                builder.UseAzureSqlDefaults();
-            });
-        });
 
         services.AddHttpClient("ElectricityMarketClient", (provider, client) =>
         {

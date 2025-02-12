@@ -21,7 +21,7 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 public static class TestMeteringPointPeriodPreparationHelper
 {
     public static Task<MeteringPointPeriodEntity> PrepareMeteringPointPeriodAsync(
-        this ElectricityMarketIntegrationFixture fixture)
+        this ElectricityMarketDatabaseFixture fixture)
     {
         return PrepareMeteringPointPeriodAsync(
             fixture,
@@ -30,11 +30,11 @@ public static class TestMeteringPointPeriodPreparationHelper
     }
 
     public static async Task<MeteringPointPeriodEntity> PrepareMeteringPointPeriodAsync(
-        this ElectricityMarketIntegrationFixture fixture,
+        this ElectricityMarketDatabaseFixture fixture,
         MeteringPointEntity meteringPointEntity,
         MeteringPointPeriodEntity meteringPointPeriodEntity)
     {
-        await using var context = fixture.DatabaseManager.CreateWriteableDbContext();
+        await using var context = fixture.DatabaseManager.CreateDbContext();
 
         if (meteringPointEntity.Id == 0)
         {
