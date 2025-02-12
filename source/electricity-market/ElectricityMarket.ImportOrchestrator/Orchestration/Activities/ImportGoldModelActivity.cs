@@ -46,7 +46,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         "balance_supplier_id",
     ];
 
-    private readonly BlockingCollection<dynamic> _importCollection = new(500000);
+    private readonly BlockingCollection<dynamic> _importCollection = new(2000000);
     private readonly BlockingCollection<IDataReader> _submitCollection = new(5);
 
     private readonly IOptions<DatabaseOptions> _databaseOptions;
