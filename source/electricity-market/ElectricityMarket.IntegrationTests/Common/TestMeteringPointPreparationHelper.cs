@@ -21,16 +21,16 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 public static class TestMeteringPointPreparationHelper
 {
     public static Task<MeteringPointEntity> PrepareMeteringPointAsync(
-        this ElectricityMarketIntegrationFixture fixture)
+        this ElectricityMarketDatabaseFixture fixture)
     {
         return PrepareMeteringPointAsync(fixture, TestPreparationEntities.ValidMeteringPoint);
     }
 
     public static async Task<MeteringPointEntity> PrepareMeteringPointAsync(
-        this ElectricityMarketIntegrationFixture fixture,
+        this ElectricityMarketDatabaseFixture fixture,
         MeteringPointEntity meteringPointEntity)
     {
-        await using var context = fixture.DatabaseManager.CreateWriteableDbContext();
+        await using var context = fixture.DatabaseManager.CreateDbContext();
 
         await context.MeteringPoints.AddAsync(meteringPointEntity);
         await context.SaveChangesAsync();
