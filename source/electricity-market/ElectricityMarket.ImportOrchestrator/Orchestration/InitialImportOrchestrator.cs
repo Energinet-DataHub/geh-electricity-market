@@ -38,7 +38,6 @@ public sealed class InitialImportOrchestrator
     {
         var maxTransDosId = await orchestrationContext.CallActivityAsync<long>(nameof(FindMaxTransDossIdActivity));
 
-        await orchestrationContext.CallActivityAsync(nameof(TruncateGoldModelActivity));
         await orchestrationContext.CallActivityAsync(nameof(ImportGoldModelActivity), new ImportGoldModelActivityInput
         {
             MaxTransDossId = maxTransDosId,
@@ -47,7 +46,6 @@ public sealed class InitialImportOrchestrator
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
     {
-        await orchestrationContext.CallActivityAsync(nameof(TruncateRelationalModelActivity));
         var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
 
         var batchSize = 300_000;
