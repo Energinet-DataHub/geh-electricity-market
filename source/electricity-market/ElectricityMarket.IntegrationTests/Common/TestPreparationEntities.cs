@@ -60,7 +60,7 @@ public static class TestPreparationEntities
         StartDate = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero),
         EndDate = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero),
         ModifiedAt = DateTimeOffset.UtcNow,
-        CustomerId = Guid.NewGuid().ToString()
+        CustomerId = Guid.NewGuid()
     };
 
     public static EnergySupplyPeriodEntity ValidEnergySupplyPeriodEntity => new()

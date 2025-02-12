@@ -20,7 +20,6 @@ public sealed class CommercialRelationDto
 {
     public CommercialRelationDto(
         long id,
-        string customerId,
         long meteringPointId,
         DateTimeOffset startDate,
         DateTimeOffset endDate,
@@ -30,7 +29,6 @@ public sealed class CommercialRelationDto
         IEnumerable<ElectricalHeatingPeriodDto> electricalHeatingPeriods)
     {
         Id = id;
-        CustomerId = customerId;
         MeteringPointId = meteringPointId;
         StartDate = startDate;
         EndDate = endDate;
@@ -41,7 +39,6 @@ public sealed class CommercialRelationDto
     }
 
     public long Id { get; init; }
-    public string CustomerId { get; init; }
     public long MeteringPointId { get; init; }
     public DateTimeOffset StartDate { get; init; }
     public DateTimeOffset EndDate { get; init; }

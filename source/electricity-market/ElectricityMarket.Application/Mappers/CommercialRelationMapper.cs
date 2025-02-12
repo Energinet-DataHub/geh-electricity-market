@@ -24,7 +24,6 @@ internal sealed class CommercialRelationMapper
     {
         return new CommercialRelationDto(
             entity.Id,
-            entity.CustomerId,
             entity.MeteringPointId,
             entity.StartDate.ToDateTimeOffset(),
             entity.EndDate.ToDateTimeOffset(),
