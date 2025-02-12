@@ -1,5 +1,16 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.1.1
+
+- updated httpclient urls
+
+## Version 4.1.0
+
+- Removed GetMeteringPointEnergySuppliersAsync (Breaking change)
+- Added "EnergySuppliers" property to MasterDataDTO to replace the above removed function
+- Added GetProcessDelegationAsync
+- Added GetGridAreaOwnerAsync
+
 ## Version 4.0.4
 
 - Update packages.

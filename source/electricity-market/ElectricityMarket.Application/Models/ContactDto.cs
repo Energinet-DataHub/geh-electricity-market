@@ -16,7 +16,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record ContactDto(
     long Id,
-    string? RelationType,
+    CustomerRelation RelationType,
     string? DisponentName,
     string? Cvr,
     string? Name,

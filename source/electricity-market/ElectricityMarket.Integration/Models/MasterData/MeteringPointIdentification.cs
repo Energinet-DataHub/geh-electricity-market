@@ -12,22 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-public enum MeasureUnit
-{
-// ReSharper disable InconsistentNaming
-#pragma warning disable SA1300
-    Ampere,
-    STK,
-    kVArh,
-    kWh,
-    kW,
-    MW,
-    MWh,
-    Tonne,
-    MVAr,
-    DanishTariffCode,
-#pragma warning restore SA1300
-// ReSharper restore InconsistentNaming
-}
+public sealed record MeteringPointIdentification(string Value);

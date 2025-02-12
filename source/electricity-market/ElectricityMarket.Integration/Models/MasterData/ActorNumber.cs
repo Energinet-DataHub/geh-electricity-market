@@ -12,8 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
+public abstract record ActorNumber
+{
+    protected ActorNumber(string value)
+    {
+        Value = value;
+    }
 
-public sealed record GetMeteringPointMasterDataResponse(IEnumerable<MeteringPointMasterData> MasterData);
+    public string Value { get; }
+
+    public static ActorNumber Create(string value) => value switch
+    {
+        _ when EicActorNumber.TryCreate(value, out var eic) => eic,
+        _ when GlnActorNumber.TryCreate(value, out var gln) => gln,
+        _ => new UnknownActorNumber(value),
+    };
+}

@@ -18,16 +18,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
 using Energinet.DataHub.ElectricityMarket.Application.Handlers;
+using Energinet.DataHub.ElectricityMarket.Application.Mappers;
 using Energinet.DataHub.ElectricityMarket.Domain;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 using Moq;
 using Xunit;
 using Xunit.Categories;
+using DelegatedProcess = Energinet.DataHub.ElectricityMarket.Domain.Models.Common.DelegatedProcess;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Handlers;
 
@@ -46,7 +48,7 @@ public sealed class GetProcessDelegationHandlerTests
             .Setup(repo => repo.GetActorsByNumberAsync(It.IsAny<ActorNumber>()))
             .ReturnsAsync([]);
 
-        var request = new ProcessDelegationRequestDto("XXX", EicFunction.BalanceResponsibleParty, "111", DelegatedProcess.ReceiveEnergyResults);
+        var request = new ProcessDelegationRequestDto("XXX", EicFunctionMapper.Map(EicFunction.BalanceResponsibleParty), "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
@@ -68,7 +70,7 @@ public sealed class GetProcessDelegationHandlerTests
             .Setup(repo => repo.GetActorsByNumberAsync(It.IsAny<ActorNumber>()))
             .ReturnsAsync([TestPreparationModels.MockedActor()]);
 
-        var request = new ProcessDelegationRequestDto("XXX", EicFunction.BalanceResponsibleParty, "111", DelegatedProcess.ReceiveEnergyResults);
+        var request = new ProcessDelegationRequestDto("XXX", EicFunctionMapper.Map(EicFunction.BalanceResponsibleParty), "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
@@ -95,7 +97,7 @@ public sealed class GetProcessDelegationHandlerTests
             .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode(It.IsAny<string>())))
             .ReturnsAsync((GridArea?)null);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, mockActor.MarketRole.Function, "111", DelegatedProcess.ReceiveEnergyResults);
+        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
@@ -126,7 +128,7 @@ public sealed class GetProcessDelegationHandlerTests
             .Setup(repo => repo.GetProcessDelegationAsync(mockActor.Id, It.IsAny<DelegatedProcess>()))
             .ReturnsAsync((ProcessDelegation?)null);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, mockActor.MarketRole.Function, mockGridArea.Code.Value, DelegatedProcess.ReceiveEnergyResults);
+        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), mockGridArea.Code.Value, DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
@@ -158,7 +160,7 @@ public sealed class GetProcessDelegationHandlerTests
             .Setup(repo => repo.GetProcessDelegationAsync(mockActor.Id, processDelegation.DelegatedProcess))
             .ReturnsAsync(processDelegation);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, mockActor.MarketRole.Function, mockGridArea.Code.Value, processDelegation.DelegatedProcess);
+        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), mockGridArea.Code.Value, DelegationProcessMapper.Map(processDelegation.DelegatedProcess));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
@@ -195,7 +197,7 @@ public sealed class GetProcessDelegationHandlerTests
             .Setup(repo => repo.GetProcessDelegationAsync(mockActor.Id, processDelegation.DelegatedProcess))
             .ReturnsAsync(processDelegation);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, mockActor.MarketRole.Function, mockGridArea.Code.Value, processDelegation.DelegatedProcess);
+        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), mockGridArea.Code.Value, DelegationProcessMapper.Map(processDelegation.DelegatedProcess));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
@@ -236,7 +238,7 @@ public sealed class GetProcessDelegationHandlerTests
             .Setup(repo => repo.GetProcessDelegationAsync(mockActor.Id, processDelegation.DelegatedProcess))
             .ReturnsAsync(processDelegation);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, mockActor.MarketRole.Function, mockGridArea.Code.Value, processDelegation.DelegatedProcess);
+        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), mockGridArea.Code.Value, DelegationProcessMapper.Map(processDelegation.DelegatedProcess));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(actorRepository.Object, gridAreaRepository.Object, processDelegationRepository.Object);
@@ -245,6 +247,6 @@ public sealed class GetProcessDelegationHandlerTests
         var response = await target.Handle(command, CancellationToken.None);
         Assert.NotNull(response);
         Assert.Equal(mockDelegatedToActor.ActorNumber.Value, response.ActorNumber);
-        Assert.Equal(mockDelegatedToActor.MarketRole.Function, response.ActorRole);
+        Assert.Equal(mockDelegatedToActor.MarketRole.Function.ToString(),  response.ActorRole.ToString());
     }
 }

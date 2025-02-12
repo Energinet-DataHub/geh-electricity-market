@@ -14,10 +14,10 @@
 
 using System.ComponentModel.DataAnnotations;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
-using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;

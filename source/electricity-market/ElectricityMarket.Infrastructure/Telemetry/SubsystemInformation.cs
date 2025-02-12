@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+using System;
 
-public sealed record MeteringPointIdentification(string Value);
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Telemetry;
+
+public static class SubsystemInformation
+{
+    public static readonly Guid Id = Guid.Parse("1fc93427-e6fb-45db-bf92-b6efefe5aad9");
+}

@@ -12,21 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
-public abstract record ActorNumber
+public enum ConnectionState
 {
-    protected ActorNumber(string value)
-    {
-        Value = value;
-    }
-
-    public string Value { get; }
-
-    internal static ActorNumber Create(string value) => value switch
-    {
-        _ when EicActorNumber.TryCreate(value, out var eic) => eic,
-        _ when GlnActorNumber.TryCreate(value, out var gln) => gln,
-        _ => new UnknownActorNumber(value),
-    };
+    NotUsed,
+    ClosedDown,
+    New,
+    Connected,
+    Disconnected,
 }

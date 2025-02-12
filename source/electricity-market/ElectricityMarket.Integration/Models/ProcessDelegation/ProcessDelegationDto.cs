@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
 
-public sealed record MeteringPointMasterDataRequestDto(string MeteringPointIdentification, DateTimeOffset StartDate, DateTimeOffset EndDate);
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
+
+public sealed record ProcessDelegationDto(string ActorNumber, EicFunction ActorRole);

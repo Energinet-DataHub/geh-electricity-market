@@ -12,22 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
-
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed record MeteringPointMasterDataDto(
-    string Identification,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    string GridAreaCode,
-    string GridAccessProvider,
-    IReadOnlyCollection<string> NeighborGridAreaOwners,
-    ConnectionState ConnectionState,
-    MeteringPointType Type,
-    MeteringPointSubType SubType,
-    string Resolution,
-    MeasureUnit Unit,
-    ProductId ProductId,
-    string? ParentIdentification,
-    IReadOnlyCollection<MeteringPointRecipientDto> Recipients);
+public enum CustomerRelation
+{
+    Unknown,
+    Legal,
+    Technical,
+    Primary,
+    Secondary,
+}

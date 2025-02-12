@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+using NodaTime;
 
-public sealed record UnknownActorNumber : ActorNumber
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
+
+public sealed class MeteringPointEnergySupplier
 {
-    public UnknownActorNumber(string value)
-        : base(value)
-    {
-    }
+    public MeteringPointIdentification Identification { get; init; } = null!;
+
+    public ActorNumber EnergySupplier { get; init; } = null!;
+
+    public Instant StartDate { get; init; }
+
+    public Instant EndDate { get; init; }
 }

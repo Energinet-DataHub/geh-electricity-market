@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-
-public sealed record ProcessDelegationDto(string ActorNumber, EicFunction ActorRole);
+public sealed record GridAreaOwnerDto(string GridAccessProviderGln);

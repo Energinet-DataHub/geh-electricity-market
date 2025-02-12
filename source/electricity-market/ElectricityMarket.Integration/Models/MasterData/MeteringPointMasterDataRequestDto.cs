@@ -12,14 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Integration;
+using System;
 
-public enum ProductId
-{
-    Tariff,
-    FuelQuantity,
-    PowerActive,
-    PowerReactive,
-    EnergyActivate,
-    EnergyReactive,
-}
+namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
+
+public sealed record MeteringPointMasterDataRequestDto(
+    string MeteringPointIdentification,
+    DateTimeOffset StartDate,
+    DateTimeOffset EndDate);

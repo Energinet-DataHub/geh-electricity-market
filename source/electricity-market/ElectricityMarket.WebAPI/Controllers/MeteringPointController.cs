@@ -14,8 +14,6 @@
 
 using ElectricityMarket.WebAPI.Revision;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
-using Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
-using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
@@ -45,17 +43,5 @@ public class MeteringPointController : ControllerBase
             .ConfigureAwait(false);
 
         return Ok(cpr);
-    }
-
-    [HttpPost("master-data")]
-    public async Task<ActionResult<IEnumerable<MeteringPointMasterDataDto>>> GetMeteringPointMasterDataChangesAsync([FromBody] MeteringPointMasterDataRequestDto request)
-    {
-        var command = new GetMeteringPointMasterDataCommand(request);
-
-        var response = await _mediator
-            .Send(command)
-            .ConfigureAwait(false);
-
-        return Ok(response.MasterData);
     }
 }

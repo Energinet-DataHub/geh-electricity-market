@@ -17,6 +17,8 @@ using System.Globalization;
 using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Integration;
+using Energinet.DataHub.ElectricityMarket.Integration.Models;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
