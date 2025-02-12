@@ -15,9 +15,9 @@
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public interface ITransactionImporter
 {
-    Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction);
+    Task<TransactionImporterResult> ImportAsync(MeteringPointEntity meteringPoint, ImportedTransactionEntity importedTransactionEntity);
 }

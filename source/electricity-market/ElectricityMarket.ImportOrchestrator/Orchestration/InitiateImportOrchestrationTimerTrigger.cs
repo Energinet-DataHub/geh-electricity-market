@@ -21,9 +21,9 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
 public sealed class InitiateImportOrchestrationTimerTrigger
 {
-    private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
+    private readonly ElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
 
-    public InitiateImportOrchestrationTimerTrigger(IElectricityMarketDatabaseContext electricityMarketDatabaseContext)
+    public InitiateImportOrchestrationTimerTrigger(ElectricityMarketDatabaseContext electricityMarketDatabaseContext)
     {
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }

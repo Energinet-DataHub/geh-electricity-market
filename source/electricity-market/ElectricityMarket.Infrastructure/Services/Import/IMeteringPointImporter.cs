@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public sealed record TransactionImporterResult(TransactionImporterResultStatus Status, string Message = "");
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
+
+public interface IMeteringPointImporter
+{
+    Task ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions);
+}

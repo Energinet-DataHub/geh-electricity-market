@@ -23,9 +23,9 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 public sealed class TruncateGoldModelActivity
 {
     private readonly ILogger<TruncateGoldModelActivity> _logger;
-    private readonly IElectricityMarketDatabaseContext _databaseContext;
+    private readonly ElectricityMarketDatabaseContext _databaseContext;
 
-    public TruncateGoldModelActivity(ILogger<TruncateGoldModelActivity> logger, IElectricityMarketDatabaseContext databaseContext)
+    public TruncateGoldModelActivity(ILogger<TruncateGoldModelActivity> logger, ElectricityMarketDatabaseContext databaseContext)
     {
         _logger = logger;
         _databaseContext = databaseContext;

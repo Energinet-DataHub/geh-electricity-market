@@ -12,21 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
-
-public sealed record MeteringPointTransaction(
-    string Identification,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    DateTimeOffset Dh3Created,
-    string MeteringGridAreaId,
-    long MeteringPointStateId,
-    long BusinessTransactionDosId,
-    string PhysicalStatusOfMp,
-    string TypeOfMp,
-    string SubTypeOfMp,
-    string EnergyTimeseriesMeasureUnit,
-    string? WebAccessCode,
-    string? EnergySupplier);
+public sealed record TransactionImporterResult(TransactionImporterResultStatus Status, string Message = "");

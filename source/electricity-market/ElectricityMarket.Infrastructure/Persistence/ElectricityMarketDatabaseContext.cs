@@ -20,7 +20,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 
-public class ElectricityMarketDatabaseContext : DbContext, IElectricityMarketDatabaseContext
+public class ElectricityMarketDatabaseContext : DbContext
 {
     public ElectricityMarketDatabaseContext(DbContextOptions<ElectricityMarketDatabaseContext> options)
         : base(options)

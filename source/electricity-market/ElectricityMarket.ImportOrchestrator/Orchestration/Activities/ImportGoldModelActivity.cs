@@ -16,13 +16,13 @@ using System.Collections.Concurrent;
 using System.Data;
 using System.Diagnostics;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using FastMember;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
@@ -46,19 +46,19 @@ public sealed class ImportGoldModelActivity : IDisposable
         "balance_supplier_id",
     ];
 
-    private readonly BlockingCollection<dynamic> _importCollection = new(5000000);
-    private readonly BlockingCollection<IDataReader> _submitCollection = new(10);
+    private readonly BlockingCollection<dynamic> _importCollection = new(500000);
+    private readonly BlockingCollection<IDataReader> _submitCollection = new(5);
 
-    private readonly IElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
+    private readonly IOptions<DatabaseOptions> _databaseOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
     private readonly ILogger<ImportGoldModelActivity> _logger;
 
     public ImportGoldModelActivity(
-        IElectricityMarketDatabaseContext electricityMarketDatabaseContext,
+        IOptions<DatabaseOptions> databaseOptions,
         DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
         ILogger<ImportGoldModelActivity> logger)
     {
-        _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
+        _databaseOptions = databaseOptions;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
         _logger = logger;
     }
@@ -204,7 +204,7 @@ public sealed class ImportGoldModelActivity : IDisposable
     private async Task BulkInsertAsync()
     {
         using var bulkCopy = new SqlBulkCopy(
-            _electricityMarketDatabaseContext.Database.GetConnectionString(),
+            _databaseOptions.Value.ConnectionString,
             SqlBulkCopyOptions.TableLock);
 
         bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";

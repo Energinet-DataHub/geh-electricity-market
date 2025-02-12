@@ -33,7 +33,7 @@ public static class ElectricityMarketModuleExtensions
             .BindConfiguration(DatabaseOptions.SectionName)
             .ValidateDataAnnotations();
 
-        services.AddDbContext<IElectricityMarketDatabaseContext, ElectricityMarketDatabaseContext>((p, o) =>
+        services.AddDbContext<ElectricityMarketDatabaseContext>((p, o) =>
         {
             var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>

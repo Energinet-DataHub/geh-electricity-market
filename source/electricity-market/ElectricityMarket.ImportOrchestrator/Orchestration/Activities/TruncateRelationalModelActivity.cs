@@ -23,9 +23,9 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 public sealed class TruncateRelationalModelActivity
 {
     private readonly ILogger<TruncateRelationalModelActivity> _logger;
-    private readonly IElectricityMarketDatabaseContext _databaseContext;
+    private readonly ElectricityMarketDatabaseContext _databaseContext;
 
-    public TruncateRelationalModelActivity(ILogger<TruncateRelationalModelActivity> logger, IElectricityMarketDatabaseContext databaseContext)
+    public TruncateRelationalModelActivity(ILogger<TruncateRelationalModelActivity> logger, ElectricityMarketDatabaseContext databaseContext)
     {
         _logger = logger;
         _databaseContext = databaseContext;

@@ -12,153 +12,304 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Concurrent;
+using System.Data;
 using System.Diagnostics;
-using System.Globalization;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
+using FastMember;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class ImportRelationalModelActivity
+public sealed class ImportRelationalModelActivity : IDisposable
 {
-    private readonly ILogger<ImportRelationalModelActivity> _logger;
+    private readonly BlockingCollection<List<ImportedTransactionEntity>> _importedTransactions = new(500000);
+    private readonly BlockingCollection<List<MeteringPointEntity>> _relationalModelBatches = new(10);
+
+    private readonly IOptions<DatabaseOptions> _databaseOptions;
     private readonly IDbContextFactory<ElectricityMarketDatabaseContext> _contextFactory;
-    private readonly IEnumerable<ITransactionImporter> _transactionImporters;
+    private readonly IMeteringPointImporter _meteringPointImporter;
+    private readonly ILogger<ImportRelationalModelActivity> _logger;
 
     public ImportRelationalModelActivity(
-        ILogger<ImportRelationalModelActivity> logger,
+        IOptions<DatabaseOptions> databaseOptions,
         IDbContextFactory<ElectricityMarketDatabaseContext> contextFactory,
-        IEnumerable<ITransactionImporter> transactionImporters)
+        IMeteringPointImporter meteringPointImporter,
+        ILogger<ImportRelationalModelActivity> logger)
     {
+        _databaseOptions = databaseOptions;
         _contextFactory = contextFactory;
+        _meteringPointImporter = meteringPointImporter;
         _logger = logger;
-        _transactionImporters = transactionImporters;
     }
 
     [Function(nameof(ImportRelationalModelActivity))]
     public async Task RunAsync([ActivityTrigger] ImportRelationalModelActivityInput input)
     {
-        ArgumentNullException.ThrowIfNull(input);
+        var read = Task.Run(async () =>
+        {
+            try
+            {
+                await ReadImportedTransactionsAsync(input.Skip, input.Take).ConfigureAwait(false);
+            }
+            catch
+            {
+                _importedTransactions.Dispose();
+                throw;
+            }
+        });
 
-        _logger.LogWarning("Import started {skip} - {take}", input.Skip, input.Take);
+        var package = Task.Run(async () =>
+        {
+            try
+            {
+                await ImportAndPackageTransactionsAsync(input.Skip + 1).ConfigureAwait(false);
+            }
+            catch
+            {
+                _relationalModelBatches.Dispose();
+                throw;
+            }
+        });
+
+        var write = Task.Run(WriteRelationalModelAsync);
+
+        await Task.WhenAll(read, package, write).ConfigureAwait(false);
+    }
+
+    public void Dispose()
+    {
+        _importedTransactions.Dispose();
+        _relationalModelBatches.Dispose();
+    }
+
+    private static void AssignPrimaryKeys(MeteringPointEntity meteringPointEntity, long initialMeteringPointPrimaryKey)
+    {
+        meteringPointEntity.Id = initialMeteringPointPrimaryKey;
+
+        // MeteringPointPeriod
+        {
+            var meteringPointPeriodPrimaryKey = meteringPointEntity.Id * 10000;
+
+            foreach (var meteringPointPeriodEntity in meteringPointEntity.MeteringPointPeriods)
+            {
+                meteringPointPeriodEntity.Id = meteringPointPeriodPrimaryKey++;
+                meteringPointPeriodEntity.MeteringPointId = meteringPointEntity.Id;
+            }
+
+            foreach (var meteringPointPeriodEntity in meteringPointEntity.MeteringPointPeriods)
+            {
+                meteringPointPeriodEntity.RetiredById = meteringPointPeriodEntity.RetiredBy?.Id;
+            }
+
+            if (meteringPointPeriodPrimaryKey >= (meteringPointEntity.Id * 10000) + 10000)
+                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, MeteringPointPeriod.");
+        }
+
+        // CommercialRelation
+        {
+            var commercialRelationPrimaryKey = meteringPointEntity.Id * 10000;
+
+            foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
+            {
+                commercialRelationEntity.Id = commercialRelationPrimaryKey++;
+                commercialRelationEntity.MeteringPointId = meteringPointEntity.Id;
+            }
+
+            if (commercialRelationPrimaryKey >= (meteringPointEntity.Id * 10000) + 10000)
+                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, CommercialRelation.");
+        }
+
+        // EnergySupplyPeriod
+        foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
+        {
+            var energySupplyPeriodPrimaryKey = commercialRelationEntity.Id * 10000;
+
+            foreach (var energySupplyPeriodEntity in commercialRelationEntity.EnergySupplyPeriods)
+            {
+                energySupplyPeriodEntity.Id = energySupplyPeriodPrimaryKey++;
+                energySupplyPeriodEntity.CommercialRelationId = commercialRelationEntity.Id;
+            }
+
+            foreach (var energySupplyPeriodEntity in commercialRelationEntity.EnergySupplyPeriods)
+            {
+                energySupplyPeriodEntity.RetiredById = energySupplyPeriodEntity.RetiredBy?.Id;
+            }
+
+            if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 10000) + 10000)
+                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, EnergySupplyPeriod.");
+        }
+
+        // TODO: Move to v3.
+        // TODO: Fix mapper.
+    }
+
+    private async Task ReadImportedTransactionsAsync(int skip, int take)
+    {
+        var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
+
+        await using (readContext.ConfigureAwait(false))
+        {
+            var meteringPointsQuery = readContext.ImportedTransactions
+                .AsNoTracking()
+                .Select(t => t.metering_point_id)
+                .Distinct()
+                .OrderBy(meteringPointId => meteringPointId)
+                .Skip(skip)
+                .Take(take);
+
+            var importedTransactionsStream = readContext.ImportedTransactions
+                .AsNoTracking()
+                .Join(
+                    meteringPointsQuery,
+                    outer => outer.metering_point_id,
+                    inner => inner,
+                    (entity, _) => entity)
+                .OrderBy(t => t.metering_point_id)
+                .ThenBy(t => t.btd_business_trans_doss_id)
+                .ThenBy(t => t.metering_point_state_id)
+                .AsAsyncEnumerable();
+
+            var transactionsForOneMp = new List<ImportedTransactionEntity>();
+
+            await foreach (var importedTransaction in importedTransactionsStream.ConfigureAwait(false))
+            {
+                if (transactionsForOneMp.Count > 0 &&
+                    transactionsForOneMp[0].metering_point_id != importedTransaction.metering_point_id)
+                {
+                    _importedTransactions.Add(transactionsForOneMp);
+                    transactionsForOneMp = new List<ImportedTransactionEntity>();
+                }
+
+                transactionsForOneMp.Add(importedTransaction);
+            }
+
+            if (transactionsForOneMp.Count != 0)
+            {
+                _importedTransactions.Add(transactionsForOneMp);
+            }
+
+            _importedTransactions.CompleteAdding();
+            _logger.LogWarning("All imported transactions for range {BeginRange} were read.", skip);
+        }
+    }
+
+    private async Task ImportAndPackageTransactionsAsync(long initialMeteringPointPrimaryKey)
+    {
+        const int capacity = 30000;
+
+        var sw = Stopwatch.StartNew();
+        var batch = new List<MeteringPointEntity>(capacity);
+
+        foreach (var transactionsForOneMp in _importedTransactions.GetConsumingEnumerable())
+        {
+            if (batch.Count == capacity)
+            {
+                _relationalModelBatches.Add(batch);
+                _logger.LogWarning("A relational batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
+
+                sw = Stopwatch.StartNew();
+                batch = new List<MeteringPointEntity>(capacity);
+            }
+
+            var meteringPoint = new MeteringPointEntity();
+
+            await _meteringPointImporter
+                .ImportAsync(meteringPoint, transactionsForOneMp)
+                .ConfigureAwait(false);
+
+            AssignPrimaryKeys(meteringPoint, initialMeteringPointPrimaryKey++);
+            batch.Add(meteringPoint);
+        }
+
+        if (batch.Count != 0)
+        {
+            _relationalModelBatches.Add(batch);
+        }
+
+        _relationalModelBatches.CompleteAdding();
+    }
+
+    private async Task WriteRelationalModelAsync()
+    {
+        var sqlConnection = new SqlConnection(_databaseOptions.Value.ConnectionString);
+        await using (sqlConnection.ConfigureAwait(false))
+        {
+            await sqlConnection.OpenAsync().ConfigureAwait(false);
+
+#pragma warning disable CA1849 // Cannot use Async version due to type constrains from SqlBulkCopy.
+            var transaction = sqlConnection.BeginTransaction();
+#pragma warning restore CA1849
+
+            await using (transaction.ConfigureAwait(false))
+            {
+                foreach (var batch in _relationalModelBatches.GetConsumingEnumerable())
+                {
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
+                            batch,
+                            "MeteringPoint",
+                            ["Id", "Identification"])
+                        .ConfigureAwait(false);
+
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
+                            batch.SelectMany(b => b.MeteringPointPeriods),
+                            "MeteringPointPeriod",
+                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "GridAreaCode", "OwnedBy", "ConnectionState", "Type", "SubType", "Resolution", "Unit", "ProductId", "SettlementGroup", "ScheduledMeterReadingMonth", "ParentIdentification", "MeteringPointStateId", "BusinessTransactionDosId"])
+                        .ConfigureAwait(false);
+
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
+                            batch.SelectMany(b => b.CommercialRelations),
+                            "CommercialRelation",
+                            ["Id", "MeteringPointId", "EnergySupplier", "StartDate", "EndDate", "ModifiedAt", "CustomerId"])
+                        .ConfigureAwait(false);
+
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
+                            batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods)),
+                            "EnergySupplyPeriod",
+                            ["Id", "CommercialRelationId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "WebAccessCode", "EnergySupplier", "BusinessTransactionDosId"])
+                        .ConfigureAwait(false);
+                }
+
+                await transaction.CommitAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task BulkInsertAsync<T>(
+        SqlConnection connection,
+        SqlTransaction transaction,
+        IEnumerable<T> dataSource,
+        string tableName,
+        string[] columns)
+    {
+        using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.KeepIdentity, transaction);
+
+        bulkCopy.DestinationTableName = $"electricitymarket.{tableName}";
+        bulkCopy.BulkCopyTimeout = 0;
 
         var sw = Stopwatch.StartNew();
 
-        var writeContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        writeContext.ChangeTracker.AutoDetectChangesEnabled = false;
-        writeContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-        var transaction = await writeContext.Database.BeginTransactionAsync().ConfigureAwait(false);
-
-        await using (writeContext)
+        var dataReader = ObjectReader.Create(dataSource, columns);
+        await using (dataReader.ConfigureAwait(false))
         {
-            await using (transaction.ConfigureAwait(false))
-            {
-                var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
-
-                await using (readContext)
-                {
-                    var meteringPointsQuery = readContext.ImportedTransactions
-                        .AsNoTracking()
-                        .Select(t => t.metering_point_id)
-                        .Distinct()
-                        .OrderBy(x => x)
-                        .Skip(input.Skip)
-                        .Take(input.Take);
-
-                    var query = readContext.ImportedTransactions
-                        .AsNoTracking()
-                        .Join(
-                            meteringPointsQuery,
-                            outer => outer.metering_point_id,
-                            inner => inner,
-                            (entity, _) => entity)
-                        .OrderBy(t => t.metering_point_id)
-                        .ThenBy(t => t.btd_business_trans_doss_id)
-                        .ThenBy(t => t.metering_point_state_id)
-                        .AsAsyncEnumerable();
-
-                    var currentMeteringPointId = string.Empty;
-                    var list = new List<MeteringPointTransaction>();
-
-                    await foreach (var record in query)
-                    {
-                        var meteringPointTransaction = CreateMeteringPointTransaction(record);
-
-                        if (list.Count != 0 && currentMeteringPointId != meteringPointTransaction.Identification)
-                        {
-                            await SaveMeteringPointAsync(writeContext, currentMeteringPointId, list).ConfigureAwait(false);
-
-                            list.Clear();
-                        }
-
-                        currentMeteringPointId = meteringPointTransaction.Identification;
-                        list.Add(meteringPointTransaction);
-                    }
-
-                    await SaveMeteringPointAsync(writeContext, currentMeteringPointId, list).ConfigureAwait(false);
-
-                    await writeContext.SaveChangesAsync().ConfigureAwait(false);
-
-                    await transaction.CommitAsync().ConfigureAwait(false);
-                }
-
-                _logger.LogWarning("Imported batch {skip} - {take} in {ElapsedMilliseconds} ms", input.Skip, input.Take, sw.ElapsedMilliseconds);
-            }
-        }
-    }
-
-    private static MeteringPointTransaction CreateMeteringPointTransaction(ImportedTransactionEntity record)
-    {
-        return new MeteringPointTransaction(
-            record.metering_point_id.ToString(CultureInfo.InvariantCulture),
-            record.valid_from_date,
-            record.valid_to_date,
-            record.dh2_created,
-            record.metering_grid_area_id.TrimEnd(),
-            record.metering_point_state_id,
-            record.btd_business_trans_doss_id,
-            record.physical_status_of_mp.TrimEnd(),
-            record.type_of_mp.TrimEnd(),
-            record.sub_type_of_mp.TrimEnd(),
-            record.energy_timeseries_measure_unit.TrimEnd(),
-            record.web_access_code?.TrimEnd(),
-            record.balance_supplier_id?.TrimEnd());
-    }
-
-    private async Task SaveMeteringPointAsync(IElectricityMarketDatabaseContext context, string currentMeteringPointId, List<MeteringPointTransaction> list)
-    {
-        var mp = new MeteringPointEntity
-        {
-            Identification = currentMeteringPointId,
-        };
-
-        foreach (var mpt in list)
-        {
-            await RunImportChainAsync(mp, mpt).ConfigureAwait(false);
+            await bulkCopy.WriteToServerAsync(dataReader).ConfigureAwait(false);
         }
 
-        context.MeteringPoints.Add(mp);
-
-        async Task RunImportChainAsync(MeteringPointEntity meteringPoint, MeteringPointTransaction meteringPointTransaction)
-        {
-            var handled = false;
-
-            foreach (var transactionImporter in _transactionImporters)
-            {
-                var result = await transactionImporter.ImportAsync(meteringPoint, meteringPointTransaction).ConfigureAwait(false);
-
-                handled |= result.Status == TransactionImporterResultStatus.Handled;
-            }
-
-            if (!handled)
-            {
-                _logger.LogWarning("Unhandled transaction trans_dos_id: {TransactionId} state_id: {StateId}", meteringPointTransaction.BusinessTransactionDosId, meteringPointTransaction.MeteringPointStateId);
-            }
-        }
+        _logger.LogWarning("A batch was inserted into {TableName} in {InsertTime} ms.", tableName, sw.ElapsedMilliseconds);
     }
 }

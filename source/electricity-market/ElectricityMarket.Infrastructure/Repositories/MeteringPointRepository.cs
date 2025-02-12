@@ -31,9 +31,9 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
 public sealed class MeteringPointRepository : IMeteringPointRepository
 {
-    private readonly IElectricityMarketDatabaseContext _context;
+    private readonly ElectricityMarketDatabaseContext _context;
 
-    public MeteringPointRepository(IElectricityMarketDatabaseContext context)
+    public MeteringPointRepository(ElectricityMarketDatabaseContext context)
     {
         _context = context;
     }
