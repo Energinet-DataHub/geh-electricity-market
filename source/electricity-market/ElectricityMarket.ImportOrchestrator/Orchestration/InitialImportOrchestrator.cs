@@ -51,13 +51,13 @@ public sealed class InitialImportOrchestrator
         var batchSize = 300_000;
         var activityCount = (int)Math.Ceiling(numberOfMeteringPoints / (double)batchSize);
 
-        var tasks = Enumerable.Range(0, activityCount)
-            .Select(i => orchestrationContext.CallActivityAsync(
+        foreach (var i in Enumerable.Range(0, activityCount))
+        {
+            await orchestrationContext.CallActivityAsync(
                 nameof(ImportRelationalModelActivity),
                 new ImportRelationalModelActivityInput { Skip = i * batchSize, Take = batchSize, },
-                TaskOptions.FromRetryHandler(HandleDataSourceExceptions)));
-
-        await Task.WhenAll(tasks);
+                TaskOptions.FromRetryHandler(HandleDataSourceExceptions));
+        }
 
         static bool HandleDataSourceExceptions(RetryContext context)
         {
