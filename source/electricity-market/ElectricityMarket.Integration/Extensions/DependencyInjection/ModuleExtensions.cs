@@ -24,11 +24,6 @@ public static class ModuleExtensions
     public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services)
     {
         services
-            .AddOptions<DatabaseOptions>()
-            .BindConfiguration(nameof(DatabaseOptions))
-            .ValidateDataAnnotations();
-
-        services
             .AddOptions<ApiClientOptions>()
             .BindConfiguration(nameof(ApiClientOptions))
             .ValidateDataAnnotations();
