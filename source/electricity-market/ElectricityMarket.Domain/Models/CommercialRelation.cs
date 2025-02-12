@@ -18,7 +18,7 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed record CommercialRelation(
     long Id,
-    string CustomerId,
+    Guid CustomerId,
     long MeteringPointId,
     Instant StartDate,
     Instant EndDate,

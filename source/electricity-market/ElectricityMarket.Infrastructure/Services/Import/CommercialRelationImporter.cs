@@ -95,7 +95,7 @@ public sealed class CommercialRelationImporter : ITransactionImporter
             StartDate = importedTransactionEntity.valid_from_date,
             EndDate = DateTimeOffset.MaxValue,
             EnergySupplier = importedTransactionEntity.balance_supplier_id ?? "NULL",
-            CustomerId = Guid.NewGuid().ToString(),
+            CustomerId = Guid.NewGuid(),
             ModifiedAt = DateTimeOffset.UtcNow,
             EnergySupplyPeriods = new List<EnergySupplyPeriodEntity>(),
         };
