@@ -29,7 +29,7 @@ public sealed class CommercialRelationImporter : ITransactionImporter
         ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(importedTransactionEntity);
 
-        if (!_validMeteringPointTypes.Contains(ExternalMeteringPointSubTypeMapper.Map(importedTransactionEntity.type_of_mp.TrimEnd())))
+        if (!_validMeteringPointTypes.Contains(ExternalMeteringPointTypeMapper.Map(importedTransactionEntity.type_of_mp.TrimEnd())))
             return Task.FromResult(new TransactionImporterResult(TransactionImporterResultStatus.Handled));
 
         var latestRelation = meteringPoint.CommercialRelations

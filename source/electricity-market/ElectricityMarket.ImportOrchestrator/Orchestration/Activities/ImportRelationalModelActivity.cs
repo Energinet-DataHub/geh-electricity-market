@@ -297,7 +297,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
         string tableName,
         string[] columns)
     {
-        using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction);
+        using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.TableLock, transaction);
 
         bulkCopy.DestinationTableName = $"electricitymarket.{tableName}";
         bulkCopy.BulkCopyTimeout = 0;
