@@ -1,6 +1,6 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
-## Version 4.1.1
+## Version 4.1.2
 
 - internal cleanup
 
