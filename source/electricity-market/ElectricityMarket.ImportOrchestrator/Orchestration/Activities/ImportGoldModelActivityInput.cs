@@ -16,5 +16,5 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public class ImportGoldModelActivityInput
 {
-    public long MaxTransDossId { get; set; }
+    public long Cutoff { get; set; }
 }
