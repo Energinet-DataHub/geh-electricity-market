@@ -38,7 +38,7 @@ public sealed class FindMaxTransDossIdActivity
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
                 """
-                SELECT max(btd_business_trans_doss_id) as trans_dos_id FROM migrations_electricity_market.electricity_market_metering_points_view_v2
+                SELECT max(btd_trans_doss_id) as trans_dos_id FROM migrations_electricity_market.electricity_market_metering_points_view_v3
                 """).Build()).ConfigureAwait(false);
 
         await foreach (var r in result)

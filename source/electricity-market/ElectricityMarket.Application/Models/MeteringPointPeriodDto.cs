@@ -46,4 +46,6 @@ public sealed record MeteringPointPeriodDto(
     string ScheduledMeterReading,
     InstallationAddressDto InstallationAddress,
     string CalculationType,
-    string SettlementMethod);
+    string SettlementMethod,
+    DateTimeOffset EffectuationDate,
+    string TransactionType);

@@ -110,7 +110,7 @@ public sealed class CommercialRelationImporter : ITransactionImporter
             CreatedAt = DateTimeOffset.UtcNow,
             EnergySupplier = importedTransactionEntity.balance_supplier_id ?? "NULL",
             WebAccessCode = importedTransactionEntity.web_access_code ?? "NULL",
-            BusinessTransactionDosId = importedTransactionEntity.btd_business_trans_doss_id,
+            BusinessTransactionDosId = importedTransactionEntity.btd_trans_doss_id,
         };
     }
 

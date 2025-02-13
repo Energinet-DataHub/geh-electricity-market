@@ -37,13 +37,15 @@ public sealed class ImportGoldModelActivity : IDisposable
         "dh2_created",
         "metering_grid_area_id",
         "metering_point_state_id",
-        "btd_business_trans_doss_id",
+        "btd_trans_doss_id",
         "physical_status_of_mp",
         "type_of_mp",
         "sub_type_of_mp",
         "energy_timeseries_measure_unit",
         "web_access_code",
         "balance_supplier_id",
+        "effectuation_date",
+        "transaction_type",
     ];
 
     private readonly BlockingCollection<dynamic> _importCollection = new(2000000);
@@ -125,16 +127,17 @@ public sealed class ImportGoldModelActivity : IDisposable
                 CAST(dh2_created as timestamp) as dh2_created,
                 metering_grid_area_id,
                 metering_point_state_id,
-                btd_business_trans_doss_id,
+                btd_trans_doss_id,
                 physical_status_of_mp,
                 type_of_mp,
                 sub_type_of_mp,
                 energy_timeseries_measure_unit,
                 web_access_code,
-                balance_supplier_id
-
-             FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-             WHERE btd_business_trans_doss_id < {maximumBusinessTransDossId}
+                balance_supplier_id,
+                effectuation_date,
+                transaction_type
+             FROM migrations_electricity_market.electricity_market_metering_points_view_v3
+             WHERE btd_trans_doss_id < {maximumBusinessTransDossId}
              """);
 
         var sw = Stopwatch.StartNew();
@@ -185,13 +188,15 @@ public sealed class ImportGoldModelActivity : IDisposable
                 dh2_created = record.dh2_created,
                 metering_grid_area_id = record.metering_grid_area_id,
                 metering_point_state_id = record.metering_point_state_id,
-                btd_business_trans_doss_id = record.btd_business_trans_doss_id,
+                btd_trans_doss_id = record.btd_trans_doss_id,
                 physical_status_of_mp = record.physical_status_of_mp,
                 type_of_mp = record.type_of_mp,
                 sub_type_of_mp = record.sub_type_of_mp,
                 energy_timeseries_measure_unit = record.energy_timeseries_measure_unit,
                 web_access_code = record.web_access_code,
                 balance_supplier_id = record.balance_supplier_id,
+                effectuation_date = record.effectuation_date,
+                transaction_type = record.transaction_type,
             });
         }
 
