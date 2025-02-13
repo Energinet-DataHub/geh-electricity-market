@@ -19,18 +19,18 @@ using Microsoft.Extensions.Logging;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class FindMaxTransDossIdActivity
+public sealed class FindCutoffActivity
 {
-    private readonly ILogger<FindMaxTransDossIdActivity> _logger;
+    private readonly ILogger<FindCutoffActivity> _logger;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
 
-    public FindMaxTransDossIdActivity(ILogger<FindMaxTransDossIdActivity> logger, DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
+    public FindCutoffActivity(ILogger<FindCutoffActivity> logger, DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
     {
         _logger = logger;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
     }
 
-    [Function(nameof(FindMaxTransDossIdActivity))]
+    [Function(nameof(FindCutoffActivity))]
     public async Task<long> RunAsync([ActivityTrigger] NoInput input)
     {
         var sw = Stopwatch.StartNew();
@@ -38,13 +38,13 @@ public sealed class FindMaxTransDossIdActivity
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
                 """
-                SELECT max(btd_trans_doss_id) as trans_dos_id FROM migrations_electricity_market.electricity_market_metering_points_view_v3
+                SELECT max(metering_point_state_id) as cutoff FROM migrations_electricity_market.electricity_market_metering_points_view_v3
                 """).Build()).ConfigureAwait(false);
 
         await foreach (var r in result)
         {
             _logger.LogWarning("MaxTransDossId fetched in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
-            return r.trans_dos_id;
+            return r.cutoff;
         }
 
         throw new InvalidOperationException("No rows found in silver model");

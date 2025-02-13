@@ -72,7 +72,7 @@ public sealed class ImportGoldModelActivity : IDisposable
 
         var sw = Stopwatch.StartNew();
 
-        await ImportAsync(input.MaxTransDossId).ConfigureAwait(false);
+        await ImportAsync(input.Cutoff).ConfigureAwait(false);
 
         _logger.LogWarning("Gold model imported in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
     }
