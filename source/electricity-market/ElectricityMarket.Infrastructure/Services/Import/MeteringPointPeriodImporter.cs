@@ -78,6 +78,8 @@ public sealed class MeteringPointPeriodImporter : ITransactionImporter
             ProductId = "TBD",
             ScheduledMeterReadingMonth = 1,
             MeteringPointStateId = importedTransactionEntity.metering_point_state_id,
+            EffectuationDate = importedTransactionEntity.effectuation_date,
+            TransactionType = importedTransactionEntity.transaction_type,
         };
     }
 }

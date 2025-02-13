@@ -59,4 +59,8 @@ public sealed class MeteringPointPeriodEntity
     public long? RetiredById { get; set; }
 
     public MeteringPointPeriodEntity? RetiredBy { get; set; }
+
+    public DateTimeOffset EffectuationDate { get; set; }
+
+    public string TransactionType { get; set; } = null!;
 }

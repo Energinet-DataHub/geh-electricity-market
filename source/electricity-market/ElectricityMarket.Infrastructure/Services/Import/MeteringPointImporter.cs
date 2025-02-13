@@ -61,7 +61,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             if (!handled)
             {
-                _logger.LogWarning("Unhandled transaction trans_doss_id: {TransactionId} state_id: {StateId}", transactionEntity.btd_business_trans_doss_id, transactionEntity.metering_point_state_id);
+                _logger.LogWarning("Unhandled transaction trans_doss_id: {TransactionId} state_id: {StateId}", transactionEntity.btd_trans_doss_id, transactionEntity.metering_point_state_id);
             }
         }
     }

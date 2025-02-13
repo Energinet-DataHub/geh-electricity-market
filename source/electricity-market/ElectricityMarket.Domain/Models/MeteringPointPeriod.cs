@@ -30,4 +30,6 @@ public sealed record MeteringPointPeriod(
     string Resolution,
     string Unit,
     string ProductId,
-    int ScheduledMeterReadingMonth);
+    int ScheduledMeterReadingMonth,
+    Instant EffectuationDate,
+    string TransactionType);

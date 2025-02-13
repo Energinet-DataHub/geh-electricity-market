@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System.Collections.Concurrent;
-using System.Data;
 using System.Diagnostics;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
@@ -173,8 +172,8 @@ public sealed class ImportRelationalModelActivity : IDisposable
                     inner => inner,
                     (entity, _) => entity)
                 .OrderBy(t => t.metering_point_id)
-                .ThenBy(t => t.btd_business_trans_doss_id)
                 .ThenBy(t => t.metering_point_state_id)
+                .ThenBy(t => t.btd_trans_doss_id)
                 .AsAsyncEnumerable();
 
             var transactionsForOneMp = new List<ImportedTransactionEntity>();
@@ -265,7 +264,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
                             transaction,
                             batch.SelectMany(b => b.MeteringPointPeriods),
                             "MeteringPointPeriod",
-                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "GridAreaCode", "OwnedBy", "ConnectionState", "Type", "SubType", "Resolution", "Unit", "ProductId", "SettlementGroup", "ScheduledMeterReadingMonth", "ParentIdentification", "MeteringPointStateId", "BusinessTransactionDosId"])
+                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "GridAreaCode", "OwnedBy", "ConnectionState", "Type", "SubType", "Resolution", "Unit", "ProductId", "SettlementGroup", "ScheduledMeterReadingMonth", "ParentIdentification", "MeteringPointStateId", "BusinessTransactionDosId", "EffectuationDate", "TransactionType"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(

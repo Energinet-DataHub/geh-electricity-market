@@ -46,6 +46,8 @@ internal sealed class MeteringPointMapper
             from.Resolution,
             from.Unit,
             from.ProductId,
-            from.ScheduledMeterReadingMonth);
+            from.ScheduledMeterReadingMonth,
+            from.EffectuationDate.ToInstant(),
+            from.TransactionType);
     }
 }

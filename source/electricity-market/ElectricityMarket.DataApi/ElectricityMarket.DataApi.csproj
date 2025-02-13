@@ -40,7 +40,4 @@
     <ProjectReference Include="..\ElectricityMarket.Infrastructure\ElectricityMarket.Infrastructure.csproj" />
     <ProjectReference Include="..\ElectricityMarket.Integration\ElectricityMarket.Integration.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Options\" />
-  </ItemGroup>
 </Project>
