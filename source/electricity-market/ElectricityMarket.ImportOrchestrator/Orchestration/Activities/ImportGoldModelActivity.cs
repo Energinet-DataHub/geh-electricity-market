@@ -116,7 +116,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         await Task.WhenAll(importSilver, goldTransform, bulkInsert).ConfigureAwait(false);
     }
 
-    private async Task ImportDataAsync(long maximumBusinessTransDossId)
+    private async Task ImportDataAsync(long cutoff)
     {
         var query = DatabricksStatement.FromRawSql(
             $"""
@@ -137,7 +137,7 @@ public sealed class ImportGoldModelActivity : IDisposable
                 effectuation_date,
                 transaction_type
              FROM migrations_electricity_market.electricity_market_metering_points_view_v3
-             WHERE btd_trans_doss_id < {maximumBusinessTransDossId}
+             WHERE metering_point_state_id < {cutoff}
              """);
 
         var sw = Stopwatch.StartNew();
