@@ -43,7 +43,7 @@ public sealed class FindCutoffActivity
 
         await foreach (var r in result)
         {
-            _logger.LogWarning("MaxTransDossId fetched in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
+            _logger.LogWarning("Cutoff fetched in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
             return r.cutoff;
         }
 

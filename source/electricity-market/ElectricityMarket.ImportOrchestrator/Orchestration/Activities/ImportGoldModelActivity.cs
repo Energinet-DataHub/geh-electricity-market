@@ -83,13 +83,13 @@ public sealed class ImportGoldModelActivity : IDisposable
         _submitCollection.Dispose();
     }
 
-    private async Task ImportAsync(long maxTransDossId)
+    private async Task ImportAsync(long cutoff)
     {
         var importSilver = Task.Run(async () =>
         {
             try
             {
-                await ImportDataAsync(maxTransDossId).ConfigureAwait(false);
+                await ImportDataAsync(cutoff).ConfigureAwait(false);
             }
             catch
             {
@@ -188,15 +188,15 @@ public sealed class ImportGoldModelActivity : IDisposable
                 dh2_created = record.dh2_created,
                 metering_grid_area_id = record.metering_grid_area_id,
                 metering_point_state_id = record.metering_point_state_id,
-                btd_trans_doss_id = record.btd_trans_doss_id,
+                btd_trans_doss_id = record.btd_trans_doss_id ?? -1,
                 physical_status_of_mp = record.physical_status_of_mp,
                 type_of_mp = record.type_of_mp,
                 sub_type_of_mp = record.sub_type_of_mp,
                 energy_timeseries_measure_unit = record.energy_timeseries_measure_unit,
                 web_access_code = record.web_access_code,
                 balance_supplier_id = record.balance_supplier_id,
-                effectuation_date = record.effectuation_date,
-                transaction_type = record.transaction_type,
+                effectuation_date = record.effectuation_date ?? record.dh2_created,
+                transaction_type = record.transaction_type ?? string.Empty,
             });
         }
 
