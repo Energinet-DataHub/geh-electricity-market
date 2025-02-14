@@ -81,15 +81,16 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             MeteringPointStateId = importedTransaction.metering_point_state_id,
             TransactionType = importedTransaction.transaction_type,
 
-            // ParentIdentification =
             CreatedAt = importedTransaction.dh2_created,
             GridAreaCode = importedTransaction.metering_grid_area_id,
-            // OwnedBy =
             ConnectionState = ExternalMeteringPointConnectionStateMapper.Map(importedTransaction.physical_status_of_mp.TrimEnd()),
             Type = ExternalMeteringPointTypeMapper.Map(importedTransaction.type_of_mp.TrimEnd()),
             SubType = ExternalMeteringPointSubTypeMapper.Map(importedTransaction.sub_type_of_mp.TrimEnd()),
-            // Resolution =
             Unit = ExternalMeteringPointUnitMapper.Map(importedTransaction.energy_timeseries_measure_unit.TrimEnd()),
+
+            // ParentIdentification =
+            // OwnedBy =
+            // Resolution =
             // ProductId =
             // SettlementGroup =
             // ScheduledMeterReadingMonth =
