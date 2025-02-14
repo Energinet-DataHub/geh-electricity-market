@@ -153,6 +153,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
     private async Task ReadImportedTransactionsAsync(int skip, int take)
     {
         var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        readContext.Database.SetCommandTimeout(60 * 5);
 
         await using (readContext.ConfigureAwait(false))
         {
