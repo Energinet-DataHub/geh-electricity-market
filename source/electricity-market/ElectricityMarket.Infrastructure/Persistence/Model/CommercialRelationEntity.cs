@@ -29,7 +29,7 @@ public sealed class CommercialRelationEntity
 
     public string EnergySupplier { get; set; } = null!;
 
-    public Guid CustomerId { get; set; }
+    public Guid? CustomerId { get; set; }
 
     public DateTimeOffset ModifiedAt { get; set; }
 
