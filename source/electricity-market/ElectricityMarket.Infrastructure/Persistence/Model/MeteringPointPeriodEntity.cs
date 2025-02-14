@@ -22,6 +22,8 @@ public sealed class MeteringPointPeriodEntity
 
     public long MeteringPointId { get; set; }
 
+    public string TransactionType { get; set; } = null!;
+
     public string? ParentIdentification { get; set; }
 
     public DateTimeOffset ValidFrom { get; set; }

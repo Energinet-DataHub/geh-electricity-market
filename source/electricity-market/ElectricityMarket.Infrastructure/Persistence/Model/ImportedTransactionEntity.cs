@@ -24,6 +24,7 @@ public sealed class ImportedTransactionEntity
     public DateTimeOffset valid_from_date { get; set; }
     public DateTimeOffset valid_to_date { get; set; }
     public DateTimeOffset dh2_created { get; set; }
+    public string transaction_type { get; set; } = null!;
     public string metering_grid_area_id { get; set; } = null!;
     public long metering_point_state_id { get; set; }
     public long btd_business_trans_doss_id { get; set; }
