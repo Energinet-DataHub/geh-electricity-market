@@ -37,13 +37,15 @@ public sealed class ImportGoldModelActivity : IDisposable
         "dh2_created",
         "metering_grid_area_id",
         "metering_point_state_id",
-        "btd_business_trans_doss_id",
+        "btd_trans_doss_id",
         "physical_status_of_mp",
         "type_of_mp",
         "sub_type_of_mp",
         "energy_timeseries_measure_unit",
         "web_access_code",
         "balance_supplier_id",
+        "effectuation_date",
+        "transaction_type",
     ];
 
     private readonly BlockingCollection<dynamic> _importCollection = new(2000000);
@@ -70,7 +72,7 @@ public sealed class ImportGoldModelActivity : IDisposable
 
         var sw = Stopwatch.StartNew();
 
-        await ImportAsync(input.MaxTransDossId).ConfigureAwait(false);
+        await ImportAsync(input.Cutoff).ConfigureAwait(false);
 
         _logger.LogWarning("Gold model imported in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
     }
@@ -81,13 +83,13 @@ public sealed class ImportGoldModelActivity : IDisposable
         _submitCollection.Dispose();
     }
 
-    private async Task ImportAsync(long maxTransDossId)
+    private async Task ImportAsync(long cutoff)
     {
         var importSilver = Task.Run(async () =>
         {
             try
             {
-                await ImportDataAsync(maxTransDossId).ConfigureAwait(false);
+                await ImportDataAsync(cutoff).ConfigureAwait(false);
             }
             catch
             {
@@ -114,7 +116,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         await Task.WhenAll(importSilver, goldTransform, bulkInsert).ConfigureAwait(false);
     }
 
-    private async Task ImportDataAsync(long maximumBusinessTransDossId)
+    private async Task ImportDataAsync(long cutoff)
     {
         var query = DatabricksStatement.FromRawSql(
             $"""
@@ -125,16 +127,17 @@ public sealed class ImportGoldModelActivity : IDisposable
                 CAST(dh2_created as timestamp) as dh2_created,
                 metering_grid_area_id,
                 metering_point_state_id,
-                btd_business_trans_doss_id,
+                btd_trans_doss_id,
                 physical_status_of_mp,
                 type_of_mp,
                 sub_type_of_mp,
                 energy_timeseries_measure_unit,
                 web_access_code,
-                balance_supplier_id
-
-             FROM migrations_electricity_market.electricity_market_metering_points_view_v2
-             WHERE btd_business_trans_doss_id < {maximumBusinessTransDossId}
+                balance_supplier_id,
+                effectuation_date,
+                transaction_type
+             FROM migrations_electricity_market.electricity_market_metering_points_view_v3
+             WHERE metering_point_state_id < {cutoff}
              """);
 
         var sw = Stopwatch.StartNew();
@@ -185,13 +188,15 @@ public sealed class ImportGoldModelActivity : IDisposable
                 dh2_created = record.dh2_created,
                 metering_grid_area_id = record.metering_grid_area_id,
                 metering_point_state_id = record.metering_point_state_id,
-                btd_business_trans_doss_id = record.btd_business_trans_doss_id,
+                btd_trans_doss_id = record.btd_trans_doss_id ?? -1,
                 physical_status_of_mp = record.physical_status_of_mp,
                 type_of_mp = record.type_of_mp,
                 sub_type_of_mp = record.sub_type_of_mp,
                 energy_timeseries_measure_unit = record.energy_timeseries_measure_unit,
                 web_access_code = record.web_access_code,
                 balance_supplier_id = record.balance_supplier_id,
+                effectuation_date = record.effectuation_date ?? record.dh2_created,
+                transaction_type = record.transaction_type ?? string.Empty,
             });
         }
 

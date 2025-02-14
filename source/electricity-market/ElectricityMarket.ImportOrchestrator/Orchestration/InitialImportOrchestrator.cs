@@ -36,11 +36,11 @@ public sealed class InitialImportOrchestrator
 
     private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext)
     {
-        var maxTransDosId = await orchestrationContext.CallActivityAsync<long>(nameof(FindMaxTransDossIdActivity));
+        var cutoff = await orchestrationContext.CallActivityAsync<long>(nameof(FindCutoffActivity));
 
         await orchestrationContext.CallActivityAsync(nameof(ImportGoldModelActivity), new ImportGoldModelActivityInput
         {
-            MaxTransDossId = maxTransDosId,
+            Cutoff = cutoff,
         });
     }
 

@@ -51,7 +51,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             if (!TryImportTransaction(transactionEntity, meteringPoint))
             {
-                _logger.LogWarning("Unhandled transaction trans_doss_id: {TransactionId} state_id: {StateId}", transactionEntity.btd_business_trans_doss_id, transactionEntity.metering_point_state_id);
+                _logger.LogWarning("Unhandled transaction trans_doss_id: {TransactionId} state_id: {StateId}", transactionEntity.btd_trans_doss_id, transactionEntity.metering_point_state_id);
                 break;
             }
         }
@@ -77,7 +77,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         {
             ValidFrom = importedTransaction.valid_from_date,
             ValidTo = DateTimeOffset.MaxValue,
-            BusinessTransactionDosId = importedTransaction.btd_business_trans_doss_id,
+            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
             MeteringPointStateId = importedTransaction.metering_point_state_id,
             TransactionType = importedTransaction.transaction_type,
 
@@ -207,7 +207,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             ValidFrom = importedTransaction.valid_from_date,
             ValidTo = DateTimeOffset.MaxValue,
             CreatedAt = importedTransaction.dh2_created,
-            BusinessTransactionDosId = importedTransaction.btd_business_trans_doss_id,
+            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
             WebAccessCode = importedTransaction.web_access_code ?? string.Empty, // TODO: This is probably wrong.
             EnergySupplier = importedTransaction.balance_supplier_id ?? "TODO: What?", // TODO: Fallback is sus.
         };

@@ -76,6 +76,8 @@ internal sealed class MeteringPointMapper
                 "TBD",
                 "TBD"),
             "TBD",
-            "TBD");
+            "TBD",
+            meteringPointPeriodEntity.EffectuationDate.ToDateTimeOffset(),
+            meteringPointPeriodEntity.TransactionType);
     }
 }
