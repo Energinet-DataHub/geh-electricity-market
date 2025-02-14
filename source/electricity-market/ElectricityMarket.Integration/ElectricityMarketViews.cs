@@ -85,9 +85,12 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
 
         response.EnsureSuccessStatusCode();
 
+        if (response.Content.Headers.ContentLength == 0)
+            return null;
+
         var result = await response.Content
             .ReadFromJsonAsync<GridAreaOwnerDto>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(false) ?? null;
 
         return result;
     }
