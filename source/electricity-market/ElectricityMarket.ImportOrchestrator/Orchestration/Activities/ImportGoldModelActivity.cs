@@ -137,7 +137,7 @@ public sealed class ImportGoldModelActivity : IDisposable
                 effectuation_date,
                 transaction_type
              FROM migrations_electricity_market.electricity_market_metering_points_view_v3
-             WHERE metering_point_state_id < {cutoff}
+             WHERE metering_point_state_id <= {cutoff}
              """);
 
         var sw = Stopwatch.StartNew();
