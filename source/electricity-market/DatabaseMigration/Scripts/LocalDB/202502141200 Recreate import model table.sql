@@ -52,6 +52,9 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     CONSTRAINT FK_MeteringPointPeriod_ParentIdentification FOREIGN KEY (ParentIdentification) REFERENCES [electricitymarket].[MeteringPoint]([Identification]),
 )
 
+CREATE INDEX [IX_MeteringPointPeriod_MeteringPointId]
+    ON [electricitymarket].[MeteringPointPeriod] (MeteringPointId);
+
 CREATE TABLE [electricitymarket].[CommercialRelation]
 (
     [Id]                 bigint NOT NULL,
@@ -65,6 +68,9 @@ CREATE TABLE [electricitymarket].[CommercialRelation]
     CONSTRAINT PK_CommercialRelation PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_CommercialRelation_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID])
 )
+
+CREATE INDEX [IX_CommercialRelation_MeteringPointId]
+    ON [electricitymarket].[CommercialRelation] (MeteringPointId);
 
 CREATE TABLE [electricitymarket].[ElectricalHeatingPeriod]
 (
@@ -98,6 +104,9 @@ CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
     CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
     CONSTRAINT FK_EnergySupplyPeriod_CommercialRelation FOREIGN KEY (CommercialRelationId) REFERENCES [electricitymarket].[CommercialRelation]([ID])
 )
+
+CREATE INDEX [IX_EnergySupplyPeriod_CommercialRelationId]
+    ON [electricitymarket].[EnergySupplyPeriod] (CommercialRelationId);
 
 CREATE TABLE [electricitymarket].[ImportState]
 (
