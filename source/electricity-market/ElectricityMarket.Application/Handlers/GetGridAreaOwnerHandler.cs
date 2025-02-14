@@ -22,7 +22,7 @@ using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
-public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCommand, GridAreaOwnerDto>
+public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCommand, GridAreaOwnerDto?>
 {
     private readonly IActorRepository _actorRepository;
     private readonly IGridAreaRepository _gridAreaRepository;
@@ -33,14 +33,14 @@ public sealed class GetGridAreaOwnerHandler : IRequestHandler<GetGridAreaOwnerCo
         _actorRepository = actorRepository;
     }
 
-    public async Task<GridAreaOwnerDto> Handle(GetGridAreaOwnerCommand request, CancellationToken cancellationToken)
+    public async Task<GridAreaOwnerDto?> Handle(GetGridAreaOwnerCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
         var gridArea = await _gridAreaRepository.GetGridAreaAsync(new GridAreaCode(request.GridAreaCode)).ConfigureAwait(false);
 
         if (gridArea == null)
-            throw new ValidationException($"The grid area with code: {request.GridAreaCode} was not found");
+            return null;
 
         var actors = await _actorRepository.GetActorsAsync().ConfigureAwait(false);
 

@@ -36,7 +36,7 @@ namespace Energinet.DataHub.ElectricityMarket.UnitTests.Handlers;
 public sealed class GetGridAreaOwnerHandlerTests
 {
     [Fact]
-    public async Task Handle_GridAreaNotFound_ThrowsNotFoundException()
+    public async Task Handle_GridAreaNotFound_ReturnsNull()
     {
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
@@ -50,8 +50,8 @@ public sealed class GetGridAreaOwnerHandlerTests
         var command = new GetGridAreaOwnerCommand("XXXXXX");
 
         // Act + Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() => target.Handle(command, CancellationToken.None));
-        Assert.Equal($"The grid area with code: {command.GridAreaCode} was not found", ex.Message);
+        var response = await target.Handle(command, CancellationToken.None);
+        Assert.Null(response);
     }
 
     [Fact]

@@ -17,4 +17,4 @@ using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
 
-public sealed record GetGridAreaOwnerCommand(string GridAreaCode) : IRequest<GridAreaOwnerDto>;
+public sealed record GetGridAreaOwnerCommand(string GridAreaCode) : IRequest<GridAreaOwnerDto?>;
