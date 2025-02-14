@@ -220,12 +220,15 @@ public sealed class ImportRelationalModelActivity : IDisposable
 
             var meteringPoint = new MeteringPointEntity();
 
-            await _meteringPointImporter
+            var imported = await _meteringPointImporter
                 .ImportAsync(meteringPoint, transactionsForOneMp)
                 .ConfigureAwait(false);
 
-            AssignPrimaryKeys(meteringPoint, initialMeteringPointPrimaryKey++);
-            batch.Add(meteringPoint);
+            if (imported)
+            {
+                AssignPrimaryKeys(meteringPoint, initialMeteringPointPrimaryKey++);
+                batch.Add(meteringPoint);
+            }
         }
 
         if (batch.Count != 0)

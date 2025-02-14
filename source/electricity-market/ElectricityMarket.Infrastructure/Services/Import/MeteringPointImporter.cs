@@ -37,7 +37,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         _logger = logger;
     }
 
-    public Task ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
+    public Task<bool> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(importedTransactions);
@@ -51,12 +51,11 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             if (!TryImportTransaction(transactionEntity, meteringPoint))
             {
-                _logger.LogWarning("Unhandled transaction trans_doss_id: {TransactionId} state_id: {StateId}", transactionEntity.btd_trans_doss_id, transactionEntity.metering_point_state_id);
-                break;
+                return Task.FromResult(false);
             }
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     private bool TryImportTransaction(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
@@ -89,17 +88,17 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             Unit = ExternalMeteringPointUnitMapper.Map(importedTransaction.energy_timeseries_measure_unit.TrimEnd()),
 
             // ParentIdentification =
-            // OwnedBy =
-            // Resolution =
-            // ProductId =
             // SettlementGroup =
             // ScheduledMeterReadingMonth =
+            OwnedBy = "TBD",
+            Resolution = "TBD",
+            ProductId = "TBD",
         };
 
         if (_changeTransactions.Contains(currentTransactionType))
         {
             var overlappingPeriod = meteringPoint.MeteringPointPeriods
-                .SingleOrDefault(p => p.ValidTo > importedTransaction.valid_from_date);
+                .SingleOrDefault(p => p.RetiredBy == null && p.ValidTo > importedTransaction.valid_from_date);
 
             if (overlappingPeriod != null)
             {
@@ -131,6 +130,17 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 overlappingPeriod.RetiredBy = closedOverlappingPeriod;
             }
         }
+        else
+        {
+            var breakingOverlap = meteringPoint.MeteringPointPeriods
+                .SingleOrDefault(p => p.RetiredBy == null && p.ValidTo > importedTransaction.valid_from_date);
+
+            // TODO: This is not modelled.
+            if (breakingOverlap != null)
+            {
+                return false;
+            }
+        }
 
         meteringPoint.MeteringPointPeriods.Add(newMpPeriod);
 
@@ -148,7 +158,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         if (currentTransactionType is "MOVEINES")
         {
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction id: {importedTransaction.Id}.");
+            {
+                // TODO: This does happen.
+                return false;
+            }
 
             activeCommercialRelation.EnergySupplier = importedTransaction.balance_supplier_id;
             activeCommercialRelation.CustomerId = Guid.NewGuid();
@@ -160,18 +173,22 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
                 throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction id: {importedTransaction.Id}.");
 
+            // TODO: CHANGESUP without customer is possible.
             var previousCommercialRelation = meteringPoint.CommercialRelations
-                .Single(cr => cr.EndDate > importedTransaction.valid_from_date);
+                .SingleOrDefault(cr => cr.EndDate > importedTransaction.valid_from_date);
 
             activeCommercialRelation.EnergySupplier = importedTransaction.balance_supplier_id;
-            activeCommercialRelation.CustomerId = previousCommercialRelation.CustomerId;
+            activeCommercialRelation.CustomerId = previousCommercialRelation?.CustomerId;
             applyNewCommercialRelation = true;
         }
 
         if (currentTransactionType is "MOVEOUTES")
         {
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction id: {importedTransaction.Id}.");
+            {
+                // TODO: This does happen.
+                return false;
+            }
 
             activeCommercialRelation.EnergySupplier = importedTransaction.balance_supplier_id;
             activeCommercialRelation.CustomerId = null;
@@ -188,9 +205,13 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         if (applyNewCommercialRelation)
         {
             var previousCommercialRelation = meteringPoint.CommercialRelations
-                .Single(cr => cr.EndDate > importedTransaction.valid_from_date);
+                .SingleOrDefault(cr => cr.EndDate > importedTransaction.valid_from_date);
 
-            previousCommercialRelation.EndDate = importedTransaction.valid_from_date;
+            if (previousCommercialRelation != null)
+            {
+                previousCommercialRelation.EndDate = importedTransaction.valid_from_date;
+            }
+
             meteringPoint.CommercialRelations.Add(activeCommercialRelation);
         }
         else
@@ -200,7 +221,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             // TODO: Not matching Miro. Verify!
             activeCommercialRelation = meteringPoint.CommercialRelations
-                .Single(cr => cr.EndDate > importedTransaction.valid_from_date);
+                .SingleOrDefault(cr => cr.EndDate > importedTransaction.valid_from_date);
+
+            if (activeCommercialRelation == null)
+                return true;
         }
 
         var newEnergySupplyPeriod = new EnergySupplyPeriodEntity
@@ -215,7 +239,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         // TODO: Not matching Miro. Verify!
         var overlappingEnergySupplyPeriod = activeCommercialRelation.EnergySupplyPeriods
-            .SingleOrDefault(esp => esp.ValidTo > importedTransaction.valid_from_date);
+            .SingleOrDefault(esp => esp.RetiredBy == null && esp.ValidTo > importedTransaction.valid_from_date);
 
         if (overlappingEnergySupplyPeriod == null)
         {
