@@ -51,27 +51,15 @@ public sealed class ProcessDelegationRepository : IGetProcessDelegation
 
     public async Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest)
     {
-        var actor = await _context.Actors
-            .Where(x => x.ActorNumber == processDelegationRequest.ActorNumber && EicFunctionMapper.Map(x.MarketRole.Function) == processDelegationRequest.ActorRole)
-            .SingleOrDefaultAsync()
-            .ConfigureAwait(false);
+        var delegation = await (
+            from actor in _context.Actors
+            where actor.ActorNumber == processDelegationRequest.ActorNumber && EicFunctionMapper.Map(actor.MarketRole.Function) == processDelegationRequest.ActorRole
+            join processDelegation in _context.ProcessDelegations on actor.ActorId equals processDelegation.DelegatedByActorId
+            join gridArea in _context.GridAreas on processDelegation.Delegations.SingleOrDefault().GridAreaId equals gridArea.Id
+            where gridArea.Code == processDelegationRequest.GridAreaCode && DelegationProcessMapper.Map(processDelegation.DelegatedProcess) == processDelegationRequest.ProcessType
+            select processDelegation.Delegations.SingleOrDefault(x => x.GridAreaId == gridArea.Id))
+        .SingleOrDefaultAsync().ConfigureAwait(false);
 
-        if (actor is null)
-            return null;
-
-        var gridArea = await _context.GridAreas
-            .SingleOrDefaultAsync(x => x.Code == processDelegationRequest.GridAreaCode)
-            .ConfigureAwait(false);
-
-        if (gridArea is null)
-            return null;
-
-        var processDelegation = await _context.ProcessDelegations
-            .SingleOrDefaultAsync(x => x.DelegatedByActorId == actor.ActorId && DelegationProcessMapper.Map(x.DelegatedProcess) == processDelegationRequest.ProcessType)
-            .ConfigureAwait(false);
-
-        var delegation = processDelegation?.Delegations.SingleOrDefault(x => x.GridAreaId == gridArea.Id);
-        if (delegation == null)
-            return null;
+        return null;
     }
 }
