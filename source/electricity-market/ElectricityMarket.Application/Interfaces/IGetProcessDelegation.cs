@@ -11,14 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 
-using System;
-using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
-
-public sealed record MeteringPointRecipientApiDto(
-    string ActorNumber,
-    DateTimeOffset StartDate,
-    DateTimeOffset EndDate,
-    EicFunction Function);
+public interface IGetProcessDelegation
+{
+    Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest);
+}

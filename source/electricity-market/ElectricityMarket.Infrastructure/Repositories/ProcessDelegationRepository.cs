@@ -13,18 +13,21 @@
 // limitations under the License.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Application.Mappers;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using Microsoft.EntityFrameworkCore;
+using DelegatedProcess = Energinet.DataHub.ElectricityMarket.Domain.Models.Common.DelegatedProcess;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
-public sealed class ProcessDelegationRepository : IProcessDelegationRepository
+public sealed class ProcessDelegationRepository : IGetProcessDelegation
 {
     private readonly IMarketParticipantDatabaseContext _context;
 
@@ -44,5 +47,31 @@ public sealed class ProcessDelegationRepository : IProcessDelegationRepository
         return processDelegation is null
             ? null
             : ProcessDelegationMapper.MapFromEntity(processDelegation);
+    }
+
+    public async Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest)
+    {
+        var actor = await _context.Actors
+            .Where(x => x.ActorNumber == processDelegationRequest.ActorNumber && EicFunctionMapper.Map(x.MarketRole.Function) == processDelegationRequest.ActorRole)
+            .SingleOrDefaultAsync()
+            .ConfigureAwait(false);
+
+        if (actor is null)
+            return null;
+
+        var gridArea = await _context.GridAreas
+            .SingleOrDefaultAsync(x => x.Code == processDelegationRequest.GridAreaCode)
+            .ConfigureAwait(false);
+
+        if (gridArea is null)
+            return null;
+
+        var processDelegation = await _context.ProcessDelegations
+            .SingleOrDefaultAsync(x => x.DelegatedByActorId == actor.ActorId && DelegationProcessMapper.Map(x.DelegatedProcess) == processDelegationRequest.ProcessType)
+            .ConfigureAwait(false);
+
+        var delegation = processDelegation?.Delegations.SingleOrDefault(x => x.GridAreaId == gridArea.Id);
+        if (delegation == null)
+            return null;
     }
 }
