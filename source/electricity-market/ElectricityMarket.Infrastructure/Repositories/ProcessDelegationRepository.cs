@@ -17,14 +17,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Mappers;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using Microsoft.EntityFrameworkCore;
-using DelegatedProcess = Energinet.DataHub.ElectricityMarket.Domain.Models.Common.DelegatedProcess;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
