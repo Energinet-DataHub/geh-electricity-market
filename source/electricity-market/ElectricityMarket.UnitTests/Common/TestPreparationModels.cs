@@ -38,13 +38,4 @@ internal static class TestPreparationModels
         new MockedGln(),
         new ActorMarketRole(EicFunction.GridAccessProvider, [], null),
         new ActorName("Racoon Power"));
-
-    public static GridArea MockedGridArea() => new(
-        new GridAreaId(Guid.NewGuid()),
-        new GridAreaName("Raccoon City"),
-        new GridAreaCode("420"),
-        PriceAreaCode.Dk1,
-        GridAreaType.Distribution,
-        DateTimeOffset.MinValue,
-        null);
 }
