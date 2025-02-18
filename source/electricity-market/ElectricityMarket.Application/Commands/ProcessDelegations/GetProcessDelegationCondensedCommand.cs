@@ -11,11 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
+using MediatR;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
 
-public interface IGetProcessDelegation
-{
-    Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest);
-}
+public sealed record GetProcessDelegationCondensedCommand(ProcessDelegationRequestDto ProcessDelegationRequest) : IRequest<ProcessDelegationDto?>;

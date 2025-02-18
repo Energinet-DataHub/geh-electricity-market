@@ -37,7 +37,7 @@ internal sealed class ProcessDelegationTrigger
         [FromBody] ProcessDelegationRequestDto request,
         FunctionContext executionContext)
     {
-        var command = new GetProcessDelegationCommand(request);
+        var command = new GetProcessDelegationCondensedCommand(request);
 
         var result = await _mediator
             .Send(command)

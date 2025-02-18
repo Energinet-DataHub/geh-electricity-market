@@ -27,7 +27,7 @@ using DelegatedProcess = Energinet.DataHub.ElectricityMarket.Domain.Models.Commo
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
-public sealed class ProcessDelegationRepository : IGetProcessDelegation
+public sealed class ProcessDelegationRepository : IProcessDelegationCondensedRepository
 {
     private readonly IMarketParticipantDatabaseContext _context;
 
@@ -52,14 +52,16 @@ public sealed class ProcessDelegationRepository : IGetProcessDelegation
     public async Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest)
     {
         var delegation = await (
-            from actor in _context.Actors
-            where actor.ActorNumber == processDelegationRequest.ActorNumber && EicFunctionMapper.Map(actor.MarketRole.Function) == processDelegationRequest.ActorRole
-            join processDelegation in _context.ProcessDelegations on actor.ActorId equals processDelegation.DelegatedByActorId
-            join gridArea in _context.GridAreas on processDelegation.Delegations.SingleOrDefault().GridAreaId equals gridArea.Id
-            where gridArea.Code == processDelegationRequest.GridAreaCode && DelegationProcessMapper.Map(processDelegation.DelegatedProcess) == processDelegationRequest.ProcessType
-            select processDelegation.Delegations.SingleOrDefault(x => x.GridAreaId == gridArea.Id))
-        .SingleOrDefaultAsync().ConfigureAwait(false);
+                from actor in _context.Actors
+                where actor.ActorNumber == processDelegationRequest.ActorNumber && EicFunctionMapper.Map(actor.MarketRole.Function) == processDelegationRequest.ActorRole
+                join processDelegation in _context.ProcessDelegations on actor.ActorId equals processDelegation.DelegatedByActorId
+                join gridArea in _context.GridAreas on processDelegation.Delegations.SingleOrDefault().GridAreaId equals gridArea.Id
+                where gridArea.Code == processDelegationRequest.GridAreaCode && DelegationProcessMapper.Map(processDelegation.DelegatedProcess) == processDelegationRequest.ProcessType
+                join delegatedToActor in _context.Actors on processDelegation.Delegations.SingleOrDefault(x => x.GridAreaId == gridArea.Id).DelegatedToActorId equals delegatedToActor.ActorId
+                select new ProcessDelegationDto(delegatedToActor.ActorNumber, EicFunctionMapper.Map(delegatedToActor.MarketRole.Function)))
+            .SingleOrDefaultAsync()
+            .ConfigureAwait(false);
 
-        return null;
+        return delegation;
     }
 }
