@@ -28,26 +28,13 @@ using DelegatedProcess = Energinet.DataHub.ElectricityMarket.Domain.Models.Commo
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
-public sealed class ProcessDelegationRepository : IProcessDelegationCondensedRepository, IProcessDelegationRepository
+public sealed class ProcessDelegationRepository : IProcessDelegationRepository
 {
     private readonly IMarketParticipantDatabaseContext _context;
 
     public ProcessDelegationRepository(IMarketParticipantDatabaseContext context)
     {
         _context = context;
-    }
-
-    public async Task<ProcessDelegation?> GetProcessDelegationAsync(ActorId actorId, DelegatedProcess delegatedProcess)
-    {
-        ArgumentNullException.ThrowIfNull(actorId, nameof(actorId));
-
-        var processDelegation = await _context.ProcessDelegations
-            .SingleOrDefaultAsync(x => x.DelegatedByActorId == actorId.Value && x.DelegatedProcess == delegatedProcess)
-            .ConfigureAwait(false);
-
-        return processDelegation is null
-            ? null
-            : ProcessDelegationMapper.MapFromEntity(processDelegation);
     }
 
     public async Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest)
