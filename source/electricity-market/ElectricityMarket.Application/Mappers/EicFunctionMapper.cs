@@ -41,4 +41,28 @@ public static class EicFunctionMapper
             _ => throw new ArgumentOutOfRangeException(nameof(inputFunction), inputFunction, null),
         };
     }
+
+    public static Domain.Models.Actors.EicFunction Map(EicFunction inputFunction)
+    {
+        return inputFunction switch
+        {
+            EicFunction.GridAccessProvider => Domain.Models.Actors.EicFunction.GridAccessProvider,
+            EicFunction.BalanceResponsibleParty => Domain.Models.Actors.EicFunction.BalanceResponsibleParty,
+            EicFunction.BillingAgent => Domain.Models.Actors.EicFunction.BillingAgent,
+            EicFunction.EnergySupplier => Domain.Models.Actors.EicFunction.EnergySupplier,
+            EicFunction.ImbalanceSettlementResponsible => Domain.Models.Actors.EicFunction.ImbalanceSettlementResponsible,
+            EicFunction.MeterOperator => Domain.Models.Actors.EicFunction.MeterOperator,
+            EicFunction.MeteredDataAdministrator => Domain.Models.Actors.EicFunction.MeteredDataAdministrator,
+            EicFunction.MeteredDataResponsible => Domain.Models.Actors.EicFunction.MeteredDataResponsible,
+            EicFunction.MeteringPointAdministrator => Domain.Models.Actors.EicFunction.MeteringPointAdministrator,
+            EicFunction.SystemOperator => Domain.Models.Actors.EicFunction.SystemOperator,
+            EicFunction.DanishEnergyAgency => Domain.Models.Actors.EicFunction.DanishEnergyAgency,
+            EicFunction.DataHubAdministrator => Domain.Models.Actors.EicFunction.DataHubAdministrator,
+            EicFunction.IndependentAggregator => Domain.Models.Actors.EicFunction.IndependentAggregator,
+            EicFunction.SerialEnergyTrader => Domain.Models.Actors.EicFunction.SerialEnergyTrader,
+            EicFunction.Delegated => Domain.Models.Actors.EicFunction.Delegated,
+            EicFunction.ItSupplier => Domain.Models.Actors.EicFunction.ItSupplier,
+            _ => throw new ArgumentOutOfRangeException(nameof(inputFunction), inputFunction, null),
+        };
+    }
 }

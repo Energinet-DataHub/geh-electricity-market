@@ -52,13 +52,17 @@ public sealed class ProcessDelegationRepository : IProcessDelegationCondensedRep
 
     public async Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest)
     {
+        ArgumentNullException.ThrowIfNull(processDelegationRequest, nameof(processDelegationRequest));
+
+        var mappedEicFunction = EicFunctionMapper.Map(processDelegationRequest.ActorRole);
+        var mappedProcessType = DelegationProcessMapper.Map(processDelegationRequest.ProcessType);
         var delegation = await (
                 from actor in _context.Actors
-                where actor.ActorNumber == processDelegationRequest.ActorNumber && EicFunctionMapper.Map(actor.MarketRole.Function) == processDelegationRequest.ActorRole
+                where actor.ActorNumber == processDelegationRequest.ActorNumber && actor.MarketRole.Function == mappedEicFunction
                 join processDelegation in _context.ProcessDelegations on actor.ActorId equals processDelegation.DelegatedByActorId
                 join delegationPeriods in _context.DelegationPeriods on processDelegation.Id equals delegationPeriods.ProcessDelegationId
                 join gridArea in _context.GridAreas on delegationPeriods.GridAreaId equals gridArea.Id
-                where gridArea.Code == processDelegationRequest.GridAreaCode && DelegationProcessMapper.Map(processDelegation.DelegatedProcess) == processDelegationRequest.ProcessType
+                where gridArea.Code == processDelegationRequest.GridAreaCode && processDelegation.DelegatedProcess == mappedProcessType
                 join delegatedToActor in _context.Actors on delegationPeriods.DelegatedToActorId equals delegatedToActor.ActorId
                 select new ProcessDelegationDto(delegatedToActor.ActorNumber, EicFunctionMapper.Map(delegatedToActor.MarketRole.Function)))
             .SingleOrDefaultAsync()
