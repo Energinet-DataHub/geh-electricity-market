@@ -42,17 +42,27 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(importedTransactions);
 
-        foreach (var transactionEntity in importedTransactions)
+        try
         {
-            if (string.IsNullOrWhiteSpace(meteringPoint.Identification))
+            foreach (var transactionEntity in importedTransactions)
             {
-                meteringPoint.Identification = transactionEntity.metering_point_id.ToString(CultureInfo.InvariantCulture);
-            }
+                if (string.IsNullOrWhiteSpace(meteringPoint.Identification))
+                {
+                    meteringPoint.Identification = transactionEntity.metering_point_id.ToString(CultureInfo.InvariantCulture);
+                }
 
-            if (!TryImportTransaction(transactionEntity, meteringPoint))
-            {
-                return Task.FromResult(false);
+                if (!TryImportTransaction(transactionEntity, meteringPoint))
+                {
+                    return Task.FromResult(false);
+                }
             }
+        }
+#pragma warning disable CA1031
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogError(ex, "Crash during import of MP: {MeteringPointId}", meteringPoint.Identification);
+            return Task.FromResult(false);
         }
 
         return Task.FromResult(true);
