@@ -63,7 +63,7 @@ public sealed class ProcessDelegationRepository : IProcessDelegationCondensedRep
                 join delegationPeriods in _context.DelegationPeriods on processDelegation.Id equals delegationPeriods.ProcessDelegationId
                 join gridArea in _context.GridAreas on delegationPeriods.GridAreaId equals gridArea.Id
                 where gridArea.Code == processDelegationRequest.GridAreaCode && processDelegation.DelegatedProcess == mappedProcessType
-                join delegatedToActor in _context.Actors on delegationPeriods.DelegatedToActorId equals delegatedToActor.ActorId
+                join delegatedToActor in _context.Actors on delegationPeriods.DelegatedToActorId equals delegatedToActor.Id
                 select new ProcessDelegationDto(delegatedToActor.ActorNumber, EicFunctionMapper.Map(delegatedToActor.MarketRole.Function)))
             .SingleOrDefaultAsync()
             .ConfigureAwait(false);
