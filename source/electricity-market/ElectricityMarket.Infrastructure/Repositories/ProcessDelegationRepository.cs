@@ -19,6 +19,7 @@ using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Mappers;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
+using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
@@ -27,7 +28,7 @@ using DelegatedProcess = Energinet.DataHub.ElectricityMarket.Domain.Models.Commo
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
-public sealed class ProcessDelegationRepository : IProcessDelegationCondensedRepository
+public sealed class ProcessDelegationRepository : IProcessDelegationCondensedRepository, IProcessDelegationRepository
 {
     private readonly IMarketParticipantDatabaseContext _context;
 
@@ -55,9 +56,10 @@ public sealed class ProcessDelegationRepository : IProcessDelegationCondensedRep
                 from actor in _context.Actors
                 where actor.ActorNumber == processDelegationRequest.ActorNumber && EicFunctionMapper.Map(actor.MarketRole.Function) == processDelegationRequest.ActorRole
                 join processDelegation in _context.ProcessDelegations on actor.ActorId equals processDelegation.DelegatedByActorId
-                join gridArea in _context.GridAreas on processDelegation.Delegations.SingleOrDefault().GridAreaId equals gridArea.Id
+                join delegationPeriods in _context.DelegationPeriods on processDelegation.Id equals delegationPeriods.ProcessDelegationId
+                join gridArea in _context.GridAreas on delegationPeriods.GridAreaId equals gridArea.Id
                 where gridArea.Code == processDelegationRequest.GridAreaCode && DelegationProcessMapper.Map(processDelegation.DelegatedProcess) == processDelegationRequest.ProcessType
-                join delegatedToActor in _context.Actors on processDelegation.Delegations.SingleOrDefault(x => x.GridAreaId == gridArea.Id).DelegatedToActorId equals delegatedToActor.ActorId
+                join delegatedToActor in _context.Actors on delegationPeriods.DelegatedToActorId equals delegatedToActor.ActorId
                 select new ProcessDelegationDto(delegatedToActor.ActorNumber, EicFunctionMapper.Map(delegatedToActor.MarketRole.Function)))
             .SingleOrDefaultAsync()
             .ConfigureAwait(false);
