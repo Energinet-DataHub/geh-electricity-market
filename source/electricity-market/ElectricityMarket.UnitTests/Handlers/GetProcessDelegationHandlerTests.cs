@@ -40,14 +40,6 @@ public sealed class GetProcessDelegationHandlerTests
         var actorRepository = new Mock<IActorRepository>();
         var mockActor = TestPreparationModels.MockedActor();
         var mockGridArea = TestPreparationModels.MockedGridArea();
-        actorRepository
-            .Setup(repo => repo.GetActorsByNumberAsync(It.IsAny<ActorNumber>()))
-            .ReturnsAsync([mockActor]);
-
-        var gridAreaRepository = new Mock<IGridAreaRepository>();
-        gridAreaRepository
-            .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode(mockGridArea.Code.Value)))
-            .ReturnsAsync(mockGridArea);
 
         var processDelegationRepository = new Mock<IProcessDelegationRepository>();
         processDelegationRepository
