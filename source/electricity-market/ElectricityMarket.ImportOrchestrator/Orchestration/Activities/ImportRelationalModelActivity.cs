@@ -31,6 +31,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
 {
     private readonly BlockingCollection<List<ImportedTransactionEntity>> _importedTransactions = new(500000);
     private readonly BlockingCollection<List<MeteringPointEntity>> _relationalModelBatches = new(10);
+    private readonly List<List<QuarantinedMeteringPointEntity>> _quarantined = new(10);
 
     private readonly IOptions<DatabaseOptions> _databaseOptions;
     private readonly IDbContextFactory<ElectricityMarketDatabaseContext> _contextFactory;
@@ -201,9 +202,11 @@ public sealed class ImportRelationalModelActivity : IDisposable
     private async Task ImportAndPackageTransactionsAsync(long initialMeteringPointPrimaryKey)
     {
         const int capacity = 30000;
+        const int quarantineCapacity = 30000;
 
         var sw = Stopwatch.StartNew();
         var batch = new List<MeteringPointEntity>(capacity);
+        var quarantineBatch = new List<QuarantinedMeteringPointEntity>(quarantineCapacity);
 
         foreach (var transactionsForOneMp in _importedTransactions.GetConsumingEnumerable())
         {
@@ -216,9 +219,15 @@ public sealed class ImportRelationalModelActivity : IDisposable
                 batch = new List<MeteringPointEntity>(capacity);
             }
 
+            if (quarantineBatch.Count == quarantineCapacity)
+            {
+                _quarantined.Add(quarantineBatch);
+                quarantineBatch = new List<QuarantinedMeteringPointEntity>(capacity);
+            }
+
             var meteringPoint = new MeteringPointEntity();
 
-            var imported = await _meteringPointImporter
+            var (imported, message) = await _meteringPointImporter
                 .ImportAsync(meteringPoint, transactionsForOneMp)
                 .ConfigureAwait(false);
 
@@ -227,11 +236,25 @@ public sealed class ImportRelationalModelActivity : IDisposable
                 AssignPrimaryKeys(meteringPoint, initialMeteringPointPrimaryKey++);
                 batch.Add(meteringPoint);
             }
+            else
+            {
+                // add to quarantine
+                quarantineBatch.Add(new QuarantinedMeteringPointEntity
+                {
+                    Identification = meteringPoint.Identification,
+                    Message = message,
+                });
+            }
         }
 
-        if (batch.Count != 0)
+        if (batch.Count > 0)
         {
             _relationalModelBatches.Add(batch);
+        }
+
+        if (quarantineBatch.Count > 0)
+        {
+            _quarantined.Add(quarantineBatch);
         }
 
         _relationalModelBatches.CompleteAdding();
@@ -282,6 +305,17 @@ public sealed class ImportRelationalModelActivity : IDisposable
                             batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods)),
                             "EnergySupplyPeriod",
                             ["Id", "CommercialRelationId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "WebAccessCode", "EnergySupplier", "BusinessTransactionDosId"])
+                        .ConfigureAwait(false);
+                }
+
+                foreach (var quarantineBatch in _quarantined)
+                {
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
+                            quarantineBatch,
+                            "QuarantinedMeteringPoint",
+                            ["Id", "Identification", "Message"])
                         .ConfigureAwait(false);
                 }
 
