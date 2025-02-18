@@ -31,31 +31,61 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
 public sealed class MeteringPointRepository : IMeteringPointRepository
 {
-    private readonly ElectricityMarketDatabaseContext _context;
+    private readonly MarketParticipantDatabaseContext _marketParticipantDatabaseContext;
+    private readonly ElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
 
-    public MeteringPointRepository(ElectricityMarketDatabaseContext context)
+    public MeteringPointRepository(
+        MarketParticipantDatabaseContext marketParticipantDatabaseContext,
+        ElectricityMarketDatabaseContext electricityMarketDatabaseContext)
     {
-        _context = context;
+        _marketParticipantDatabaseContext = marketParticipantDatabaseContext;
+        _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }
 
     public async Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification)
     {
         ArgumentNullException.ThrowIfNull(identification);
 
-        var entity = await _context.MeteringPoints
+        var entity = await _electricityMarketDatabaseContext.MeteringPoints
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
 
-        return entity is not null
-            ? MeteringPointMapper.MapFromEntity(entity)
-            : null;
+        if (entity == null)
+            return null;
+
+        var allGridAreas = entity.MeteringPointPeriods
+            .Select(mpp => mpp.GridAreaCode)
+            .ToHashSet();
+
+        var gridAreaOwnerQuery =
+            from gridArea in _marketParticipantDatabaseContext.GridAreas
+            where allGridAreas.Contains(gridArea.Code)
+            join marketRoleGridArea in _marketParticipantDatabaseContext.MarketRoleGridAreas on gridArea.Id equals marketRoleGridArea.GridAreaId
+            join marketRole in _marketParticipantDatabaseContext.MarketRoles on marketRoleGridArea.MarketRoleId equals marketRole.Id
+            where marketRole.Function == EicFunction.GridAccessProvider
+            join actor in _marketParticipantDatabaseContext.Actors on marketRole.ActorId equals actor.Id
+            select new { gridArea.Code, actor.ActorNumber };
+
+        var gridAreaLookup = await gridAreaOwnerQuery
+            .ToDictionaryAsync(k => k.Code, v => v.ActorNumber)
+            .ConfigureAwait(false);
+
+        foreach (var mpp in entity.MeteringPointPeriods)
+        {
+            if (string.IsNullOrWhiteSpace(mpp.GridAreaCode) && gridAreaLookup.TryGetValue(mpp.GridAreaCode, out var actorNumber))
+            {
+                mpp.OwnedBy = actorNumber;
+            }
+        }
+
+        return MeteringPointMapper.MapFromEntity(entity);
     }
 
     public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(string meteringPointIdentification, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var query =
-            from mp in _context.MeteringPoints
-            join mpp in _context.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
+            from mp in _electricityMarketDatabaseContext.MeteringPoints
+            join mpp in _electricityMarketDatabaseContext.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
                   mpp.ValidFrom <= endDate &&
                   mpp.ValidTo > startDate
@@ -88,8 +118,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         DateTimeOffset endDate)
     {
         var query =
-            from mp in _context.MeteringPoints
-            join cr in _context.CommercialRelations on mp.Id equals cr.MeteringPointId
+            from mp in _electricityMarketDatabaseContext.MeteringPoints
+            join cr in _electricityMarketDatabaseContext.CommercialRelations on mp.Id equals cr.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
                   cr.StartDate <= endDate &&
                   cr.EndDate > startDate &&
