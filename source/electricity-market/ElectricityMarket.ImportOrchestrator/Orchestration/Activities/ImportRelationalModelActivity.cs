@@ -145,9 +145,6 @@ public sealed class ImportRelationalModelActivity : IDisposable
             if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 10000) + 10000)
                 throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, EnergySupplyPeriod.");
         }
-
-        // TODO: Move to v3.
-        // TODO: Fix mapper.
     }
 
     private async Task ReadImportedTransactionsAsync(int skip, int take)
@@ -173,8 +170,8 @@ public sealed class ImportRelationalModelActivity : IDisposable
                     inner => inner,
                     (entity, _) => entity)
                 .OrderBy(t => t.metering_point_id)
-                .ThenBy(t => t.metering_point_state_id)
                 .ThenBy(t => t.btd_trans_doss_id)
+                .ThenBy(t => t.metering_point_state_id)
                 .AsAsyncEnumerable();
 
             var transactionsForOneMp = new List<ImportedTransactionEntity>();
