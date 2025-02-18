@@ -77,7 +77,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         // HTX is ignored for now.
         if (meteringPoint.MeteringPointPeriods.Count > 0 &&
-            meteringPoint.MeteringPointPeriods.Max(p => p.ValidFrom) >= importedTransaction.valid_from_date)
+            meteringPoint.MeteringPointPeriods.Max(p => p.ValidFrom) > importedTransaction.valid_from_date)
         {
             return true;
         }
@@ -139,20 +139,13 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 overlappingPeriod.RetiredAt = importedTransaction.dh2_created; // TODO: Different from example.
                 overlappingPeriod.RetiredBy = closedOverlappingPeriod;
             }
+
+            meteringPoint.MeteringPointPeriods.Add(newMpPeriod);
         }
         else
         {
-            var breakingOverlap = meteringPoint.MeteringPointPeriods
-                .SingleOrDefault(p => p.RetiredBy == null && p.ValidTo > importedTransaction.valid_from_date);
-
             // TODO: This is not modelled.
-            if (breakingOverlap != null)
-            {
-                return false;
-            }
         }
-
-        meteringPoint.MeteringPointPeriods.Add(newMpPeriod);
 
         if (newMpPeriod.Type is not "Production" and not "Consumption")
             return true;
