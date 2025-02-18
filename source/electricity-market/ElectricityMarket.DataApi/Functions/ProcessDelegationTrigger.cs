@@ -58,4 +58,33 @@ internal sealed class ProcessDelegationTrigger
 
         return response;
     }
+
+    [Function(nameof(GetProcessDelegationOldAsync))]
+    public async Task<HttpResponseData> GetProcessDelegationOldAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "get-process-delegation-old")]
+        HttpRequestData req,
+        [FromBody] ProcessDelegationRequestDto request,
+        FunctionContext executionContext)
+    {
+        var command = new GetProcessDelegationCommand(request);
+
+        var result = await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        HttpResponseData response;
+        if (result != null)
+        {
+            response = req.CreateResponse(HttpStatusCode.OK);
+            await response
+                .WriteAsJsonAsync(result)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            response = req.CreateResponse(HttpStatusCode.NotFound);
+        }
+
+        return response;
+    }
 }
