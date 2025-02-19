@@ -1,5 +1,10 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.1.3
+
+- Removed abstract type ActorNumber from package, replaced with string (Breaking change)
+	- This means that the receiver is now required to interpret the supplied string to figure out what type it is of GLN/EIC
+
 ## Version 4.1.2
 
 - internal cleanup

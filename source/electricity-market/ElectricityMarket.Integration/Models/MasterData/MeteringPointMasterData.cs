@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
-using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
@@ -21,15 +21,15 @@ public sealed class MeteringPointMasterData
 {
     public MeteringPointIdentification Identification { get; init; } = null!;
 
-    public Instant ValidFrom { get; init; }
+    public DateTimeOffset ValidFrom { get; init; }
 
-    public Instant ValidTo { get; init; }
+    public DateTimeOffset ValidTo { get; init; }
 
     public GridAreaCode GridAreaCode { get; init; } = null!;
 
-    public ActorNumber GridAccessProvider { get; init; } = null!;
+    public string GridAccessProvider { get; init; } = null!;
 
-    public IReadOnlyCollection<ActorNumber> NeighborGridAreaOwners { get; init; } = [];
+    public IReadOnlyCollection<string> NeighborGridAreaOwners { get; init; } = [];
 
     public ConnectionState ConnectionState { get; init; }
 

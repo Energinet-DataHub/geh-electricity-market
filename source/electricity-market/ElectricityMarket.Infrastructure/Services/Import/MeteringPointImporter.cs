@@ -94,7 +94,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             // ScheduledMeterReadingMonth =
             OwnedBy = "TBD",
             Resolution = "TBD",
-            ProductId = "TBD",
+            ProductId = "Tariff",
         };
 
         if (_changeTransactions.Contains(currentTransactionType))

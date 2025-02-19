@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+using System;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
@@ -20,9 +20,9 @@ public sealed class MeteringPointEnergySupplier
 {
     public MeteringPointIdentification Identification { get; init; } = null!;
 
-    public ActorNumber EnergySupplier { get; init; } = null!;
+    public string EnergySupplier { get; init; } = null!;
 
-    public Instant StartDate { get; init; }
+    public DateTimeOffset StartDate { get; init; }
 
-    public Instant EndDate { get; init; }
+    public DateTimeOffset EndDate { get; init; }
 }

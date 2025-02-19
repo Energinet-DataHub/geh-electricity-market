@@ -12,22 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
 using Energinet.DataHub.ElectricityMarket.Application.Handlers;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
-using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 using Moq;
 using Xunit;
 using Xunit.Categories;
@@ -42,7 +32,6 @@ public sealed class GetGridAreaOwnerHandlerTests
     {
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
-        var actorRepository = new Mock<IActorRepository>();
         var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object);
 
         gridAreaRepository
@@ -61,7 +50,6 @@ public sealed class GetGridAreaOwnerHandlerTests
     {
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
-        var actorRepository = new Mock<IActorRepository>();
         var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object);
 
         var gridArea = new GridAreaOwnerDto("1234");
