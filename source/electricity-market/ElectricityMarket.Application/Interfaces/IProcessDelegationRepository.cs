@@ -11,14 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
-
-namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
 public interface IProcessDelegationRepository
 {
-    Task<ProcessDelegation?> GetProcessDelegationAsync(ActorId actorId, DelegatedProcess delegatedProcess);
+    Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest);
 }
