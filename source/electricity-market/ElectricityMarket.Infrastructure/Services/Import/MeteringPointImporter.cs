@@ -88,11 +88,11 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             Type = ExternalMeteringPointTypeMapper.Map(importedTransaction.type_of_mp.TrimEnd()),
             SubType = ExternalMeteringPointSubTypeMapper.Map(importedTransaction.sub_type_of_mp.TrimEnd()),
             Unit = ExternalMeteringPointUnitMapper.Map(importedTransaction.energy_timeseries_measure_unit.TrimEnd()),
+            OwnedBy = string.Empty, // Works as an override, will be resolved through mark-part.
 
             // ParentIdentification =
             // SettlementGroup =
             // ScheduledMeterReadingMonth =
-            OwnedBy = "TBD",
             Resolution = "TBD",
             ProductId = "Tariff",
         };
