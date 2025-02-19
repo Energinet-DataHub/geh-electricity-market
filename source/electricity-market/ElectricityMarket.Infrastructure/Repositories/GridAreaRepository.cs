@@ -12,16 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
@@ -43,37 +40,15 @@ public sealed class GridAreaRepository : IGridAreaRepository
         _jsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
     }
 
-    public async IAsyncEnumerable<GridAreaOwnershipAssignedEvent> GetGridAreaOwnershipAssignedEventsAsync()
+    public async Task<GridAreaOwnerDto?> GetGridAreaOwnerAsync(string gridAreaCode)
     {
-        var events = await _context.DomainEvents
-            .Where(x => x.EventTypeName == "GridAreaOwnershipAssigned" && x.IsSent)
-            .OrderByDescending(x => x.Timestamp)
-            .ToListAsync()
+        var gridAreaOwner = await (
+                from actor in _context.Actors
+                join gridArea in _context.GridAreas on actor.MarketRole.GridAreas.Single().GridAreaId equals gridArea.Id
+                where gridArea.Code == gridAreaCode && actor.MarketRole.Function == EicFunction.GridAccessProvider
+                select new GridAreaOwnerDto(actor.ActorNumber))
+            .SingleOrDefaultAsync()
             .ConfigureAwait(false);
-
-        foreach (var domainEvent in events)
-        {
-            var gridOwnershipEvent = JsonSerializer.Deserialize<GridAreaOwnershipAssignedEvent>(
-                domainEvent.Event,
-                _jsonSerializerOptions);
-
-            if (gridOwnershipEvent == null)
-            {
-                throw new InvalidOperationException($"Could not deserialize event: {domainEvent.EntityId}");
-            }
-
-            yield return gridOwnershipEvent;
-        }
-    }
-
-    public async Task<GridArea?> GetGridAreaAsync(GridAreaCode code)
-    {
-        ArgumentNullException.ThrowIfNull(code, nameof(code));
-
-        var gridArea = await _context.GridAreas
-            .SingleOrDefaultAsync(x => x.Code == code.Value)
-            .ConfigureAwait(false);
-
-        return gridArea is null ? null : GridAreaMapper.MapFromEntity(gridArea);
+        return gridAreaOwner;
     }
 }

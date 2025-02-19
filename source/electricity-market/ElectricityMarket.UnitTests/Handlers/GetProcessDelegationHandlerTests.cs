@@ -37,16 +37,14 @@ public sealed class GetProcessDelegationHandlerTests
     public async Task Handle_NoProcessDelegationFound_ReturnsNull()
     {
         // Arrange
-        var actorRepository = new Mock<IActorRepository>();
         var mockActor = TestPreparationModels.MockedActor();
-        var mockGridArea = TestPreparationModels.MockedGridArea();
 
         var processDelegationRepository = new Mock<IProcessDelegationRepository>();
         processDelegationRepository
             .Setup(repo => repo.GetProcessDelegationAsync(It.IsAny<ProcessDelegationRequestDto>()))
             .ReturnsAsync((ProcessDelegationDto?)null);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), mockGridArea.Code.Value, DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
+        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(processDelegationRepository.Object);
@@ -60,11 +58,8 @@ public sealed class GetProcessDelegationHandlerTests
     public async Task Handle_FoundDelegations_ReturnsSuccesful()
     {
         // Arrange
-        var actorRepository = new Mock<IActorRepository>();
         var mockActor = TestPreparationModels.MockedActor();
         var mockDelegatedToActor = TestPreparationModels.MockedActor();
-        var mockGridArea = TestPreparationModels.MockedGridArea();
-
         var processDelegation = new ProcessDelegationDto(
             mockDelegatedToActor.ActorNumber.Value,
             EicFunctionMapper.Map(mockDelegatedToActor.MarketRole.Function));
@@ -73,7 +68,7 @@ public sealed class GetProcessDelegationHandlerTests
             .Setup(repo => repo.GetProcessDelegationAsync(It.IsAny<ProcessDelegationRequestDto>()))
             .ReturnsAsync(processDelegation);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), mockGridArea.Code.Value, DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
+        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(processDelegationRepository.Object);

@@ -11,7 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
-public sealed record GridAreaName(string Value);
+public interface IGridAreaRepository
+{
+    Task<GridAreaOwnerDto?> GetGridAreaOwnerAsync(string gridAreaCode);
+}

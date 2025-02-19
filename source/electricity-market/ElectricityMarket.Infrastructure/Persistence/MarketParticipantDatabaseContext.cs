@@ -31,7 +31,6 @@ public class MarketParticipantDatabaseContext : DbContext, IMarketParticipantDat
     {
     }
 
-    public DbSet<DomainEventEntity> DomainEvents { get; private set; }
     public DbSet<GridAreaEntity> GridAreas { get; private set; }
     public DbSet<ActorEntity> Actors { get; private set; } = null!;
     public DbSet<ProcessDelegationEntity> ProcessDelegations { get; private set; } = null!;
@@ -42,7 +41,6 @@ public class MarketParticipantDatabaseContext : DbContext, IMarketParticipantDat
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder, nameof(modelBuilder));
-        modelBuilder.ApplyConfiguration(new DomainEventEntityConfiguration());
         modelBuilder.ApplyConfiguration(new GridAreaEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ActorEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ProcessDelegationEntityConfiguration());

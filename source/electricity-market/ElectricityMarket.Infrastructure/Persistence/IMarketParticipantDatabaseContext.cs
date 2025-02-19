@@ -19,7 +19,6 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 
 public interface IMarketParticipantDatabaseContext
 {
-    DbSet<DomainEventEntity> DomainEvents { get; }
     DbSet<GridAreaEntity> GridAreas { get; }
     DbSet<ActorEntity> Actors { get; }
     DbSet<ProcessDelegationEntity> ProcessDelegations { get; }

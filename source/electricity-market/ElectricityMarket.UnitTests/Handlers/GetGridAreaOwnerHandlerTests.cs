@@ -20,11 +20,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
 using Energinet.DataHub.ElectricityMarket.Application.Handlers;
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 using Moq;
 using Xunit;
@@ -41,87 +43,17 @@ public sealed class GetGridAreaOwnerHandlerTests
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
         var actorRepository = new Mock<IActorRepository>();
-        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object, actorRepository.Object);
+        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object);
 
         gridAreaRepository
-            .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode(It.IsAny<string>())))
-            .ReturnsAsync((GridArea?)null);
+            .Setup(repo => repo.GetGridAreaOwnerAsync(It.IsAny<string>()))
+            .ReturnsAsync((GridAreaOwnerDto?)null);
 
         var command = new GetGridAreaOwnerCommand("XXXXXX");
 
         // Act + Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() => target.Handle(command, CancellationToken.None));
-        Assert.Equal($"The grid area with code: {command.GridAreaCode} was not found", ex.Message);
-    }
-
-    [Fact]
-    public async Task Handle_NoGridAreaOwnershipEvents_ThrowsNotFoundException()
-    {
-        // Arrange
-        var gridAreaRepository = new Mock<IGridAreaRepository>();
-        var actorRepository = new Mock<IActorRepository>();
-        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object, actorRepository.Object);
-
-        var gridArea = new GridArea(
-            new GridAreaId(Guid.NewGuid()),
-            new GridAreaName("name"),
-            new GridAreaCode("111"),
-            PriceAreaCode.Dk1,
-            GridAreaType.Distribution,
-            DateTimeOffset.MinValue,
-            null);
-
-        gridAreaRepository
-            .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode("111")))
-            .ReturnsAsync(gridArea);
-
-        gridAreaRepository
-            .Setup(repo => repo.GetGridAreaOwnershipAssignedEventsAsync())
-            .Returns(new List<GridAreaOwnershipAssignedEvent>().ToAsyncEnumerable());
-
-        var command = new GetGridAreaOwnerCommand("111");
-
-        // Act + Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() => target.Handle(command, CancellationToken.None));
-        Assert.Equal($"No owner assigned for grid area: {gridArea.Id} was found", ex.Message);
-    }
-
-    [Fact]
-    public async Task Handle_NoMatchingGridAreaOwnershipEvents_ThrowsNotFoundException()
-    {
-        // Arrange
-        var gridAreaRepository = new Mock<IGridAreaRepository>();
-        var actorRepository = new Mock<IActorRepository>();
-        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object, actorRepository.Object);
-
-        var gridArea = new GridArea(
-            new GridAreaId(Guid.NewGuid()),
-            new GridAreaName("name"),
-            new GridAreaCode("111"),
-            PriceAreaCode.Dk1,
-            GridAreaType.Distribution,
-            DateTimeOffset.MinValue,
-            null);
-
-        gridAreaRepository
-            .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode("111")))
-            .ReturnsAsync(gridArea);
-
-        var gridAreaOwnership = new GridAreaOwnershipAssignedEvent(
-            Guid.NewGuid(),
-            new MockedGln(),
-            EicFunction.GridAccessProvider,
-            new GridAreaId(Guid.NewGuid()),
-            NodaTime.Instant.MinValue);
-        gridAreaRepository
-            .Setup(repo => repo.GetGridAreaOwnershipAssignedEventsAsync())
-            .Returns(new[] { gridAreaOwnership }.ToAsyncEnumerable());
-
-        var command = new GetGridAreaOwnerCommand("111");
-
-        // Act + Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() => target.Handle(command, CancellationToken.None));
-        Assert.Equal($"No owner assigned for grid area: {gridArea.Id} was found", ex.Message);
+        var response = await target.Handle(command, CancellationToken.None);
+        Assert.Null(response);
     }
 
     [Fact]
@@ -130,36 +62,19 @@ public sealed class GetGridAreaOwnerHandlerTests
         // Arrange
         var gridAreaRepository = new Mock<IGridAreaRepository>();
         var actorRepository = new Mock<IActorRepository>();
-        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object, actorRepository.Object);
+        var target = new GetGridAreaOwnerHandler(gridAreaRepository.Object);
 
-        var gridArea = new GridArea(
-            new GridAreaId(Guid.NewGuid()),
-            new GridAreaName("name"),
-            new GridAreaCode("111"),
-            PriceAreaCode.Dk1,
-            GridAreaType.Distribution,
-            DateTimeOffset.MinValue,
-            null);
+        var gridArea = new GridAreaOwnerDto("1234");
 
         gridAreaRepository
-            .Setup(repo => repo.GetGridAreaAsync(new GridAreaCode("111")))
+            .Setup(repo => repo.GetGridAreaOwnerAsync("111"))
             .ReturnsAsync(gridArea);
-
-        var actor = new Actor(
-        new ActorId(Guid.NewGuid()),
-        new OrganizationId(Guid.NewGuid()),
-        new MockedGln(),
-        new ActorMarketRole(EicFunction.GridAccessProvider, [new ActorGridArea(gridArea.Id)], null),
-        new ActorName("Racoon Power"));
-        actorRepository
-            .Setup(repo => repo.GetActorsAsync())
-            .ReturnsAsync(new[] { actor });
 
         var command = new GetGridAreaOwnerCommand("111");
 
         // Act + Assert
         var response = await target.Handle(command, CancellationToken.None);
         Assert.NotNull(response);
-        Assert.Equal(actor.ActorNumber.Value, response.GridAccessProviderGln);
+        Assert.Equal("1234", response.GridAccessProviderGln);
     }
 }
