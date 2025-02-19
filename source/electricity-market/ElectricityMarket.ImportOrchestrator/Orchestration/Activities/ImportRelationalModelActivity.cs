@@ -315,7 +315,8 @@ public sealed class ImportRelationalModelActivity : IDisposable
                             transaction,
                             quarantineBatch,
                             "QuarantinedMeteringPoint",
-                            ["Id", "Identification", "Message"])
+                            ["Id", "Identification", "Message"],
+                            false)
                         .ConfigureAwait(false);
                 }
 
@@ -329,9 +330,10 @@ public sealed class ImportRelationalModelActivity : IDisposable
         SqlTransaction transaction,
         IEnumerable<T> dataSource,
         string tableName,
-        string[] columns)
+        string[] columns,
+        bool useIdentity = true)
     {
-        using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction);
+        using var bulkCopy = new SqlBulkCopy(connection, useIdentity ? SqlBulkCopyOptions.KeepIdentity : SqlBulkCopyOptions.Default, transaction);
 
         bulkCopy.DestinationTableName = $"electricitymarket.{tableName}";
         bulkCopy.BulkCopyTimeout = 0;
