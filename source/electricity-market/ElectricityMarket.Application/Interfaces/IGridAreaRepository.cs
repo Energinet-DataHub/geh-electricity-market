@@ -11,7 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 
+<<<<<<<< HEAD:source/electricity-market/ElectricityMarket.Application/Interfaces/IGridAreaRepository.cs
 using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
@@ -19,4 +21,11 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 public interface IGridAreaRepository
 {
     Task<GridAreaOwnerDto?> GetGridAreaOwnerAsync(string gridAreaCode);
+========
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+
+public interface IProcessDelegationRepository
+{
+    Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest);
+>>>>>>>> main:source/electricity-market/ElectricityMarket.Application/Interfaces/IProcessDelegationRepository.cs
 }
