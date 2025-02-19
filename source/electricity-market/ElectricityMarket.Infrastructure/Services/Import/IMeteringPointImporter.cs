@@ -20,5 +20,5 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public interface IMeteringPointImporter
 {
-    Task<bool> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions);
+    Task<(bool Imported, string Message)> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions);
 }
