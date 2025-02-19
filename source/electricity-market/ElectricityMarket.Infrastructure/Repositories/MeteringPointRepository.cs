@@ -22,6 +22,7 @@ using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
+using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
@@ -92,8 +93,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             select new Integration.Models.MasterData.MeteringPointMasterData
             {
                 Identification = new Integration.Models.MasterData.MeteringPointIdentification(mp.Identification),
-                ValidFrom = mpp.ValidFrom,
-                ValidTo = mpp.ValidTo,
+                ValidFrom = mpp.ValidFrom.ToInstant(),
+                ValidTo = mpp.ValidTo.ToInstant(),
                 GridAreaCode = new Integration.Models.MasterData.GridAreaCode(mpp.GridAreaCode),
                 GridAccessProvider = mpp.OwnedBy,
                 NeighborGridAreaOwners = Array.Empty<string>(),
@@ -112,8 +113,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                     {
                         Identification = new Integration.Models.MasterData.MeteringPointIdentification(mp.Identification),
                         EnergySupplier = cr.EnergySupplier,
-                        StartDate = cr.StartDate,
-                        EndDate = cr.EndDate,
+                        StartDate = cr.StartDate.ToInstant(),
+                        EndDate = cr.EndDate.ToInstant(),
                     })
                     .ToArray(),
             };
