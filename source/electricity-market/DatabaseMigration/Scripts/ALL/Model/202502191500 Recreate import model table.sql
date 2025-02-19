@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS electricitymarket.GoldenImport;
 
 CREATE TABLE [electricitymarket].[MeteringPoint]
 (
-    [Id]                 bigint NOT NULL,
+    [Id]                 bigint IDENTITY(1,1) NOT NULL,
     [Identification]     char(18) NOT NULL
 
     CONSTRAINT PK_MeteringPoint PRIMARY KEY CLUSTERED (Id),
@@ -23,7 +23,7 @@ CREATE TABLE [electricitymarket].[MeteringPoint]
 
 CREATE TABLE [electricitymarket].[MeteringPointPeriod]
 (
-    [Id]                         bigint NOT NULL,
+    [Id]                         bigint IDENTITY(1,1) NOT NULL,
     [MeteringPointId]            bigint NOT NULL,
     [ValidFrom]                  datetimeoffset NOT NULL,
     [ValidTo]                    datetimeoffset NOT NULL,
@@ -57,7 +57,7 @@ CREATE INDEX [IX_MeteringPointPeriod_MeteringPointId]
 
 CREATE TABLE [electricitymarket].[CommercialRelation]
 (
-    [Id]                 bigint NOT NULL,
+    [Id]                 bigint IDENTITY(1,1) NOT NULL,
     [MeteringPointId]    bigint NOT NULL,
     [EnergySupplier]     varchar(16) NOT NULL,
     [StartDate]          datetimeoffset NOT NULL,
@@ -74,7 +74,7 @@ CREATE INDEX [IX_CommercialRelation_MeteringPointId]
 
 CREATE TABLE [electricitymarket].[ElectricalHeatingPeriod]
 (
-    [Id]                   bigint NOT NULL,
+    [Id]                   bigint IDENTITY(1,1) NOT NULL,
     [CommercialRelationId] bigint NOT NULL,
     [ValidFrom]            datetimeoffset NOT NULL,
     [ValidTo]              datetimeoffset NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE [electricitymarket].[ElectricalHeatingPeriod]
 
 CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
 (
-    [Id]                       bigint NOT NULL,
+    [Id]                       bigint IDENTITY(1,1) NOT NULL,
     [CommercialRelationId]     bigint NOT NULL,
     [ValidFrom]                datetimeoffset NOT NULL,
     [ValidTo]                  datetimeoffset NOT NULL,
