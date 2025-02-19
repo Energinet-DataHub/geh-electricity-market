@@ -13,20 +13,16 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
+using MeteringPointIdentification = Energinet.DataHub.ElectricityMarket.Domain.Models.MeteringPointIdentification;
+using MeteringPointMasterData = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointMasterData;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
 public interface IMeteringPointRepository
 {
     Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
 
     IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset endDate);
-
-    IAsyncEnumerable<MeteringPointRecipient> GetMeteringPointRecipientsAsync(
         string meteringPointIdentification,
         DateTimeOffset startDate,
         DateTimeOffset endDate);

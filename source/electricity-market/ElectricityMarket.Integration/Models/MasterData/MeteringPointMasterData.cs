@@ -27,9 +27,9 @@ public sealed class MeteringPointMasterData
 
     public GridAreaCode GridAreaCode { get; init; } = null!;
 
-    public ActorNumber GridAccessProvider { get; init; } = null!;
+    public string GridAccessProvider { get; init; } = null!;
 
-    public IReadOnlyCollection<ActorNumber> NeighborGridAreaOwners { get; init; } = [];
+    public IReadOnlyCollection<string> NeighborGridAreaOwners { get; init; } = [];
 
     public ConnectionState ConnectionState { get; init; }
 

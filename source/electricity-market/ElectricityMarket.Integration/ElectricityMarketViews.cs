@@ -16,18 +16,21 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration;
 
 public sealed class ElectricityMarketViews : IElectricityMarketViews
 {
     private readonly HttpClient _apiHttpClient;
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions().ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
 
     internal ElectricityMarketViews(HttpClient apiHttpClient)
     {
@@ -50,7 +53,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<MeteringPointMasterData>>()
+            .ReadFromJsonAsync<IEnumerable<MeteringPointMasterData>>(_jsonSerializerOptions)
             .ConfigureAwait(false) ?? [];
 
         return result;
@@ -72,7 +75,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
             return null;
 
         var result = await response.Content
-            .ReadFromJsonAsync<ProcessDelegationDto>()
+            .ReadFromJsonAsync<ProcessDelegationDto>(_jsonSerializerOptions)
             .ConfigureAwait(false) ?? null;
 
         return result;
@@ -86,7 +89,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content
-            .ReadFromJsonAsync<GridAreaOwnerDto>()
+            .ReadFromJsonAsync<GridAreaOwnerDto>(_jsonSerializerOptions)
             .ConfigureAwait(false);
 
         return result;

@@ -17,7 +17,10 @@ using Energinet.DataHub.Core.App.FunctionApp.Extensions.Builder;
 using Energinet.DataHub.Core.App.FunctionApp.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Extensions.DependencyInjection;
 using Energinet.DataHub.RevisionLog.Integration.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
@@ -29,6 +32,7 @@ var host = new HostBuilder()
 
         // Shared by modules
         services.AddNodaTimeForApplication();
+        services.ConfigureHttpJsonOptions(c => c.SerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb));
 
         // Revision log
         services.AddRevisionLogIntegrationModule(context.Configuration);
