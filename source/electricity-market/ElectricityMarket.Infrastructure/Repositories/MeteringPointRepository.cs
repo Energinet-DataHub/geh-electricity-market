@@ -102,7 +102,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                 SubType = Enum.Parse<Integration.Models.MasterData.MeteringPointSubType>(mpp.SubType),
                 Resolution = new Integration.Models.MasterData.Resolution(mpp.Resolution),
                 Unit = Enum.Parse<Integration.Models.MasterData.MeasureUnit>(mpp.Unit),
-                ProductId = string.Equals(mpp.ProductId, "tbd", StringComparison.OrdinalIgnoreCase) ? Integration.Models.MasterData.ProductId.Tariff : Enum.Parse<Integration.Models.MasterData.ProductId>(mpp.ProductId),
+                ProductId = Enum.Parse<Integration.Models.MasterData.ProductId>(mpp.ProductId),
                 ParentIdentification = mpp.ParentIdentification != null
                     ? new Integration.Models.MasterData.MeteringPointIdentification(mpp.ParentIdentification)
                     : null,
