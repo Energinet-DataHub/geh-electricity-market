@@ -18,26 +18,18 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-using Microsoft.Extensions.Logging;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public sealed class MeteringPointImporter : IMeteringPointImporter
 {
-    private readonly ILogger<MeteringPointImporter> _logger;
-
     private readonly IReadOnlySet<string> _ignoredTransactions = new HashSet<string> { "CALCENC", "CALCTSSBM", "CNCCNSMRK", "CNCCNSOTH", "CNCREADMRK", "CNCREADOTH", "EOSMDUPD", "HEATYTDREQ", "HISANNCON", "HISANNREQ", "HISDATREQ", "INITCNCCOS", "LDSHRSBM", "MNTCHRGLNK", "MOVEINGO", "MSTDATREQ", "MSTDATRNO", "MTRDATREQ", "MTRDATSBM", "QRYCHARGE", "QRYMSDCHG", "SBMCNTADR", "SBMEACES", "SBMEACGO", "SBMMRDES", "SBMMRDGO", "SERVICEREQ", "STOPFEE", "STOPSUB", "STOPTAR", "UNEXPERR", "UPDBLCKLNK", "VIEWACCNO", "VIEWMOVES", "VIEWMP", "VIEWMPNO", "VIEWMTDNO" };
 
     private readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "HTXCOR", "LNKCHLDMP", "MANCOR", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP" };
 
     private readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BULKCOR", "HTXCOR", "INCCHGSUP", "INCMOVEAUT", "INCMOVEIN", "INCMOVEMAN", "MANCOR" };
 
-    public MeteringPointImporter(ILogger<MeteringPointImporter> logger)
-    {
-        _logger = logger;
-    }
-
-    public Task<bool> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
+    public Task<(bool Imported, string Message)> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(importedTransactions);
@@ -51,9 +43,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                     meteringPoint.Identification = transactionEntity.metering_point_id.ToString(CultureInfo.InvariantCulture);
                 }
 
-                if (!TryImportTransaction(transactionEntity, meteringPoint))
+                var result = TryImportTransaction(transactionEntity, meteringPoint);
+                if (!result.Imported)
                 {
-                    return Task.FromResult(false);
+                    return Task.FromResult(result);
                 }
             }
         }
@@ -61,25 +54,24 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         catch (Exception ex)
 #pragma warning restore CA1031
         {
-            _logger.LogError(ex, "Crash during import of MP: {MeteringPointId}", meteringPoint.Identification);
-            return Task.FromResult(false);
+            return Task.FromResult((false, $"Crash during import of MP: {meteringPoint.Identification} {ex}"));
         }
 
-        return Task.FromResult(true);
+        return Task.FromResult((true, string.Empty));
     }
 
-    private bool TryImportTransaction(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
+    private (bool Imported, string Message) TryImportTransaction(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
         var currentTransactionType = importedTransaction.transaction_type.TrimEnd();
 
         if (_ignoredTransactions.Contains(currentTransactionType))
-            return true;
+            return (true, string.Empty);
 
         // HTX is ignored for now.
         if (meteringPoint.MeteringPointPeriods.Count > 0 &&
             meteringPoint.MeteringPointPeriods.Max(p => p.ValidFrom) > importedTransaction.valid_from_date)
         {
-            return true;
+            return (true, string.Empty);
         }
 
         var newMpPeriod = new MeteringPointPeriodEntity
@@ -148,7 +140,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         }
 
         if (newMpPeriod.Type is not "Production" and not "Consumption")
-            return true;
+            return (true, string.Empty);
 
         var applyNewCommercialRelation = false;
         var activeCommercialRelation = new CommercialRelationEntity
@@ -163,7 +155,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
             {
                 // TODO: This does happen.
-                return false;
+                return (false, "No balance_supplier_id for MOVEINES");
             }
 
             activeCommercialRelation.EnergySupplier = importedTransaction.balance_supplier_id;
@@ -190,7 +182,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
             {
                 // TODO: This does happen.
-                return false;
+                return (false, "No balance_supplier_id for MOVEOUTES");
             }
 
             activeCommercialRelation.EnergySupplier = importedTransaction.balance_supplier_id;
@@ -220,14 +212,14 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         else
         {
             if (_unhandledTransactions.Contains(currentTransactionType))
-                return false;
+                return (false, $"Unhandled transaction type {currentTransactionType}");
 
             // TODO: Not matching Miro. Verify!
             activeCommercialRelation = meteringPoint.CommercialRelations
                 .SingleOrDefault(cr => cr.EndDate > importedTransaction.valid_from_date);
 
             if (activeCommercialRelation == null)
-                return true;
+                return (true, string.Empty);
         }
 
         var newEnergySupplyPeriod = new EnergySupplyPeriodEntity
@@ -247,7 +239,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         if (overlappingEnergySupplyPeriod == null)
         {
             activeCommercialRelation.EnergySupplyPeriods.Add(newEnergySupplyPeriod);
-            return true;
+            return (true, string.Empty);
         }
 
         var closedOverlappingEnergySupplyPeriod = new EnergySupplyPeriodEntity
@@ -266,6 +258,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         overlappingEnergySupplyPeriod.RetiredBy = closedOverlappingEnergySupplyPeriod;
         overlappingEnergySupplyPeriod.RetiredAt = importedTransaction.dh2_created; // TODO: Different from example.
 
-        return true;
+        return (true, string.Empty);
     }
 }
