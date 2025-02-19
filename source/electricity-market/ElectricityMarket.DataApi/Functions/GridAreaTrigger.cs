@@ -42,10 +42,18 @@ internal sealed class GridAreaTrigger
             .Send(command)
             .ConfigureAwait(false);
 
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        await response
-            .WriteAsJsonAsync(result)
-            .ConfigureAwait(false);
+        HttpResponseData response;
+        if (result != null)
+        {
+            response = req.CreateResponse(HttpStatusCode.OK);
+            await response
+                .WriteAsJsonAsync(result)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            response = req.CreateResponse(HttpStatusCode.NotFound);
+        }
 
         return response;
     }
