@@ -38,6 +38,6 @@ public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeter
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return new GetMeteringPointMasterDataResponse(result.Select(x => x));
+        return new GetMeteringPointMasterDataResponse(result);
     }
 }
