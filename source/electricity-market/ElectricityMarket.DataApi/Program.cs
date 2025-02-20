@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Text.Json;
 using Energinet.DataHub.Core.App.Common.Extensions.DependencyInjection;
 using Energinet.DataHub.Core.App.FunctionApp.Extensions.Builder;
 using Energinet.DataHub.Core.App.FunctionApp.Extensions.DependencyInjection;
@@ -27,12 +28,12 @@ var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
         // Common
+        services.Configure<JsonSerializerOptions>(j => j.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb));
         services.AddApplicationInsightsForIsolatedWorker("electricity-market");
         services.AddHealthChecksForIsolatedWorker();
 
         // Shared by modules
         services.AddNodaTimeForApplication();
-        services.ConfigureHttpJsonOptions(c => c.SerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb));
 
         // Revision log
         services.AddRevisionLogIntegrationModule(context.Configuration);
