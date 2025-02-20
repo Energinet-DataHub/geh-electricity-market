@@ -11,12 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
-public enum MeteringPointSubType
+public interface IProcessDelegationRepository
 {
-    Physical,
-    Virtual,
-    Calculated,
+    Task<ProcessDelegationDto?> GetProcessDelegationAsync(ProcessDelegationRequestDto processDelegationRequest);
 }

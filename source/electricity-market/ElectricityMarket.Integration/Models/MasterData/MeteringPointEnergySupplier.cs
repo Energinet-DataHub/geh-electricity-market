@@ -20,7 +20,7 @@ public sealed class MeteringPointEnergySupplier
 {
     public MeteringPointIdentification Identification { get; init; } = null!;
 
-    public ActorNumber EnergySupplier { get; init; } = null!;
+    public string EnergySupplier { get; init; } = null!;
 
     public Instant StartDate { get; init; }
 

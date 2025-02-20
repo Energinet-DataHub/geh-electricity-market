@@ -13,12 +13,17 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Common;
+using MeteringPointIdentification = Energinet.DataHub.ElectricityMarket.Domain.Models.MeteringPointIdentification;
+using MeteringPointMasterData = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointMasterData;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
-public interface IProcessDelegationRepository
+public interface IMeteringPointRepository
 {
-    Task<ProcessDelegation?> GetProcessDelegationAsync(ActorId actorId, DelegatedProcess delegatedProcess);
+    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
+
+    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
+        string meteringPointIdentification,
+        DateTimeOffset startDate,
+        DateTimeOffset endDate);
 }
