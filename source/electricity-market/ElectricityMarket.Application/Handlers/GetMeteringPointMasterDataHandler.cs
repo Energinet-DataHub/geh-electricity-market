@@ -13,8 +13,7 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
-using Energinet.DataHub.ElectricityMarket.Application.Mappers;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
@@ -32,26 +31,13 @@ public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeter
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var masterData = await _meteringPointRepository.GetMeteringPointMasterDataChangesAsync(
+        var result = await _meteringPointRepository.GetMeteringPointMasterDataChangesAsync(
             request.Request.MeteringPointIdentification,
             request.Request.StartDate,
             request.Request.EndDate)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var recipients = await _meteringPointRepository.GetMeteringPointRecipientsAsync(
-            request.Request.MeteringPointIdentification,
-            request.Request.StartDate,
-            request.Request.EndDate)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        foreach (var meteringPoint in masterData)
-        {
-            var meteringPointRecipient = recipients.Where(x => x.Identification == meteringPoint.Identification);
-            meteringPoint.Recipients = meteringPointRecipient.ToList();
-        }
-
-        return new GetMeteringPointMasterDataResponse(masterData.Select(MasterDataMapper.Map));
+        return new GetMeteringPointMasterDataResponse(result);
     }
 }

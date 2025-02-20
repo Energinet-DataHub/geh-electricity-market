@@ -18,15 +18,12 @@ using Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegation
 using Energinet.DataHub.ElectricityMarket.Application.Handlers;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Mappers;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
-using Energinet.DataHub.ElectricityMarket.Domain.Models.GridAreas;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
-using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 using Moq;
 using Xunit;
 using Xunit.Categories;
 using DelegatedProcess = Energinet.DataHub.ElectricityMarket.Domain.Models.Common.DelegatedProcess;
+using EicFunction = Energinet.DataHub.ElectricityMarket.Integration.Models.Common.EicFunction;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Handlers;
 
@@ -37,14 +34,12 @@ public sealed class GetProcessDelegationHandlerTests
     public async Task Handle_NoProcessDelegationFound_ReturnsNull()
     {
         // Arrange
-        var mockActor = TestPreparationModels.MockedActor();
-
         var processDelegationRepository = new Mock<IProcessDelegationRepository>();
         processDelegationRepository
             .Setup(repo => repo.GetProcessDelegationAsync(It.IsAny<ProcessDelegationRequestDto>()))
             .ReturnsAsync((ProcessDelegationDto?)null);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
+        var request = new ProcessDelegationRequestDto("123", EicFunction.GridAccessProvider, "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(processDelegationRepository.Object);
@@ -58,17 +53,17 @@ public sealed class GetProcessDelegationHandlerTests
     public async Task Handle_FoundDelegations_ReturnsSuccesful()
     {
         // Arrange
-        var mockActor = TestPreparationModels.MockedActor();
-        var mockDelegatedToActor = TestPreparationModels.MockedActor();
+        const string delegatedFromActorNumber = "111";
+        const string delegatedToActorNumber = "123";
         var processDelegation = new ProcessDelegationDto(
-            mockDelegatedToActor.ActorNumber.Value,
-            EicFunctionMapper.Map(mockDelegatedToActor.MarketRole.Function));
+            delegatedToActorNumber,
+            EicFunction.GridAccessProvider);
         var processDelegationRepository = new Mock<IProcessDelegationRepository>();
         processDelegationRepository
             .Setup(repo => repo.GetProcessDelegationAsync(It.IsAny<ProcessDelegationRequestDto>()))
             .ReturnsAsync(processDelegation);
 
-        var request = new ProcessDelegationRequestDto(mockActor.ActorNumber.Value, EicFunctionMapper.Map(mockActor.MarketRole.Function), "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
+        var request = new ProcessDelegationRequestDto(delegatedFromActorNumber, EicFunction.GridAccessProvider, "111", DelegationProcessMapper.Map(DelegatedProcess.ReceiveEnergyResults));
         var command = new GetProcessDelegationCommand(request);
 
         var target = new GetProcessDelegationHandler(processDelegationRepository.Object);
@@ -76,7 +71,7 @@ public sealed class GetProcessDelegationHandlerTests
         // Act + Assert
         var response = await target.Handle(command, CancellationToken.None);
         Assert.NotNull(response);
-        Assert.Equal(mockDelegatedToActor.ActorNumber.Value, response.ActorNumber);
-        Assert.Equal(mockDelegatedToActor.MarketRole.Function.ToString(),  response.ActorRole.ToString());
+        Assert.Equal(delegatedToActorNumber, response.ActorNumber);
+        Assert.Equal(EicFunction.GridAccessProvider.ToString(),  response.ActorRole.ToString());
     }
 }
