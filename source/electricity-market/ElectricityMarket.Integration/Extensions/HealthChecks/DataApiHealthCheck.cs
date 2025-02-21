@@ -42,7 +42,7 @@ public class DataApiHealthCheck : IHealthCheck
         try
         {
             var httpClient = CreateHttpClient();
-            var url = new Uri("/api/monitor/ready");
+            var url = new Uri("/api/monitor/live");
             var response = await httpClient
                 .GetAsync(url, cancellationToken)
                 .ConfigureAwait(false);
