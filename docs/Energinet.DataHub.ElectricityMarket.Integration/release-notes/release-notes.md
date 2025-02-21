@@ -1,9 +1,20 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.2.2
+
+- Uses TryAddScoped to register service instead of AddScoped
+- Renamed options to "ElectricityMarketClientOptions" from "ApiClientOptions"
+- Added automatic health checks registrations
+
+## Version 4.2.1
+
+- All methods will now return either null or empty collection if returnings lists, instead of throwing an exception.
+
 ## Version 4.2.0
 
 - Removed abstract type ActorNumber from package, replaced with string (Breaking change)
   This means that the receiver is now required to interpret the supplied string to figure out what type it is of GLN/EIC
+- Changed date types from
 
 ## Version 4.1.2
 

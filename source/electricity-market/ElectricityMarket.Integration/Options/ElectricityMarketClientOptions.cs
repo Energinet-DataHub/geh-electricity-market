@@ -17,8 +17,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration.Options;
 
-public sealed class ApiClientOptions
+public sealed class ElectricityMarketClientOptions
 {
+    public const string SectionName = "ElectricityMarketClient";
+
     [Required]
     public Uri BaseUrl { get; set; } = null!;
 }
