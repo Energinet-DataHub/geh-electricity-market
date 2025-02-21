@@ -42,17 +42,17 @@ internal sealed class MeteringPointMapper
             MapMeteringPointSubType(meteringPointPeriodEntity.SubType),
             meteringPointPeriodEntity.Resolution,
             MapMeteringPointUnit(meteringPointPeriodEntity.Unit),
-            meteringPointPeriodEntity.ProductId,
+            MapProductID(meteringPointPeriodEntity.ProductId),
             meteringPointPeriodEntity.ScheduledMeterReadingMonth,
+            MapAssetType("SteamTurbineWithBackPressureMode"), //TODO: use entity.AssetType
+            MapDisconnectionType("RemoteDisconnection"), //TODO: use entity.DisconnectionType
             "TBD",
             "TBD",
             "TBD",
             "TBD",
             "TBD",
             "TBD",
-            "TBD",
-            "TBD",
-            "TBD",
+            MapConnectionType("Direct"), //TODO: use entity.ConnectionType
             "TBD",
             null,
             50,
@@ -76,7 +76,7 @@ internal sealed class MeteringPointMapper
                 "TBD",
                 "TBD"),
             "TBD",
-            "TBD",
+            MapSettlementMethod("NonProfiled"), //TODO: use entity.SettlementMethod
             meteringPointPeriodEntity.EffectuationDate.ToDateTimeOffset(),
             meteringPointPeriodEntity.TransactionType);
     }
@@ -146,5 +146,65 @@ internal sealed class MeteringPointMapper
         "MVAr" => MeteringPointUnit.MVAr,
         "DanishTariffCode" => MeteringPointUnit.DanishTariffCode,
         _ => throw new ArgumentOutOfRangeException(nameof(meteringPointUnit), meteringPointUnit, null)
+    };
+
+    private static ConnectionType MapConnectionType(string connectionType) => connectionType switch
+    {
+        "Direct" => ConnectionType.Direct,
+        "Installation" => ConnectionType.Installation,
+        _ => throw new ArgumentOutOfRangeException(nameof(connectionType), connectionType, null)
+    };
+
+    private static DisconnectionType MapDisconnectionType(string disconnectionType) => disconnectionType switch
+    {
+        "RemoteDisconnection" => DisconnectionType.RemoteDisconnection,
+        "ManualDisconnection" => DisconnectionType.ManualDisconnection,
+        _ => throw new ArgumentOutOfRangeException(nameof(disconnectionType), disconnectionType, null)
+    };
+
+    private static AssetType MapAssetType(string assetType) => assetType switch
+    {
+        "SteamTurbineWithBackPressureMode" => AssetType.SteamTurbineWithBackPressureMode,
+        "GasTurbine" => AssetType.GasTurbine,
+        "CombinedCycle" => AssetType.CombinedCycle,
+        "CombustionEngineGas" => AssetType.CombustionEngineGas,
+        "SteamTurbineWithCondensationSteam" => AssetType.SteamTurbineWithCondensationSteam,
+        "Boiler" => AssetType.Boiler,
+        "StirlingEngine" => AssetType.StirlingEngine,
+        "PermanentConnectedElectricalEnergyStorageFacilities" => AssetType.PermanentConnectedElectricalEnergyStorageFacilities,
+        "TemporarilyConnectedElectricalEnergyStorageFacilities" => AssetType.TemporarilyConnectedElectricalEnergyStorageFacilities,
+        "FuelCells" => AssetType.FuelCells,
+        "PhotoVoltaicCells" => AssetType.PhotoVoltaicCells,
+        "WindTurbines" => AssetType.WindTurbines,
+        "HydroelectricPower" => AssetType.HydroelectricPower,
+        "WavePower" => AssetType.WavePower,
+        "MixedProduction" => AssetType.MixedProduction,
+        "ProductionWithElectricalEnergyStorageFacilities" => AssetType.ProductionWithElectricalEnergyStorageFacilities,
+        "PowerToX" => AssetType.PowerToX,
+        "RegenerativeDemandFacility" => AssetType.RegenerativeDemandFacility,
+        "CombustionEngineDiesel" => AssetType.CombustionEngineDiesel,
+        "CombustionEngineBio" => AssetType.CombustionEngineBio,
+        "NoTechnology" => AssetType.NoTechnology,
+        "UnknownTechnology" => AssetType.UnknownTechnology,
+        _ => throw new ArgumentOutOfRangeException(nameof(assetType), assetType, null)
+    };
+
+    private static ProductID MapProductID(string productID) => productID switch
+    {
+        "Tariff" => ProductID.Tariff,
+        "FuelQuantity" => ProductID.FuelQuantity,
+        "PowerActive" => ProductID.PowerActive,
+        "PowerReactive" => ProductID.PowerReactive,
+        "EnergyActive" => ProductID.EnergyActive,
+        "EnergyReactive" => ProductID.EnergyReactive,
+        _ => throw new ArgumentOutOfRangeException(nameof(productID), productID, null)
+    };
+
+    private static SettlementMethod MapSettlementMethod(string settlementMethod) => settlementMethod switch
+    {
+        "NonProfiled" => SettlementMethod.NonProfiled,
+        "Profiled" => SettlementMethod.Profiled,
+        "FlexSettled" => SettlementMethod.FlexSettled,
+        _ => throw new ArgumentOutOfRangeException(nameof(settlementMethod), settlementMethod, null)
     };
 }
