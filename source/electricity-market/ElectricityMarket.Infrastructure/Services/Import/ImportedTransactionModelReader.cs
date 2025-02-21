@@ -37,7 +37,7 @@ public sealed class ImportedTransactionModelReader : IImportedTransactionModelRe
         _logger = logger;
     }
 
-    public async Task ReadImportedTransactionsAsync(int skip, int take, BlockingCollection<List<ImportedTransactionEntity>> result)
+    public async Task ReadImportedTransactionsAsync(int skip, int take, BlockingCollection<IList<ImportedTransactionEntity>> result)
     {
         ArgumentNullException.ThrowIfNull(result);
 

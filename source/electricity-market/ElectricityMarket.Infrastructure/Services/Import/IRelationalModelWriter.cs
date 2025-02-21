@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
@@ -22,6 +21,6 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 public interface IRelationalModelWriter
 {
     Task WriteRelationalModelAsync(
-        BlockingCollection<List<MeteringPointEntity>> relationalModelBatches,
-        IEnumerable<List<QuarantinedMeteringPointEntity>> quarantined);
+        IEnumerable<IList<MeteringPointEntity>> relationalModelBatches,
+        IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined);
 }

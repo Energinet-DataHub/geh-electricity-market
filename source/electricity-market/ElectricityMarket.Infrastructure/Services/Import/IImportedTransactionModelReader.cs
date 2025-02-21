@@ -21,5 +21,5 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public interface IImportedTransactionModelReader
 {
-    Task ReadImportedTransactionsAsync(int skip, int take, BlockingCollection<List<ImportedTransactionEntity>> result);
+    Task ReadImportedTransactionsAsync(int skip, int take, BlockingCollection<IList<ImportedTransactionEntity>> result);
 }

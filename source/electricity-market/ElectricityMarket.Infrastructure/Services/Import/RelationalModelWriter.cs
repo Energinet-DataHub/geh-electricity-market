@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -39,8 +38,8 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
     }
 
     public async Task WriteRelationalModelAsync(
-        BlockingCollection<List<MeteringPointEntity>> relationalModelBatches,
-        IEnumerable<List<QuarantinedMeteringPointEntity>> quarantined)
+        IEnumerable<IList<MeteringPointEntity>> relationalModelBatches,
+        IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined)
     {
         ArgumentNullException.ThrowIfNull(relationalModelBatches);
         ArgumentNullException.ThrowIfNull(quarantined);
@@ -56,7 +55,7 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
 
             await using (transaction.ConfigureAwait(false))
             {
-                foreach (var batch in relationalModelBatches.GetConsumingEnumerable())
+                foreach (var batch in relationalModelBatches)
                 {
                     await BulkInsertAsync(
                             sqlConnection,

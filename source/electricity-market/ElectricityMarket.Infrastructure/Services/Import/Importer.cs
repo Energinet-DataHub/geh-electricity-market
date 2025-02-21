@@ -24,8 +24,8 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public sealed class Importer : IImporter, IDisposable
 {
-    private readonly BlockingCollection<List<ImportedTransactionEntity>> _importedTransactions = new(500000);
-    private readonly BlockingCollection<List<MeteringPointEntity>> _relationalModelBatches = new(10);
+    private readonly BlockingCollection<IList<ImportedTransactionEntity>> _importedTransactions = new(500000);
+    private readonly BlockingCollection<IList<MeteringPointEntity>> _relationalModelBatches = new(10);
     private readonly List<List<QuarantinedMeteringPointEntity>> _quarantined = new(10);
 
     private readonly ILogger<Importer> _logger;
@@ -51,7 +51,9 @@ public sealed class Importer : IImporter, IDisposable
         {
             try
             {
-                await _importedTransactionModelReader.ReadImportedTransactionsAsync(skip, take, _importedTransactions).ConfigureAwait(false);
+                await _importedTransactionModelReader
+                    .ReadImportedTransactionsAsync(skip, take, _importedTransactions)
+                    .ConfigureAwait(false);
             }
             catch
             {
@@ -74,7 +76,11 @@ public sealed class Importer : IImporter, IDisposable
         });
 
         var write = Task.Run(async () =>
-            await _relationalModelWriter.WriteRelationalModelAsync(_relationalModelBatches, _quarantined).ConfigureAwait(false));
+        {
+            await _relationalModelWriter
+                .WriteRelationalModelAsync(_relationalModelBatches.GetConsumingEnumerable(), _quarantined)
+                .ConfigureAwait(false);
+        });
 
         await Task.WhenAll(read, package, write).ConfigureAwait(false);
     }
