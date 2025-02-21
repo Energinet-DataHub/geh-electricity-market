@@ -39,14 +39,22 @@ internal sealed class MeteringPointMasterDataTrigger
     {
         var command = new GetMeteringPointMasterDataCommand(request);
 
-        var dataResponse = await _mediator
+        var result = await _mediator
             .Send(command)
             .ConfigureAwait(false);
 
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        await response
-            .WriteAsJsonAsync(dataResponse.MasterData)
-            .ConfigureAwait(false);
+        HttpResponseData response;
+        if (result.MasterData.Any())
+        {
+            response = req.CreateResponse(HttpStatusCode.OK);
+            await response
+                .WriteAsJsonAsync(result.MasterData)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            response = req.CreateResponse(HttpStatusCode.NotFound);
+        }
 
         return response;
     }
