@@ -15,9 +15,9 @@
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 /// <summary>
-/// ProductID of a metering point.
+/// Product of a metering point.
 /// </summary>
-public enum ProductID
+public enum Product
 {
     /// <summary>
     /// Code: 5790001330590.

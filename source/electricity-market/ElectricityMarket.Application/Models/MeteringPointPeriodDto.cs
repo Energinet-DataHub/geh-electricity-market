@@ -26,7 +26,7 @@ public sealed record MeteringPointPeriodDto(
     MeteringPointSubType SubType,
     string Resolution,
     MeteringPointUnit Unit,
-    ProductID ProductId,
+    Product Product,
     int ScheduledMeterReadingMonth,
     AssetType AssetType,
     DisconnectionType DisconnectionType,

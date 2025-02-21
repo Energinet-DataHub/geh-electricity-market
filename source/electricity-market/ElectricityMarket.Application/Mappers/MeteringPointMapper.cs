@@ -42,7 +42,7 @@ internal sealed class MeteringPointMapper
             MapMeteringPointSubType(meteringPointPeriodEntity.SubType),
             meteringPointPeriodEntity.Resolution,
             MapMeteringPointUnit(meteringPointPeriodEntity.Unit),
-            MapProductID(meteringPointPeriodEntity.ProductId),
+            MapProduct(meteringPointPeriodEntity.ProductId),
             meteringPointPeriodEntity.ScheduledMeterReadingMonth,
             MapAssetType("SteamTurbineWithBackPressureMode"), // TODO: use entity.AssetType
             MapDisconnectionType("RemoteDisconnection"), // TODO: use entity.DisconnectionType
@@ -189,15 +189,15 @@ internal sealed class MeteringPointMapper
         _ => throw new ArgumentOutOfRangeException(nameof(assetType), assetType, null)
     };
 
-    private static ProductID MapProductID(string productID) => productID switch
+    private static Product MapProduct(string product) => product switch
     {
-        "Tariff" => ProductID.Tariff,
-        "FuelQuantity" => ProductID.FuelQuantity,
-        "PowerActive" => ProductID.PowerActive,
-        "PowerReactive" => ProductID.PowerReactive,
-        "EnergyActive" => ProductID.EnergyActive,
-        "EnergyReactive" => ProductID.EnergyReactive,
-        _ => throw new ArgumentOutOfRangeException(nameof(productID), productID, null)
+        "Tariff" => Product.Tariff,
+        "FuelQuantity" => Product.FuelQuantity,
+        "PowerActive" => Product.PowerActive,
+        "PowerReactive" => Product.PowerReactive,
+        "EnergyActive" => Product.EnergyActive,
+        "EnergyReactive" => Product.EnergyReactive,
+        _ => throw new ArgumentOutOfRangeException(nameof(product), product, null)
     };
 
     private static SettlementMethod MapSettlementMethod(string settlementMethod) => settlementMethod switch
