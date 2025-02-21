@@ -1,12 +1,12 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
-## Vweaion 4.2.2
+## Version 4.2.2
 
 - Uses TryAddScoped to register service instead of AddScoped
 - Renamed options to "ElectricityMarketClientOptions" from "ApiClientOptions"
 - Added automatic health checks registrations
 
-## Vweaion 4.2.1
+## Version 4.2.1
 
 - All methods will now return either null or empty collection if returnings lists, instead of throwing an exception.
 
