@@ -21,7 +21,7 @@ limitations under the License.
     <Nullable>enable</Nullable>
     <AssemblyName>Energinet.DataHub.ElectricityMarket.Integration</AssemblyName>
     <RootNamespace>Energinet.DataHub.ElectricityMarket.Integration</RootNamespace>
-    <PackageVersion>4.2.1$(VersionSuffix)</PackageVersion>
+    <PackageVersion>4.2.2$(VersionSuffix)</PackageVersion>
     <Title>Energinet DataHub Electricity Market Integration</Title>
     <Company>Energinet-DataHub</Company>
     <Authors>Energinet-DataHub Raccoons</Authors>
@@ -66,6 +66,7 @@ limitations under the License.
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.11" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
