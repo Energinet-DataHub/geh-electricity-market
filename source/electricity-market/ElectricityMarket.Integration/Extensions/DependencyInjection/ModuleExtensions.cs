@@ -13,8 +13,10 @@
 // limitations under the License.
 
 using System.Net.Http;
+using Energinet.DataHub.ElectricityMarket.Integration.Extensions.HealthChecks;
 using Energinet.DataHub.ElectricityMarket.Integration.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Energinet.DataHub.ElectricityMarket.Integration.Extensions.DependencyInjection;
@@ -24,21 +26,25 @@ public static class ModuleExtensions
     public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services)
     {
         services
-            .AddOptions<ApiClientOptions>()
-            .BindConfiguration(nameof(ApiClientOptions))
+            .AddOptions<ElectricityMarketClientOptions>()
+            .BindConfiguration(nameof(ElectricityMarketClientOptions))
             .ValidateDataAnnotations();
 
         services.AddHttpClient("ElectricityMarketClient", (provider, client) =>
         {
-            var options = provider.GetRequiredService<IOptions<ApiClientOptions>>();
+            var options = provider.GetRequiredService<IOptions<ElectricityMarketClientOptions>>();
             client.BaseAddress = options.Value.BaseUrl;
         });
 
-        services.AddScoped<IElectricityMarketViews, ElectricityMarketViews>(s =>
+        services.TryAddScoped<IElectricityMarketViews>(s =>
         {
             var client = s.GetRequiredService<IHttpClientFactory>().CreateClient("ElectricityMarketClient");
             return new ElectricityMarketViews(client);
         });
+
+        services.AddHealthChecks()
+            .AddElectricityMarketDataApiHealthCheck();
+
         return services;
     }
 }
