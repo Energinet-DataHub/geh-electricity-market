@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -50,7 +51,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         request.Content = JsonContent.Create(new MeteringPointMasterDataRequestDto(meteringPointId.Value, f, t));
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
-        if (response.Content.Headers.ContentLength == 0)
+        if (response.StatusCode is not HttpStatusCode.OK)
             return [];
 
         var result = await response.Content
@@ -70,7 +71,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         request.Content = JsonContent.Create(new ProcessDelegationRequestDto(actorNumber, actorRole, gridAreaCode, processType));
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
-        if (response.Content.Headers.ContentLength == 0)
+        if (response.StatusCode is not HttpStatusCode.OK)
             return null;
 
         var result = await response.Content
@@ -85,7 +86,7 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/get-grid-area-owner?gridAreaCode=" + gridAreaCode);
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
-        if (response.Content.Headers.ContentLength == 0)
+        if (response.StatusCode is not HttpStatusCode.OK)
             return null;
 
         var result = await response.Content
