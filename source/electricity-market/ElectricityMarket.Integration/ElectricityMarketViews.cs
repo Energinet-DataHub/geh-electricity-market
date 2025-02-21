@@ -50,7 +50,8 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         request.Content = JsonContent.Create(new MeteringPointMasterDataRequestDto(meteringPointId.Value, f, t));
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        if (response.Content.Headers.ContentLength == 0)
+            return [];
 
         var result = await response.Content
             .ReadFromJsonAsync<IEnumerable<MeteringPointMasterData>>(_jsonSerializerOptions)
@@ -69,8 +70,6 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         request.Content = JsonContent.Create(new ProcessDelegationRequestDto(actorNumber, actorRole, gridAreaCode, processType));
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
-
         if (response.Content.Headers.ContentLength == 0)
             return null;
 
@@ -86,7 +85,8 @@ public sealed class ElectricityMarketViews : IElectricityMarketViews
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/get-grid-area-owner?gridAreaCode=" + gridAreaCode);
         using var response = await _apiHttpClient.SendAsync(request).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        if (response.Content.Headers.ContentLength == 0)
+            return null;
 
         var result = await response.Content
             .ReadFromJsonAsync<GridAreaOwnerDto>(_jsonSerializerOptions)
