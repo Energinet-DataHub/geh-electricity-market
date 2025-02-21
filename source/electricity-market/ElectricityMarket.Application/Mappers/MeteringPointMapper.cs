@@ -44,15 +44,15 @@ internal sealed class MeteringPointMapper
             MapMeteringPointUnit(meteringPointPeriodEntity.Unit),
             MapProductID(meteringPointPeriodEntity.ProductId),
             meteringPointPeriodEntity.ScheduledMeterReadingMonth,
-            MapAssetType("SteamTurbineWithBackPressureMode"), //TODO: use entity.AssetType
-            MapDisconnectionType("RemoteDisconnection"), //TODO: use entity.DisconnectionType
+            MapAssetType("SteamTurbineWithBackPressureMode"), // TODO: use entity.AssetType
+            MapDisconnectionType("RemoteDisconnection"), // TODO: use entity.DisconnectionType
             "TBD",
             "TBD",
             "TBD",
             "TBD",
             "TBD",
             "TBD",
-            MapConnectionType("Direct"), //TODO: use entity.ConnectionType
+            MapConnectionType("Direct"), // TODO: use entity.ConnectionType
             "TBD",
             null,
             50,
@@ -76,7 +76,7 @@ internal sealed class MeteringPointMapper
                 "TBD",
                 "TBD"),
             "TBD",
-            MapSettlementMethod("NonProfiled"), //TODO: use entity.SettlementMethod
+            MapSettlementMethod("NonProfiled"), // TODO: use entity.SettlementMethod
             meteringPointPeriodEntity.EffectuationDate.ToDateTimeOffset(),
             meteringPointPeriodEntity.TransactionType);
     }
