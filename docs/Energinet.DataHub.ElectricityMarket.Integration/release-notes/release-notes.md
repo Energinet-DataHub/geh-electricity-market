@@ -2,7 +2,7 @@
 
 ## Vweaion 4.2.1
 
-- All methods will now return either null or empty collection if returnings lists, instead of throwing an exception. 
+- All methods will now return either null or empty collection if returnings lists, instead of throwing an exception.
 
 ## Version 4.2.0
 
