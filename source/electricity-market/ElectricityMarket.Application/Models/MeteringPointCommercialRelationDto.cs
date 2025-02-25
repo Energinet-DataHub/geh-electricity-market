@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.WebAPI.Revision;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public static class RevisionActivities
-{
-    public const string ContactCprRequested = "ContactCprRequested";
-    public const string MeteringPointRequested = "MeteringPointRequested";
-}
+public sealed record MeteringPointCommercialRelationDto(
+    long Id,
+    string EnergySupplier,
+    DateTimeOffset StartDate,
+    DateTimeOffset EndDate,
+    MeteringPointEnergySupplyPeriodDto? EnergySupplyPeriod,
+    IEnumerable<MeteringPointEnergySupplyPeriodDto> EnergySupplyPeriodTimeline);

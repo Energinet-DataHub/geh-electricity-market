@@ -12,10 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.WebAPI.Revision;
+namespace ElectricityMarket.WebAPI.Security;
 
-public static class RevisionActivities
+public enum EicFunction
 {
-    public const string ContactCprRequested = "ContactCprRequested";
-    public const string MeteringPointRequested = "MeteringPointRequested";
+    BalanceResponsibleParty,
+    BillingAgent,
+    EnergySupplier,
+    GridAccessProvider,
+    ImbalanceSettlementResponsible,
+    MeterOperator,
+    MeteredDataAdministrator,
+    MeteredDataResponsible,
+    MeteringPointAdministrator,
+    SystemOperator,
+    DanishEnergyAgency,
+    DataHubAdministrator,
+    IndependentAggregator,
+    SerialEnergyTrader,
+    Delegated,
+    ItSupplier,
 }
