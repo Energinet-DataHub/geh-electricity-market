@@ -26,21 +26,39 @@ namespace InMemImporter;
 
 public static class Program
 {
-    public static async Task Main()
+    public static async Task Main(params string[] args)
     {
-        var config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .Build();
+        try
+        {
+            ArgumentNullException.ThrowIfNull(args);
 
-        var cultureInfo = CultureInfo.GetCultureInfo(config["Locale"]!);
+            // await Task.Delay(2000).ConfigureAwait(false);
+            // Console.WriteLine(args[0]);
+            // if (1.ToString(CultureInfo.CurrentCulture) == "1")
+            // {
+            //     throw new InvalidCastException("This is a test");
+            // }
 
-        using var importer = new Importer(
-            NullLogger<Importer>.Instance,
-            new CsvImportedTransactionModelReader(config["Input"]!, cultureInfo),
-            new FileRelationalModelWriter(config["Output"]!, cultureInfo),
-            new MeteringPointImporter());
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
 
-        await importer.RunAsync(0, int.MaxValue).ConfigureAwait(false);
+            var cultureInfo = CultureInfo.GetCultureInfo(config["Locale"]!);
+
+            using var importer = new Importer(
+                NullLogger<Importer>.Instance,
+                new CsvImportedTransactionModelReader(args[0], cultureInfo),
+                new StdOutRelationalModelWriter(cultureInfo),
+                new MeteringPointImporter());
+
+            await importer.RunAsync(0, int.MaxValue).ConfigureAwait(false);
+        }
+#pragma warning disable CA1031
+        catch (Exception e)
+#pragma warning restore CA1031
+        {
+            Console.WriteLine(e);
+        }
     }
 
     private sealed class CsvImportedTransactionModelReader : IImportedTransactionModelReader
@@ -68,14 +86,12 @@ public static class Program
         }
     }
 
-    private sealed class FileRelationalModelWriter : IRelationalModelWriter
+    private sealed class StdOutRelationalModelWriter : IRelationalModelWriter
     {
-        private readonly string _path;
         private readonly CultureInfo _cultureInfo;
 
-        public FileRelationalModelWriter(string path, CultureInfo cultureInfo)
+        public StdOutRelationalModelWriter(CultureInfo cultureInfo)
         {
-            _path = path;
             _cultureInfo = cultureInfo;
         }
 
@@ -97,7 +113,7 @@ public static class Program
             sb.Append(
                 PrettyPrintObjects(quarantinedMeteringPoints.Cast<object>().ToList()));
 
-            await File.WriteAllTextAsync(_path, sb.ToString(), Encoding.UTF8).ConfigureAwait(false);
+            await Console.Out.WriteLineAsync(sb.ToString()).ConfigureAwait(false);
         }
 
         private string PrettyPrintObjects(IList<object> items)
