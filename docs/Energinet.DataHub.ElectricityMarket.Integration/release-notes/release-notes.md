@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.2.3
+
+- fix for health check uri exception
+
 ## Version 4.2.2
 
 - Uses TryAddScoped to register service instead of AddScoped
