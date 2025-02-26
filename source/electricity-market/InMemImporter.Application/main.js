@@ -5,7 +5,7 @@ const path = require("path");
 const os = require("os");
 const fs = require("fs");
 
-function findGitRoot(startPath) {
+const findGitRoot = (startPath) => {
   let currentPath = path.resolve(startPath);
 
   while (currentPath !== path.parse(currentPath).root) {
@@ -19,25 +19,30 @@ function findGitRoot(startPath) {
   }
 
   return null;
-}
+};
 
 const gitRoot = findGitRoot(path.dirname(process.execPath));
-const logFilePath = path.join(gitRoot, "inmemimporter.log");
+const logFilePath = path.join(gitRoot, "tools", "inmemimporter.log");
 
-function logToFile(message) {
+const logToFile = (message) => {
+  if (!fs.existsSync(logFilePath)) {
+    return;
+  }
   const logEntry = `${new Date().toISOString()} - ${message}\n`;
   fs.appendFileSync(logFilePath, logEntry);
-}
+};
 
 const tempDir = path.join(os.tmpdir(), "3aabcc4f-1153-46d3-b6a3-b503985985fd");
 
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);
+  logToFile(`Created temp directory: ${tempDir}`);
 }
 
 const createCsvFile = (inputString) => {
   const p = path.join(tempDir, randomUUID() + ".csv");
   fs.writeFileSync(p, inputString, "utf-8");
+  logToFile(`Created CSV file: ${p}`);
   return p;
 };
 
@@ -73,9 +78,9 @@ app.on("window-all-closed", () => {
 app.on("will-quit", () => {
   try {
     fs.rmSync(tempDir, { recursive: true, force: true });
-    console.log("Temp directory deleted:", tempDir);
+    logToFile(`Deleted temp directory: ${tempDir}`);
   } catch (err) {
-    console.error("Failed to delete temp directory:", err);
+    logToFile(`Failed to delete temp directory: ${tempDir}`);
   }
 });
 
@@ -88,7 +93,7 @@ ipcMain.handle("run-console-app", async (_, inputString) => {
 
   running = true;
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const filePath = createCsvFile(inputString);
     const command = `dotnet run --project ${gitRoot}/source/electricity-market/InMemImporter/InMemImporter.csproj ${filePath}`;
 

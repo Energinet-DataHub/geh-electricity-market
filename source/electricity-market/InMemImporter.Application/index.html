@@ -46,15 +46,17 @@
       }
 
       .transactions {
-        border-bottom: 0.5px solid #d7ba7e;
+        height: 15%;
+        border-bottom: 0.5px solid #ce9178;
       }
 
       .output {
-        border-top: 0.5x solid #d7ba7e;
+        height: 85%;
+        border-top: 0.5x solid #ce9178;
       }
 
       .import:active {
-        color: #d7ba7e;
+        color: #ce9178;
       }
     </style>
   </head>
@@ -63,27 +65,58 @@
       id="transactions-textarea"
       class="transactions"
       wrap="off"
+      spellcheck="false"
       autofocus
-      placeholder="Paste CSV transactions here"
+      placeholder="Paste gold import transactions in CSV-format here including header.
+
+  - Run import with F5
+    - if no transactions are supplied, a sample will be used.
+
+  - Decrease/increase size of transactions and output area with F10/F11."
     ></textarea>
     <textarea
       id="output-textarea"
       class="output"
       wrap="off"
+      spellcheck="false"
       tabindex="-1"
       readonly
     ></textarea>
     <script>
       const { ipcRenderer } = require("electron");
 
-      document
-        .getElementById("transactions-textarea")
-        .addEventListener("keydown", (e) => {
-          if (e.key !== "F5") return;
+      const changeSize = (increase) => {
+        const transactions = document.getElementById("transactions-textarea");
+        const output = document.getElementById("output-textarea");
+        const container = document.body;
+
+        let containerHeight = container.clientHeight;
+        let topHeight = (transactions.clientHeight / containerHeight) * 100;
+
+        let newTopHeight = increase
+          ? Math.min(topHeight + 5, 85)
+          : Math.max(topHeight - 5, 15);
+        let newBottomHeight = 100 - newTopHeight;
+
+        transactions.style.height = `${newTopHeight}%`;
+        output.style.height = `${newBottomHeight}%`;
+      };
+
+      document.body.addEventListener("keydown", (e) => {
+        if (e.key === "F5") {
+          event.preventDefault();
+
           document.getElementById("output-textarea").value = "Importing...";
-          const inputString = document.getElementById(
+          const inputTextArea = document.getElementById(
             "transactions-textarea"
-          ).value;
+          );
+          if (!inputTextArea.value) {
+            inputTextArea.value = `Id;metering_point_id;valid_from_date;valid_to_date;dh2_created;metering_grid_area_id;metering_point_state_id;btd_trans_doss_id;physical_status_of_mp;type_of_mp;sub_type_of_mp;energy_timeseries_measure_unit;web_access_code;balance_supplier_id;effectuation_date;transaction_type
+7672123;571313180401280123;2023-12-31 23.00.00.0000000 +00:00;9999-12-31 23.59.59.9999999 +00:00;2025-01-15 14.55.47.7830000 +00:00;804;224111003;339748207;"E22";"E17";"D01";"KWH";"WAC001";"1878171197886";2023-12-31 23.00.00.0000000 +00:00;"CREATEMP"
+7850124;571313180401280123;2025-02-13 23.00.00.0000000 +00:00;9999-12-31 23.59.59.9999999 +00:00;2025-02-14 14.20.37.9360000 +00:00;804;224232976;339913115;"E22";"E17";"D01";"KWH";"WAC002";"1878171197886";2025-02-13 23.00.00.0000000 +00:00;"MOVEINES"
+`;
+          }
+          const inputString = inputTextArea.value;
           ipcRenderer
             .invoke("run-console-app", inputString)
             .then((output) => {
@@ -93,7 +126,14 @@
               document.getElementById("output-textarea").value =
                 "Error running app.";
             });
-        });
+        } else if (e.key === "F10") {
+          event.preventDefault();
+          changeSize(false);
+        } else if (e.key === "F11") {
+          event.preventDefault();
+          changeSize(true);
+        }
+      });
     </script>
   </body>
 </html>
