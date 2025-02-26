@@ -33,7 +33,7 @@ internal sealed class GridAreaTrigger
     [Function(nameof(GetGridAreaAsync))]
     [Authorize]
     public async Task<HttpResponseData> GetGridAreaAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "get-grid-area-owner")]
+        [HttpTrigger("post", Route = "get-grid-area-owner")]
         HttpRequestData req,
         string gridAreaCode,
         FunctionContext executionContext)
