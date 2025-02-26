@@ -1,6 +1,6 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
-## Version 4.2.2
+## Version 4.2.3
 
 - fix for health check uri exception
 
