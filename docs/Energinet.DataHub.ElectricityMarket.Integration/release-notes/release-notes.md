@@ -2,6 +2,10 @@
 
 ## Version 4.2.2
 
+- fix for health check uri exception
+
+## Version 4.2.2
+
 - Uses TryAddScoped to register service instead of AddScoped
 - Renamed options to "ElectricityMarketClientOptions" from "ApiClientOptions"
 - Added automatic health checks registrations
