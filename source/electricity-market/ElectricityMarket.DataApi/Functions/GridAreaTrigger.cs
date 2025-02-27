@@ -15,7 +15,6 @@
 using System.Net;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
@@ -32,7 +31,7 @@ internal sealed class GridAreaTrigger
 
     [Function(nameof(GetGridAreaAsync))]
     public async Task<HttpResponseData> GetGridAreaAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous,  "post", Route = "get-grid-area-owner")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "get-grid-area-owner")]
         HttpRequestData req,
         string gridAreaCode,
         FunctionContext executionContext)

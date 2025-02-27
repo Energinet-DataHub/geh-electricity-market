@@ -16,7 +16,6 @@ using System.Net;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
