@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.3.2
+
+- Internal cleanup of option sectionname, no functional changes.
+
 ## Version 4.3.1
 
 - Version Bump, no functional changes
