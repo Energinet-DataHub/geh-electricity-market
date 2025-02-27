@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+using NodaTime;
 
-public sealed record MeteringPointEnergySupplyPeriodDto(
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+
+public sealed record EnergySupplyPeriod(
     long Id,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    IEnumerable<CustomerDto> Customers);
+    Interval Valid,
+    IReadOnlyList<Customer> Customers);

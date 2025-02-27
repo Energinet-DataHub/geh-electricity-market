@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Model;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public sealed record ImportState
-{
-    public ImportState(bool enabled, long offset)
-    {
-        Enabled = enabled;
-        Offset = offset;
-    }
-
-    public bool Enabled { get; }
-    public long Offset { get; set; }
-}
+public sealed record InstallationAddress(
+    long Id,
+    string? StreetCode,
+    string StreetName,
+    string BuildingNumber,
+    string CityName,
+    string? CitySubDivisionName,
+    Guid? DarReference,
+    string CountryCode,
+    string? Floor,
+    string? Room,
+    string PostCode,
+    string? MunicipalityCode,
+    string? LocationDescription);

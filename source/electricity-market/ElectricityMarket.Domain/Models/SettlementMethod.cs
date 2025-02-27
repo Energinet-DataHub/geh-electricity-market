@@ -12,17 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public static class ExternalMeteringPointDisconnectionTypeMapper
+/// <summary>
+/// SettlementMethod of a metering point.
+/// </summary>
+public enum SettlementMethod
 {
-    public static string Map(string externalValue)
-    {
-        return externalValue switch
-        {
-            "D01" => "RemoteDisconnection",
-            "D02" => "ManualDisconnection",
-            _ => $"Unmapped: {externalValue}",
-        };
-    }
+    /// <summary>
+    /// Code: D01.
+    /// </summary>
+    FlexSettled,
+
+    /// <summary>
+    /// Code: E01.
+    /// </summary>
+    Profiled,
+
+    /// <summary>
+    /// Code: E02.
+    /// </summary>
+    NonProfiled,
 }

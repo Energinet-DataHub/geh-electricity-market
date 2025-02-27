@@ -30,7 +30,7 @@ CREATE TABLE [electricitymarket].[InstallationAddress]
     [StreetName]                 nvarchar(64) NOT NULL,
     [BuildingNumber]             nvarchar(64) NOT NULL,
     [CityName]                   nvarchar(64) NOT NULL,
-    [CitySubDivisionName]        nvarchar(64) NULL,
+    [CitySubdivisionName]        nvarchar(64) NULL,
     [DarReference]               uniqueidentifier NULL,
     [CountryCode]                nvarchar(64) NOT NULL,
     [Floor]                      nvarchar(64) NULL,
@@ -150,11 +150,12 @@ CREATE TABLE [electricitymarket].[ContactAddress]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
     [IsProtectedAddress]         bit NOT NULL,
+    [Attention]                  nvarchar(128) NOT NULL,
     [StreetCode]                 char(4) NULL,
     [StreetName]                 nvarchar(64) NOT NULL,
     [BuildingNumber]             nvarchar(64) NOT NULL,
     [CityName]                   nvarchar(64) NOT NULL,
-    [CitySubDivisionName]        nvarchar(64) NULL,
+    [CitySubdivisionName]        nvarchar(64) NULL,
     [DarReference]               uniqueidentifier NULL,
     [CountryCode]                nvarchar(64) NOT NULL,
     [Floor]                      nvarchar(64) NULL,
@@ -171,7 +172,7 @@ CREATE TABLE [electricitymarket].[Contact]
     [EnergySupplyPeriodId]       bigint NOT NULL,
     
     [RelationType]               varchar(64) NOT NULL,
-    [DisponentName]              nvarchar(64) NOT NULL,
+    [DisponentName]              nvarchar(128) NOT NULL,
     [CPR]                        char(12) NULL,
     [CVR]                        char(8) NULL,
 

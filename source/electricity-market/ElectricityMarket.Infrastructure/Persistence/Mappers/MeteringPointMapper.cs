@@ -15,39 +15,150 @@
 using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using NodaTime;
 using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 
-internal sealed class MeteringPointMapper
+internal static class MeteringPointMapper
 {
     public static MeteringPoint MapFromEntity(MeteringPointEntity from)
     {
         return new MeteringPoint(
             from.Id,
             new MeteringPointIdentification(from.Identification),
-            from.MeteringPointPeriods.Select(MapFromEntity),
-            from.CommercialRelations.Select(CommercialRelationMapper.MapFromEntity));
+            from.MeteringPointPeriods.Select(MapFromEntity).ToList(),
+            from.CommercialRelations.Where(cr => cr.EndDate > cr.StartDate).Select(MapFromEntity).ToList());
     }
 
-    private static MeteringPointPeriod MapFromEntity(MeteringPointPeriodEntity from)
+    private static MeteringPointMetadata MapFromEntity(MeteringPointPeriodEntity from)
     {
-        return new MeteringPointPeriod(
+        return new MeteringPointMetadata(
             from.Id,
-            from.MeteringPointId,
-            from.ValidFrom.ToInstant(),
-            from.ValidTo.ToInstant(),
-            from.CreatedAt.ToInstant(),
-            from.GridAreaCode,
-            from.OwnedBy,
-            from.ConnectionState,
-            from.Type,
-            from.SubType,
+            new Interval(from.ValidFrom.ToInstant(), from.ValidTo.ToInstant()),
+            from.ParentIdentification != null ? new MeteringPointIdentification(from.ParentIdentification) : null,
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.MeteringPointTypes, from.Type),
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.MeteringPointSubTypes, from.SubType),
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.ConnectionStates, from.ConnectionState),
             from.Resolution,
-            from.Unit,
-            from.ProductId,
+            from.GridAreaCode,
+            from.OwnedBy!,
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.ConnectionTypes, from.ConnectionType),
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.DisconnectionTypes, from.DisconnectionType),
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.Products, from.Product),
+            from.ProductObligation,
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.MeasureUnits, from.MeasureUnit),
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.AssetTypes, from.AssetType),
+            from.FuelType,
+            from.Capacity,
+            from.PowerLimitKw,
+            from.MeterNumber,
+            from.SettlementGroup,
             from.ScheduledMeterReadingMonth,
-            from.EffectuationDate.ToInstant(),
-            from.TransactionType);
+            from.ExchangeFromGridArea,
+            from.ExchangeToGridArea,
+            from.PowerPlantGsrn,
+            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.SettlementMethods, from.SettlementMethod),
+            MapFromEntity(from.InstallationAddress));
+    }
+
+    private static InstallationAddress MapFromEntity(InstallationAddressEntity from)
+    {
+        return new InstallationAddress(
+            from.Id,
+            from.StreetCode,
+            from.StreetName,
+            from.BuildingNumber,
+            from.CityName,
+            from.CitySubdivisionName,
+            from.DarReference,
+            from.CountryCode,
+            from.Floor,
+            from.Room,
+            from.PostCode,
+            from.MunicipalityCode,
+            from.LocationDescription);
+    }
+
+    private static CommercialRelation MapFromEntity(CommercialRelationEntity from)
+    {
+        return new CommercialRelation(
+            from.Id,
+            from.EnergySupplier,
+            new Interval(from.StartDate.ToInstant(), from.EndDate.ToInstant()),
+            from.EnergySupplyPeriods.Select(MapFromEntity).ToList(),
+            from.ElectricalHeatingPeriods.Select(MapFromEntity).ToList());
+    }
+
+    private static ElectricalHeatingPeriod MapFromEntity(ElectricalHeatingPeriodEntity from)
+    {
+        return new ElectricalHeatingPeriod(
+            from.Id,
+            new Interval(from.ValidFrom.ToInstant(), from.ValidTo.ToInstant()));
+    }
+
+    private static EnergySupplyPeriod MapFromEntity(EnergySupplyPeriodEntity from)
+    {
+        return new EnergySupplyPeriod(
+            from.Id,
+            new Interval(from.ValidFrom.ToInstant(), from.ValidTo.ToInstant()),
+            from.Contacts.Select(MapFromEntity).ToList());
+    }
+
+    private static Customer MapFromEntity(ContactEntity from)
+    {
+        CustomerContact? legal = null;
+        CustomerContact? technical = null;
+
+        if (from.RelationType == "Contact1")
+        {
+            legal = new CustomerContact(
+                from.Id,
+                from.ContactName!,
+                from.Email!,
+                from.ContactAddress.IsProtectedAddress,
+                from.Phone,
+                from.Mobile,
+                MapFromEntity(from.ContactAddress));
+        }
+
+        if (from.RelationType == "Contact4")
+        {
+            technical = new CustomerContact(
+                from.Id,
+                from.ContactName!,
+                from.Email!,
+                from.ContactAddress.IsProtectedAddress,
+                from.Phone,
+                from.Mobile,
+                MapFromEntity(from.ContactAddress));
+        }
+
+        return new Customer(
+            from.Id,
+            from.DisponentName,
+            from.Cvr,
+            from.Cpr,
+            from.IsProtectedName,
+            legal,
+            technical);
+    }
+
+    private static CustomerContactAddress MapFromEntity(ContactAddressEntity from)
+    {
+        return new CustomerContactAddress(
+            from.Id,
+            from.Attention,
+            from.StreetCode,
+            from.StreetName,
+            from.BuildingNumber,
+            from.CityName,
+            from.CitySubdivisionName,
+            from.DarReference,
+            from.CountryCode,
+            from.Floor,
+            from.Room,
+            from.PostCode,
+            from.MunicipalityCode);
     }
 }

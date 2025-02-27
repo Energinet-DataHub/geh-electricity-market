@@ -37,7 +37,7 @@ public class MeteringPointController : ControllerBase
 
     [HttpGet("{identification}")]
     [EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "identification")]
-    public async Task<ActionResult<MeteringPointMasterDataDto>> GetMeteringPointAsync(string identification, [FromQuery] TenantDto tenant)
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification, [FromQuery] TenantDto tenant)
     {
         ArgumentNullException.ThrowIfNull(tenant);
 

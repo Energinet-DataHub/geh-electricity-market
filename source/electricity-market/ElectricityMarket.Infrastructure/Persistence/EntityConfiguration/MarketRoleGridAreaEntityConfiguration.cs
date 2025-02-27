@@ -24,8 +24,8 @@ public sealed class MarketRoleGridAreaEntityConfiguration : IEntityTypeConfigura
 {
     public void Configure(EntityTypeBuilder<MarketRoleGridAreaEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        builder.ToTable("MarketRoleGridArea");
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.ToTable("MarketRoleGridArea", "dbo");
         builder.HasKey(rg => rg.Id);
         builder.Property(p => p.GridAreaId);
         builder.OwnsMany(role => role.MeteringPointTypes, ConfigureMeteringTypes);
@@ -35,7 +35,7 @@ public sealed class MarketRoleGridAreaEntityConfiguration : IEntityTypeConfigura
         OwnedNavigationBuilder<MarketRoleGridAreaEntity, MeteringPointTypeEntity> meteringPointTypeBuilder)
     {
         meteringPointTypeBuilder.WithOwner().HasForeignKey("MarketRoleGridAreaId");
-        meteringPointTypeBuilder.ToTable("GridAreaMeteringPointType");
+        meteringPointTypeBuilder.ToTable("GridAreaMeteringPointType", "dbo");
         meteringPointTypeBuilder.Property<Guid>("Id").ValueGeneratedOnAdd();
         meteringPointTypeBuilder.Property(p => p.MarketRoleGridAreaId).HasColumnName("MarketRoleGridAreaId");
         meteringPointTypeBuilder.Property(p => p.MeteringTypeId).HasColumnName("MeteringPointTypeId");

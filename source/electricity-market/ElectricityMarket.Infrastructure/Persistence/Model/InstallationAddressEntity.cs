@@ -23,7 +23,7 @@ public sealed class InstallationAddressEntity
     public string StreetName { get; set; } = null!;
     public string BuildingNumber { get; set; } = null!;
     public string CityName { get; set; } = null!;
-    public string? CitySubDivisionName { get; set; }
+    public string? CitySubdivisionName { get; set; }
     public Guid? DarReference { get; set; }
     public string CountryCode { get; set; } = null!;
     public string? Floor { get; set; }

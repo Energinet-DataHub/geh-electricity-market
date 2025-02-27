@@ -16,21 +16,21 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record CustomerContactDto(
     long Id,
-    string Name, // contact_1_contact_name1
-    bool IsProtectedAddress, // contact_1_protected_address
-    string? Phone, // contact_1_phone_number
-    string? Mobile, // contact_1_mobile_number
-    string Email, // contact_1_email_address
-    string? Attention, // contact_1_attention
-    string StreetCode, // contact_1_street_code
-    string StreetName, // contact_1_street_name
-    string BuildingNumber, // contact_1_building_number
-    string PostCode, // contact_1_postcode
-    string CityName, // contact_1_city_name
-    string? CitySubDivisionName, // contact_1_city_subdivision_name
-    Guid? DarReference, // contact_1_dar_reference
-    string CountryCode, // contact_1_country_name
-    string? Floor, // contact_1_floor_id
-    string? Room, // contact_1_room_id
-    string? PostBox, // contact_1_post_box
-    string? MunicipalityCode); // contact_1_municipality_code
+    string Name,
+    string Email,
+    bool IsProtectedAddress,
+    string? Phone,
+    string? Mobile,
+    string? Attention,
+    string? StreetCode,
+    string StreetName,
+    string BuildingNumber,
+    string PostCode,
+    string CityName,
+    string? CitySubDivisionName,
+    Guid? DarReference,
+    string CountryCode,
+    string? Floor,
+    string? Room,
+    string? PostBox,
+    string? MunicipalityCode);

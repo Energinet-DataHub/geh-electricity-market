@@ -12,13 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public sealed record ElectricalHeatingPeriodDto(
-    long Id,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    DateTimeOffset? RetiredAt,
-    long? RetiredById,
-    long BusinessTransactionDosId,
-    string TransactionType);
+/// <summary>
+/// Connection state of a metering point.
+/// </summary>
+public enum ConnectionState
+{
+    /// <summary>
+    /// Code: D01.
+    /// </summary>
+    NotUsed,
+
+    /// <summary>
+    /// Code: D02.
+    /// </summary>
+    ClosedDown,
+
+    /// <summary>
+    /// Code: D03.
+    /// </summary>
+    New,
+
+    /// <summary>
+    /// Code: E22.
+    /// </summary>
+    Connected,
+
+    /// <summary>
+    /// Code: E23.
+    /// </summary>
+    Disconnected
+}

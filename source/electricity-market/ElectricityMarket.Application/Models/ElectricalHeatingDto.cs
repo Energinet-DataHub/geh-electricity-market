@@ -14,18 +14,7 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed record ContactAddressDto(
+public sealed record ElectricalHeatingDto(
     long Id,
-    string StreetName,
-    string StreetCode,
-    string BuildingNumber,
-    string CityName,
-    string CitySubDivisionName,
-    string DarReference,
-    bool IsProtectedAddress,
-    string CountryCode,
-    string Floor,
-    string Room,
-    string PostBox,
-    string PostCode,
-    string MunicipalityCode);
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidTo);

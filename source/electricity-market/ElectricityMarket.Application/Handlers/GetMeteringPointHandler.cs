@@ -21,26 +21,27 @@ using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
-public sealed class GetMeteringPointDataHandler : IRequestHandler<GetMeteringPointDataCommand, GetMeteringPointDataResponse>
+public sealed class GetMeteringPointHandler : IRequestHandler<GetMeteringPointCommand, GetMeteringPointResponse>
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
 
-    public GetMeteringPointDataHandler(IMeteringPointRepository meteringPointRepository)
+    public GetMeteringPointHandler(IMeteringPointRepository meteringPointRepository)
     {
         _meteringPointRepository = meteringPointRepository;
     }
 
-    public async Task<GetMeteringPointDataResponse> Handle(GetMeteringPointDataCommand request, CancellationToken cancellationToken)
+    public async Task<GetMeteringPointResponse> Handle(GetMeteringPointCommand request, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
+        ArgumentNullException.ThrowIfNull(request);
 
-        var meteringPointData = await _meteringPointRepository
-            .GetAsync(new MeteringPointIdentification(request.MeteringPointIdentification))
+        var meteringPoint = await _meteringPointRepository
+            .GetAsync(new MeteringPointIdentification(request.Identification))
             .ConfigureAwait(false);
 
-        if (meteringPointData == null)
-            throw new ValidationException($"Metering point id '{request.MeteringPointIdentification}' does not exists");
+        // TODO: Not found exception.
+        if (meteringPoint == null)
+            throw new ValidationException($"Metering point id '{request.Identification}' does not exists");
 
-        return new GetMeteringPointDataResponse(MeteringPointMapper.Map(meteringPointData));
+        return new GetMeteringPointResponse(MeteringPointMapper.Map(meteringPoint));
     }
 }

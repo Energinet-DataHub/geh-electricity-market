@@ -12,10 +12,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using NodaTime;
+
 namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed record MeteringPoint(
     long Id,
     MeteringPointIdentification Identification,
-    IEnumerable<MeteringPointPeriod> MeteringPointPeriods,
-    IEnumerable<CommercialRelation> CommercialRelations);
+    IReadOnlyList<MeteringPointMetadata> MetadataTimeline,
+    IReadOnlyList<CommercialRelation> CommercialRelationTimeline)
+{
+    public MeteringPointMetadata Metadata
+    {
+        get
+        {
+            var selected = MetadataTimeline[0];
+            var now = SystemClock.Instance.GetCurrentInstant();
+
+            foreach (var metadata in MetadataTimeline)
+            {
+                if (metadata.Valid.Start > now)
+                {
+                    break;
+                }
+
+                selected = metadata;
+            }
+
+            return selected;
+        }
+    }
+
+    public CommercialRelation? CommercialRelation
+    {
+        get
+        {
+            var now = SystemClock.Instance.GetCurrentInstant();
+            return CommercialRelationTimeline.FirstOrDefault(cr => cr.Period.Contains(now));
+        }
+    }
+
+    public EnergySupplyPeriod? EnergySupplyPeriod
+    {
+        get
+        {
+            var now = SystemClock.Instance.GetCurrentInstant();
+            return CommercialRelationTimeline.FirstOrDefault(cr => cr.Period.Contains(now))?
+                .EnergySupplyPeriodTimeline.First(esp => esp.Valid.Contains(now));
+        }
+    }
+}

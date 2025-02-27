@@ -14,15 +14,8 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed record ContactDto(
+public sealed record EnergySupplyPeriodDto(
     long Id,
-    CustomerRelation RelationType,
-    string? DisponentName,
-    string? Cvr,
-    string? Name,
-    string? Phone,
-    string? Mobile,
-    string? Email,
-    string? Attention,
-    bool IsProtectedName,
-    ContactAddressDto Address);
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidTo,
+    IEnumerable<CustomerDto> Customers);

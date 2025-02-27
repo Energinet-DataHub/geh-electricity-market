@@ -102,6 +102,8 @@ public sealed class ImportRelationalModelActivity : IDisposable
             {
                 meteringPointPeriodEntity.Id = meteringPointPeriodPrimaryKey++;
                 meteringPointPeriodEntity.MeteringPointId = meteringPointEntity.Id;
+                meteringPointPeriodEntity.InstallationAddressId = meteringPointPeriodEntity.Id;
+                meteringPointPeriodEntity.InstallationAddress.Id = meteringPointPeriodEntity.Id;
             }
 
             foreach (var meteringPointPeriodEntity in meteringPointEntity.MeteringPointPeriods)
@@ -127,6 +129,26 @@ public sealed class ImportRelationalModelActivity : IDisposable
                 throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, CommercialRelation.");
         }
 
+        // ElectricalHeating
+        foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
+        {
+            var electricalHeatingPrimaryKey = commercialRelationEntity.Id * 10000;
+
+            foreach (var electricalHeatingPeriodEntity in commercialRelationEntity.ElectricalHeatingPeriods)
+            {
+                electricalHeatingPeriodEntity.Id = electricalHeatingPrimaryKey++;
+                electricalHeatingPeriodEntity.CommercialRelationId = commercialRelationEntity.Id;
+            }
+
+            foreach (var electricalHeatingPeriodEntity in commercialRelationEntity.ElectricalHeatingPeriods)
+            {
+                electricalHeatingPeriodEntity.RetiredById = electricalHeatingPeriodEntity.RetiredBy?.Id;
+            }
+
+            if (electricalHeatingPrimaryKey >= (commercialRelationEntity.Id * 10000) + 10000)
+                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, ElectricalHeating.");
+        }
+
         // EnergySupplyPeriod
         foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
         {
@@ -145,6 +167,23 @@ public sealed class ImportRelationalModelActivity : IDisposable
 
             if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 10000) + 10000)
                 throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, EnergySupplyPeriod.");
+        }
+
+        // Contact
+        foreach (var energySupplyPeriodEntity in meteringPointEntity.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods))
+        {
+            var contactPrimaryKey = energySupplyPeriodEntity.Id * 10000 * 100;
+
+            foreach (var contactEntity in energySupplyPeriodEntity.Contacts)
+            {
+                contactEntity.Id = contactPrimaryKey++;
+                contactEntity.EnergySupplyPeriodId = energySupplyPeriodEntity.Id;
+                contactEntity.ContactAddressId = contactEntity.Id;
+                contactEntity.ContactAddress.Id = contactEntity.Id;
+            }
+
+            if (contactPrimaryKey >= (energySupplyPeriodEntity.Id * 10000 * 100) + 1000000)
+                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, Contact.");
         }
     }
 
@@ -286,9 +325,17 @@ public sealed class ImportRelationalModelActivity : IDisposable
                     await BulkInsertAsync(
                             sqlConnection,
                             transaction,
+                            batch.SelectMany(b => b.MeteringPointPeriods).Select(mpp => mpp.InstallationAddress),
+                            "InstallationAddress",
+                            ["Id", "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubdivisionName", "DarReference", "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode", "LocationDescription"])
+                        .ConfigureAwait(false);
+
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
                             batch.SelectMany(b => b.MeteringPointPeriods),
                             "MeteringPointPeriod",
-                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "GridAreaCode", "OwnedBy", "ConnectionState", "Type", "SubType", "Resolution", "Unit", "ProductId", "SettlementGroup", "ScheduledMeterReadingMonth", "ParentIdentification", "MeteringPointStateId", "BusinessTransactionDosId", "EffectuationDate", "TransactionType"])
+                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "CreatedAt", "ParentIdentification", "RetiredById", "RetiredAt", "Type", "SubType", "ConnectionState", "Resolution", "GridAreaCode", "OwnedBy", "ConnectionType", "DisconnectionType", "Product", "ProductObligation", "MeasureUnit", "AssetType", "FuelType", "Capacity", "PowerLimitKw", "PowerLimitA", "MeterNumber", "SettlementGroup", "ScheduledMeterReadingMonth", "ExchangeFromGridArea", "ExchangeToGridArea", "PowerPlantGsrn", "SettlementMethod", "InstallationAddressId", "MeteringPointStateId", "BusinessTransactionDosId", "EffectuationDate", "TransactionType"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(
@@ -296,7 +343,15 @@ public sealed class ImportRelationalModelActivity : IDisposable
                             transaction,
                             batch.SelectMany(b => b.CommercialRelations),
                             "CommercialRelation",
-                            ["Id", "MeteringPointId", "EnergySupplier", "StartDate", "EndDate", "ModifiedAt", "CustomerId"])
+                            ["Id", "MeteringPointId", "EnergySupplier", "StartDate", "EndDate", "ModifiedAt", "ClientId"])
+                        .ConfigureAwait(false);
+
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
+                            batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.ElectricalHeatingPeriods)),
+                            "ElectricalHeatingPeriod",
+                            ["Id", "CommercialRelationId", "ValidFrom", "ValidTo", "CreatedAt", "RetiredById", "RetiredAt"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(
@@ -305,6 +360,22 @@ public sealed class ImportRelationalModelActivity : IDisposable
                             batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods)),
                             "EnergySupplyPeriod",
                             ["Id", "CommercialRelationId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "WebAccessCode", "EnergySupplier", "BusinessTransactionDosId"])
+                        .ConfigureAwait(false);
+
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
+                            batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods.SelectMany(esp => esp.Contacts))).Select(c => c.ContactAddress),
+                            "ContactAddress",
+                            ["Id", "IsProtectedAddress", "Attention", "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubdivisionName", "DarReference", "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode"])
+                        .ConfigureAwait(false);
+
+                    await BulkInsertAsync(
+                            sqlConnection,
+                            transaction,
+                            batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods.SelectMany(esp => esp.Contacts))),
+                            "Contact",
+                            ["Id", "EnergySupplyPeriodId", "RelationType", "DisponentName", "Cpr", "Cvr", "IsProtectedName", "ContactAddressId", "ContactName", "Email", "Phone", "Mobile"])
                         .ConfigureAwait(false);
                 }
 

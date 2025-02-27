@@ -20,7 +20,7 @@ public sealed class ContactEntity
     public long EnergySupplyPeriodId { get; set; }
 
     public string RelationType { get; set; } = null!;
-    public string DisponmentName { get; set; } = null!;
+    public string DisponentName { get; set; } = null!;
     public string? Cpr { get; set; }
     public string? Cvr { get; set; }
 

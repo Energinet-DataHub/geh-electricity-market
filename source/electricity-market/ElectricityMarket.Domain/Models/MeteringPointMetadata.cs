@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public sealed record MeteringPointMetadataDto(
+public sealed record MeteringPointMetadata(
     long Id,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
-    string? ParentMeteringPoint,
+    Interval Valid,
+    MeteringPointIdentification? Parent,
     MeteringPointType Type,
     MeteringPointSubType SubType,
     ConnectionState ConnectionState,
@@ -39,8 +38,8 @@ public sealed record MeteringPointMetadataDto(
     string? MeterNumber,
     int? NetSettlementGroup,
     int? ScheduledMeterReadingMonth,
-    string? FromGridAreaCode,
-    string? ToGridAreaCode,
+    string? ExchangeFromGridAreaCode,
+    string? ExchangeToGridAreaCode,
     string? PowerPlantGsrn,
     SettlementMethod? SettlementMethod,
-    InstallationAddressDto InstallationAddress);
+    InstallationAddress InstallationAddress);

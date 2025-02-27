@@ -67,7 +67,9 @@ public sealed class ImportedTransactionEntity
     public string? location_municipality_code { get; set; }
     public string? location_location_description { get; set; }
     public string? first_consumer_party_name { get; set; }
+    public string? first_consumer_cpr { get; set; }
     public string? second_consumer_party_name { get; set; }
+    public string? second_consumer_cpr { get; set; }
     public string? consumer_cvr { get; set; }
     public bool? protected_name { get; set; }
     public string? contact_1_contact_name1 { get; set; }

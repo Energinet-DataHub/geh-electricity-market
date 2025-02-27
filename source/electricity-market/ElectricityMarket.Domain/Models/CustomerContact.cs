@@ -12,20 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-/// <summary>
-/// Connection type of a metering point.
-/// </summary>
-public enum ConnectionType
-{
-    /// <summary>
-    /// Code: D01.
-    /// </summary>
-    Direct,
-
-    /// <summary>
-    /// Code: D02.
-    /// </summary>
-    Installation,
-}
+public sealed record CustomerContact(
+    long Id,
+    string Name,
+    string Email,
+    bool IsProtectedAddress,
+    string? Phone,
+    string? Mobile,
+    CustomerContactAddress Address);

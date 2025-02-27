@@ -12,25 +12,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 /// <summary>
-/// SettlementMethod of a metering point.
+/// Metering point units.
 /// </summary>
-public enum SettlementMethod
+public enum MeteringPointMeasureUnit
 {
     /// <summary>
-    /// Code: D01.
+    /// Code: AMP.
     /// </summary>
-    FlexSettled,
+    Ampere,
 
     /// <summary>
-    /// Code: E01.
+    /// Code: H87.
     /// </summary>
-    Profiled,
+    STK,
 
     /// <summary>
-    /// Code: E02.
+    /// Code: K3.
     /// </summary>
-    NonProfiled,
+    VArh,
+
+    /// <summary>
+    /// Code: KWH.
+    /// </summary>
+    KWh,
+
+    /// <summary>
+    /// Code: KWT.
+    /// </summary>
+    KW,
+
+    /// <summary>
+    /// Code: MAW.
+    /// </summary>
+    MW,
+
+    /// <summary>
+    /// Code: MWH.
+    /// </summary>
+    MWh,
+
+    /// <summary>
+    /// Code: TNE.
+    /// </summary>
+    Tonne,
+
+    /// <summary>
+    /// Code: Z03.
+    /// </summary>
+    MVAr,
+
+    /// <summary>
+    /// Code: Z14.
+    /// </summary>
+    DanishTariffCode,
 }

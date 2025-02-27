@@ -16,7 +16,6 @@ using System;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-// TODO: Entity Config
 public sealed class ElectricalHeatingPeriodEntity
 {
     public long Id { get; set; }

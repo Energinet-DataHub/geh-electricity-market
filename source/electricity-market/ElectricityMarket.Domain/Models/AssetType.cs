@@ -12,155 +12,120 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 /// <summary>
-/// Types of metering point.
+/// AssetType type of a metering point.
 /// </summary>
-public enum MeteringPointType
+public enum AssetType
 {
     /// <summary>
     /// Code: D01.
     /// </summary>
-    VEProduction,
+    SteamTurbineWithBackPressureMode,
 
     /// <summary>
     /// Code: D02.
     /// </summary>
-    Analysis,
+    GasTurbine,
 
     /// <summary>
     /// Code: D03.
     /// </summary>
-    NotUsed,
+    CombinedCycle,
 
     /// <summary>
     /// Code: D04.
     /// </summary>
-    SurplusProductionGroup6,
+    CombustionEngineGas,
 
     /// <summary>
     /// Code: D05.
     /// </summary>
-    NetProduction,
+    SteamTurbineWithCondensationSteam,
 
     /// <summary>
     /// Code: D06.
     /// </summary>
-    SupplyToGrid,
+    Boiler,
 
     /// <summary>
     /// Code: D07.
     /// </summary>
-    ConsumptionFromGrid,
+    StirlingEngine,
 
     /// <summary>
     /// Code: D08.
     /// </summary>
-    WholesaleServicesOrInformation,
+    PermanentConnectedElectricalEnergyStorageFacilities,
 
     /// <summary>
     /// Code: D09.
     /// </summary>
-    OwnProduction,
+    TemporarilyConnectedElectricalEnergyStorageFacilities,
 
     /// <summary>
     /// Code: D10.
     /// </summary>
-    NetFromGrid,
+    FuelCells,
 
     /// <summary>
     /// Code: D11.
     /// </summary>
-    NetToGrid,
+    PhotoVoltaicCells,
 
     /// <summary>
     /// Code: D12.
     /// </summary>
-    TotalConsumption,
+    WindTurbines,
 
     /// <summary>
     /// Code: D13.
     /// </summary>
-    NetLossCorrection,
+    HydroelectricPower,
 
     /// <summary>
     /// Code: D14.
     /// </summary>
-    ElectricalHeating,
+    WavePower,
 
     /// <summary>
     /// Code: D15.
     /// </summary>
-    NetConsumption,
+    MixedProduction,
+
+    /// <summary>
+    /// Code: D16.
+    /// </summary>
+    ProductionWithElectricalEnergyStorageFacilities,
 
     /// <summary>
     /// Code: D17.
     /// </summary>
-    OtherConsumption,
+    PowerToX,
 
     /// <summary>
     /// Code: D18.
     /// </summary>
-    OtherProduction,
+    RegenerativeDemandFacility,
 
     /// <summary>
     /// Code: D19.
     /// </summary>
-    CapacitySettlement,
+    CombustionEngineDiesel,
 
     /// <summary>
     /// Code: D20.
     /// </summary>
-    ExchangeReactiveEnergy,
+    CombustionEngineBio,
 
     /// <summary>
-    /// Code: D21.
+    /// Code: D98.
     /// </summary>
-    CollectiveNetProduction,
-
-    /// <summary>
-    /// Code: D22.
-    /// </summary>
-    CollectiveNetConsumption,
-
-    /// <summary>
-    /// Code: D23.
-    /// </summary>
-    ActivatedDownregulation,
-
-    /// <summary>
-    /// Code: D24.
-    /// </summary>
-    ActivatedUpregulation,
-
-    /// <summary>
-    /// Code: D25.
-    /// </summary>
-    ActualConsumption,
-
-    /// <summary>
-    /// Code: D26.
-    /// </summary>
-    ActualProduction,
+    NoTechnology,
 
     /// <summary>
     /// Code: D99.
     /// </summary>
-    InternalUse,
-
-    /// <summary>
-    /// Code: E17.
-    /// </summary>
-    Consumption,
-
-    /// <summary>
-    /// Code: E18.
-    /// </summary>
-    Production,
-
-    /// <summary>
-    /// Code: E20.
-    /// </summary>
-    Exchange,
+    UnknownTechnology,
 }

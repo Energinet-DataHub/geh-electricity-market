@@ -18,9 +18,4 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed record ElectricalHeatingPeriod(
     long Id,
-    Instant ValidFrom,
-    Instant ValidTo,
-    Instant? RetiredAt,
-    long? RetiredById,
-    long BusinessTransactionDosId,
-    string TransactionType);
+    Interval Period);

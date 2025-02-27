@@ -12,25 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public static class ExternalMeteringPointUnitMapper
-{
-    public static string Map(string externalValue)
-    {
-        return externalValue switch
-        {
-            "AMP" => "Ampere",
-            "H87" => "STK",
-            "K3;" => "VArh",
-            "KWH" => "kWh",
-            "KWT" => "kW",
-            "MAW" => "MW",
-            "MWH" => "MWh",
-            "TNE" => "Tonne",
-            "Z03" => "MVAr",
-            "Z14" => "DanishTariffCode",
-            _ => $"Unmapped: {externalValue}",
-        };
-    }
-}
+public sealed record Customer(
+    long Id,
+    string Name,
+    string? Cvr,
+    string? Cpr,
+    bool IsProtectedName,
+    CustomerContact? LegalContact,
+    CustomerContact? TechnicalContact);

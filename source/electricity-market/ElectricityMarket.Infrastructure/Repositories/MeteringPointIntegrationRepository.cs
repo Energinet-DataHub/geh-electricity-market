@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Microsoft.EntityFrameworkCore;
@@ -25,51 +26,60 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
 public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrationRepository
 {
-    private readonly MarketParticipantDatabaseContext _marketParticipantDatabaseContext;
     private readonly ElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
 
-    public MeteringPointIntegrationRepository(
-        MarketParticipantDatabaseContext marketParticipantDatabaseContext,
-        ElectricityMarketDatabaseContext electricityMarketDatabaseContext)
+    public MeteringPointIntegrationRepository(ElectricityMarketDatabaseContext electricityMarketDatabaseContext)
     {
-        _marketParticipantDatabaseContext = marketParticipantDatabaseContext;
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }
 
+    // TODO: Test
     public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
         string meteringPointIdentification,
         DateTimeOffset startDate,
         DateTimeOffset endDate)
     {
+        var gridAreaOwnerQuery =
+            from actor in _electricityMarketDatabaseContext.Actors
+            where actor.MarketRole.Function == EicFunction.GridAccessProvider
+            from ownedGridArea in actor.MarketRole.GridAreas
+            join gridArea in _electricityMarketDatabaseContext.GridAreas on ownedGridArea.GridAreaId equals gridArea.Id
+            select new { gridArea.Code, actor.ActorNumber };
+
         var query =
             from mp in _electricityMarketDatabaseContext.MeteringPoints
             join mpp in _electricityMarketDatabaseContext.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
                   mpp.ValidFrom <= endDate &&
                   mpp.ValidTo > startDate
+            join gridArea in gridAreaOwnerQuery on mpp.GridAreaCode equals gridArea.Code
+            join exchangeFromGridArea in gridAreaOwnerQuery on mpp.ExchangeFromGridArea equals exchangeFromGridArea.Code into exchangeFrom
+            from exchangeFromGridArea in exchangeFrom.DefaultIfEmpty()
+            join exchangeToGridArea in gridAreaOwnerQuery on mpp.ExchangeToGridArea equals exchangeToGridArea.Code into exchangeTo
+            from exchangeToGridArea in exchangeTo.DefaultIfEmpty()
             orderby mpp.ValidFrom
             select new MeteringPointMasterData
             {
-                Identification = new Integration.Models.MasterData.MeteringPointIdentification(mp.Identification),
+                Identification = new MeteringPointIdentification(mp.Identification),
                 ValidFrom = mpp.ValidFrom.ToInstant(),
                 ValidTo = mpp.ValidTo.ToInstant(),
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
-                GridAccessProvider = mpp.OwnedBy, // TODO: Fix
-                NeighborGridAreaOwners = Array.Empty<string>(), // TODO: Fix
+                GridAccessProvider = mpp.OwnedBy ?? gridArea.ActorNumber,
+                NeighborGridAreaOwners = new[] { exchangeFromGridArea.ActorNumber, exchangeToGridArea.ActorNumber }.Where(x => x != null).ToList(),
                 ConnectionState = Enum.Parse<ConnectionState>(mpp.ConnectionState),
                 Type = Enum.Parse<MeteringPointType>(mpp.Type),
                 SubType = Enum.Parse<MeteringPointSubType>(mpp.SubType),
                 Resolution = new Resolution(mpp.Resolution),
-                Unit = Enum.Parse<MeasureUnit>(mpp.Unit),
-                ProductId = Enum.Parse<ProductId>(mpp.ProductId),
+                Unit = Enum.Parse<MeasureUnit>(mpp.MeasureUnit),
+                ProductId = Enum.Parse<ProductId>(mpp.Product),
                 ParentIdentification = mpp.ParentIdentification != null
-                    ? new Integration.Models.MasterData.MeteringPointIdentification(mpp.ParentIdentification)
+                    ? new MeteringPointIdentification(mpp.ParentIdentification!)
                     : null,
                 EnergySuppliers = mp.CommercialRelations
                     .Where(cr => cr.StartDate <= endDate && cr.EndDate > startDate && cr.StartDate < cr.EndDate)
                     .Select(cr => new MeteringPointEnergySupplier
                     {
-                        Identification = new Integration.Models.MasterData.MeteringPointIdentification(mp.Identification),
+                        Identification = new MeteringPointIdentification(mp.Identification),
                         EnergySupplier = cr.EnergySupplier,
                         StartDate = cr.StartDate.ToInstant(),
                         EndDate = cr.EndDate.ToInstant(),

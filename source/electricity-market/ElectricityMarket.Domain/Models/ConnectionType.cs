@@ -12,35 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 /// <summary>
-/// Connection state of a metering point.
+/// Connection type of metering point.
 /// </summary>
-public enum ConnectionState
+public enum ConnectionType
 {
     /// <summary>
     /// Code: D01.
     /// </summary>
-    NotUsed,
+    Direct,
 
     /// <summary>
     /// Code: D02.
     /// </summary>
-    ClosedDown,
-
-    /// <summary>
-    /// Code: D03.
-    /// </summary>
-    New,
-
-    /// <summary>
-    /// Code: E22.
-    /// </summary>
-    Connected,
-
-    /// <summary>
-    /// Code: E23.
-    /// </summary>
-    Disconnected
+    Installation,
 }

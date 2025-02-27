@@ -12,12 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public sealed record MeteringPointCommercialRelationDto(
-    long Id,
-    string EnergySupplier,
-    DateTimeOffset StartDate,
-    DateTimeOffset EndDate,
-    MeteringPointEnergySupplyPeriodDto? EnergySupplyPeriod,
-    IEnumerable<MeteringPointEnergySupplyPeriodDto> EnergySupplyPeriodTimeline);
+/// <summary>
+/// DisconnectionType type of metering point.
+/// </summary>
+public enum DisconnectionType
+{
+    /// <summary>
+    /// Code: D01.
+    /// </summary>
+    RemoteDisconnection,
+
+    /// <summary>
+    /// Code: D02.
+    /// </summary>
+    ManualDisconnection,
+}

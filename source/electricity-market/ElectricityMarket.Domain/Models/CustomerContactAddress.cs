@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public static class ExternalMeteringPointSubTypeMapper
-{
-    public static string Map(string externalValue)
-    {
-        return externalValue switch
-        {
-            "D01" => "Physical",
-            "D02" => "Virtual",
-            "D03" => "Calculated",
-            _ => $"Unmapped: {externalValue}",
-        };
-    }
-}
+public sealed record CustomerContactAddress(
+    long Id,
+    string? Attention,
+    string? StreetCode,
+    string StreetName,
+    string BuildingNumber,
+    string CityName,
+    string? CitySubdivisionName,
+    Guid? DarReference,
+    string CountryCode,
+    string? Floor,
+    string? Room,
+    string PostCode,
+    string? MunicipalityCode);

@@ -12,12 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public sealed record MeteringPointMasterDataDto(
-    long Id,
-    string Identification,
-    MeteringPointMetadataDto Metadata,
-    IEnumerable<MeteringPointMetadataDto> MetadataTimeline,
-    MeteringPointCommercialRelationDto? CommercialRelation,
-    IEnumerable<MeteringPointCommercialRelationDto> CommercialRelationTimeline);
+/// <summary>
+/// Types of metering point.
+/// </summary>
+public enum MeteringPointSubType
+{
+    /// <summary>
+    /// Code: D01.
+    /// </summary>
+    Physical,
+
+    /// <summary>
+    /// Code: D02.
+    /// </summary>
+    Virtual,
+
+    /// <summary>
+    /// Code: D03.
+    /// </summary>
+    Calculated,
+}

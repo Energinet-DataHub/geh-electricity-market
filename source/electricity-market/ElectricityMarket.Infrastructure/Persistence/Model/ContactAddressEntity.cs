@@ -20,16 +20,16 @@ public sealed class ContactAddressEntity
 {
     public long Id { get; set; }
     public bool IsProtectedAddress { get; set; }
+    public string? Attention { get; set; }
     public string? StreetCode { get; set; }
     public string StreetName { get; set; } = null!;
     public string BuildingNumber { get; set; } = null!;
     public string CityName { get; set; } = null!;
-    public string? CitySubDivisionName { get; set; }
+    public string? CitySubdivisionName { get; set; }
     public Guid? DarReference { get; set; }
     public string CountryCode { get; set; } = null!;
     public string? Floor { get; set; }
     public string? Room { get; set; }
     public string PostCode { get; set; } = null!;
     public string? MunicipalityCode { get; set; }
-    public string? LocationDescription { get; set; }
 }

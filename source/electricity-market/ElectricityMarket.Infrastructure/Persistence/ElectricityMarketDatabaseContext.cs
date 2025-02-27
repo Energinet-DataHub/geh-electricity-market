@@ -13,9 +13,9 @@
 // limitations under the License.
 
 using System;
-using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
@@ -44,7 +44,10 @@ public class ElectricityMarketDatabaseContext : DbContext
     public DbSet<ImportedTransactionEntity> ImportedTransactions { get; private set; } = null!;
     public DbSet<ImportStateEntity> ImportStates { get; private set; } = null!;
 
-    public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
+    public DbSet<GridAreaEntity> GridAreas { get; private set; }
+    public DbSet<ActorEntity> Actors { get; private set; } = null!;
+    public DbSet<MarketRoleEntity> MarketRoles { get; private set; } = null!;
+    public DbSet<MarketRoleGridAreaEntity> MarketRoleGridAreas { get; private set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,6 +65,11 @@ public class ElectricityMarketDatabaseContext : DbContext
 
         modelBuilder.ApplyConfiguration(new ImportedTransactionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new QuarantinedMeteringPointEntityConfiguration());
+
+        modelBuilder.ApplyConfiguration(new GridAreaEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ActorEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MarketRoleEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MarketRoleGridAreaEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }
