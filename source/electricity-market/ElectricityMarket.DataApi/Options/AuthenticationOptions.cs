@@ -12,20 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Options;
+namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Options;
 
-public sealed class ElectricityMarketClientOptions
+/// <summary>
+/// Contains options for validating the JWT bearer tokens that must be sent as
+/// part of any http request for protected http endpoints.
+/// </summary>
+public class AuthenticationOptions
 {
-    public const string SectionName = "ElectricityMarketClient";
+    public const string SectionName = "Auth";
 
-    [Required]
-    public Uri BaseUrl { get; set; } = null!;
-
+    /// <summary>
+    /// Uri (scope) which must match the audience of the token.
+    /// </summary>
     [Required(AllowEmptyStrings = false)]
 #pragma warning disable CA1056
     public string ApplicationIdUri { get; set; } = string.Empty!;
 #pragma warning restore CA1056
+
+    /// <summary>
+    /// Issuer (tenant) which must match the issuer of the token.
+    /// Also used to configure Authority in JWT validation.
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string Issuer { get; set; } = string.Empty;
 }

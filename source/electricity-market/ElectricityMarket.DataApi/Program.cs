@@ -18,13 +18,18 @@ using Energinet.DataHub.Core.App.FunctionApp.Extensions.Builder;
 using Energinet.DataHub.Core.App.FunctionApp.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Extensions.DependencyInjection;
 using Energinet.DataHub.RevisionLog.Integration.Extensions.DependencyInjection;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWebApplication()
+    .ConfigureFunctionsWebApplication(builder =>
+    {
+        // Http => Authorization
+        builder.UseFunctionsAuthorization();
+    })
     .ConfigureServices((context, services) =>
     {
         // Common
