@@ -12,20 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Options;
+namespace Energinet.DataHub.ElectricityMarket.Integration.Authorization;
 
-public sealed class ElectricityMarketClientOptions
+internal interface IAuthorizationHeaderProvider
 {
-    public const string SectionName = "ElectricityMarketClientOptions";
-
-    [Required]
-    public Uri BaseUrl { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-#pragma warning disable CA1056
-    public string ApplicationIdUri { get; set; } = string.Empty!;
-#pragma warning restore CA1056
+    /// <summary>
+    /// Create an authorization header to be used when calling Process Manager API's.
+    /// </summary>
+    AuthenticationHeaderValue CreateAuthorizationHeader();
 }
