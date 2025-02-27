@@ -32,9 +32,8 @@ internal sealed class ProcessDelegationTrigger
     }
 
     [Function(nameof(GetProcessDelegationAsync))]
-    [Authorize]
     public async Task<HttpResponseData> GetProcessDelegationAsync(
-        [HttpTrigger("post", Route = "get-process-delegation")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "get-process-delegation")]
         HttpRequestData req,
         [FromBody] ProcessDelegationRequestDto request,
         FunctionContext executionContext)
