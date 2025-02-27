@@ -12,20 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.ComponentModel.DataAnnotations;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Options;
+namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
-public sealed class ElectricityMarketClientOptions
+public interface ICsvImporter
 {
-    public const string SectionName = "ElectricityMarketClientOptions";
-
-    [Required]
-    public Uri BaseUrl { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-#pragma warning disable CA1056
-    public string ApplicationIdUri { get; set; } = string.Empty!;
-#pragma warning restore CA1056
+    Task<IEnumerable<ImportedTransactionRecord>> ImportAsync(Stream stream);
 }

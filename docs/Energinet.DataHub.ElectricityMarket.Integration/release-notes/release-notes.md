@@ -1,5 +1,21 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.3.2
+
+- Internal cleanup of option sectionname, no functional changes.
+
+## Version 4.3.1
+
+- Version Bump, no functional changes
+
+## Version 4.3.0
+
+- Implemented Authorization on client so that i can communicate with the DataAPI as it is now behind authorization
+
+## Version 4.2.3
+
+- fix for health check uri exception
+
 ## Version 4.2.2
 
 - Uses TryAddScoped to register service instead of AddScoped
