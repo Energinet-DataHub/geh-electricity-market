@@ -27,7 +27,7 @@ public static class ModuleExtensions
     {
         services
             .AddOptions<ElectricityMarketClientOptions>()
-            .BindConfiguration(nameof(ElectricityMarketClientOptions))
+            .BindConfiguration(ElectricityMarketClientOptions.SectionName)
             .ValidateDataAnnotations();
 
         services.AddHttpClient("ElectricityMarketClient", (provider, client) =>
