@@ -59,7 +59,7 @@ public sealed class ImportedTransactionEntity
     public string? location_building_number { get; set; }
     public string? location_city_name { get; set; }
     public string? location_city_subdivision_name { get; set; }
-    public Guid? location_dar_reference { get; set; }
+    public string? location_dar_reference { get; set; }
     public string? location_country_name { get; set; }
     public string? location_floor_id { get; set; }
     public string? location_room_id { get; set; }
@@ -82,7 +82,7 @@ public sealed class ImportedTransactionEntity
     public string? contact_1_postcode { get; set; }
     public string? contact_1_city_name { get; set; }
     public string? contact_1_city_subdivision_name { get; set; }
-    public Guid? contact_1_dar_reference { get; set; }
+    public string? contact_1_dar_reference { get; set; }
     public string? contact_1_country_name { get; set; }
     public string? contact_1_floor_id { get; set; }
     public string? contact_1_room_id { get; set; }
@@ -100,7 +100,7 @@ public sealed class ImportedTransactionEntity
     public string? contact_4_postcode { get; set; }
     public string? contact_4_city_name { get; set; }
     public string? contact_4_city_subdivision_name { get; set; }
-    public Guid? contact_4_dar_reference { get; set; }
+    public string? contact_4_dar_reference { get; set; }
     public string? contact_4_country_name { get; set; }
     public string? contact_4_floor_id { get; set; }
     public string? contact_4_room_id { get; set; }

@@ -30,7 +30,7 @@ public sealed class InitialImportOrchestrator
         ArgumentNullException.ThrowIfNull(orchestrationContext);
         ArgumentNullException.ThrowIfNull(executionContext);
 
-        //await ImportGoldModelAsync(orchestrationContext);
+        // await ImportGoldModelAsync(orchestrationContext);
         await ImportRelationalModelAsync(orchestrationContext);
     }
 
