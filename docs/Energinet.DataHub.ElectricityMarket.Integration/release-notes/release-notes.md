@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.3.1
+
+- Version Bump, no functional changes
+
 ## Version 4.3.0
 
 - Implemented Authorization on client so that i can communicate with the DataAPI as it is now behind authorization
