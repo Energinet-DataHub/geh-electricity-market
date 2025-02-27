@@ -19,28 +19,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public sealed class MeteringPointEntityConfiguration : IEntityTypeConfiguration<MeteringPointEntity>
+public sealed class ElectricalHeatingPeriodEntityConfiguration : IEntityTypeConfiguration<ElectricalHeatingPeriodEntity>
 {
-    public void Configure(EntityTypeBuilder<MeteringPointEntity> builder)
+    public void Configure(EntityTypeBuilder<ElectricalHeatingPeriodEntity> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        builder.ToTable("MeteringPoint");
+        builder.ToTable("ElectricalHeatingPeriod");
         builder
-            .HasMany(x => x.MeteringPointPeriods)
+            .HasOne(x => x.RetiredBy)
             .WithOne()
-            .HasForeignKey(x => x.MeteringPointId);
-
-        builder
-            .Navigation(x => x.MeteringPointPeriods)
-            .AutoInclude();
-
-        builder
-            .HasMany(x => x.CommercialRelations)
-            .WithOne()
-            .HasForeignKey(x => x.MeteringPointId);
-
-        builder
-            .Navigation(x => x.CommercialRelations)
-            .AutoInclude();
+            .HasForeignKey<MeteringPointPeriodEntity>(x => x.RetiredById);
     }
 }

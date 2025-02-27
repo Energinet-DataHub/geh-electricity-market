@@ -34,7 +34,7 @@ public sealed record MeteringPointMetadataDto(
     bool? FuelType, // fuel_type
     string? Capacity, // mp_capacity
     int? PowerLimitKw, // power_limit_kw
-    int? PowerLimitA, // power_limit_a TODO: Ampere?
+    int? PowerLimitA, // power_limit_a
     string? MeterNumber, // meter_number
     int? NetSettlementGroup, // net_settlement_group
     int? ScheduledMeterReadingMonth, // scheduled_meter_reading_date01,

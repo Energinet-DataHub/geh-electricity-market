@@ -19,11 +19,19 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public sealed class SpeedTestImportEntityConfiguration : IEntityTypeConfiguration<SpeedTestImportEntity>
+public sealed class ContactEntityConfiguration : IEntityTypeConfiguration<ContactEntity>
 {
-    public void Configure(EntityTypeBuilder<SpeedTestImportEntity> builder)
+    public void Configure(EntityTypeBuilder<ContactEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        builder.ToTable("SpeedTestImportState");
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.ToTable("Contact");
+        builder
+            .HasOne(x => x.ContactAddress)
+            .WithOne()
+            .HasForeignKey<ContactEntity>(x => x.ContactAddressId);
+
+        builder
+            .Navigation(x => x.ContactAddress)
+            .AutoInclude();
     }
 }

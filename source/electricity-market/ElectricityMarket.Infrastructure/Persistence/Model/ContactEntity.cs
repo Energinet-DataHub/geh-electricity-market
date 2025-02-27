@@ -14,11 +14,22 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public sealed class SpeedTestImportEntity
+public sealed class ContactEntity
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
+    public long EnergySupplyPeriodId { get; set; }
 
-    public bool Enabled { get; set; }
+    public string RelationType { get; set; } = null!;
+    public string DisponmentName { get; set; } = null!;
+    public string? Cpr { get; set; }
+    public string? Cvr { get; set; }
 
-    public long Offset { get; set; }
+    public bool IsProtectedName { get; set; }
+    public long ContactAddressId { get; set; }
+    public string? ContactName { get; set; } = null!;
+    public string? Email { get; set; } = null!;
+    public string? Phone { get; set; } = null!;
+    public string? Mobile { get; set; } = null!;
+
+    public ContactAddressEntity ContactAddress { get; set; } = null!;
 }

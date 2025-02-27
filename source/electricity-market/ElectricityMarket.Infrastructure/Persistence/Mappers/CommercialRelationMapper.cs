@@ -25,7 +25,7 @@ internal sealed class CommercialRelationMapper
     {
         return new CommercialRelation(
             from.Id,
-            from.CustomerId,
+            from.ClientId,
             from.MeteringPointId,
             from.StartDate.ToInstant(),
             from.EndDate.ToInstant(),

@@ -32,29 +32,36 @@ public class ElectricityMarketDatabaseContext : DbContext
     }
 
     public DbSet<MeteringPointEntity> MeteringPoints { get; private set; } = null!;
+    public DbSet<InstallationAddressEntity> InstallationAddresses { get; private set; } = null!;
     public DbSet<MeteringPointPeriodEntity> MeteringPointPeriods { get; private set; } = null!;
     public DbSet<CommercialRelationEntity> CommercialRelations { get; private set; } = null!;
+    public DbSet<ElectricalHeatingPeriodEntity> ElectricalHeatingPeriods { get; private set; } = null!;
     public DbSet<EnergySupplyPeriodEntity> EnergySupplyPeriods { get; private set; } = null!;
-    public DbSet<ImportStateEntity> ImportStates { get; private set; } = null!;
+    public DbSet<ContactAddressEntity> ContactAddresses { get; private set; } = null!;
+    public DbSet<ContactEntity> Contacts { get; private set; } = null!;
+
     public DbSet<QuarantinedMeteringPointEntity> QuarantinedMeteringPointEntities { get; private set; } = null!;
     public DbSet<ImportedTransactionEntity> ImportedTransactions { get; private set; } = null!;
-
-    public DbSet<SpeedTestImportEntity> SpeedTestImportEntities { get; private set; } = null!;
+    public DbSet<ImportStateEntity> ImportStates { get; private set; } = null!;
 
     public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        ArgumentNullException.ThrowIfNull(modelBuilder, nameof(modelBuilder));
+        ArgumentNullException.ThrowIfNull(modelBuilder);
         modelBuilder.HasDefaultSchema("electricitymarket");
         modelBuilder.ApplyConfiguration(new ImportStateEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MeteringPointEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new InstallationAddressEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MeteringPointPeriodEntityConfiguration());
         modelBuilder.ApplyConfiguration(new CommercialRelationEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new SpeedTestImportEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ElectricalHeatingPeriodEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new EnergySupplyPeriodEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ContactAddressEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ContactEntityConfiguration());
+
         modelBuilder.ApplyConfiguration(new ImportedTransactionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new QuarantinedMeteringPointEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new EnergySupplyPeriodEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

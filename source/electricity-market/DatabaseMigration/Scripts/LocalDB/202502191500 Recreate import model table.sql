@@ -1,13 +1,15 @@
 DROP VIEW IF EXISTS electricitymarket.vw_MeteringPointEnergySuppliers;
 DROP VIEW IF EXISTS electricitymarket.vw_MeteringPointChanges;
 
-DROP TABLE IF EXISTS electricitymarket.SpeedTestGold;
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPointTransaction;
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPoint;
 DROP TABLE IF EXISTS electricitymarket.ElectricalHeatingPeriod;
+DROP TABLE IF EXISTS electricitymarket.Contact;
+DROP TABLE IF EXISTS electricitymarket.ContactAddress;
 DROP TABLE IF EXISTS electricitymarket.EnergySupplyPeriod;
 DROP TABLE IF EXISTS electricitymarket.CommercialRelation;
 DROP TABLE IF EXISTS electricitymarket.MeteringPointPeriod;
+DROP TABLE IF EXISTS electricitymarket.InstallationAddress;
 DROP TABLE IF EXISTS electricitymarket.MeteringPoint;
 DROP TABLE IF EXISTS electricitymarket.ImportState;
 DROP TABLE IF EXISTS electricitymarket.GoldenImport;
@@ -21,6 +23,25 @@ CREATE TABLE [electricitymarket].[MeteringPoint]
     CONSTRAINT UQ_Identification UNIQUE (Identification),
 )
 
+CREATE TABLE [electricitymarket].[InstallationAddress]
+(
+    [Id]                         bigint IDENTITY(1,1) NOT NULL,
+    [StreetCode]                 char(4) NULL,
+    [StreetName]                 nvarchar(64) NOT NULL,
+    [BuildingNumber]             nvarchar(64) NOT NULL,
+    [CityName]                   nvarchar(64) NOT NULL,
+    [CitySubDivisionName]        nvarchar(64) NULL,
+    [DarReference]               uniqueidentifier NULL,
+    [CountryCode]                nvarchar(64) NOT NULL,
+    [Floor]                      nvarchar(64) NULL,
+    [Room]                       nvarchar(64) NULL,
+    [PostCode]                   nvarchar(64) NOT NULL,
+    [MunicipalityCode]           nvarchar(64) NULL,
+    [LocationDescription]        nvarchar(512) NULL,
+
+    CONSTRAINT PK_InstallationAddress PRIMARY KEY CLUSTERED (Id),
+)
+
 CREATE TABLE [electricitymarket].[MeteringPointPeriod]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
@@ -30,17 +51,33 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     [RetiredById]                bigint NULL,
     [RetiredAt]                  datetimeoffset NULL,
     [CreatedAt]                  datetimeoffset NOT NULL,
-    [GridAreaCode]               char(3) NOT NULL,
-    [OwnedBy]                    varchar(16) NOT NULL,
-    [ConnectionState]            varchar(64) NOT NULL,
+    [ParentIdentification]       char(18) NULL,
+    
     [Type]                       varchar(64) NOT NULL,
     [SubType]                    varchar(64) NOT NULL,
+    [ConnectionState]            varchar(64) NOT NULL,
     [Resolution]                 varchar(6) NOT NULL,
-    [Unit]                       varchar(64) NOT NULL,
-    [ProductId]                  varchar(64) NOT NULL,
+    [GridAreaCode]               char(3) NOT NULL,
+    [OwnedBy]                    varchar(16) NULL,
+    [ConnectionType]             varchar(64) NULL,
+    [DisconnectionType]          varchar(64) NULL,
+    [Product]                    varchar(64) NOT NULL,
+    [ProductObligation]          bit NULL,
+    [MeasureUnit]                varchar(64) NOT NULL,
+    [AssetType]                  varchar(64) NULL,
+    [FuelType]                   bit NULL,
+    [Capacity]                   varchar(20) NULL,
+    [PowerLimitKw]               int NULL,
+    [PowerLimitA]                int NULL,
+    [MeterNumber]                varchar(20) NULL,
     [SettlementGroup]            int NULL,
-    [ScheduledMeterReadingMonth] int NOT NULL,
-    [ParentIdentification]       char(18) NULL,
+    [ScheduledMeterReadingMonth] int NULL,
+    [ExchangeFromGridArea]       char(3) NULL,
+    [ExchangeToGridArea]         char(3) NULL,
+    [PowerPlantGsrn]             char(18) NULL,
+    [SettlementMethod]           varchar(64) NULL,
+    [InstallationAddressId]      bigint NOT NULL,
+
     [MeteringPointStateId]       bigint NOT NULL,
     [BusinessTransactionDosId]   bigint NOT NULL,
     [EffectuationDate]           datetimeoffset NOT NULL,
@@ -50,6 +87,7 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     CONSTRAINT FK_MeteringPointPeriod_MeteringPointPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[MeteringPointPeriod]([ID]),
     CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID]),
     CONSTRAINT FK_MeteringPointPeriod_ParentIdentification FOREIGN KEY (ParentIdentification) REFERENCES [electricitymarket].[MeteringPoint]([Identification]),
+    CONSTRAINT FK_MeteringPointPeriod_InstallationAddress FOREIGN KEY (InstallationAddressId) REFERENCES [electricitymarket].[InstallationAddress]([ID]),
 )
 
 CREATE INDEX [IX_MeteringPointPeriod_MeteringPointId]
@@ -63,7 +101,7 @@ CREATE TABLE [electricitymarket].[CommercialRelation]
     [StartDate]          datetimeoffset NOT NULL,
     [EndDate]            datetimeoffset NOT NULL,
     [ModifiedAt]         datetimeoffset NOT NULL,
-    [CustomerId]         uniqueidentifier NULL
+    [ClientId]           uniqueidentifier NULL
 
     CONSTRAINT PK_CommercialRelation PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_CommercialRelation_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID])
@@ -107,6 +145,50 @@ CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
 
 CREATE INDEX [IX_EnergySupplyPeriod_CommercialRelationId]
     ON [electricitymarket].[EnergySupplyPeriod] (CommercialRelationId);
+
+CREATE TABLE [electricitymarket].[ContactAddress]
+(
+    [Id]                         bigint IDENTITY(1,1) NOT NULL,
+    [IsProtectedAddress]         bit NOT NULL,
+    [StreetCode]                 char(4) NULL,
+    [StreetName]                 nvarchar(64) NOT NULL,
+    [BuildingNumber]             nvarchar(64) NOT NULL,
+    [CityName]                   nvarchar(64) NOT NULL,
+    [CitySubDivisionName]        nvarchar(64) NULL,
+    [DarReference]               uniqueidentifier NULL,
+    [CountryCode]                nvarchar(64) NOT NULL,
+    [Floor]                      nvarchar(64) NULL,
+    [Room]                       nvarchar(64) NULL,
+    [PostCode]                   nvarchar(64) NOT NULL,
+    [MunicipalityCode]           nvarchar(64) NULL,
+
+    CONSTRAINT PK_ContactAddress PRIMARY KEY CLUSTERED (Id),
+)
+
+CREATE TABLE [electricitymarket].[Contact]
+(
+    [Id]                         bigint IDENTITY(1,1) NOT NULL,
+    [EnergySupplyPeriodId]       bigint NOT NULL,
+    
+    [RelationType]               varchar(64) NOT NULL,
+    [DisponentName]              nvarchar(64) NOT NULL,
+    [CPR]                        char(12) NULL,
+    [CVR]                        char(8) NULL,
+
+    [ContactAddressId]           bigint NULL,
+    [ContactName]                nvarchar(128) NULL,
+    [Email]                      nvarchar(128) NULL,
+    [Phone]                      nvarchar(64) NULL,
+    [Mobile]                     nvarchar(64) NULL,
+    [IsProtectedName]            bit NOT NULL,
+
+    CONSTRAINT PK_Contact PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT FK_Contact_EnergySupplyPeriod FOREIGN KEY (EnergySupplyPeriodId) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
+    CONSTRAINT FK_Contact_ContactAddress FOREIGN KEY (ContactAddressId) REFERENCES [electricitymarket].[ContactAddress]([ID]),
+)
+
+CREATE INDEX [IX_Contact_EnergySupplyPeriod]
+    ON [electricitymarket].[Contact] (EnergySupplyPeriodId);
 
 CREATE TABLE [electricitymarket].[ImportState]
 (

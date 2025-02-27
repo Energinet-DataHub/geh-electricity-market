@@ -13,20 +13,19 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public sealed class CommercialRelationEntity
+// TODO: Entity Config
+public sealed class ElectricalHeatingPeriodEntity
 {
     public long Id { get; set; }
-    public long MeteringPointId { get; set; }
-    public string EnergySupplier { get; set; } = null!;
-    public DateTimeOffset StartDate { get; set; }
-    public DateTimeOffset EndDate { get; set; }
-    public DateTimeOffset ModifiedAt { get; set; }
-    public Guid? ClientId { get; set; }
+    public long CommercialRelationId { get; set; }
+    public DateTimeOffset ValidFrom { get; set; }
+    public DateTimeOffset ValidTo { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
-    public ICollection<EnergySupplyPeriodEntity> EnergySupplyPeriods { get; init; } = [];
-    public ICollection<ElectricalHeatingPeriodEntity> ElectricalHeatingPeriods { get; init; } = [];
+    public long? RetiredById { get; set; }
+    public DateTimeOffset? RetiredAt { get; set; }
+    public ElectricalHeatingPeriodEntity? RetiredBy { get; set; }
 }
