@@ -19,7 +19,7 @@ namespace Energinet.DataHub.ElectricityMarket.Integration.Authorization;
 internal interface IAuthorizationHeaderProvider
 {
     /// <summary>
-    /// Create an authorization header to be used when calling Process Manager API's.
+    /// Create an authorization header to be used when calling Electricity Market API's.
     /// </summary>
     AuthenticationHeaderValue CreateAuthorizationHeader();
 }

@@ -19,7 +19,7 @@ namespace Energinet.DataHub.ElectricityMarket.Integration.Options;
 
 public sealed class ElectricityMarketClientOptions
 {
-    public const string SectionName = "ElectricityMarketClient";
+    public const string SectionName = "ElectricityMarketClientOptions";
 
     [Required]
     public Uri BaseUrl { get; set; } = null!;
