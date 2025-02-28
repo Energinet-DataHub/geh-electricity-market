@@ -144,9 +144,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         var applyNewCommercialRelation = false;
 
-        // if (1.ToString(CultureInfo.InvariantCulture) == "1")
-        //     return (true, string.Empty);
-
         var activeCommercialRelation = new CommercialRelationEntity
         {
             StartDate = importedTransaction.valid_from_date,
