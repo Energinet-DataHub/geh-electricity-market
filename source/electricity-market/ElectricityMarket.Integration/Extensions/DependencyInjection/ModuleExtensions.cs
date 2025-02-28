@@ -13,6 +13,8 @@
 // limitations under the License.
 
 using System.Net.Http;
+using Azure.Identity;
+using Energinet.DataHub.ElectricityMarket.Integration.Authorization;
 using Energinet.DataHub.ElectricityMarket.Integration.Extensions.HealthChecks;
 using Energinet.DataHub.ElectricityMarket.Integration.Options;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,12 +29,26 @@ public static class ModuleExtensions
     {
         services
             .AddOptions<ElectricityMarketClientOptions>()
-            .BindConfiguration(nameof(ElectricityMarketClientOptions))
+            .BindConfiguration(ElectricityMarketClientOptions.SectionName)
             .ValidateDataAnnotations();
+
+        services.TryAddSingleton<IAuthorizationHeaderProvider>(sp =>
+        {
+            // We currently register AuthorizationHeaderProvider like this to be in control of the
+            // creation of DefaultAzureCredential.
+            // As we register IAuthorizationHeaderProvider as singleton, and it has the instance
+            // of DefaultAzureCredential, we expect it will use caching and handle token refresh.
+            // However, the documentation is a bit unclear: https://learn.microsoft.com/da-dk/dotnet/azure/sdk/authentication/best-practices?tabs=aspdotnet#understand-when-token-lifetime-and-caching-logic-is-needed
+            var credential = new DefaultAzureCredential();
+            var options = sp.GetRequiredService<IOptions<ElectricityMarketClientOptions>>().Value;
+            return new AuthorizationHeaderProvider(credential, options.ApplicationIdUri);
+        });
 
         services.AddHttpClient("ElectricityMarketClient", (provider, client) =>
         {
             var options = provider.GetRequiredService<IOptions<ElectricityMarketClientOptions>>();
+            var headerProvider = provider.GetRequiredService<IAuthorizationHeaderProvider>();
+            client.DefaultRequestHeaders.Authorization = headerProvider.CreateAuthorizationHeader();
             client.BaseAddress = options.Value.BaseUrl;
         });
 
