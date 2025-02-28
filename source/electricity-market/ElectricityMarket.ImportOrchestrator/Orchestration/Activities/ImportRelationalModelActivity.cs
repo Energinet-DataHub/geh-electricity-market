@@ -117,7 +117,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
 
         // CommercialRelation
         {
-            var commercialRelationPrimaryKey = meteringPointEntity.Id * 10000;
+            var commercialRelationPrimaryKey = meteringPointEntity.Id * 1000;
 
             foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
             {
@@ -125,7 +125,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
                 commercialRelationEntity.MeteringPointId = meteringPointEntity.Id;
             }
 
-            if (commercialRelationPrimaryKey >= (meteringPointEntity.Id * 10000) + 10000)
+            if (commercialRelationPrimaryKey >= (meteringPointEntity.Id * 1000) + 1000)
                 throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, CommercialRelation.");
         }
 
@@ -152,7 +152,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
         // EnergySupplyPeriod
         foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
         {
-            var energySupplyPeriodPrimaryKey = commercialRelationEntity.Id * 10000;
+            var energySupplyPeriodPrimaryKey = commercialRelationEntity.Id * 1000;
 
             foreach (var energySupplyPeriodEntity in commercialRelationEntity.EnergySupplyPeriods)
             {
@@ -165,14 +165,14 @@ public sealed class ImportRelationalModelActivity : IDisposable
                 energySupplyPeriodEntity.RetiredById = energySupplyPeriodEntity.RetiredBy?.Id;
             }
 
-            if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 10000) + 10000)
+            if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 1000) + 1000)
                 throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, EnergySupplyPeriod.");
         }
 
         // Contact
         foreach (var energySupplyPeriodEntity in meteringPointEntity.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods))
         {
-            var contactPrimaryKey = energySupplyPeriodEntity.Id * 10000 * 100;
+            var contactPrimaryKey = energySupplyPeriodEntity.Id * 1000 * 100;
 
             foreach (var contactEntity in energySupplyPeriodEntity.Contacts)
             {
@@ -186,7 +186,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
                 }
             }
 
-            if (contactPrimaryKey >= (energySupplyPeriodEntity.Id * 10000 * 100) + 1000000)
+            if (contactPrimaryKey >= (energySupplyPeriodEntity.Id * 1000 * 100) + 100000)
                 throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, Contact.");
         }
     }
