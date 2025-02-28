@@ -25,11 +25,11 @@ public sealed class ContactEntity
     public string? Cvr { get; set; }
 
     public bool IsProtectedName { get; set; }
-    public long ContactAddressId { get; set; }
+    public long? ContactAddressId { get; set; }
     public string? ContactName { get; set; } = null!;
     public string? Email { get; set; } = null!;
     public string? Phone { get; set; } = null!;
     public string? Mobile { get; set; } = null!;
 
-    public ContactAddressEntity ContactAddress { get; set; } = null!;
+    public ContactAddressEntity? ContactAddress { get; set; } = null!;
 }

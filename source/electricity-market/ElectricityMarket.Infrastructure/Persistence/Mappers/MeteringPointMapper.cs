@@ -116,7 +116,7 @@ internal static class MeteringPointMapper
                 from.Id,
                 from.ContactName!,
                 from.Email!,
-                from.ContactAddress.IsProtectedAddress,
+                from.ContactAddress?.IsProtectedAddress ?? false,
                 from.Phone,
                 from.Mobile,
                 MapFromEntity(from.ContactAddress));
@@ -128,7 +128,7 @@ internal static class MeteringPointMapper
                 from.Id,
                 from.ContactName!,
                 from.Email!,
-                from.ContactAddress.IsProtectedAddress,
+                from.ContactAddress?.IsProtectedAddress ?? false,
                 from.Phone,
                 from.Mobile,
                 MapFromEntity(from.ContactAddress));
@@ -144,8 +144,11 @@ internal static class MeteringPointMapper
             technical);
     }
 
-    private static CustomerContactAddress MapFromEntity(ContactAddressEntity from)
+    private static CustomerContactAddress? MapFromEntity(ContactAddressEntity? from)
     {
+        if (from == null)
+            return null;
+
         return new CustomerContactAddress(
             from.Id,
             from.Attention,

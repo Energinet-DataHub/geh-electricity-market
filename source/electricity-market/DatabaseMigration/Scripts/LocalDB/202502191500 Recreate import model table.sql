@@ -150,17 +150,17 @@ CREATE TABLE [electricitymarket].[ContactAddress]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
     [IsProtectedAddress]         bit NOT NULL,
-    [Attention]                  nvarchar(128) NOT NULL,
+    [Attention]                  nvarchar(128) NULL,
     [StreetCode]                 char(4) NULL,
-    [StreetName]                 nvarchar(64) NOT NULL,
-    [BuildingNumber]             nvarchar(64) NOT NULL,
-    [CityName]                   nvarchar(64) NOT NULL,
+    [StreetName]                 nvarchar(64) NULL,
+    [BuildingNumber]             nvarchar(64) NULL,
+    [CityName]                   nvarchar(64) NULL,
     [CitySubdivisionName]        nvarchar(64) NULL,
     [DarReference]               uniqueidentifier NULL,
-    [CountryCode]                nvarchar(64) NOT NULL,
+    [CountryCode]                nvarchar(64) NULL,
     [Floor]                      nvarchar(64) NULL,
     [Room]                       nvarchar(64) NULL,
-    [PostCode]                   nvarchar(64) NOT NULL,
+    [PostCode]                   nvarchar(64) NULL,
     [MunicipalityCode]           nvarchar(64) NULL,
 
     CONSTRAINT PK_ContactAddress PRIMARY KEY CLUSTERED (Id),
@@ -265,7 +265,9 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [location_location_description]   NVARCHAR(512)      NULL,
 
     [first_consumer_party_name]       NVARCHAR(128)      NULL,
+    [first_consumer_cpr]              CHAR(10)           NULL,
     [second_consumer_party_name]      NVARCHAR(128)      NULL,
+    [second_consumer_cpr]             CHAR(10)           NULL,
     [consumer_cvr]                    CHAR(8)            NULL,
     [protected_name]                  BIT                NULL,
 

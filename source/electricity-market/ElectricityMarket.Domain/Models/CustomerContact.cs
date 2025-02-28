@@ -21,4 +21,4 @@ public sealed record CustomerContact(
     bool IsProtectedAddress,
     string? Phone,
     string? Mobile,
-    CustomerContactAddress Address);
+    CustomerContactAddress? Address);

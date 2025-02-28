@@ -28,6 +28,6 @@ public sealed class ElectricalHeatingPeriodEntityConfiguration : IEntityTypeConf
         builder
             .HasOne(x => x.RetiredBy)
             .WithOne()
-            .HasForeignKey<MeteringPointPeriodEntity>(x => x.RetiredById);
+            .HasForeignKey<ElectricalHeatingPeriodEntity>(x => x.RetiredById);
     }
 }

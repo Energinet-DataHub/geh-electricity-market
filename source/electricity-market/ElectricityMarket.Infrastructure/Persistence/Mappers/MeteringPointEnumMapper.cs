@@ -97,7 +97,7 @@ internal static class MeteringPointEnumMapper
     [
         new(MeteringPointMeasureUnit.Ampere, "Ampere", "AMP"),
         new(MeteringPointMeasureUnit.STK, "STK", "H87"),
-        new(MeteringPointMeasureUnit.VArh, "VArh", "K3;"),
+        new(MeteringPointMeasureUnit.VArh, "VArh", "K3"),
         new(MeteringPointMeasureUnit.KWh, "kWh", "KWH"),
         new(MeteringPointMeasureUnit.KW, "kW", "KWT"),
         new(MeteringPointMeasureUnit.MW, "MW", "MAW"),
@@ -157,7 +157,9 @@ internal static class MeteringPointEnumMapper
     public static string? MapDh2ToEntity<T>(IEnumerable<EnumMap<T>> lookup, string? dh2Value)
         where T : Enum
     {
-        if (dh2Value == null)
+        dh2Value = dh2Value?.TrimEnd();
+
+        if (string.IsNullOrWhiteSpace(dh2Value))
             return null;
 
         var result = lookup.FirstOrDefault(v => v.Dh2Value == dh2Value);

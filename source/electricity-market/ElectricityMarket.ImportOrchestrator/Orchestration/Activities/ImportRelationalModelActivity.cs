@@ -178,8 +178,12 @@ public sealed class ImportRelationalModelActivity : IDisposable
             {
                 contactEntity.Id = contactPrimaryKey++;
                 contactEntity.EnergySupplyPeriodId = energySupplyPeriodEntity.Id;
-                contactEntity.ContactAddressId = contactEntity.Id;
-                contactEntity.ContactAddress.Id = contactEntity.Id;
+
+                if (contactEntity.ContactAddress != null)
+                {
+                    contactEntity.ContactAddressId = contactEntity.Id;
+                    contactEntity.ContactAddress.Id = contactEntity.Id;
+                }
             }
 
             if (contactPrimaryKey >= (energySupplyPeriodEntity.Id * 10000 * 100) + 1000000)
@@ -335,7 +339,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
                             transaction,
                             batch.SelectMany(b => b.MeteringPointPeriods),
                             "MeteringPointPeriod",
-                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "CreatedAt", "ParentIdentification", "RetiredById", "RetiredAt", "Type", "SubType", "ConnectionState", "Resolution", "GridAreaCode", "OwnedBy", "ConnectionType", "DisconnectionType", "Product", "ProductObligation", "MeasureUnit", "AssetType", "FuelType", "Capacity", "PowerLimitKw", "PowerLimitA", "MeterNumber", "SettlementGroup", "ScheduledMeterReadingMonth", "ExchangeFromGridArea", "ExchangeToGridArea", "PowerPlantGsrn", "SettlementMethod", "InstallationAddressId", "MeteringPointStateId", "BusinessTransactionDosId", "EffectuationDate", "TransactionType"])
+                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "ParentIdentification", "Type", "SubType", "ConnectionState", "Resolution", "GridAreaCode", "OwnedBy", "ConnectionType", "DisconnectionType", "Product", "ProductObligation", "MeasureUnit", "AssetType", "FuelType", "Capacity", "PowerLimitKw", "PowerLimitA", "MeterNumber", "SettlementGroup", "ScheduledMeterReadingMonth", "ExchangeFromGridArea", "ExchangeToGridArea", "PowerPlantGsrn", "SettlementMethod", "InstallationAddressId", "MeteringPointStateId", "BusinessTransactionDosId", "EffectuationDate", "TransactionType"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(
@@ -365,7 +369,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
                     await BulkInsertAsync(
                             sqlConnection,
                             transaction,
-                            batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods.SelectMany(esp => esp.Contacts))).Select(c => c.ContactAddress),
+                            batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods.SelectMany(esp => esp.Contacts))).Select(c => c.ContactAddress).Where(ca => ca != null),
                             "ContactAddress",
                             ["Id", "IsProtectedAddress", "Attention", "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubdivisionName", "DarReference", "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode"])
                         .ConfigureAwait(false);
@@ -375,7 +379,7 @@ public sealed class ImportRelationalModelActivity : IDisposable
                             transaction,
                             batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods.SelectMany(esp => esp.Contacts))),
                             "Contact",
-                            ["Id", "EnergySupplyPeriodId", "RelationType", "DisponentName", "Cpr", "Cvr", "IsProtectedName", "ContactAddressId", "ContactName", "Email", "Phone", "Mobile"])
+                            ["Id", "EnergySupplyPeriodId", "RelationType", "DisponentName", "Cpr", "Cvr", "ContactAddressId", "ContactName", "Email", "Phone", "Mobile", "IsProtectedName"])
                         .ConfigureAwait(false);
                 }
 
