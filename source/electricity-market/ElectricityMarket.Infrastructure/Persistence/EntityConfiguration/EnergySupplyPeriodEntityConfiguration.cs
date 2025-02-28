@@ -23,11 +23,20 @@ public sealed class EnergySupplyPeriodEntityConfiguration : IEntityTypeConfigura
 {
     public void Configure(EntityTypeBuilder<EnergySupplyPeriodEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
         builder.ToTable("EnergySupplyPeriod");
         builder
             .HasOne(x => x.RetiredBy)
             .WithOne()
             .HasForeignKey<EnergySupplyPeriodEntity>(x => x.RetiredById);
+
+        builder
+            .HasMany(x => x.Contacts)
+            .WithOne()
+            .HasForeignKey(x => x.EnergySupplyPeriodId);
+
+        builder
+            .Navigation(x => x.Contacts)
+            .AutoInclude();
     }
 }

@@ -46,8 +46,6 @@ public static class TestPreparationEntities
         Type = MeteringPointType.Consumption.ToString(),
         SubType = MeteringPointSubType.Physical.ToString(),
         Resolution = "PT15M",
-        Unit = MeasureUnit.kWh.ToString(),
-        ProductId = ProductId.PowerActive.ToString(),
         ScheduledMeterReadingMonth = 1,
         MeteringPointStateId = _stateIdCounter++,
     };
@@ -58,7 +56,6 @@ public static class TestPreparationEntities
         StartDate = new DateTimeOffset(2020, 12, 31, 23, 0, 0, TimeSpan.Zero),
         EndDate = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero),
         ModifiedAt = DateTimeOffset.UtcNow,
-        CustomerId = Guid.NewGuid()
     };
 
     public static EnergySupplyPeriodEntity ValidEnergySupplyPeriodEntity => new()

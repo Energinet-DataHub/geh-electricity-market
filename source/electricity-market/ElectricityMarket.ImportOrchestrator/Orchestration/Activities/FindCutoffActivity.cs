@@ -38,7 +38,7 @@ public sealed class FindCutoffActivity
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
                 """
-                SELECT max(metering_point_state_id) as cutoff FROM migrations_electricity_market.electricity_market_metering_points_view_v3
+                SELECT MAX(btd_trans_doss_id) AS cutoff FROM migrations_electricity_market.electricity_market_metering_points_view_v3
                 """).Build()).ConfigureAwait(false);
 
         await foreach (var r in result)

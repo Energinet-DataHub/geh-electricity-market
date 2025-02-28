@@ -13,7 +13,10 @@
 // limitations under the License.
 
 using ElectricityMarket.WebAPI.Revision;
+using ElectricityMarket.WebAPI.Security;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
@@ -30,6 +33,26 @@ public class MeteringPointController : ControllerBase
     public MeteringPointController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    [HttpGet("{identification}")]
+    [EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "identification")]
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification, [FromQuery] TenantDto tenant)
+    {
+        ArgumentNullException.ThrowIfNull(tenant);
+
+        if (tenant.MarketRole != EicFunction.DataHubAdministrator)
+        {
+            return Unauthorized();
+        }
+
+        var getMeteringPointCommand = new GetMeteringPointCommand(identification);
+
+        var meteringPoint = await _mediator
+            .Send(getMeteringPointCommand)
+            .ConfigureAwait(false);
+
+        return Ok(meteringPoint.MeteringPoint);
     }
 
     [HttpGet("contact/{contactId:long}/cpr")]

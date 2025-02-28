@@ -23,14 +23,16 @@ public class ActorEntityConfiguration : IEntityTypeConfiguration<ActorEntity>
 {
     public void Configure(EntityTypeBuilder<ActorEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        builder.ToTable("Actor");
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.ToTable("Actor", "dbo");
         builder.HasKey(actor => actor.Id);
         builder
             .HasOne(actor => actor.MarketRole)
             .WithOne()
             .HasForeignKey<MarketRoleEntity>(marketRole => marketRole.ActorId);
+
         builder
-            .Navigation(x => x.MarketRole).AutoInclude();
+            .Navigation(x => x.MarketRole)
+            .AutoInclude();
     }
 }

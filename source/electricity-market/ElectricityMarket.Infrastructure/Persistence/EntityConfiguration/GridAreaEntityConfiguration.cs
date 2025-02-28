@@ -23,9 +23,8 @@ public class GridAreaEntityConfiguration : IEntityTypeConfiguration<GridAreaEnti
 {
     public void Configure(EntityTypeBuilder<GridAreaEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-
-        builder.ToTable("GridArea");
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.ToTable("GridArea", "dbo");
         builder.HasKey(gridArea => gridArea.Id);
     }
 }
