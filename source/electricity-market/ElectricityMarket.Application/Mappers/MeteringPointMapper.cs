@@ -83,13 +83,19 @@ internal static class MeteringPointMapper
 
     private static CommercialRelationDto Map(CommercialRelation commercialRelation)
     {
+        var now = DateTimeOffset.UtcNow;
+        var espTimeline = commercialRelation.EnergySupplyPeriodTimeline.Select(Map).ToList();
+        var heatingPeriods = commercialRelation.ElectricalHeatingPeriods.Select(Map).ToList();
+
         return new CommercialRelationDto(
             commercialRelation.Id,
             commercialRelation.EnergySupplier,
             commercialRelation.Period.Start.ToDateTimeOffset(),
             commercialRelation.Period.End.ToDateTimeOffset(),
-            commercialRelation.EnergySupplyPeriodTimeline.Select(Map),
-            commercialRelation.ElectricalHeatingPeriods.Select(Map));
+            espTimeline.FirstOrDefault(esp => esp.ValidFrom <= now && esp.ValidTo > now),
+            espTimeline,
+            heatingPeriods.FirstOrDefault(hp => hp.ValidFrom <= now && hp.ValidTo > now),
+            heatingPeriods);
     }
 
     private static ElectricalHeatingDto Map(ElectricalHeatingPeriod electricalHeatingPeriod)

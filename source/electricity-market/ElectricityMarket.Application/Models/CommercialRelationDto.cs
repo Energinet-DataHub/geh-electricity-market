@@ -19,5 +19,7 @@ public sealed record CommercialRelationDto(
     string EnergySupplier,
     DateTimeOffset StartDate,
     DateTimeOffset EndDate,
+    EnergySupplyPeriodDto? ActiveEnergySupplyPeriod,
     IEnumerable<EnergySupplyPeriodDto> EnergySupplyPeriodTimeline,
+    ElectricalHeatingDto? ActiveElectricalHeatingPeriods,
     IEnumerable<ElectricalHeatingDto> ElectricalHeatingPeriods);
