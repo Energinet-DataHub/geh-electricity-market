@@ -32,13 +32,6 @@ public static class Program
         {
             ArgumentNullException.ThrowIfNull(args);
 
-            // await Task.Delay(2000).ConfigureAwait(false);
-            // Console.WriteLine(args[0]);
-            // if (1.ToString(CultureInfo.CurrentCulture) == "1")
-            // {
-            //     throw new InvalidCastException("This is a test");
-            // }
-
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
