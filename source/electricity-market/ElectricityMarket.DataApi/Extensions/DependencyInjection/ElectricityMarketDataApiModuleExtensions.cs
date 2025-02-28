@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using DarkLoop.Azure.Functions.Authorization;
 using Energinet.DataHub.ElectricityMarket.Application;
 using Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Monitor;
+using Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Protocols.Configuration;
 
 namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Extensions.DependencyInjection;
 
@@ -34,6 +37,23 @@ public static class ElectricityMarketDataApiModuleExtensions
 
         services.AddElectricityMarketModule();
 
+        var authenticationOptions = configuration
+            .GetRequiredSection(AuthenticationOptions.SectionName)
+            .Get<AuthenticationOptions>();
+
+        if (authenticationOptions == null)
+            throw new InvalidOperationException("Missing authentication configuration.");
+
+        GuardAuthenticationOptions(authenticationOptions);
+
+        services
+            .AddFunctionsAuthentication(JwtFunctionsBearerDefaults.AuthenticationScheme)
+            .AddJwtFunctionsBearer(options =>
+            {
+                options.Audience = authenticationOptions.ApplicationIdUri;
+                options.Authority = authenticationOptions.Issuer;
+            });
+
         AddHealthChecks(services);
 
         return services;
@@ -45,5 +65,13 @@ public static class ElectricityMarketDataApiModuleExtensions
             .AddScoped<HealthCheckEndpoint>()
             .AddHealthChecks()
             .AddDbContextCheck<ElectricityMarketDatabaseContext>();
+    }
+
+    private static void GuardAuthenticationOptions(AuthenticationOptions authenticationOptions)
+    {
+        if (string.IsNullOrWhiteSpace(authenticationOptions.ApplicationIdUri))
+            throw new InvalidConfigurationException($"Missing '{nameof(AuthenticationOptions.ApplicationIdUri)}'.");
+        if (string.IsNullOrWhiteSpace(authenticationOptions.Issuer))
+            throw new InvalidConfigurationException($"Missing '{nameof(AuthenticationOptions.Issuer)}'.");
     }
 }

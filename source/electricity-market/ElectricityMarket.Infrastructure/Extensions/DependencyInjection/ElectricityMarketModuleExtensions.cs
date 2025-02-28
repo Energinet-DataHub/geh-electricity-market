@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -57,6 +58,10 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
         services.AddScoped<IGridAreaRepository, GridAreaRepository>();
         services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();
+        services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
+
+        // Services
+        services.AddScoped<ICsvImporter, CsvImporter>();
 
         return services;
     }

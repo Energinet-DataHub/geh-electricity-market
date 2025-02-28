@@ -16,6 +16,7 @@ using System.Net;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.ProcessDelegations;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.ProcessDelegation;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
@@ -31,6 +32,7 @@ internal sealed class ProcessDelegationTrigger
     }
 
     [Function(nameof(GetProcessDelegationAsync))]
+    [Authorize]
     public async Task<HttpResponseData> GetProcessDelegationAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "get-process-delegation")]
         HttpRequestData req,
