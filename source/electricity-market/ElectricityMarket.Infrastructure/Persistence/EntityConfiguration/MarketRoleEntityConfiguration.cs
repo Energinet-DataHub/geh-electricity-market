@@ -23,13 +23,16 @@ public sealed class MarketRoleEntityConfiguration : IEntityTypeConfiguration<Mar
 {
     public void Configure(EntityTypeBuilder<MarketRoleEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        builder.ToTable("MarketRole");
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.ToTable("MarketRole", "dbo");
         builder.HasKey(role => role.Id);
         builder
             .HasMany(role => role.GridAreas)
             .WithOne()
             .HasForeignKey(g => g.MarketRoleId);
-        builder.Navigation(x => x.GridAreas).AutoInclude();
+
+        builder
+            .Navigation(x => x.GridAreas)
+            .AutoInclude();
     }
 }

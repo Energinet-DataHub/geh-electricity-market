@@ -20,18 +20,18 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
 public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeteringPointMasterDataCommand, GetMeteringPointMasterDataResponse>
 {
-    private readonly IMeteringPointRepository _meteringPointRepository;
+    private readonly IMeteringPointIntegrationRepository _meteringPointIntegrationRepository;
 
-    public GetMeteringPointMasterDataHandler(IMeteringPointRepository meteringPointRepository)
+    public GetMeteringPointMasterDataHandler(IMeteringPointIntegrationRepository meteringPointIntegrationRepository)
     {
-        _meteringPointRepository = meteringPointRepository;
+        _meteringPointIntegrationRepository = meteringPointIntegrationRepository;
     }
 
     public async Task<GetMeteringPointMasterDataResponse> Handle(GetMeteringPointMasterDataCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var result = await _meteringPointRepository.GetMeteringPointMasterDataChangesAsync(
+        var result = await _meteringPointIntegrationRepository.GetMeteringPointMasterDataChangesAsync(
             request.Request.MeteringPointIdentification,
             request.Request.StartDate,
             request.Request.EndDate)

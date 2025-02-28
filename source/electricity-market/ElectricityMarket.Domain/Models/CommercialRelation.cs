@@ -18,11 +18,7 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed record CommercialRelation(
     long Id,
-    Guid? CustomerId,
-    long MeteringPointId,
-    Instant StartDate,
-    Instant EndDate,
     string EnergySupplier,
-    Instant ModifiedAt,
-    ICollection<EnergySupplierPeriod> EnergySupplyPeriods,
-    ICollection<ElectricalHeatingPeriod> ElectricalHeatingPeriods);
+    Interval Period,
+    IReadOnlyList<EnergySupplyPeriod> EnergySupplyPeriodTimeline,
+    IReadOnlyList<ElectricalHeatingPeriod> ElectricalHeatingPeriods);

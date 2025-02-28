@@ -20,18 +20,13 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 public sealed class CommercialRelationEntity
 {
     public long Id { get; set; }
-
     public long MeteringPointId { get; set; }
-
-    public DateTimeOffset StartDate { get; set; }
-
-    public DateTimeOffset EndDate { get; set; }
-
     public string EnergySupplier { get; set; } = null!;
-
-    public Guid? CustomerId { get; set; }
-
+    public DateTimeOffset StartDate { get; set; }
+    public DateTimeOffset EndDate { get; set; }
     public DateTimeOffset ModifiedAt { get; set; }
+    public Guid? ClientId { get; set; }
 
     public ICollection<EnergySupplyPeriodEntity> EnergySupplyPeriods { get; init; } = [];
+    public ICollection<ElectricalHeatingPeriodEntity> ElectricalHeatingPeriods { get; init; } = [];
 }

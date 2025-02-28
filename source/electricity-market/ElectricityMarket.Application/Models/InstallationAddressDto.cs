@@ -16,16 +16,15 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record InstallationAddressDto(
     long Id,
+    string? StreetCode,
     string StreetName,
-    string StreetCode,
     string BuildingNumber,
     string CityName,
-    string CitySubDivisionName,
-    string DarReference,
-    string WashInstruction,
+    string? CitySubDivisionName,
+    Guid? DarReference,
     string CountryCode,
-    string Floor,
-    string Room,
+    string? Floor,
+    string? Room,
     string PostCode,
-    string MunicipalityCode,
-    string LocationDescription);
+    string? MunicipalityCode,
+    string? LocationDescription);

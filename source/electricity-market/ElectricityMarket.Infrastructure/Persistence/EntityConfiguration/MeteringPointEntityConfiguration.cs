@@ -23,17 +23,24 @@ public sealed class MeteringPointEntityConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<MeteringPointEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
         builder.ToTable("MeteringPoint");
-        builder.HasMany(x => x.MeteringPointPeriods)
+        builder
+            .HasMany(x => x.MeteringPointPeriods)
             .WithOne()
             .HasForeignKey(x => x.MeteringPointId);
-        builder.Navigation(x => x.MeteringPointPeriods)
+
+        builder
+            .Navigation(x => x.MeteringPointPeriods)
             .AutoInclude();
-        builder.HasMany(x => x.CommercialRelations)
+
+        builder
+            .HasMany(x => x.CommercialRelations)
             .WithOne()
             .HasForeignKey(x => x.MeteringPointId);
-        builder.Navigation(x => x.CommercialRelations)
+
+        builder
+            .Navigation(x => x.CommercialRelations)
             .AutoInclude();
     }
 }

@@ -23,12 +23,24 @@ public sealed class CommercialRelationEntityConfiguration : IEntityTypeConfigura
 {
     public void Configure(EntityTypeBuilder<CommercialRelationEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
         builder.ToTable("CommercialRelation");
-        builder.HasMany(x => x.EnergySupplyPeriods)
+        builder
+            .HasMany(x => x.EnergySupplyPeriods)
             .WithOne()
             .HasForeignKey(x => x.CommercialRelationId);
-        builder.Navigation(x => x.EnergySupplyPeriods)
+
+        builder
+            .Navigation(x => x.EnergySupplyPeriods)
+            .AutoInclude();
+
+        builder
+            .HasMany(x => x.ElectricalHeatingPeriods)
+            .WithOne()
+            .HasForeignKey(x => x.CommercialRelationId);
+
+        builder
+            .Navigation(x => x.ElectricalHeatingPeriods)
             .AutoInclude();
     }
 }

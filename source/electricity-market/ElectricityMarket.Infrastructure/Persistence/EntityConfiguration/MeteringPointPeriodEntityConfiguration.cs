@@ -23,11 +23,20 @@ public sealed class MeteringPointPeriodEntityConfiguration : IEntityTypeConfigur
 {
     public void Configure(EntityTypeBuilder<MeteringPointPeriodEntity> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
         builder.ToTable("MeteringPointPeriod");
         builder
             .HasOne(x => x.RetiredBy)
             .WithOne()
             .HasForeignKey<MeteringPointPeriodEntity>(x => x.RetiredById);
+
+        builder
+            .HasOne(x => x.InstallationAddress)
+            .WithOne()
+            .HasForeignKey<MeteringPointPeriodEntity>(x => x.InstallationAddressId);
+
+        builder
+            .Navigation(x => x.InstallationAddress)
+            .AutoInclude();
     }
 }

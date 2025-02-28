@@ -16,13 +16,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
+using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
-using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
@@ -76,49 +75,5 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         }
 
         return MeteringPointMapper.MapFromEntity(entity);
-    }
-
-    public IAsyncEnumerable<Integration.Models.MasterData.MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset endDate)
-    {
-        var query =
-            from mp in _electricityMarketDatabaseContext.MeteringPoints
-            join mpp in _electricityMarketDatabaseContext.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
-            where mp.Identification == meteringPointIdentification &&
-                  mpp.ValidFrom <= endDate &&
-                  mpp.ValidTo > startDate
-            orderby mpp.ValidFrom
-            select new Integration.Models.MasterData.MeteringPointMasterData
-            {
-                Identification = new Integration.Models.MasterData.MeteringPointIdentification(mp.Identification),
-                ValidFrom = mpp.ValidFrom.ToInstant(),
-                ValidTo = mpp.ValidTo.ToInstant(),
-                GridAreaCode = new Integration.Models.MasterData.GridAreaCode(mpp.GridAreaCode),
-                GridAccessProvider = mpp.OwnedBy,
-                NeighborGridAreaOwners = Array.Empty<string>(),
-                ConnectionState = Enum.Parse<Integration.Models.MasterData.ConnectionState>(mpp.ConnectionState),
-                Type = Enum.Parse<Integration.Models.MasterData.MeteringPointType>(mpp.Type),
-                SubType = Enum.Parse<Integration.Models.MasterData.MeteringPointSubType>(mpp.SubType),
-                Resolution = new Integration.Models.MasterData.Resolution(mpp.Resolution),
-                Unit = Enum.Parse<Integration.Models.MasterData.MeasureUnit>(mpp.Unit),
-                ProductId = Enum.Parse<Integration.Models.MasterData.ProductId>(mpp.ProductId),
-                ParentIdentification = mpp.ParentIdentification != null
-                    ? new Integration.Models.MasterData.MeteringPointIdentification(mpp.ParentIdentification)
-                    : null,
-                EnergySuppliers = mp.CommercialRelations
-                    .Where(cr => cr.StartDate <= endDate && cr.EndDate > startDate && cr.StartDate < cr.EndDate)
-                    .Select(cr => new Integration.Models.MasterData.MeteringPointEnergySupplier()
-                    {
-                        Identification = new Integration.Models.MasterData.MeteringPointIdentification(mp.Identification),
-                        EnergySupplier = cr.EnergySupplier,
-                        StartDate = cr.StartDate.ToInstant(),
-                        EndDate = cr.EndDate.ToInstant(),
-                    })
-                    .ToArray(),
-            };
-
-        return query.AsAsyncEnumerable();
     }
 }

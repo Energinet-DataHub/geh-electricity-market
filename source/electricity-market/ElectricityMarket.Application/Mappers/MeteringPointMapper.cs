@@ -17,194 +17,133 @@ using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Mappers;
 
-internal sealed class MeteringPointMapper
+internal static class MeteringPointMapper
 {
-    public static MeteringPointDto Map(MeteringPoint entity)
+    public static MeteringPointDto Map(MeteringPoint meteringPoint)
     {
+        var cr = meteringPoint.CommercialRelation;
         return new MeteringPointDto(
-            entity.Id,
-            entity.Identification.Value,
-            entity.MeteringPointPeriods.Select(Map),
-            entity.CommercialRelations.Select(CommercialRelationMapper.Map));
+            meteringPoint.Id,
+            meteringPoint.Identification.Value,
+            Map(meteringPoint.Metadata),
+            meteringPoint.MetadataTimeline.Select(Map),
+            cr != null ? Map(cr) : null,
+            meteringPoint.CommercialRelationTimeline.Select(Map));
     }
 
-    private static MeteringPointPeriodDto Map(MeteringPointPeriod meteringPointPeriodEntity)
+    private static MeteringPointMetadataDto Map(MeteringPointMetadata meteringPointMetadata)
     {
-        return new MeteringPointPeriodDto(
-            meteringPointPeriodEntity.Id,
-            meteringPointPeriodEntity.ValidFrom.ToDateTimeOffset(),
-            meteringPointPeriodEntity.ValidTo.ToDateTimeOffset(),
-            meteringPointPeriodEntity.CreatedAt.ToDateTimeOffset(),
-            meteringPointPeriodEntity.GridAreaCode,
-            meteringPointPeriodEntity.OwnedBy,
-            MapConnectionState(meteringPointPeriodEntity.ConnectionState),
-            MapMeteringPointType(meteringPointPeriodEntity.Type),
-            MapMeteringPointSubType(meteringPointPeriodEntity.SubType),
-            meteringPointPeriodEntity.Resolution,
-            MapMeteringPointUnit(meteringPointPeriodEntity.Unit),
-            MapProduct(meteringPointPeriodEntity.ProductId),
-            meteringPointPeriodEntity.ScheduledMeterReadingMonth,
-            MapAssetType("SteamTurbineWithBackPressureMode"), // TODO: use entity.AssetType
-            MapDisconnectionType("RemoteDisconnection"), // TODO: use entity.DisconnectionType
-            "TBD",
-            "TBD",
-            "TBD",
-            "TBD",
-            "TBD",
-            "TBD",
-            MapConnectionType("Direct"), // TODO: use entity.ConnectionType
-            "TBD",
-            null,
-            50,
-            "TBD",
-            "TBD",
-            "TBD",
-            "TBD",
-            new InstallationAddressDto(
-                1,
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD",
-                "TBD"),
-            "TBD",
-            MapSettlementMethod("NonProfiled"), // TODO: use entity.SettlementMethod
-            meteringPointPeriodEntity.EffectuationDate.ToDateTimeOffset(),
-            meteringPointPeriodEntity.TransactionType);
+        return new MeteringPointMetadataDto(
+            meteringPointMetadata.Id,
+            meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
+            meteringPointMetadata.Valid.End.ToDateTimeOffset(),
+            meteringPointMetadata.Parent?.Value,
+            meteringPointMetadata.Type,
+            meteringPointMetadata.SubType,
+            meteringPointMetadata.ConnectionState,
+            meteringPointMetadata.Resolution,
+            meteringPointMetadata.GridAreaCode,
+            meteringPointMetadata.OwnedBy,
+            meteringPointMetadata.ConnectionType,
+            meteringPointMetadata.DisconnectionType,
+            meteringPointMetadata.Product,
+            meteringPointMetadata.ProductObligation,
+            meteringPointMetadata.MeasureUnit,
+            meteringPointMetadata.AssetType,
+            meteringPointMetadata.FuelType,
+            meteringPointMetadata.Capacity,
+            meteringPointMetadata.PowerLimitKw,
+            meteringPointMetadata.MeterNumber,
+            meteringPointMetadata.NetSettlementGroup,
+            meteringPointMetadata.ScheduledMeterReadingMonth,
+            meteringPointMetadata.ExchangeFromGridAreaCode,
+            meteringPointMetadata.ExchangeToGridAreaCode,
+            meteringPointMetadata.PowerPlantGsrn,
+            meteringPointMetadata.SettlementMethod,
+            Map(meteringPointMetadata.InstallationAddress));
     }
 
-    private static ConnectionState MapConnectionState(string connectionState) => connectionState switch
+    private static InstallationAddressDto Map(InstallationAddress installationAddress)
     {
-        "NotUsed" => ConnectionState.NotUsed,
-        "ClosedDown" => ConnectionState.ClosedDown,
-        "New" => ConnectionState.New,
-        "Connected" => ConnectionState.Connected,
-        "Disconnected" => ConnectionState.Disconnected,
-        _ => throw new ArgumentOutOfRangeException(nameof(connectionState), connectionState, null)
-    };
+        return new InstallationAddressDto(
+            installationAddress.Id,
+            installationAddress.StreetCode,
+            installationAddress.StreetName,
+            installationAddress.BuildingNumber,
+            installationAddress.CityName,
+            installationAddress.CitySubDivisionName,
+            installationAddress.DarReference,
+            installationAddress.CountryCode,
+            installationAddress.Floor,
+            installationAddress.Room,
+            installationAddress.PostCode,
+            installationAddress.MunicipalityCode,
+            installationAddress.LocationDescription);
+    }
 
-    private static MeteringPointType MapMeteringPointType(string meteringPointType) => meteringPointType switch
+    private static CommercialRelationDto Map(CommercialRelation commercialRelation)
     {
-        "VEProduction" => MeteringPointType.VEProduction,
-        "Analysis" => MeteringPointType.Analysis,
-        "NotUsed" => MeteringPointType.NotUsed,
-        "SurplusProductionGroup6" => MeteringPointType.SurplusProductionGroup6,
-        "NetProduction" => MeteringPointType.NetProduction,
-        "SupplyToGrid" => MeteringPointType.SupplyToGrid,
-        "ConsumptionFromGrid" => MeteringPointType.ConsumptionFromGrid,
-        "WholesaleServicesOrInformation" => MeteringPointType.WholesaleServicesOrInformation,
-        "OwnProduction" => MeteringPointType.OwnProduction,
-        "NetFromGrid" => MeteringPointType.NetFromGrid,
-        "NetToGrid" => MeteringPointType.NetToGrid,
-        "TotalConsumption" => MeteringPointType.TotalConsumption,
-        "NetLossCorrection" => MeteringPointType.NetLossCorrection,
-        "ElectricalHeating" => MeteringPointType.ElectricalHeating,
-        "NetConsumption" => MeteringPointType.NetConsumption,
-        "OtherConsumption" => MeteringPointType.OtherConsumption,
-        "OtherProduction" => MeteringPointType.OtherProduction,
-        "CapacitySettlement" => MeteringPointType.CapacitySettlement,
-        "ExchangeReactiveEnergy" => MeteringPointType.ExchangeReactiveEnergy,
-        "CollectiveNetProduction" => MeteringPointType.CollectiveNetProduction,
-        "CollectiveNetConsumption" => MeteringPointType.CollectiveNetConsumption,
-        "ActivatedDownregulation" => MeteringPointType.ActivatedDownregulation,
-        "ActivatedUpregulation" => MeteringPointType.ActivatedUpregulation,
-        "ActualConsumption" => MeteringPointType.ActualConsumption,
-        "ActualProduction" => MeteringPointType.ActualProduction,
-        "InternalUse" => MeteringPointType.InternalUse,
-        "Consumption" => MeteringPointType.Consumption,
-        "Production" => MeteringPointType.Production,
-        "Exchange" => MeteringPointType.Exchange,
-        _ => throw new ArgumentOutOfRangeException(nameof(meteringPointType), meteringPointType, null)
-    };
+        return new CommercialRelationDto(
+            commercialRelation.Id,
+            commercialRelation.EnergySupplier,
+            commercialRelation.Period.Start.ToDateTimeOffset(),
+            commercialRelation.Period.End.ToDateTimeOffset(),
+            commercialRelation.EnergySupplyPeriodTimeline.Select(Map),
+            commercialRelation.ElectricalHeatingPeriods.Select(Map));
+    }
 
-    private static MeteringPointSubType MapMeteringPointSubType(string meteringPointSubType) => meteringPointSubType switch
+    private static ElectricalHeatingDto Map(ElectricalHeatingPeriod electricalHeatingPeriod)
     {
-        "Physical" => MeteringPointSubType.Physical,
-        "Virtual" => MeteringPointSubType.Virtual,
-        "Calculated" => MeteringPointSubType.Calculated,
-        _ => throw new ArgumentOutOfRangeException(nameof(meteringPointSubType), meteringPointSubType, null)
-    };
+        return new ElectricalHeatingDto(
+            electricalHeatingPeriod.Id,
+            electricalHeatingPeriod.Period.Start.ToDateTimeOffset(),
+            electricalHeatingPeriod.Period.End.ToDateTimeOffset());
+    }
 
-    private static MeteringPointUnit MapMeteringPointUnit(string meteringPointUnit) => meteringPointUnit switch
+    private static EnergySupplyPeriodDto Map(EnergySupplyPeriod energySupplyPeriod)
     {
-        "Ampere" => MeteringPointUnit.Ampere,
-        "STK" => MeteringPointUnit.STK,
-        "VArh" => MeteringPointUnit.VArh,
-        "kWh" => MeteringPointUnit.KWh,
-        "kW" => MeteringPointUnit.KW,
-        "MW" => MeteringPointUnit.MW,
-        "MWh" => MeteringPointUnit.MWh,
-        "Tonne" => MeteringPointUnit.Tonne,
-        "MVAr" => MeteringPointUnit.MVAr,
-        "DanishTariffCode" => MeteringPointUnit.DanishTariffCode,
-        _ => throw new ArgumentOutOfRangeException(nameof(meteringPointUnit), meteringPointUnit, null)
-    };
+        return new EnergySupplyPeriodDto(
+            energySupplyPeriod.Id,
+            energySupplyPeriod.Valid.Start.ToDateTimeOffset(),
+            energySupplyPeriod.Valid.End.ToDateTimeOffset(),
+            energySupplyPeriod.Customers.Select(Map));
+    }
 
-    private static ConnectionType MapConnectionType(string connectionType) => connectionType switch
+    private static CustomerDto Map(Customer customer)
     {
-        "Direct" => ConnectionType.Direct,
-        "Installation" => ConnectionType.Installation,
-        _ => throw new ArgumentOutOfRangeException(nameof(connectionType), connectionType, null)
-    };
+        return new CustomerDto(
+            customer.Id,
+            customer.Name,
+            customer.Cvr,
+            customer.IsProtectedName,
+            Map(customer.LegalContact),
+            Map(customer.TechnicalContact));
+    }
 
-    private static DisconnectionType MapDisconnectionType(string disconnectionType) => disconnectionType switch
+    private static CustomerContactDto? Map(CustomerContact? customerContact)
     {
-        "RemoteDisconnection" => DisconnectionType.RemoteDisconnection,
-        "ManualDisconnection" => DisconnectionType.ManualDisconnection,
-        _ => throw new ArgumentOutOfRangeException(nameof(disconnectionType), disconnectionType, null)
-    };
+        if (customerContact == null)
+            return null;
 
-    private static AssetType MapAssetType(string assetType) => assetType switch
-    {
-        "SteamTurbineWithBackPressureMode" => AssetType.SteamTurbineWithBackPressureMode,
-        "GasTurbine" => AssetType.GasTurbine,
-        "CombinedCycle" => AssetType.CombinedCycle,
-        "CombustionEngineGas" => AssetType.CombustionEngineGas,
-        "SteamTurbineWithCondensationSteam" => AssetType.SteamTurbineWithCondensationSteam,
-        "Boiler" => AssetType.Boiler,
-        "StirlingEngine" => AssetType.StirlingEngine,
-        "PermanentConnectedElectricalEnergyStorageFacilities" => AssetType.PermanentConnectedElectricalEnergyStorageFacilities,
-        "TemporarilyConnectedElectricalEnergyStorageFacilities" => AssetType.TemporarilyConnectedElectricalEnergyStorageFacilities,
-        "FuelCells" => AssetType.FuelCells,
-        "PhotoVoltaicCells" => AssetType.PhotoVoltaicCells,
-        "WindTurbines" => AssetType.WindTurbines,
-        "HydroelectricPower" => AssetType.HydroelectricPower,
-        "WavePower" => AssetType.WavePower,
-        "MixedProduction" => AssetType.MixedProduction,
-        "ProductionWithElectricalEnergyStorageFacilities" => AssetType.ProductionWithElectricalEnergyStorageFacilities,
-        "PowerToX" => AssetType.PowerToX,
-        "RegenerativeDemandFacility" => AssetType.RegenerativeDemandFacility,
-        "CombustionEngineDiesel" => AssetType.CombustionEngineDiesel,
-        "CombustionEngineBio" => AssetType.CombustionEngineBio,
-        "NoTechnology" => AssetType.NoTechnology,
-        "UnknownTechnology" => AssetType.UnknownTechnology,
-        _ => throw new ArgumentOutOfRangeException(nameof(assetType), assetType, null)
-    };
-
-    private static Product MapProduct(string product) => product switch
-    {
-        "Tariff" => Product.Tariff,
-        "FuelQuantity" => Product.FuelQuantity,
-        "PowerActive" => Product.PowerActive,
-        "PowerReactive" => Product.PowerReactive,
-        "EnergyActive" => Product.EnergyActive,
-        "EnergyReactive" => Product.EnergyReactive,
-        _ => throw new ArgumentOutOfRangeException(nameof(product), product, null)
-    };
-
-    private static SettlementMethod MapSettlementMethod(string settlementMethod) => settlementMethod switch
-    {
-        "NonProfiled" => SettlementMethod.NonProfiled,
-        "Profiled" => SettlementMethod.Profiled,
-        "FlexSettled" => SettlementMethod.FlexSettled,
-        _ => throw new ArgumentOutOfRangeException(nameof(settlementMethod), settlementMethod, null)
-    };
+        return new CustomerContactDto(
+            customerContact.Id,
+            customerContact.Name,
+            customerContact.Email,
+            customerContact.IsProtectedAddress,
+            customerContact.Phone,
+            customerContact.Mobile,
+            customerContact.Address?.Attention,
+            customerContact.Address?.StreetCode,
+            customerContact.Address?.StreetName,
+            customerContact.Address?.BuildingNumber,
+            customerContact.Address?.PostCode,
+            customerContact.Address?.CityName,
+            customerContact.Address?.CitySubdivisionName,
+            customerContact.Address?.DarReference,
+            customerContact.Address?.CountryCode,
+            customerContact.Address?.Floor,
+            customerContact.Address?.Room,
+            customerContact.Address?.PostCode,
+            customerContact.Address?.MunicipalityCode);
+    }
 }

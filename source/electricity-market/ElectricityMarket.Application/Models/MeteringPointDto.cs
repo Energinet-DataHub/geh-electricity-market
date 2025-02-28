@@ -14,30 +14,10 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed class MeteringPointDto
-{
-    public MeteringPointDto(
-        long id,
-        string identification,
-        IEnumerable<MeteringPointPeriodDto> meteringPointPeriod,
-        IEnumerable<CommercialRelationDto> commercialRelations)
-    {
-        Id = id;
-        Identification = identification;
-        MeteringPointPeriod = meteringPointPeriod;
-        CommercialRelations = commercialRelations;
-    }
-
-    public long Id { get; init; }
-    public string Identification { get; init; }
-    public IEnumerable<MeteringPointPeriodDto> MeteringPointPeriod { get; init; }
-    public IEnumerable<CommercialRelationDto> CommercialRelations { get; init; }
-
-    public MeteringPointPeriodDto? CurrentMeteringPointPeriod =>
-        MeteringPointPeriod.FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.Now && x.ValidTo >= DateTimeOffset.Now) ??
-        MeteringPointPeriod.OrderByDescending(x => x.ValidFrom).FirstOrDefault();
-
-    public CommercialRelationDto? CurrentCommercialRelation =>
-        CommercialRelations.FirstOrDefault(x => x.StartDate <= DateTimeOffset.Now && x.EndDate >= DateTimeOffset.Now) ??
-        CommercialRelations.OrderByDescending(x => x.StartDate).FirstOrDefault();
-}
+public sealed record MeteringPointDto(
+    long Id,
+    string Identification,
+    MeteringPointMetadataDto Metadata,
+    IEnumerable<MeteringPointMetadataDto> MetadataTimeline,
+    CommercialRelationDto? CommercialRelation,
+    IEnumerable<CommercialRelationDto> CommercialRelationTimeline);

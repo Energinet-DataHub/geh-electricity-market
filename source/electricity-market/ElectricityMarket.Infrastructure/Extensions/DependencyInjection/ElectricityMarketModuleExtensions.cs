@@ -14,6 +14,7 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
+using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -56,6 +57,7 @@ public static class ElectricityMarketModuleExtensions
 
         // Repositories
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
+        services.AddScoped<IMeteringPointIntegrationRepository, MeteringPointIntegrationRepository>();
         services.AddScoped<IGridAreaRepository, GridAreaRepository>();
         services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();
         services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
