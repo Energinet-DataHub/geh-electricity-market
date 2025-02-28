@@ -137,9 +137,7 @@ public static class Program
             sb.AppendLine(items[0].GetType().Name.Replace("Entity", string.Empty, StringComparison.InvariantCulture));
             var properties = items.First().GetType()
                 .GetProperties()
-                // ignore collections
                 .Where(p => !typeof(System.Collections.IEnumerable).IsAssignableFrom(p.PropertyType) || p.PropertyType == typeof(string))
-                // ignore complex properties of complex types
                 .Where(p => p.PropertyType.IsPrimitive || p.PropertyType.IsValueType || p.PropertyType == typeof(string))
                 .ToArray();
 
