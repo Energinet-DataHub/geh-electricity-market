@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
+using CsvHelper.TypeConversion;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.Extensions.Configuration;
@@ -74,6 +75,16 @@ public static class Program
                 HasHeaderRecord = true,
             });
 
+            var options = new TypeConverterOptions
+            {
+                NullValues =
+                {
+                    string.Empty,
+                },
+            };
+            csv.Context.TypeConverterOptionsCache.AddOptions<string>(options);
+            csv.Context.TypeConverterOptionsCache.AddOptions<int?>(options);
+
             result.Add(await csv.GetRecordsAsync<ImportedTransactionEntity>().ToListAsync().ConfigureAwait(false));
             result.CompleteAdding();
         }
@@ -93,14 +104,23 @@ public static class Program
             var sb = new StringBuilder();
 
             var meteringPointEntities = relationalModelBatches.SelectMany(x => x).ToList();
+
             sb.Append(
                 PrettyPrintObjects(meteringPointEntities.Cast<object>().ToList()));
             sb.Append(
                 PrettyPrintObjects(meteringPointEntities.Select(x => x.MeteringPointPeriods).SelectMany(x => x).Cast<object>().ToList()));
             sb.Append(
+                PrettyPrintObjects(meteringPointEntities.Select(x => x.MeteringPointPeriods).SelectMany(x => x.Select(y => y.InstallationAddress)).Cast<object>().ToList()));
+            sb.Append(
                 PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x).Cast<object>().ToList()));
             sb.Append(
                 PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods)).Cast<object>().ToList()));
+            sb.Append(
+                PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts)).Cast<object>().ToList()));
+            sb.Append(
+                PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts.Select(i => i.ContactAddress))).Where(j => j is not null).Cast<object>().ToList()));
+            sb.Append(
+                PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.ElectricalHeatingPeriods)).Cast<object>().ToList()));
 
             var quarantinedMeteringPoints = quarantined.SelectMany(x => x).ToList();
             sb.Append(
@@ -117,7 +137,10 @@ public static class Program
             sb.AppendLine(items[0].GetType().Name.Replace("Entity", string.Empty, StringComparison.InvariantCulture));
             var properties = items.First().GetType()
                 .GetProperties()
+                // ignore collections
                 .Where(p => !typeof(System.Collections.IEnumerable).IsAssignableFrom(p.PropertyType) || p.PropertyType == typeof(string))
+                // ignore complex properties of complex types
+                .Where(p => p.PropertyType.IsPrimitive || p.PropertyType.IsValueType || p.PropertyType == typeof(string))
                 .ToArray();
 
             var columnWidths = properties
