@@ -18,7 +18,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
 
 public static class ImportModelHelper
 {
@@ -117,9 +117,7 @@ public static class ImportModelHelper
     {
         ArgumentNullException.ThrowIfNull(propertyInfo);
         if (typeof(T) != propertyInfo.DeclaringType)
-        {
             throw new ArgumentException("not allowed");
-        }
 
         var instance = Expression.Parameter(propertyInfo.DeclaringType, "i");
         var property = Expression.Property(instance, propertyInfo);
