@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
@@ -28,10 +29,18 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 public sealed class ImportedTransactionRepository : IImportedTransactionRepository
 {
     private readonly ElectricityMarketDatabaseContext _context;
+    private readonly IEnumerable<PropertyInfo> _importedTransactionProperties = [];
+    private readonly Dictionary<string, Func<ImportedTransactionRecord, object>> _propertyGetters = [];
 
     public ImportedTransactionRepository(ElectricityMarketDatabaseContext context)
     {
         _context = context;
+        _importedTransactionProperties = typeof(ImportedTransactionRecord).GetProperties().Where(p => p.CanRead);
+        foreach (var propertyInfo in _importedTransactionProperties)
+        {
+            var getter = propertyInfo.GetValueGetter<ImportedTransactionRecord>();
+            _propertyGetters.Add(propertyInfo.Name, getter);
+        }
     }
 
     public async Task AddAsync(IEnumerable<ImportedTransactionRecord> transactions)
@@ -66,18 +75,17 @@ public sealed class ImportedTransactionRepository : IImportedTransactionReposito
         return importedTransactionMeteringPointIds;
     }
 
-    private static IEnumerable<ImportedTransactionEntity> Map(IEnumerable<ImportedTransactionRecord> transactions)
+    private IEnumerable<ImportedTransactionEntity> Map(IEnumerable<ImportedTransactionRecord> transactions)
     {
-        var properties = typeof(ImportedTransactionRecord).GetProperties().Where(p => p.CanRead);
         var lookup = ImportModelHelper.ImportFields.ToImmutableDictionary(k => k.Key, v => v.Value);
 
         foreach (var transaction in transactions)
         {
             var entity = new ImportedTransactionEntity();
 
-            foreach (var propertyInfo in properties)
+            foreach (var propertyInfo in _importedTransactionProperties)
             {
-                var getter = propertyInfo.GetValueGetter<ImportedTransactionRecord>();
+                var getter = _propertyGetters[propertyInfo.Name];
                 var propertyValue = getter(transaction);
                 lookup[propertyInfo.Name](propertyValue, entity);
             }
