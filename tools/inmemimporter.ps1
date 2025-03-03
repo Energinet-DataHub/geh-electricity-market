@@ -6,7 +6,7 @@ function Run-Command {
     Invoke-Expression $Command
     
     if ($LASTEXITCODE -ne 0) {
-        Read-Host "Press Enter to exit..."
+        Read-Host "Press Enter to continue..."
     }
 }
 
