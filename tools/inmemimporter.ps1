@@ -11,5 +11,12 @@ function Run-Command {
     }
 }
 
-Run-Command "npm install --prefix ../source/electricity-market/InMemImporter.Application"
-Run-Command "npm start --prefix ../source/electricity-market/InMemImporter.Application"
+$currentDir = Get-Location
+
+try {
+    Set-Location -Path $PSScriptRoot/../source/electricity-market/InMemImporter.Application
+    Run-Command "npm install"
+    Run-Command "npm start"
+} finally {
+    Set-Location -Path $currentDir
+}
