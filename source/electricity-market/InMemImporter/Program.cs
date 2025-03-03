@@ -20,7 +20,6 @@ using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace InMemImporter;
@@ -33,15 +32,11 @@ public static class Program
         {
             ArgumentNullException.ThrowIfNull(args);
 
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .Build();
-
-            var cultureInfo = CultureInfo.GetCultureInfo(config["Locale"]!);
+            var cultureInfo = CultureInfo.GetCultureInfo(args[0]);
 
             using var importer = new Importer(
                 NullLogger<Importer>.Instance,
-                new CsvImportedTransactionModelReader(args[0], cultureInfo),
+                new CsvImportedTransactionModelReader(args[1], cultureInfo),
                 new StdOutRelationalModelWriter(cultureInfo),
                 new MeteringPointImporter());
 
