@@ -50,7 +50,7 @@ internal static class MeteringPointMapper
             meteringPointMetadata.ProductObligation,
             meteringPointMetadata.MeasureUnit,
             meteringPointMetadata.AssetType,
-            meteringPointMetadata.FuelType,
+            meteringPointMetadata.EnvironmentalFriendly,
             meteringPointMetadata.Capacity,
             meteringPointMetadata.PowerLimitKw,
             meteringPointMetadata.MeterNumber,

@@ -32,7 +32,7 @@ public sealed record MeteringPointMetadata(
     bool? ProductObligation,
     MeteringPointMeasureUnit MeasureUnit,
     AssetType? AssetType,
-    bool? FuelType,
+    bool? EnvironmentalFriendly,
     string? Capacity,
     int? PowerLimitKw,
     string? MeterNumber,
