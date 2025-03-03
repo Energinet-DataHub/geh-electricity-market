@@ -206,6 +206,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             return (true, string.Empty);
 
         var applyNewCommercialRelation = false;
+
         var activeCommercialRelation = new CommercialRelationEntity
         {
             StartDate = importedTransaction.valid_from_date,

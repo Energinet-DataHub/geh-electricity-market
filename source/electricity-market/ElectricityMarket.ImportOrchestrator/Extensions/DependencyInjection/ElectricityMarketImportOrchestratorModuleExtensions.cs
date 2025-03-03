@@ -47,6 +47,9 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
         services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
         services.AddScoped<IMeteringPointImporter, MeteringPointImporter>();
+        services.AddScoped<IImportedTransactionModelReader, ImportedTransactionModelReader>();
+        services.AddScoped<IRelationalModelWriter, RelationalModelWriter>();
+        services.AddScoped<IImporter, Importer>();
 
         AddHealthChecks(services, configuration);
 
