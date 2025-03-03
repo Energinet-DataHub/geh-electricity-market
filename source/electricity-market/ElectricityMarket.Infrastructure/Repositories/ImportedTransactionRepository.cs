@@ -14,10 +14,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
@@ -27,32 +30,25 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 public sealed class ImportedTransactionRepository : IImportedTransactionRepository
 {
     private readonly ElectricityMarketDatabaseContext _context;
+    private readonly IEnumerable<PropertyInfo> _importedTransactionProperties = [];
+    private readonly Dictionary<string, Func<ImportedTransactionRecord, object>> _propertyGetters = [];
 
     public ImportedTransactionRepository(ElectricityMarketDatabaseContext context)
     {
         _context = context;
+        _importedTransactionProperties = typeof(ImportedTransactionRecord).GetProperties().Where(p => p.CanRead);
+        foreach (var propertyInfo in _importedTransactionProperties)
+        {
+            var getter = propertyInfo.GetValueGetter<ImportedTransactionRecord>();
+            _propertyGetters.Add(propertyInfo.Name, getter);
+        }
     }
 
     public async Task AddAsync(IEnumerable<ImportedTransactionRecord> transactions)
     {
-        var mapped = transactions.Select(result => new ImportedTransactionEntity
-        {
-            metering_point_id = result.MeteringPointId,
-            valid_from_date = result.ValidFromDate,
-            valid_to_date = result.ValidToDate ?? DateTimeOffset.MaxValue,
-            dh2_created = result.DH2CreatedDate,
-            metering_grid_area_id = result.MeteringGridAreaId,
-            metering_point_state_id = result.MeteringPointStateId,
-            btd_trans_doss_id = result.BusinessTransactionDosId ?? -1,
-            physical_status_of_mp = result.PhysicalStatus,
-            type_of_mp = result.Type,
-            sub_type_of_mp = result.SubType,
-            energy_timeseries_measure_unit = result.MeasureUnit,
-            web_access_code = result.WebAccessCode,
-            balance_supplier_id = result.BalanceSupplierId,
-            effectuation_date = result.EffectuationDate ?? result.DH2CreatedDate,
-            transaction_type = result.TransactionType ?? string.Empty,
-        });
+        ArgumentNullException.ThrowIfNull(transactions);
+
+        var mapped = Map(transactions);
 
         await _context.ImportedTransactions
             .AddRangeAsync(mapped)
@@ -64,7 +60,7 @@ public sealed class ImportedTransactionRepository : IImportedTransactionReposito
     public async Task<IEnumerable<long>> GetImportedTransactionsAsync(IEnumerable<ImportedTransactionRecord> transactions)
     {
         var ids = transactions
-            .Select(id => id.MeteringPointId)
+            .Select(id => id.metering_point_id)
             .Distinct()
             .ToList();
 
@@ -78,5 +74,24 @@ public sealed class ImportedTransactionRepository : IImportedTransactionReposito
             .ConfigureAwait(false);
 
         return importedTransactionMeteringPointIds;
+    }
+
+    private IEnumerable<ImportedTransactionEntity> Map(IEnumerable<ImportedTransactionRecord> transactions)
+    {
+        var lookup = ImportModelHelper.ImportFields.ToImmutableDictionary(k => k.Key, v => v.Value);
+
+        foreach (var transaction in transactions)
+        {
+            var entity = new ImportedTransactionEntity();
+
+            foreach (var propertyInfo in _importedTransactionProperties)
+            {
+                var getter = _propertyGetters[propertyInfo.Name];
+                var propertyValue = getter(transaction);
+                lookup[propertyInfo.Name](propertyValue, entity);
+            }
+
+            yield return entity;
+        }
     }
 }

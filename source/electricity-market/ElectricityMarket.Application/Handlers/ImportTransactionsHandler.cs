@@ -37,7 +37,7 @@ public sealed class ImportTransactionsHandler : IRequestHandler<ImportTransactio
 
         var existingMeteringPoints = await _importedTransactionRepository.GetImportedTransactionsAsync(transactions).ConfigureAwait(false);
 
-        var newTransactions = transactions.Where(t => existingMeteringPoints.All(x => t.MeteringPointId != x));
+        var newTransactions = transactions.Where(t => existingMeteringPoints.All(x => t.metering_point_id != x));
 
         await _importedTransactionRepository.AddAsync(newTransactions).ConfigureAwait(false);
 
