@@ -31,7 +31,8 @@ public class CsvImporter : ICsvImporter
         {
             HeaderValidated = null,
             MissingFieldFound = null,
-            DetectDelimiter = true
+            DetectDelimiter = true,
+            Mode = CsvMode.NoEscape
         };
         using var csv = new CsvReader(reader, conf);
         var records = csv.GetRecordsAsync<ImportedTransactionRecord>();
