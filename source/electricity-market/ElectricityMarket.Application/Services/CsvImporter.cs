@@ -32,7 +32,7 @@ public class CsvImporter : ICsvImporter
             HeaderValidated = null,
             MissingFieldFound = null,
             DetectDelimiter = true,
-            Mode = CsvMode.NoEscape
+            Mode = CsvMode.Escape
         };
         using var csv = new CsvReader(reader, conf);
         var records = csv.GetRecordsAsync<ImportedTransactionRecord>();
