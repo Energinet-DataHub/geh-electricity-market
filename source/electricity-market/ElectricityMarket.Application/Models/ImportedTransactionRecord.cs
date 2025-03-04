@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #pragma warning disable SA1300, CA1707
+using CsvHelper.Configuration.Attributes;
+
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed class ImportedTransactionRecord
@@ -23,6 +25,7 @@ public sealed class ImportedTransactionRecord
     public DateTimeOffset dh2_created { get; set; }
     public string metering_grid_area_id { get; set; } = null!;
     public long metering_point_state_id { get; set; }
+    [Name("btd_business_trans_doss_id")]
     public long btd_trans_doss_id { get; set; }
     public string? parent_metering_point_id { get; set; }
     public string type_of_mp { get; set; } = null!;
