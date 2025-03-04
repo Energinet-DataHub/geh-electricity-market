@@ -33,8 +33,8 @@ public static class Program
 
             var cultureInfo = CultureInfo.GetCultureInfo(args[0]);
 
-            using var importer = new Importer(
-                NullLogger<Importer>.Instance,
+            using var importer = new BulkImporter(
+                NullLogger<BulkImporter>.Instance,
                 new CsvImportedTransactionModelReader(args[1], cultureInfo),
                 new StdOutRelationalModelWriter(new RelationalModelPrinter(), cultureInfo),
                 new MeteringPointImporter());

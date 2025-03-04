@@ -13,10 +13,11 @@
 // limitations under the License.
 
 using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
-public interface IImporter
+public interface IStreamingImporter
 {
-    Task RunAsync(int skip, int take);
+    Task ImportAsync(ImportedTransactionEntity importedTransactionEntity);
 }

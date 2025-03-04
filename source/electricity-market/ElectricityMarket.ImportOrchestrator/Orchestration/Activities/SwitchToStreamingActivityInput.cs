@@ -12,18 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class ImportStateEntity
+public class SwitchToStreamingActivityInput
 {
-    public const int Off = 0;
-    public const int Scheduled = 1;
-    public const int BulkImport = 2;
-    public const int StreamingImport = 3;
-
-    public int Id { get; set; }
-
-    public int State { get; set; }
-
-    public long Offset { get; set; }
+    public long Cutoff { get; set; }
 }
