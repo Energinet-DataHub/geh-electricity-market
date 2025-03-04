@@ -14,7 +14,6 @@
 
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
@@ -37,7 +36,7 @@ public static class Program
             using var importer = new Importer(
                 NullLogger<Importer>.Instance,
                 new CsvImportedTransactionModelReader(args[1], cultureInfo),
-                new StdOutRelationalModelWriter(cultureInfo),
+                new StdOutRelationalModelWriter(new RelationalModelPrinter(), cultureInfo),
                 new MeteringPointImporter());
 
             await importer.RunAsync(0, int.MaxValue).ConfigureAwait(false);
@@ -87,86 +86,18 @@ public static class Program
 
     private sealed class StdOutRelationalModelWriter : IRelationalModelWriter
     {
+        private readonly IRelationalModelPrinter _modelPrinter;
         private readonly CultureInfo _cultureInfo;
 
-        public StdOutRelationalModelWriter(CultureInfo cultureInfo)
+        public StdOutRelationalModelWriter(IRelationalModelPrinter modelPrinter, CultureInfo cultureInfo)
         {
+            _modelPrinter = modelPrinter;
             _cultureInfo = cultureInfo;
         }
 
         public async Task WriteRelationalModelAsync(IEnumerable<IList<MeteringPointEntity>> relationalModelBatches, IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined)
         {
-            var sb = new StringBuilder();
-
-            var meteringPointEntities = relationalModelBatches.SelectMany(x => x).ToList();
-
-            sb.Append(
-                PrettyPrintObjects(meteringPointEntities.Cast<object>().ToList()));
-            sb.Append(
-                PrettyPrintObjects(meteringPointEntities.Select(x => x.MeteringPointPeriods).SelectMany(x => x).Cast<object>().ToList()));
-            sb.Append(
-                PrettyPrintObjects(meteringPointEntities.Select(x => x.MeteringPointPeriods).SelectMany(x => x.Select(y => y.InstallationAddress)).Cast<object>().ToList()));
-            sb.Append(
-                PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x).Cast<object>().ToList()));
-            sb.Append(
-                PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods)).Cast<object>().ToList()));
-            sb.Append(
-                PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts)).Cast<object>().ToList()));
-            sb.Append(
-                PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts.Select(i => i.ContactAddress))).Where(j => j is not null).Cast<object>().ToList()));
-            sb.Append(
-                PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.ElectricalHeatingPeriods)).Cast<object>().ToList()));
-
-            var quarantinedMeteringPoints = quarantined.SelectMany(x => x).ToList();
-            sb.Append(
-                PrettyPrintObjects(quarantinedMeteringPoints.Cast<object>().ToList()));
-
-            await Console.Out.WriteLineAsync(sb.ToString()).ConfigureAwait(false);
-        }
-
-        private string PrettyPrintObjects(IList<object> items)
-        {
-            if (items.Count == 0) return string.Empty;
-
-            var sb = new StringBuilder();
-            sb.AppendLine(items[0].GetType().Name.Replace("Entity", string.Empty, StringComparison.InvariantCulture));
-            var properties = items.First().GetType()
-                .GetProperties()
-                .Where(p => !typeof(System.Collections.IEnumerable).IsAssignableFrom(p.PropertyType) || p.PropertyType == typeof(string))
-                .Where(p => p.PropertyType.IsPrimitive || p.PropertyType.IsValueType || p.PropertyType == typeof(string))
-                .ToArray();
-
-            var columnWidths = properties
-                .Select(p => items
-                    .Select(i => p.GetValue(i)?.ToString()?.Length ?? 0)
-                    .Prepend(p.Name.Length)
-                    .Max())
-                .ToArray();
-
-            var separator = "+-" + string.Join("-+-", columnWidths.Select(w => new string('-', w))) + "-+";
-            sb.AppendLine(separator);
-
-            var header = "| " + string.Join(" | ", properties
-                .Select((p, i) => p.Name.PadRight(columnWidths[i]))) + " |";
-            sb.AppendLine(header);
-            sb.AppendLine(separator);
-
-            foreach (var item in items)
-            {
-                var rowText = "| " + string.Join(" | ", properties
-                    .Select((p, i) =>
-                    {
-                        var value = p.GetValue(item);
-                        return value is DateTimeOffset dateTimeOffset
-                            ? dateTimeOffset.ToString(_cultureInfo).PadRight(columnWidths[i])
-                            : value?.ToString()?.PadRight(columnWidths[i]) ?? string.Empty.PadRight(columnWidths[i]);
-                    })) + " |";
-                sb.AppendLine(rowText);
-            }
-
-            sb.AppendLine(separator);
-            var prettyPrintObjects = sb.ToString();
-            return !string.IsNullOrWhiteSpace(prettyPrintObjects) ? prettyPrintObjects + "\n" : prettyPrintObjects;
+            await Console.Out.WriteLineAsync(await _modelPrinter.PrintAsync(relationalModelBatches, quarantined, _cultureInfo).ConfigureAwait(false)).ConfigureAwait(false);
         }
     }
 }
