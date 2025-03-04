@@ -16,5 +16,5 @@ namespace ElectricityMarket.WebAPI.Security;
 
 public sealed record TenantDto(string ActorNumber, string ActorRole)
 {
-    public EicFunction MarketRole => Enum.Parse<EicFunction>(ActorRole, true);
+    public MarketRole MarketRole => Enum.Parse<MarketRole>(ActorRole, true);
 }

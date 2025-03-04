@@ -41,7 +41,7 @@ public class MeteringPointController : ControllerBase
     {
         ArgumentNullException.ThrowIfNull(tenant);
 
-        if (tenant.MarketRole != EicFunction.DataHubAdministrator)
+        if (tenant.MarketRole != MarketRole.DataHubAdministrator)
         {
             return Unauthorized();
         }
