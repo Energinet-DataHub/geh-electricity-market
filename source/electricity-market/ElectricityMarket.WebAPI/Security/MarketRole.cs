@@ -14,7 +14,7 @@
 
 namespace ElectricityMarket.WebAPI.Security;
 
-public enum EicFunction
+public enum MarketRole
 {
     BalanceResponsibleParty,
     BillingAgent,
