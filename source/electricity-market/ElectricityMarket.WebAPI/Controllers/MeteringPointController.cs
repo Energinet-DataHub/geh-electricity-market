@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
 using ElectricityMarket.WebAPI.Security;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
@@ -57,7 +58,7 @@ public class MeteringPointController : ControllerBase
 
     [HttpGet("{identification}/debug-view")]
     [EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "identification")]
-    public async Task<ActionResult<string>> GetMeteringPointDebugViewAsync(string identification, [FromQuery] TenantDto tenant)
+    public async Task<ActionResult<DebugResponse>> GetMeteringPointDebugViewAsync(string identification, [FromQuery] TenantDto tenant)
     {
         ArgumentNullException.ThrowIfNull(tenant);
 
@@ -72,7 +73,7 @@ public class MeteringPointController : ControllerBase
             .Send(command)
             .ConfigureAwait(false);
 
-        return Ok(meteringPoint.MeteringPoint);
+        return Ok(new { result = meteringPoint.MeteringPoint });
     }
 
     [HttpGet("contact/{contactId:long}/cpr")]
