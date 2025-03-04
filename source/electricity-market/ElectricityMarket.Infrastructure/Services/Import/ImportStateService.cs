@@ -52,7 +52,6 @@ public sealed class ImportStateService : IImportStateService
         importState.Offset = cutoff;
         importState.State = ImportStateEntity.StreamingImport;
         await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
-
     }
 
     public Task<long> GetStreamingImportCutoffAsync()
