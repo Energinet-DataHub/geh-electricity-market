@@ -15,6 +15,7 @@
 using System.Reflection;
 using Asp.Versioning;
 using ElectricityMarket.WebAPI.Extensions.DependencyInjection;
+using ElectricityMarket.WebAPI.Security;
 using Energinet.DataHub.Core.App.Common.Extensions.DependencyInjection;
 using Energinet.DataHub.Core.App.WebApp.Extensions.Builder;
 using Energinet.DataHub.Core.App.WebApp.Extensions.DependencyInjection;
@@ -33,9 +34,14 @@ builder.Services
     .AddControllers();
 
 builder.Services
-    .AddApiVersioningForWebApp(new ApiVersion(1, 0))
-    .AddSwaggerForWebApp(Assembly.GetExecutingAssembly(), "electricity-market")
     .AddNodaTimeForApplication()
+    .AddApiVersioningForWebApp(new ApiVersion(1, 0))
+    .AddSwaggerForWebApp(Assembly.GetExecutingAssembly(), "electricity-market");
+
+builder.Services
+    .AddJwtBearerAuthenticationForWebApp(builder.Configuration)
+    .AddUserAuthenticationForWebApp<FrontendUser, FrontendUserProvider>()
+    .AddPermissionAuthorizationForWebApp()
     .AddElectricityMarketWebApiModule(builder.Configuration)
     .AddRevisionLogIntegrationModule(builder.Configuration)
     .AddRevisionLogIntegrationWebApiModule<DefaultRevisionLogEntryHandler>(new Guid("1fc93427-e6fb-45db-bf92-b6efefe5aad9"));
@@ -50,11 +56,16 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.UseSwaggerForWebApp();
 app.UseHttpsRedirection();
+
 app.UseLoggingScope();
-app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRevisionLogIntegrationWebApiModule();
+app.UseUserMiddlewareForWebApp<FrontendUser>();
+app.MapControllers().RequireAuthorization();
+
 app.MapLiveHealthChecks();
 app.MapReadyHealthChecks();
 app.MapStatusHealthChecks();
-app.UseRevisionLogIntegrationWebApiModule();
 
 app.Run();
