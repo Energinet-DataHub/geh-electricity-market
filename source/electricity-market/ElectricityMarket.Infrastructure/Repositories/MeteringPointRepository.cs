@@ -13,7 +13,7 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
@@ -21,6 +21,7 @@ using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -29,13 +30,16 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 {
     private readonly MarketParticipantDatabaseContext _marketParticipantDatabaseContext;
     private readonly ElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
+    private readonly IRelationalModelPrinter _relationalModelPrinter;
 
     public MeteringPointRepository(
         MarketParticipantDatabaseContext marketParticipantDatabaseContext,
-        ElectricityMarketDatabaseContext electricityMarketDatabaseContext)
+        ElectricityMarketDatabaseContext electricityMarketDatabaseContext,
+        IRelationalModelPrinter relationalModelPrinter)
     {
         _marketParticipantDatabaseContext = marketParticipantDatabaseContext;
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
+        _relationalModelPrinter = relationalModelPrinter;
     }
 
     public async Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification)
@@ -75,5 +79,23 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         }
 
         return MeteringPointMapper.MapFromEntity(entity);
+    }
+
+    public async Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification)
+    {
+        ArgumentNullException.ThrowIfNull(identification);
+
+        var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .FirstOrDefaultAsync(x => x.Identification == identification.Value)
+            .ConfigureAwait(false);
+
+        var quarantined = await _electricityMarketDatabaseContext.QuarantinedMeteringPointEntities
+            .FirstOrDefaultAsync(x => x.Identification == identification.Value)
+            .ConfigureAwait(false);
+
+        return await _relationalModelPrinter.PrintAsync(
+            entity != null ? [[entity]] : [],
+            quarantined != null ? [[quarantined]] : [],
+            CultureInfo.GetCultureInfo("da-DK")).ConfigureAwait(false);
     }
 }

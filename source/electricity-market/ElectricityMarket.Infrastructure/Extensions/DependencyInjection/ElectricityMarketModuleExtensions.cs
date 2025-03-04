@@ -18,6 +18,7 @@ using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -64,6 +65,7 @@ public static class ElectricityMarketModuleExtensions
 
         // Services
         services.AddScoped<ICsvImporter, CsvImporter>();
+        services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
 
         return services;
     }
