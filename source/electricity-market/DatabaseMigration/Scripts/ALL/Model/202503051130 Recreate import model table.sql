@@ -199,6 +199,7 @@ CREATE TABLE [electricitymarket].[ImportState]
 
     CONSTRAINT PK_ImportState PRIMARY KEY CLUSTERED (Id),
 )
+GO
 
 INSERT INTO [electricitymarket].[ImportState]([Mode], [Offset])
 VALUES (0, 0)
