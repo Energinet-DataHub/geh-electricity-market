@@ -47,7 +47,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
     }
 
     [Fact]
-    public async Task SimpleTest()
+    public async Task Run_All_Scenarios_And_Verify_Results()
     {
         // Arrange + Act
         var results = await RunScenariosWithinTransactionWithRollbackAsync();
