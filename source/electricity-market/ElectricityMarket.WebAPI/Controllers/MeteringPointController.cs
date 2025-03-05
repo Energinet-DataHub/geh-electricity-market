@@ -78,7 +78,7 @@ public class MeteringPointController : ControllerBase
 
     [HttpGet("contact/{contactId:long}/cpr")]
     [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
-    public async Task<ActionResult<string>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
+    public async Task<ActionResult<CPRResponse>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
     {
         var command = new GetContactCprCommand(contactId, contactCprRequest);
 
@@ -86,6 +86,6 @@ public class MeteringPointController : ControllerBase
             .Send(command)
             .ConfigureAwait(false);
 
-        return Ok(cpr);
+        return Ok(new { result = cpr });
     }
 }
