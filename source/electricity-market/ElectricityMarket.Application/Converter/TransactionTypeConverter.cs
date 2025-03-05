@@ -25,7 +25,7 @@ public class TransactionTypeConverter : DefaultTypeConverter
     {
         if (!string.IsNullOrWhiteSpace(text))
         {
-            var transactionTypeArray = JsonSerializer.Deserialize<string[]>(text) ?? [];
+            var transactionTypeArray = JsonSerializer.Deserialize<string[]>(text) ?? Array.Empty<string>();
             if (transactionTypeArray.Length > 1)
             {
                 throw new InvalidOperationException("Multiple transaction types are not supported");
