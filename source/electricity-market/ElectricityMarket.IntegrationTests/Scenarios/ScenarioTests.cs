@@ -64,7 +64,6 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
             var options = default(TransactionOptions);
             var assembly = typeof(ScenarioTests).Assembly;
 
-            var cultureInfo = CultureInfo.GetCultureInfo("da-dk");
             options.IsolationLevel = IsolationLevel.ReadCommitted;
             options.Timeout = TransactionManager.MaximumTimeout;
 
@@ -98,7 +97,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
                     await using var context = await contextFactory.CreateDbContextAsync();
                     var meteringPointEntities = await context.MeteringPoints.ToListAsync();
                     var quarantinedEntities = await context.QuarantinedMeteringPointEntities.ToListAsync();
-                    var prettyPrintedResult = await relationalModelPrinter.PrintAsync([meteringPointEntities], [quarantinedEntities], cultureInfo);
+                    var prettyPrintedResult = await relationalModelPrinter.PrintAsync([meteringPointEntities], [quarantinedEntities], CultureInfo.GetCultureInfo("da-dk"));
                     prettyPrintedResult = prettyPrintedResult
                             .Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase)
                             .Replace("\r", "\n", StringComparison.OrdinalIgnoreCase);
