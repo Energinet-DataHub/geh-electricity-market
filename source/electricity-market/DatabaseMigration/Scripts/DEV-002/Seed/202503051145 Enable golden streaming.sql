@@ -1,2 +1,2 @@
 UPDATE [electricitymarket].[ImportState]
-SET [State] = 4
+SET [Mode] = 4

@@ -31,23 +31,23 @@ public sealed class ImportStateService : IImportStateService
 
     public Task<bool> IsImportPendingAsync()
     {
-        return _databaseContext.ImportStates.AnyAsync(state => state.State == ImportStateEntity.Scheduled);
+        return _databaseContext.ImportStates.AnyAsync(state => state.Mode == ImportStateEntity.Scheduled);
     }
 
     public Task<bool> IsStreamingImportEnabledAsync()
     {
-        return _databaseContext.ImportStates.AnyAsync(state => state.State == ImportStateEntity.StreamingImport);
+        return _databaseContext.ImportStates.AnyAsync(state => state.Mode == ImportStateEntity.StreamingImport);
     }
 
     public Task<bool> ShouldStreamFromGoldAsync()
     {
-        return _databaseContext.ImportStates.AnyAsync(state => state.State == ImportStateEntity.GoldenStreaming);
+        return _databaseContext.ImportStates.AnyAsync(state => state.Mode == ImportStateEntity.GoldenStreaming);
     }
 
     public async Task EnableBulkImportAsync()
     {
         var importState = await _databaseContext.ImportStates.SingleAsync().ConfigureAwait(false);
-        importState.State = ImportStateEntity.BulkImport;
+        importState.Mode = ImportStateEntity.BulkImport;
         await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
@@ -55,7 +55,7 @@ public sealed class ImportStateService : IImportStateService
     {
         var importState = await _databaseContext.ImportStates.SingleAsync().ConfigureAwait(false);
         importState.Offset = cutoff;
-        importState.State = ImportStateEntity.StreamingImport;
+        importState.Mode = ImportStateEntity.StreamingImport;
         await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
     }
 

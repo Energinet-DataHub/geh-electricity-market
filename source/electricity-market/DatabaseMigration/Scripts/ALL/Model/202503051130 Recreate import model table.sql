@@ -194,14 +194,14 @@ CREATE INDEX [IX_Contact_EnergySupplyPeriod]
 CREATE TABLE [electricitymarket].[ImportState]
 (
     [Id]      int IDENTITY(1,1) NOT NULL,
-    [State]   int NOT NULL,
+    [Mode]    int NOT NULL,
     [Offset]  bigint NOT NULL,
 
     CONSTRAINT PK_ImportState PRIMARY KEY CLUSTERED (Id),
 )
 
-insert into [electricitymarket].[ImportState](State, Offset)
-values (0, 0)
+INSERT INTO [electricitymarket].[ImportState]([Mode], [Offset])
+VALUES (0, 0)
 
 GO
 CREATE TABLE [electricitymarket].[QuarantinedMeteringPoint]
