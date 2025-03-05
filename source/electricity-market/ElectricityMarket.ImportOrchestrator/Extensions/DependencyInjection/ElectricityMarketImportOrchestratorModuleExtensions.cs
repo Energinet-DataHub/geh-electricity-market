@@ -57,6 +57,7 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
         services.AddScoped<IStreamingImporter, StreamingImporter>();
         services.AddScoped<IGoldenStreamingImporter, GoldenStreamingImporter>();
         services.AddScoped<IDatabricksStreamingImporter, DatabricksStreamingImporter>();
+        services.AddScoped<Func<IDatabricksStreamingImporter>>(scope => scope.GetRequiredService<IDatabricksStreamingImporter>);
 
         AddHealthChecks(services, configuration);
 

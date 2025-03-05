@@ -23,12 +23,12 @@ public sealed class ContinuousImportTimerTrigger
 {
     private readonly IImportStateService _importStateService;
     private readonly IGoldenStreamingImporter _goldenStreamingImporter;
-    private readonly IDatabricksStreamingImporter _databricksStreamingImporter;
+    private readonly Func<IDatabricksStreamingImporter> _databricksStreamingImporter;
 
     public ContinuousImportTimerTrigger(
         IImportStateService importStateService,
         IGoldenStreamingImporter goldenStreamingImporter,
-        IDatabricksStreamingImporter databricksStreamingImporter)
+        Func<IDatabricksStreamingImporter> databricksStreamingImporter)
     {
         _importStateService = importStateService;
         _goldenStreamingImporter = goldenStreamingImporter;
@@ -50,7 +50,7 @@ public sealed class ContinuousImportTimerTrigger
         }
         else if (await _importStateService.IsStreamingImportEnabledAsync().ConfigureAwait(false))
         {
-            await _databricksStreamingImporter.ImportAsync().ConfigureAwait(false);
+            await _databricksStreamingImporter().ImportAsync().ConfigureAwait(false);
         }
         else if (await _importStateService.IsImportPendingAsync().ConfigureAwait(false))
         {
