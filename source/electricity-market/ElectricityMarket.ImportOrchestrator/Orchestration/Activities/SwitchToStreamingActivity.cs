@@ -17,20 +17,19 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class ImportRelationalModelActivity
+public sealed class SwitchToStreamingActivity
 {
-    private readonly IBulkImporter _bulkImporter;
+    private readonly IImportStateService _importStateService;
 
-    public ImportRelationalModelActivity(IBulkImporter bulkImporter)
+    public SwitchToStreamingActivity(IImportStateService importStateService)
     {
-        _bulkImporter = bulkImporter;
+        _importStateService = importStateService;
     }
 
-    [Function(nameof(ImportRelationalModelActivity))]
-    public Task RunAsync([ActivityTrigger] ImportRelationalModelActivityInput input)
+    [Function(nameof(SwitchToStreamingActivity))]
+    public Task RunAsync([ActivityTrigger] SwitchToStreamingActivityInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
-
-        return _bulkImporter.RunAsync(input.Skip, input.Take);
+        return _importStateService.EnableStreamingImportAsync(input.Cutoff);
     }
 }

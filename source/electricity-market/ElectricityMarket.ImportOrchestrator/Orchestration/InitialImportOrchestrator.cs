@@ -15,11 +15,11 @@
 using ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
-using RetryContext = Microsoft.DurableTask.RetryContext;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
 #pragma warning disable CA2007
+
 public sealed class InitialImportOrchestrator
 {
     [Function(nameof(OrchestrateInitialImportAsync))]
@@ -30,14 +30,19 @@ public sealed class InitialImportOrchestrator
         ArgumentNullException.ThrowIfNull(orchestrationContext);
         ArgumentNullException.ThrowIfNull(executionContext);
 
-        await ImportGoldModelAsync(orchestrationContext);
-        await ImportRelationalModelAsync(orchestrationContext);
-    }
-
-    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext)
-    {
         var cutoff = await orchestrationContext.CallActivityAsync<long>(nameof(FindCutoffActivity));
 
+        await ImportGoldModelAsync(orchestrationContext, cutoff);
+        await ImportRelationalModelAsync(orchestrationContext);
+
+        await orchestrationContext.CallActivityAsync(nameof(SwitchToStreamingActivity), new SwitchToStreamingActivityInput
+        {
+            Cutoff = cutoff
+        });
+    }
+
+    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
+    {
         await orchestrationContext.CallActivityAsync(nameof(ImportGoldModelActivity), new ImportGoldModelActivityInput
         {
             Cutoff = cutoff,
@@ -59,10 +64,9 @@ public sealed class InitialImportOrchestrator
 
         await Task.WhenAll(tasks);
 
-        static bool HandleDataSourceExceptions(RetryContext context)
+        static bool HandleDataSourceExceptions(Microsoft.DurableTask.RetryContext context)
         {
             return context.LastAttemptNumber <= 3;
         }
     }
 }
-#pragma warning restore CA2007

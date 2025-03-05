@@ -94,7 +94,19 @@ public sealed class ImportGoldModelActivity : IDisposable
             }
         });
 
-        var bulkInsert = Task.Run(BulkInsertAsync);
+        var bulkInsert = Task.Run(async () =>
+        {
+            try
+            {
+                await BulkInsertAsync().ConfigureAwait(false);
+            }
+            catch
+            {
+                _importCollection.Dispose();
+                _submitCollection.Dispose();
+                throw;
+            }
+        });
 
         await Task.WhenAll(importSilver, goldTransform, bulkInsert).ConfigureAwait(false);
     }

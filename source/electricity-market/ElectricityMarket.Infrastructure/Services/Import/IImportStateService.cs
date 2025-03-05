@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using System.Threading.Tasks;
 
-public sealed class ImportStateEntity
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
+
+public interface IImportStateService
 {
-    public const int Off = 0;
-    public const int Scheduled = 1;
-    public const int BulkImport = 2;
-    public const int StreamingImport = 3;
-    public const int GoldenStreaming = 4;
+    Task<bool> IsImportPendingAsync();
+    Task<bool> IsStreamingImportEnabledAsync();
+    Task<bool> ShouldStreamFromGoldAsync();
 
-    public int Id { get; set; }
+    Task EnableBulkImportAsync();
+    Task EnableStreamingImportAsync(long cutoff);
 
-    public int State { get; set; }
-
-    public long Offset { get; set; }
+    Task<long> GetStreamingImportCutoffAsync();
+    Task UpdateStreamingCutoffAsync(long cutoff);
 }

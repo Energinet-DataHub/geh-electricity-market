@@ -23,19 +23,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
-public sealed class Importer : IImporter, IDisposable
+public sealed class BulkImporter : IBulkImporter, IDisposable
 {
     private readonly BlockingCollection<IList<ImportedTransactionEntity>> _importedTransactions = new(500000);
     private readonly BlockingCollection<IList<MeteringPointEntity>> _relationalModelBatches = new(10);
     private readonly List<List<QuarantinedMeteringPointEntity>> _quarantined = new(10);
 
-    private readonly ILogger<Importer> _logger;
+    private readonly ILogger<BulkImporter> _logger;
     private readonly IImportedTransactionModelReader _importedTransactionModelReader;
     private readonly IRelationalModelWriter _relationalModelWriter;
     private readonly IMeteringPointImporter _meteringPointImporter;
 
-    public Importer(
-        ILogger<Importer> logger,
+    public BulkImporter(
+        ILogger<BulkImporter> logger,
         IImportedTransactionModelReader importedTransactionModelReader,
         IRelationalModelWriter relationalModelWriter,
         IMeteringPointImporter meteringPointImporter)
