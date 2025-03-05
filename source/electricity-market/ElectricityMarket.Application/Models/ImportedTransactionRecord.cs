@@ -14,6 +14,7 @@
 
 #pragma warning disable SA1300, CA1707
 using CsvHelper.Configuration.Attributes;
+using Energinet.DataHub.ElectricityMarket.Application.Converter;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
@@ -34,6 +35,8 @@ public sealed class ImportedTransactionRecord
     public string? web_access_code { get; set; }
     public string? balance_supplier_id { get; set; }
     public DateTimeOffset effectuation_date { get; set; }
+    [Name("transaction_types")]
+    [TypeConverter(typeof(TransactionTypeConverter))]
     public string transaction_type { get; set; } = null!;
     public string meter_reading_occurrence { get; set; } = null!;
     public string? mp_connection_type { get; set; }
