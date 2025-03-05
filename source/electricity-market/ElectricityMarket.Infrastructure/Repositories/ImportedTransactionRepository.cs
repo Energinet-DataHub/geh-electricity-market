@@ -91,6 +91,9 @@ public sealed class ImportedTransactionRepository : IImportedTransactionReposito
                 lookup[propertyInfo.Name](propertyValue, entity);
             }
 
+            entity.first_consumer_cpr = "0123456789";
+            entity.second_consumer_cpr = "0123456789";
+
             yield return entity;
         }
     }
