@@ -20,6 +20,7 @@ public interface IImportStateService
 {
     Task<bool> IsImportPendingAsync();
     Task<bool> IsStreamingImportEnabledAsync();
+    Task<bool> ShouldStreamFromGoldAsync();
 
     Task EnableBulkImportAsync();
     Task EnableStreamingImportAsync(long cutoff);

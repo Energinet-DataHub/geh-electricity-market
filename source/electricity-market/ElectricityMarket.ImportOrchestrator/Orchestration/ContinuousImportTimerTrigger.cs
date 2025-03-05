@@ -22,13 +22,16 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 public sealed class ContinuousImportTimerTrigger
 {
     private readonly IImportStateService _importStateService;
+    private readonly IGoldenStreamingImporter _goldenStreamingImporter;
     private readonly IDatabricksStreamingImporter _databricksStreamingImporter;
 
     public ContinuousImportTimerTrigger(
         IImportStateService importStateService,
+        IGoldenStreamingImporter goldenStreamingImporter,
         IDatabricksStreamingImporter databricksStreamingImporter)
     {
         _importStateService = importStateService;
+        _goldenStreamingImporter = goldenStreamingImporter;
         _databricksStreamingImporter = databricksStreamingImporter;
     }
 
@@ -41,7 +44,11 @@ public sealed class ContinuousImportTimerTrigger
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        if (await _importStateService.IsStreamingImportEnabledAsync().ConfigureAwait(false))
+        if (await _importStateService.ShouldStreamFromGoldAsync().ConfigureAwait(false))
+        {
+            await _goldenStreamingImporter.ImportAsync().ConfigureAwait(false);
+        }
+        else if (await _importStateService.IsStreamingImportEnabledAsync().ConfigureAwait(false))
         {
             await _databricksStreamingImporter.ImportAsync().ConfigureAwait(false);
         }

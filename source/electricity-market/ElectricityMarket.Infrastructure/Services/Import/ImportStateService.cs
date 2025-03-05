@@ -39,6 +39,11 @@ public sealed class ImportStateService : IImportStateService
         return _databaseContext.ImportStates.AnyAsync(state => state.State == ImportStateEntity.StreamingImport);
     }
 
+    public Task<bool> ShouldStreamFromGoldAsync()
+    {
+        return _databaseContext.ImportStates.AnyAsync(state => state.State == ImportStateEntity.GoldenStreaming);
+    }
+
     public async Task EnableBulkImportAsync()
     {
         var importState = await _databaseContext.ImportStates.SingleAsync().ConfigureAwait(false);
@@ -56,7 +61,7 @@ public sealed class ImportStateService : IImportStateService
 
     public Task<long> GetStreamingImportCutoffAsync()
     {
-        return _databaseContext.ImportStates.Select(state => state.Offset).FirstAsync();
+        return _databaseContext.ImportStates.Select(state => state.Offset).SingleAsync();
     }
 
     public async Task UpdateStreamingCutoffAsync(long cutoff)

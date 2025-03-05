@@ -175,7 +175,13 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                     lookup[keyValuePair.Key](keyValuePair.Value, importedTransaction);
                 }
 
+                await _databaseContext.ImportedTransactions
+                    .AddAsync(importedTransaction)
+                    .ConfigureAwait(false);
+
                 await _streamingImporter.ImportAsync(importedTransaction).ConfigureAwait(false);
+
+                await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
             await _importStateService

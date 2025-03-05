@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using ElectricityMarket.ImportOrchestrator.Monitor;
+using ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 using ElectricityMarket.ImportOrchestrator.Services;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution.Diagnostics.HealthChecks;
@@ -47,12 +48,14 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
 
         services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
+        services.AddScoped<FindCutoffActivity>();
         services.AddScoped<IImportStateService, ImportStateService>();
         services.AddScoped<IMeteringPointImporter, MeteringPointImporter>();
         services.AddScoped<IImportedTransactionModelReader, ImportedTransactionModelReader>();
         services.AddScoped<IRelationalModelWriter, RelationalModelWriter>();
         services.AddScoped<IBulkImporter, BulkImporter>();
         services.AddScoped<IStreamingImporter, StreamingImporter>();
+        services.AddScoped<IGoldenStreamingImporter, GoldenStreamingImporter>();
         services.AddScoped<IDatabricksStreamingImporter, DatabricksStreamingImporter>();
 
         AddHealthChecks(services, configuration);
