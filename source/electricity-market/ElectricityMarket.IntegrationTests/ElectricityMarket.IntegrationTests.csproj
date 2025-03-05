@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Energinet.DataHub.Core.FunctionApp.TestCommon" Version="7.2.1" />
+    <PackageReference Include="FakeLocalTimeZone" Version="0.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="SimplerSoftware.EntityFrameworkCore.SqlServer.NodaTime" Version="8.0.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
@@ -25,5 +26,10 @@
     <ProjectReference Include="..\DatabaseMigration\DatabaseMigration.csproj" />
     <ProjectReference Include="..\ElectricityMarket.Infrastructure\ElectricityMarket.Infrastructure.csproj" />
     <ProjectReference Include="..\ElectricityMarket.Integration\ElectricityMarket.Integration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="TestData\gold-import.csv" />
+    <EmbeddedResource Include="TestData\gold-import.csv" />
   </ItemGroup>
 </Project>
