@@ -1,0 +1,129 @@
+﻿// Copyright 2020 Energinet DataHub A/S
+//
+// Licensed under the Apache License, Version 2.0 (the "License2");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Transactions;
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Application.Services;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
+using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
+using FakeTimeZone;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+
+namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Scenarios;
+
+[Collection(nameof(IntegrationTestCollectionFixture))]
+public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ICsvImporter _csvImporter;
+
+    public ScenarioTests(ScenarioTestFixture fixture)
+    {
+        ArgumentNullException.ThrowIfNull(fixture);
+
+        _csvImporter = fixture.ServiceProvider.GetRequiredService<ICsvImporter>();
+        _serviceProvider = fixture.ServiceProvider;
+    }
+
+    [Fact]
+    public async Task SimpleTest()
+    {
+        // Arrange + Act
+        var results = await RunScenariosWithinTransactionWithRollbackAsync();
+
+        // Assert
+        Assert.All(results, result => Assert.True(result.Success));
+    }
+
+    private async Task<IEnumerable<ScenarioTestResult>> RunScenariosWithinTransactionWithRollbackAsync()
+    {
+        var scenarioResults = new List<ScenarioTestResult>();
+        using (new FakeLocalTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time")))
+        {
+            var options = default(TransactionOptions);
+            var assembly = typeof(ScenarioTests).Assembly;
+
+            var cultureInfo = CultureInfo.GetCultureInfo("da-dk");
+            options.IsolationLevel = IsolationLevel.ReadCommitted;
+            options.Timeout = TransactionManager.MaximumTimeout;
+
+            // Load all scenario files
+            var scenarioFiles = assembly!.GetManifestResourceNames().Where(n => n.EndsWith("-ScenarioTest.csv", StringComparison.OrdinalIgnoreCase));
+            var expectedResultFiles = assembly!.GetManifestResourceNames().Where(n => n.EndsWith("-ScenarioTest-Expected.txt", StringComparison.OrdinalIgnoreCase));
+            foreach (var scenarioFile in scenarioFiles)
+            {
+                using var scope = _serviceProvider.CreateScope();
+                using (new TransactionScope(TransactionScopeOption.Required, options, TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    // Setup needed services
+                    var scopedProvider = scope.ServiceProvider;
+                    var importedTransactionRepository = scopedProvider.GetRequiredService<IImportedTransactionRepository>();
+                    var importer = scopedProvider.GetRequiredService<IBulkImporter>();
+                    var relationalModelPrinter = scopedProvider.GetRequiredService<IRelationalModelPrinter>();
+                    var contextFactory = scopedProvider.GetService<IDbContextFactory<ElectricityMarketDatabaseContext>>();
+
+                    // Import the test data
+                    var scenarioName = scenarioFile.Replace(
+                        "Energinet.DataHub.ElectricityMarket.IntegrationTests.TestData.",
+                        string.Empty,
+                        StringComparison.OrdinalIgnoreCase);
+
+                    var csvStream = assembly!.GetManifestResourceStream(scenarioFile);
+                    var imported = await _csvImporter.ImportAsync(csvStream).ConfigureAwait(false);
+                    await importedTransactionRepository.AddAsync(imported).ConfigureAwait(false);
+                    await importer.RunAsync(0, 10_000); // 10_000 selected as a max size, test data should never exceed this.
+
+                    // Read the results and pretty print them
+                    await using var context = await contextFactory.CreateDbContextAsync();
+                    var meteringPointEntities = await context.MeteringPoints.ToListAsync();
+                    var quarantinedEntities = await context.QuarantinedMeteringPointEntities.ToListAsync();
+                    var prettyPrintedResult = await relationalModelPrinter.PrintAsync([meteringPointEntities], [quarantinedEntities], cultureInfo);
+                    prettyPrintedResult = prettyPrintedResult
+                            .Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase)
+                            .Replace("\r", "\n", StringComparison.OrdinalIgnoreCase);
+
+                    // Compare the results with the expected results
+                    var expectedResults = assembly!.GetManifestResourceStream(scenarioFile.Replace("-ScenarioTest.csv", "-ScenarioTest-Expected.txt"));
+                    if (expectedResults is null)
+                    {
+                        scenarioResults.Add(new ScenarioTestResult(scenarioName, false, "Expected results file not found"));
+                        continue;
+                    }
+
+                    string expected;
+                    using (var reader = new StreamReader(expectedResults!))
+                    {
+                        expected = await reader.ReadToEndAsync();
+                    }
+
+                    scenarioResults.Add(prettyPrintedResult.Equals(expected, StringComparison.OrdinalIgnoreCase)
+                        ? new ScenarioTestResult(scenarioName, true, string.Empty)
+                        : new ScenarioTestResult(scenarioName, false, "Results does not match expected"));
+                }
+            }
+        }
+
+        return scenarioResults;
+    }
+}

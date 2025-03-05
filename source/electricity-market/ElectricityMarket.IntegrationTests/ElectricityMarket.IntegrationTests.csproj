@@ -29,7 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="TestData\gold-import.csv" />
-    <EmbeddedResource Include="TestData\gold-import.csv" />
+    <EmbeddedResource Include="TestData\NoExpected-ScenarioTest.csv" />
+    <EmbeddedResource Include="TestData\gold-import-ScenarioTest-Expected.txt" />
+    <EmbeddedResource Include="TestData\gold-import-ScenarioTest.csv" />
   </ItemGroup>
 </Project>
