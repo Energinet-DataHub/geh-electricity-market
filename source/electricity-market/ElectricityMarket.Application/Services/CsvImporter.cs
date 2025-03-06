@@ -15,6 +15,7 @@
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using CsvHelper.TypeConversion;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services;
@@ -35,6 +36,15 @@ public class CsvImporter : ICsvImporter
             Mode = CsvMode.Escape
         };
         using var csv = new CsvReader(reader, conf);
+        var options = new TypeConverterOptions
+        {
+            NullValues =
+                {
+                    string.Empty,
+                },
+        };
+        csv.Context.TypeConverterOptionsCache.AddOptions<string>(options);
+        csv.Context.TypeConverterOptionsCache.AddOptions<int?>(options);
         var records = csv.GetRecordsAsync<ImportedTransactionRecord>();
 
         return await records.ToListAsync().ConfigureAwait(false);
