@@ -49,14 +49,10 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
 
         // Register options
         services.AddOptions();
-
-        // Configure DatabaseOptions directly without validation
         services.Configure<DatabaseOptions>(options =>
         {
             options.ConnectionString = DatabaseManager.ConnectionString;
         });
-
-        // Register configuration
         services.AddSingleton(configuration);
 
         // Add logging services
@@ -76,7 +72,7 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
                 .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], LogLevel.None);
         });
 
-        // Register database contexts and other dependencies
+        // Register dependencies
         services.AddScoped<ICsvImporter, CsvImporter>();
         services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
@@ -86,8 +82,6 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
         services.AddScoped<IBulkImporter, BulkImporter>();
 
-
-        // Build service provider
         _serviceProvider = services.BuildServiceProvider();
     }
 

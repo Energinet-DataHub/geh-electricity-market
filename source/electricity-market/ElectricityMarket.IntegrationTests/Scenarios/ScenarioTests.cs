@@ -56,6 +56,13 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
         Assert.All(results, result => Assert.True(result.Success));
     }
 
+    private static string Sanitize(string input)
+    {
+        return input
+            .Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase)
+            .Replace("\r", "\n", StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task<IEnumerable<ScenarioTestResult>> RunScenariosWithinTransactionWithRollbackAsync()
     {
         var scenarioResults = new List<ScenarioTestResult>();
@@ -68,8 +75,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
             options.Timeout = TransactionManager.MaximumTimeout;
 
             // Load all scenario files
-            var scenarioFiles = assembly!.GetManifestResourceNames().Where(n => n.EndsWith("-ScenarioTest.csv", StringComparison.OrdinalIgnoreCase));
-            var expectedResultFiles = assembly!.GetManifestResourceNames().Where(n => n.EndsWith("-ScenarioTest-Expected.txt", StringComparison.OrdinalIgnoreCase));
+            var scenarioFiles = assembly!.GetManifestResourceNames().Where(n => n.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
             foreach (var scenarioFile in scenarioFiles)
             {
                 using var scope = _serviceProvider.CreateScope();
@@ -98,12 +104,10 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
                     var meteringPointEntities = await context.MeteringPoints.ToListAsync();
                     var quarantinedEntities = await context.QuarantinedMeteringPointEntities.ToListAsync();
                     var prettyPrintedResult = await relationalModelPrinter.PrintAsync([meteringPointEntities], [quarantinedEntities], CultureInfo.GetCultureInfo("da-dk"));
-                    prettyPrintedResult = prettyPrintedResult
-                            .Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase)
-                            .Replace("\r", "\n", StringComparison.OrdinalIgnoreCase);
+                    prettyPrintedResult = Sanitize(prettyPrintedResult);
 
                     // Compare the results with the expected results
-                    var expectedResults = assembly!.GetManifestResourceStream(scenarioFile.Replace("-ScenarioTest.csv", "-ScenarioTest-Expected.txt"));
+                    var expectedResults = assembly!.GetManifestResourceStream(scenarioFile.Replace(".csv", ".txt", StringComparison.OrdinalIgnoreCase));
                     if (expectedResults is null)
                     {
                         scenarioResults.Add(new ScenarioTestResult(scenarioName, false, "Expected results file not found"));
@@ -113,7 +117,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
                     string expected;
                     using (var reader = new StreamReader(expectedResults!))
                     {
-                        expected = await reader.ReadToEndAsync();
+                        expected = Sanitize(await reader.ReadToEndAsync());
                     }
 
                     scenarioResults.Add(prettyPrintedResult.Equals(expected, StringComparison.OrdinalIgnoreCase)
