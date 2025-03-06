@@ -309,6 +309,7 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [contact_4_room_id]               NVARCHAR(64)       NULL,
     [contact_4_post_box]              NVARCHAR(64)       NULL,
     [contact_4_municipality_code]     NVARCHAR(64)       NULL,
+    [dossier_status]                  CHAR(3)            NULL,
 )
 
 CREATE INDEX [IX_GoldenImport_metering_point_id]
