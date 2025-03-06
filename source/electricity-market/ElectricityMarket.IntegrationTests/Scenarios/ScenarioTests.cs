@@ -68,26 +68,24 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
         var scenarioResults = new List<ScenarioTestResult>();
         using (new FakeLocalTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time")))
         {
-            var options = default(TransactionOptions);
             var assembly = typeof(ScenarioTests).Assembly;
-
-            options.IsolationLevel = IsolationLevel.ReadCommitted;
-            options.Timeout = TransactionManager.MaximumTimeout;
 
             // Load all scenario files
             var scenarioFiles = assembly!.GetManifestResourceNames().Where(n => n.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
             foreach (var scenarioFile in scenarioFiles)
             {
                 using var scope = _serviceProvider.CreateScope();
-                using (new TransactionScope(TransactionScopeOption.Required, options, TransactionScopeAsyncFlowOption.Enabled))
-                {
-                    // Setup needed services
-                    var scopedProvider = scope.ServiceProvider;
-                    var importedTransactionRepository = scopedProvider.GetRequiredService<IImportedTransactionRepository>();
-                    var importer = scopedProvider.GetRequiredService<IBulkImporter>();
-                    var relationalModelPrinter = scopedProvider.GetRequiredService<IRelationalModelPrinter>();
-                    var contextFactory = scopedProvider.GetService<IDbContextFactory<ElectricityMarketDatabaseContext>>();
 
+                // Setup needed services
+                var scopedProvider = scope.ServiceProvider;
+                var importedTransactionRepository = scopedProvider.GetRequiredService<IImportedTransactionRepository>();
+                var importer = scopedProvider.GetRequiredService<IStreamingImporter>();
+                var relationalModelPrinter = scopedProvider.GetRequiredService<IRelationalModelPrinter>();
+                var contextFactory = scopedProvider.GetService<IDbContextFactory<ElectricityMarketDatabaseContext>>();
+                await using var context = await contextFactory.CreateDbContextAsync();
+                await using var dbTransaction = await context.Database.BeginTransactionAsync();
+                try
+                {
                     // Import the test data
                     var scenarioName = scenarioFile.Replace(
                         "Energinet.DataHub.ElectricityMarket.IntegrationTests.TestData.",
@@ -97,10 +95,16 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
                     var csvStream = assembly!.GetManifestResourceStream(scenarioFile);
                     var imported = await _csvImporter.ImportAsync(csvStream).ConfigureAwait(false);
                     await importedTransactionRepository.AddAsync(imported).ConfigureAwait(false);
-                    await importer.RunAsync(0, 10_000); // 10_000 selected as a max size, test data should never exceed this.
+                    var transactions = await context.ImportedTransactions
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    foreach (var transaction in transactions)
+                    {
+                        await importer.ImportAsync(transaction); // 10_000 selected as a max size, test data should never exceed this.
+                    }
 
                     // Read the results and pretty print them
-                    await using var context = await contextFactory.CreateDbContextAsync();
                     var meteringPointEntities = await context.MeteringPoints.ToListAsync();
                     var quarantinedEntities = await context.QuarantinedMeteringPointEntities.ToListAsync();
                     var prettyPrintedResult = await relationalModelPrinter.PrintAsync([meteringPointEntities], [quarantinedEntities], CultureInfo.GetCultureInfo("da-dk"));
@@ -120,9 +124,15 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
                         expected = Sanitize(await reader.ReadToEndAsync());
                     }
 
+                    await dbTransaction.RollbackAsync();
                     scenarioResults.Add(prettyPrintedResult.Equals(expected, StringComparison.OrdinalIgnoreCase)
                         ? new ScenarioTestResult(scenarioName, true, string.Empty)
                         : new ScenarioTestResult(scenarioName, false, "Results does not match expected"));
+                }
+                catch (Exception e)
+                {
+                    await dbTransaction.RollbackAsync();
+                    throw;
                 }
             }
         }

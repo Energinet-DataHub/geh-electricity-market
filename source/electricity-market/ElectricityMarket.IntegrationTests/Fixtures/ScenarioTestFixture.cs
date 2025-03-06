@@ -80,7 +80,7 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
         services.AddScoped<IImportedTransactionModelReader, ImportedTransactionModelReader>();
         services.AddScoped<IRelationalModelWriter, RelationalModelWriter>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
-        services.AddScoped<IBulkImporter, BulkImporter>();
+        services.AddScoped<IStreamingImporter, StreamingImporter>();
 
         _serviceProvider = services.BuildServiceProvider();
     }
