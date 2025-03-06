@@ -202,9 +202,10 @@ public sealed class ImportGoldModelActivity : IDisposable
                 contact_4_floor_id,
                 contact_4_room_id,
                 contact_4_post_box,
-                contact_4_municipality_code
-             
-             FROM migrations_electricity_market.electricity_market_metering_points_view_v3
+                contact_4_municipality_code,
+                dossier_status
+
+             FROM migrations_electricity_market.electricity_market_metering_points_view_v4
              WHERE btd_trans_doss_id < {cutoff}
              """);
 
