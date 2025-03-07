@@ -36,15 +36,10 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
 
         services.AddElectricityMarketModule();
 
-        services.AddDbContextFactory<ElectricityMarketDatabaseContext>((p, o) =>
-        {
-            var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
-            o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
-                {
-                    options.UseNodaTime();
-                })
-                .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
-        });
+        services
+            .AddOptions<DatabricksCatalogOptions>()
+            .BindConfiguration(DatabricksCatalogOptions.SectionName)
+            .ValidateDataAnnotations();
 
         services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
