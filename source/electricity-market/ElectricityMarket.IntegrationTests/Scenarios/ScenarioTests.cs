@@ -105,7 +105,11 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
                     // Read the results and pretty print them
                     var meteringPointEntities = await context.MeteringPoints.ToListAsync();
                     var quarantinedEntities = await context.QuarantinedMeteringPointEntities.ToListAsync();
-                    var prettyPrintedResult = await relationalModelPrinter.PrintAsync([meteringPointEntities], [quarantinedEntities], CultureInfo.GetCultureInfo("da-dk"));
+                    var prettyPrintedResult = await relationalModelPrinter.PrintAsync(
+                        [meteringPointEntities],
+                        [quarantinedEntities],
+                        CultureInfo.GetCultureInfo("da-dk"));
+
                     prettyPrintedResult = Sanitize(prettyPrintedResult);
 
                     // Compare the results with the expected results
@@ -125,7 +129,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
                     await dbTransaction.RollbackAsync();
                     scenarioResults.Add(prettyPrintedResult.Equals(expected, StringComparison.OrdinalIgnoreCase)
                         ? new ScenarioTestResult(scenarioName, true, string.Empty)
-                        : new ScenarioTestResult(scenarioName, false, "Results does not match expected\n" + prettyPrintedResult + "\n\n" + expected));
+                        : new ScenarioTestResult(scenarioName, false, "Results does not match expected\n-----------------------------\nGenerated\n-----------------------------" + prettyPrintedResult + "\n-----------------------------\nExpected\n-----------------------------" + expected));
                 }
                 catch (Exception e)
                 {
