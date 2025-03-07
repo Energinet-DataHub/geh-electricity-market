@@ -71,7 +71,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
             var assembly = typeof(ScenarioTests).Assembly;
 
             // Load all scenario files
-            var scenarioFiles = assembly!.GetManifestResourceNames().Where(n => n.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
+            var scenarioFiles = assembly!.GetManifestResourceNames().Where(IsScenarioTestFile);
             foreach (var scenarioFile in scenarioFiles)
             {
                 using var scope = _serviceProvider.CreateScope();
@@ -138,5 +138,12 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
         }
 
         return scenarioResults;
+    }
+
+    private bool IsScenarioTestFile(string resourceName)
+    {
+        return resourceName.Contains("IntegrationTests", StringComparison.OrdinalIgnoreCase)
+               && resourceName.Contains("TestData", StringComparison.OrdinalIgnoreCase)
+               && resourceName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
     }
 }
