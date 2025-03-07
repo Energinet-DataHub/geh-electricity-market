@@ -16,14 +16,17 @@ using System.Collections.Immutable;
 using ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
+using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Services;
 
 public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 {
+    private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
     private readonly FindCutoffActivity _findCutoffActivity;
     private readonly ElectricityMarketDatabaseContext _databaseContext;
@@ -31,12 +34,14 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
     private readonly IStreamingImporter _streamingImporter;
 
     public DatabricksStreamingImporter(
+        IOptions<DatabricksCatalogOptions> catalogOptions,
         DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
         FindCutoffActivity findCutoffActivity,
         ElectricityMarketDatabaseContext databaseContext,
         IImportStateService importStateService,
         IStreamingImporter streamingImporter)
     {
+        _catalogOptions = catalogOptions;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
         _findCutoffActivity = findCutoffActivity;
         _databaseContext = databaseContext;
@@ -155,7 +160,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 contact_4_municipality_code,
                 dossier_status
 
-             FROM migrations_electricity_market.electricity_market_metering_points_view_v3
+             FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v3
              WHERE btd_trans_doss_id >= {previousCutoff} AND btd_trans_doss_id < {currentMaxCutoff}
              """);
 

@@ -35,15 +35,18 @@ public sealed class ImportGoldModelActivity : IDisposable
     private readonly BlockingCollection<IDataReader> _submitCollection = new(5);
 
     private readonly IOptions<DatabaseOptions> _databaseOptions;
+    private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
     private readonly ILogger<ImportGoldModelActivity> _logger;
 
     public ImportGoldModelActivity(
         IOptions<DatabaseOptions> databaseOptions,
+        IOptions<DatabricksCatalogOptions> catalogOptions,
         DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
         ILogger<ImportGoldModelActivity> logger)
     {
         _databaseOptions = databaseOptions;
+        _catalogOptions = catalogOptions;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
         _logger = logger;
     }
@@ -205,7 +208,7 @@ public sealed class ImportGoldModelActivity : IDisposable
                 contact_4_municipality_code,
                 dossier_status
 
-             FROM migrations_electricity_market.electricity_market_metering_points_view_v4
+             FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v4
              WHERE btd_trans_doss_id < {cutoff}
              """);
 
