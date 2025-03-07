@@ -125,7 +125,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
                     await dbTransaction.RollbackAsync();
                     scenarioResults.Add(prettyPrintedResult.Equals(expected, StringComparison.OrdinalIgnoreCase)
                         ? new ScenarioTestResult(scenarioName, true, string.Empty)
-                        : new ScenarioTestResult(scenarioName, false, "Results does not match expected"));
+                        : new ScenarioTestResult(scenarioName, false, "Results does not match expected\n" + prettyPrintedResult + "\n\n" + expected));
                 }
                 catch (Exception e)
                 {
