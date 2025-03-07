@@ -50,7 +50,16 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
 
         services.AddScoped<FindCutoffActivity>();
         services.AddScoped<IImportStateService, ImportStateService>();
-        services.AddScoped<IMeteringPointImporter, MeteringPointImporter>();
+
+        if (configuration.GetSection("FeatureManagement").GetValue<bool>("ActorTestModeEnabled"))
+        {
+            services.AddScoped<IMeteringPointImporter, ActorTestMeteringPointImporter>();
+        }
+        else
+        {
+            services.AddScoped<IMeteringPointImporter, MeteringPointImporter>();
+        }
+
         services.AddScoped<IImportedTransactionModelReader, ImportedTransactionModelReader>();
         services.AddScoped<IRelationalModelWriter, RelationalModelWriter>();
         services.AddScoped<IBulkImporter, BulkImporter>();
