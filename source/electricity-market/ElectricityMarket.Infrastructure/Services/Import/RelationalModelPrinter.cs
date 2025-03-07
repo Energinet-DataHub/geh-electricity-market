@@ -51,7 +51,7 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
         sb.Append(
             PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts)).ToList(), cultureInfo));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts.Select(i => i.ContactAddress))).Where(j => j is not null).ToList(), cultureInfo));
+            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts.Select(i => i.ContactAddress))).Where(j => j is not null).Cast<ContactAddressEntity>().ToList(), cultureInfo));
         sb.Append(
             PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.ElectricalHeatingPeriods)).ToList(), cultureInfo));
 
@@ -63,14 +63,15 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
     }
 
     private static string PrettyPrintObjects<T>(IList<T> items, CultureInfo cultureInfo, (Expression<Func<T, object?>>[] PropertiesToMove, Expression<Func<T, object?>> InsertAfter)[]? orderingOverrides = null)
+        where T : notnull
     {
         if (items.Count == 0) return string.Empty;
 
         var ordering = GetOrdering(orderingOverrides ?? []);
 
         var sb = new StringBuilder();
-        sb.AppendLine(items[0]!.GetType().Name.Replace("Entity", string.Empty, StringComparison.InvariantCulture));
-        var properties = items.First()!.GetType()
+        sb.AppendLine(items[0].GetType().Name.Replace("Entity", string.Empty, StringComparison.InvariantCulture));
+        var properties = items.First().GetType()
             .GetProperties()
             .Where(p => !typeof(System.Collections.IEnumerable).IsAssignableFrom(p.PropertyType) || p.PropertyType == typeof(string))
             .Where(p => p.PropertyType.IsPrimitive || p.PropertyType.IsValueType || p.PropertyType == typeof(string))
