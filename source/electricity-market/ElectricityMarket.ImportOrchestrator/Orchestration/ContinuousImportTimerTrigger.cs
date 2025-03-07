@@ -37,7 +37,7 @@ public sealed class ContinuousImportTimerTrigger
 
     [Function(nameof(ContinuousImportTimerTrigger))]
     public async Task ImportAsync(
-        [TimerTrigger("0 */1 * * * *", RunOnStartup = true)]
+        [TimerTrigger("0 */1 * * * *")]
         TimerInfo timer,
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
