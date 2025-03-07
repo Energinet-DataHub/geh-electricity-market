@@ -81,7 +81,11 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
 
         var columnWidths = properties
             .Select(p => items
-                .Select(i => p.GetValue(i)?.ToString()?.Length ?? 0)
+                .Select(i =>
+                {
+                    var value = p.GetValue(i);
+                    return value is DateTimeOffset dateTimeOffset ? dateTimeOffset.ToString(cultureInfo).Length : value?.ToString()?.Length ?? 0;
+                })
                 .Prepend(p.Name.Length)
                 .Max())
             .ToArray();
