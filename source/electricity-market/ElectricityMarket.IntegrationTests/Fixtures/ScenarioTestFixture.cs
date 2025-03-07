@@ -72,7 +72,6 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
         // Register dependencies
         services.AddScoped<ICsvImporter, CsvImporter>();
         services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
-        services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
         services.AddScoped<IMeteringPointImporter, MeteringPointImporter>();
         services.AddScoped<IImportedTransactionModelReader, ImportedTransactionModelReader>();
         services.AddScoped<IRelationalModelWriter, RelationalModelWriter>();
