@@ -99,7 +99,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
 
                     foreach (var transaction in transactions)
                     {
-                        await importer.ImportAsync(transaction); // 10_000 selected as a max size, test data should never exceed this.
+                        await importer.ImportAsync(transaction);
                     }
 
                     // Read the results and pretty print them
