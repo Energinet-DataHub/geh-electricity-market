@@ -21,5 +21,5 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public interface IRelationalModelPrinter
 {
-    Task<string> PrintAsync(IEnumerable<IList<MeteringPointEntity>> relationalModelBatches, IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined, CultureInfo cultureInfo);
+    Task<string> PrintAsync(IEnumerable<IList<MeteringPointEntity>> relationalModelBatches, IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined, CultureInfo cultureInfo, bool html = false);
 }
