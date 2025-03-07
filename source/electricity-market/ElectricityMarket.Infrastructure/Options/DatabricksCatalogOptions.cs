@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
-using System.Globalization;
-using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using System.ComponentModel.DataAnnotations;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 
-public interface IRelationalModelPrinter
+public sealed record DatabricksCatalogOptions
 {
-    Task<string> PrintAsync(IEnumerable<IList<MeteringPointEntity>> relationalModelBatches, IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined, CultureInfo cultureInfo, bool html = false);
+    public const string SectionName = "DatabricksCatalog";
+
+    [Required]
+    public string Name { get; set; } = null!;
 }

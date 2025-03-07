@@ -14,19 +14,26 @@
 
 using System.Diagnostics;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class FindCutoffActivity
 {
     private readonly ILogger<FindCutoffActivity> _logger;
+    private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
 
-    public FindCutoffActivity(ILogger<FindCutoffActivity> logger, DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
+    public FindCutoffActivity(
+        ILogger<FindCutoffActivity> logger,
+        IOptions<DatabricksCatalogOptions> catalogOptions,
+        DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
     {
         _logger = logger;
+        _catalogOptions = catalogOptions;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
     }
 
@@ -37,8 +44,8 @@ public sealed class FindCutoffActivity
 
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
             DatabricksStatement.FromRawSql(
-                """
-                SELECT MAX(btd_trans_doss_id) AS cutoff FROM migrations_electricity_market.electricity_market_metering_points_view_v3
+                $"""
+                SELECT MAX(btd_trans_doss_id) AS cutoff FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v3
                 """).Build()).ConfigureAwait(false);
 
         await foreach (var r in result)

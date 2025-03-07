@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
@@ -24,39 +25,50 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public sealed class RelationalModelPrinter : IRelationalModelPrinter
 {
-    public Task<string> PrintAsync(IEnumerable<IList<MeteringPointEntity>> relationalModelBatches, IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined, CultureInfo cultureInfo)
+    public Task<string> PrintAsync(IEnumerable<IList<MeteringPointEntity>> relationalModelBatches, IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined, CultureInfo cultureInfo, bool html)
     {
         var sb = new StringBuilder();
 
         var meteringPointEntities = relationalModelBatches.SelectMany(x => x).ToList();
 
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(meteringPointEntities.ToList(), cultureInfo, html));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.MeteringPointPeriods).SelectMany(x => x).Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(
+                meteringPointEntities.Select(x => x.MeteringPointPeriods).SelectMany(x => x).ToList(),
+                cultureInfo,
+                html,
+                orderingOverrides:
+                [
+                    (PropertiesToMove: [x => x.TransactionType, x => x.EffectuationDate, x => x.ConnectionState],
+                        InsertAfter: x => x.ConnectionType),
+                ]));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.MeteringPointPeriods).SelectMany(x => x.Select(y => y.InstallationAddress)).Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(meteringPointEntities.Select(x => x.MeteringPointPeriods).SelectMany(x => x.Select(y => y.InstallationAddress)).ToList(), cultureInfo, html));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x).Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x).ToList(), cultureInfo, html));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods)).Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods)).ToList(), cultureInfo, html));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts)).Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts)).ToList(), cultureInfo, html));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts.Select(i => i.ContactAddress))).Where(j => j is not null).Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts.Select(i => i.ContactAddress))).Where(j => j is not null).Cast<ContactAddressEntity>().ToList(), cultureInfo, html));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.ElectricalHeatingPeriods)).Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.ElectricalHeatingPeriods)).ToList(), cultureInfo, html));
 
         var quarantinedMeteringPoints = quarantined.SelectMany(x => x).ToList();
         sb.Append(
-            PrettyPrintObjects(quarantinedMeteringPoints.Cast<object>().ToList(), cultureInfo));
+            PrettyPrintObjects(quarantinedMeteringPoints.ToList(), cultureInfo, html));
 
         return Task.FromResult(sb.ToString());
     }
 
-    private static string PrettyPrintObjects(IList<object> items, CultureInfo cultureInfo)
+    private static string PrettyPrintObjects<T>(IList<T> items, CultureInfo cultureInfo, bool html, (Expression<Func<T, object?>>[] PropertiesToMove, Expression<Func<T, object?>> InsertAfter)[]? orderingOverrides = null)
+        where T : notnull
     {
         if (items.Count == 0) return string.Empty;
+
+        var ordering = GetOrdering(orderingOverrides ?? []);
 
         var sb = new StringBuilder();
         sb.AppendLine(items[0].GetType().Name.Replace("Entity", string.Empty, StringComparison.InvariantCulture));
@@ -64,6 +76,7 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
             .GetProperties()
             .Where(p => !typeof(System.Collections.IEnumerable).IsAssignableFrom(p.PropertyType) || p.PropertyType == typeof(string))
             .Where(p => p.PropertyType.IsPrimitive || p.PropertyType.IsValueType || p.PropertyType == typeof(string))
+            .OrderBy(p => ordering.IndexOf(p.Name))
             .ToArray();
 
         var columnWidths = properties
@@ -76,8 +89,7 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
         var separator = "+-" + string.Join("-+-", columnWidths.Select(w => new string('-', w))) + "-+";
         sb.AppendLine(separator);
 
-        var header = "| " + string.Join(" | ", properties
-            .Select((p, i) => p.Name.PadRight(columnWidths[i]))) + " |";
+        var header = "| " + string.Join(" | ", properties.Select((p, i) => p.Name.PadRight(columnWidths[i]))) + " |";
         sb.AppendLine(header);
         sb.AppendLine(separator);
 
@@ -87,15 +99,53 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
                 .Select((p, i) =>
                 {
                     var value = p.GetValue(item);
-                    return value is DateTimeOffset dateTimeOffset
-                        ? dateTimeOffset.ToString(cultureInfo).PadRight(columnWidths[i])
-                        : value?.ToString()?.PadRight(columnWidths[i]) ?? string.Empty.PadRight(columnWidths[i]);
+                    if (value is null) return string.Empty.PadRight(columnWidths[i]);
+                    var cultureAwareToString = value.GetType().GetMethod("ToString", [typeof(CultureInfo)]);
+
+                    var stringValue = (cultureAwareToString is not null ? cultureAwareToString.Invoke(value, [cultureInfo]) : value)!.ToString()!.PadRight(columnWidths[i]);
+#pragma warning disable CA1308
+                    return html
+                        ? $"<span class=\"{(value is DateTimeOffset { Year: 9999 } ? "infinity-" : string.Empty) + value.GetType().Name.ToLower(CultureInfo.InvariantCulture)}-span\">{
+                            stringValue}</span>"
+                        : stringValue;
+#pragma warning restore CA1308
                 })) + " |";
             sb.AppendLine(rowText);
         }
 
         sb.AppendLine(separator);
+
         var prettyPrintObjects = sb.ToString();
+
         return !string.IsNullOrWhiteSpace(prettyPrintObjects) ? prettyPrintObjects + "\n" : prettyPrintObjects;
+
+        static List<string> GetOrdering((Expression<Func<T, object?>>[] PropertiesToMove, Expression<Func<T, object?>> InsertAfter)[] orderingOverrides)
+        {
+            var defaultOrder = typeof(T).GetProperties().Select(x => x.Name).ToList();
+
+            foreach (var (propertiesToMove, insertAfter) in orderingOverrides)
+            {
+                var insertAfterPropertyName = GetExpressionName(insertAfter);
+
+                for (var i = 0; i < propertiesToMove.Length; i++)
+                {
+                    var propertyToMoveName = GetExpressionName(propertiesToMove[i]);
+                    defaultOrder.Remove(propertyToMoveName);
+                    defaultOrder.Insert(defaultOrder.IndexOf(insertAfterPropertyName) + 1 + i, propertyToMoveName);
+                }
+            }
+
+            return defaultOrder;
+
+            static string GetExpressionName(Expression<Func<T, object?>> expression)
+            {
+                return expression.Body switch
+                {
+                    MemberExpression memberExpression => memberExpression.Member.Name,
+                    UnaryExpression { Operand: MemberExpression } unaryExpression => ((MemberExpression)unaryExpression.Operand).Member.Name,
+                    _ => throw new InvalidOperationException(),
+                };
+            }
+        }
     }
 }
