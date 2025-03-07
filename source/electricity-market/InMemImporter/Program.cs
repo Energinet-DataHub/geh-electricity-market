@@ -97,7 +97,7 @@ public static class Program
 
         public async Task WriteRelationalModelAsync(IEnumerable<IList<MeteringPointEntity>> relationalModelBatches, IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined)
         {
-            await Console.Out.WriteLineAsync(await _modelPrinter.PrintAsync(relationalModelBatches, quarantined, _cultureInfo).ConfigureAwait(false)).ConfigureAwait(false);
+            await Console.Out.WriteLineAsync(await _modelPrinter.PrintAsync(relationalModelBatches, quarantined, _cultureInfo, html: true).ConfigureAwait(false)).ConfigureAwait(false);
         }
     }
 }

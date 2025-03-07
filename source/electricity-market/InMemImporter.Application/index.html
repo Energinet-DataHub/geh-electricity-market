@@ -25,9 +25,9 @@
         flex-direction: column;
       }
 
-      textarea {
+      div {
         background: #181818;
-        color: #ce9178;
+        color: #bdbdbe;
         padding: 16px;
         font: 16px "Cascadia Code";
         width: 100%;
@@ -38,25 +38,62 @@
         border: 0;
         box-sizing: border-box; /* Ensures padding stays */
         scrollbar-width: thin;
-        scrollbar-color: #ce9178 #181818;
-      }
-
-      textarea:focus {
-        outline: none;
+        scrollbar-color: #bdbdbe #181818;
       }
 
       .transactions {
+        background: #181818;
+        color: #bdbdbe;
+        padding: 16px;
+        font: 16px "Cascadia Code";
+        width: 100%;
+        height: 50%;
+        resize: none;
+        font-size: 16px;
+        outline: none;
+        border: 0;
+        box-sizing: border-box; /* Ensures padding stays */
+        scrollbar-width: thin;
+        scrollbar-color: #bdbdbe #181818;
         height: 15%;
-        border-bottom: 0.5px solid #ce9178;
+        border-bottom: 0.5px solid #bdbdbe;
+      }
+
+      .transactions:focus {
+        outline: none;
       }
 
       .output {
         height: 85%;
-        border-top: 0.5x solid #ce9178;
+        border-top: 0.5x solid #bdbdbe;
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap; /* Prevent line breaks */
+        display: block;
       }
 
       .import:active {
-        color: #ce9178;
+        color: #bdbdbe;
+      }
+
+      .string-span {
+        color: #e09962;
+      }
+
+      .boolean-span {
+        color: #6d95eb;
+      }
+
+      .guid-span {
+        color: #63c3ca;
+      }
+
+      .datetimeoffset-span {
+        color: #00d597;
+      }
+
+      .infinity-datetimeoffset-span {
+        color: #d788d4;
       }
     </style>
   </head>
@@ -74,14 +111,7 @@
 
   - Decrease/increase size of transactions and output area with F10/F11."
     ></textarea>
-    <textarea
-      id="output-textarea"
-      class="output"
-      wrap="off"
-      spellcheck="false"
-      tabindex="-1"
-      readonly
-    ></textarea>
+    <div id="output-textarea" class="output"></div>
     <script>
       const { ipcRenderer } = require("electron");
 
@@ -123,10 +153,14 @@
           ipcRenderer
             .invoke("run-console-app", inputString)
             .then((output) => {
-              document.getElementById("output-textarea").value = output;
+              document.getElementById("output-textarea").innerHTML = output
+                .replace(/ /g, "&nbsp;")
+                .replace(/\r/g, "")
+                .replace(/\n/g, "<br>")
+                .replace(/span&nbsp;/g, "span ");
             })
             .catch((err) => {
-              document.getElementById("output-textarea").value =
+              document.getElementById("output-textarea").innerHTML =
                 "Error running app.";
             });
         } else if (e.key === "F10") {
