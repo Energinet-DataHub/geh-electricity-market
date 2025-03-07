@@ -15,7 +15,6 @@
 using System;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.FunctionApp.TestCommon.Database;
-using Energinet.DataHub.ElectricityMarket.DatabaseMigration;
 using Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
