@@ -39,9 +39,6 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        // Enable implicit distributed transactions
-        TransactionManager.ImplicitDistributedTransactions = true;
-
         // Build service collection and register dependencies
         await _databaseFixture.InitializeAsync();
         var configuration = BuildConfiguration();
