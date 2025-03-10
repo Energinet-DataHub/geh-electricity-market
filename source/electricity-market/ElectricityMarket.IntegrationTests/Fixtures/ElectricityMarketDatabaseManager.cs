@@ -15,7 +15,7 @@
 using System;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.FunctionApp.TestCommon.Database;
-using Energinet.DataHub.ElectricityMarket.DatabaseMigration;
+using Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,24 +43,35 @@ public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<Electri
     /// <summary>
     /// Creates the database schema using DbUp instead of a database context.
     /// </summary>
-    protected override Task<bool> CreateDatabaseSchemaAsync(ElectricityMarketDatabaseContext context)
+    protected override async Task<bool> CreateDatabaseSchemaAsync(ElectricityMarketDatabaseContext context)
     {
-        return Task.FromResult(CreateDatabaseSchema(context));
+        var upgradeEngine = await UpgradeFactory.GetUpgradeEngineAsync(ConnectionString, GetFilter()).ConfigureAwait(false);
+
+        // Transient errors can occur right after DB is created,
+        // as it might not be instantly available, hence this retry loop.
+        // This is especially an issue when running against an Azure SQL DB.
+        var tryCount = 0;
+        do
+        {
+            ++tryCount;
+
+            var result = upgradeEngine.PerformUpgrade();
+
+            if (result.Successful)
+                return true;
+
+            if (tryCount > 10)
+                throw new InvalidOperationException("Database migration failed", result.Error);
+
+            await Task.Delay(256 * tryCount).ConfigureAwait(false);
+        }
+        while (true);
     }
 
-    /// <summary>
-    ///     Creates the database schema using DbUp instead of a database context.
-    /// </summary>
-    protected override bool CreateDatabaseSchema(ElectricityMarketDatabaseContext context)
+    private static Func<string, bool> GetFilter()
     {
-        var result = Upgrader.DatabaseUpgrade(ConnectionString);
-        if (!result.Successful)
-        {
-#pragma warning disable CA2201
-            throw new Exception("Database migration failed", result.Error);
-#pragma warning restore CA2201
-        }
-
-        return true;
+        return file =>
+            file.EndsWith(".sql", StringComparison.OrdinalIgnoreCase) &&
+            file.Contains(".Scripts.LocalDB.", StringComparison.OrdinalIgnoreCase);
     }
 }

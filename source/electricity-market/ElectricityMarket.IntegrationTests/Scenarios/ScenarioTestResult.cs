@@ -12,16 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Xunit;
+namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Scenarios;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
-
-[CollectionDefinition(nameof(IntegrationTestCollectionFixture))]
-public sealed class IntegrationTestCollectionFixture :
-    ICollectionFixture<ElectricityMarketDatabaseFixture>,
-    ICollectionFixture<ScenarioTestFixture>
-{
-    // This class has no code, and is never created. Its purpose is simply
-    // to be the place to apply [CollectionDefinition] and all the
-    // ICollectionFixture<> interfaces.
-}
+public record ScenarioTestResult(string ScenarioName, bool Success, string Message);
