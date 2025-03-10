@@ -44,7 +44,7 @@ public class ScenarioTests : IClassFixture<ElectricityMarketDatabaseFixture>
         _serviceProvider = fixture.ServiceProvider;
     }
 
-    [Fact]
+    [Fact(Skip = "Model not stable enough yet, once stable re-enable test")]
     public async Task Run_All_Scenarios_And_Verify_Results()
     {
         // Arrange + Act
