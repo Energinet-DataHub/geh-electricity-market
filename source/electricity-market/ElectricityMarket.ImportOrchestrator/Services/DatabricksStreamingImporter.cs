@@ -160,7 +160,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 contact_4_municipality_code,
                 dossier_status
 
-             FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v3
+             FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v4
              WHERE btd_trans_doss_id >= {previousCutoff} AND btd_trans_doss_id < {currentMaxCutoff}
              """);
 
