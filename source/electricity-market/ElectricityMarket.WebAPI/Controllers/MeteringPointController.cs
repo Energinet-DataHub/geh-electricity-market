@@ -21,6 +21,7 @@ using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElectricityMarket.WebAPI.Controllers;
@@ -98,6 +99,7 @@ public class MeteringPointController : ControllerBase
 
     [HttpGet("contact/{contactId:long}/cpr")]
     [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
+    [Authorize(Roles = "cpr:view")]
     public async Task<ActionResult<CPRResponse>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
     {
         var command = new GetContactCprCommand(contactId, contactCprRequest);
