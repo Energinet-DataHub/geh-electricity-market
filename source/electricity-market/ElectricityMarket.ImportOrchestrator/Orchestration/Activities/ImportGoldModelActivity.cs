@@ -31,8 +31,8 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class ImportGoldModelActivity : IDisposable
 {
-    private readonly BlockingCollection<ExpandoObject> _importCollection = new(1000000);
-    private readonly BlockingCollection<IDataReader> _submitCollection = new(5);
+    private readonly BlockingCollection<ExpandoObject> _importCollection = new(500_000);
+    private readonly BlockingCollection<IDataReader> _submitCollection = new(2);
 
     private readonly IOptions<DatabaseOptions> _databaseOptions;
     private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
