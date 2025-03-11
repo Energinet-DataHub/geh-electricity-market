@@ -24,7 +24,7 @@ public static class MeteringPointPeriodFactory
     {
         ArgumentNullException.ThrowIfNull(importedTransaction);
 
-        var newMpPeriod = new MeteringPointPeriodEntity
+        var meteringPointPeriod = new MeteringPointPeriodEntity
         {
             ValidFrom = importedTransaction.valid_from_date,
             ValidTo = importedTransaction.valid_to_date,
@@ -75,62 +75,62 @@ public static class MeteringPointPeriodFactory
             EffectuationDate = importedTransaction.effectuation_date,
             TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
-        return newMpPeriod;
+        return meteringPointPeriod;
     }
 
-    public static MeteringPointPeriodEntity CopyMeteringPointPeriod(MeteringPointPeriodEntity overlappingPeriod)
+    public static MeteringPointPeriodEntity CopyMeteringPointPeriod(MeteringPointPeriodEntity source)
     {
-        ArgumentNullException.ThrowIfNull(overlappingPeriod);
+        ArgumentNullException.ThrowIfNull(source);
 
-        var closedOverlappingPeriod = new MeteringPointPeriodEntity
+        var copy = new MeteringPointPeriodEntity
         {
-            ValidTo = overlappingPeriod.ValidTo,
-            ValidFrom = overlappingPeriod.ValidFrom,
-            CreatedAt = overlappingPeriod.CreatedAt,
-            ParentIdentification = overlappingPeriod.ParentIdentification,
-            Type = overlappingPeriod.Type,
-            SubType = overlappingPeriod.SubType,
-            ConnectionState = overlappingPeriod.ConnectionState,
-            Resolution = overlappingPeriod.Resolution,
-            GridAreaCode = overlappingPeriod.GridAreaCode,
-            ConnectionType = overlappingPeriod.ConnectionType,
-            DisconnectionType = overlappingPeriod.DisconnectionType,
-            Product = overlappingPeriod.Product,
-            ProductObligation = overlappingPeriod.ProductObligation,
-            MeasureUnit = overlappingPeriod.MeasureUnit,
-            AssetType = overlappingPeriod.AssetType,
-            FuelType = overlappingPeriod.FuelType,
-            Capacity = overlappingPeriod.Capacity,
-            PowerLimitKw = overlappingPeriod.PowerLimitKw,
-            PowerLimitA = overlappingPeriod.PowerLimitA,
-            MeterNumber = overlappingPeriod.MeterNumber,
-            SettlementGroup = overlappingPeriod.SettlementGroup,
-            ScheduledMeterReadingMonth = overlappingPeriod.ScheduledMeterReadingMonth,
-            ExchangeFromGridArea = overlappingPeriod.ExchangeFromGridArea,
-            ExchangeToGridArea = overlappingPeriod.ExchangeToGridArea,
-            PowerPlantGsrn = overlappingPeriod.PowerPlantGsrn,
-            SettlementMethod = overlappingPeriod.SettlementMethod,
+            ValidTo = source.ValidTo,
+            ValidFrom = source.ValidFrom,
+            CreatedAt = source.CreatedAt,
+            ParentIdentification = source.ParentIdentification,
+            Type = source.Type,
+            SubType = source.SubType,
+            ConnectionState = source.ConnectionState,
+            Resolution = source.Resolution,
+            GridAreaCode = source.GridAreaCode,
+            ConnectionType = source.ConnectionType,
+            DisconnectionType = source.DisconnectionType,
+            Product = source.Product,
+            ProductObligation = source.ProductObligation,
+            MeasureUnit = source.MeasureUnit,
+            AssetType = source.AssetType,
+            FuelType = source.FuelType,
+            Capacity = source.Capacity,
+            PowerLimitKw = source.PowerLimitKw,
+            PowerLimitA = source.PowerLimitA,
+            MeterNumber = source.MeterNumber,
+            SettlementGroup = source.SettlementGroup,
+            ScheduledMeterReadingMonth = source.ScheduledMeterReadingMonth,
+            ExchangeFromGridArea = source.ExchangeFromGridArea,
+            ExchangeToGridArea = source.ExchangeToGridArea,
+            PowerPlantGsrn = source.PowerPlantGsrn,
+            SettlementMethod = source.SettlementMethod,
             InstallationAddress = new InstallationAddressEntity
             {
-                StreetCode = overlappingPeriod.InstallationAddress.StreetCode,
-                StreetName = overlappingPeriod.InstallationAddress.StreetName,
-                BuildingNumber = overlappingPeriod.InstallationAddress.BuildingNumber,
-                CityName = overlappingPeriod.InstallationAddress.CityName,
-                CitySubdivisionName = overlappingPeriod.InstallationAddress.CitySubdivisionName,
-                DarReference = overlappingPeriod.InstallationAddress.DarReference,
-                CountryCode = overlappingPeriod.InstallationAddress.CountryCode,
-                Floor = overlappingPeriod.InstallationAddress.Floor,
-                Room = overlappingPeriod.InstallationAddress.Room,
-                PostCode = overlappingPeriod.InstallationAddress.PostCode,
-                MunicipalityCode = overlappingPeriod.InstallationAddress.MunicipalityCode,
-                LocationDescription = overlappingPeriod.InstallationAddress.LocationDescription
+                StreetCode = source.InstallationAddress.StreetCode,
+                StreetName = source.InstallationAddress.StreetName,
+                BuildingNumber = source.InstallationAddress.BuildingNumber,
+                CityName = source.InstallationAddress.CityName,
+                CitySubdivisionName = source.InstallationAddress.CitySubdivisionName,
+                DarReference = source.InstallationAddress.DarReference,
+                CountryCode = source.InstallationAddress.CountryCode,
+                Floor = source.InstallationAddress.Floor,
+                Room = source.InstallationAddress.Room,
+                PostCode = source.InstallationAddress.PostCode,
+                MunicipalityCode = source.InstallationAddress.MunicipalityCode,
+                LocationDescription = source.InstallationAddress.LocationDescription
             },
-            OwnedBy = overlappingPeriod.OwnedBy,
-            BusinessTransactionDosId = overlappingPeriod.BusinessTransactionDosId,
-            MeteringPointStateId = overlappingPeriod.MeteringPointStateId,
-            EffectuationDate = overlappingPeriod.EffectuationDate,
-            TransactionType = overlappingPeriod.TransactionType,
+            OwnedBy = source.OwnedBy,
+            BusinessTransactionDosId = source.BusinessTransactionDosId,
+            MeteringPointStateId = source.MeteringPointStateId,
+            EffectuationDate = source.EffectuationDate,
+            TransactionType = source.TransactionType,
         };
-        return closedOverlappingPeriod;
+        return copy;
     }
 }
