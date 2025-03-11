@@ -8,6 +8,8 @@
 
     "Database:ConnectionString": "",
 
+    "DatabricksCatalog:Name": "",
+    
     "Databricks:WorkspaceUrl": "",
     "Databricks:WorkspaceToken": "",
     "Databricks:WarehouseId": "",
