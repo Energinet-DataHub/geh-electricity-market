@@ -317,10 +317,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         meteringPointPeriod.ValidTo = meteringPoint.MeteringPointPeriods
                             .Where(p => p.ValidFrom > meteringPointPeriod.ValidFrom && p.RetiredBy == null)
                             .Min(p => p.ValidFrom);
-
-                        currentlyActiveMeteringPointPeriod.RetiredAt = DateTimeOffset.UtcNow;
-                        currentlyActiveMeteringPointPeriod.RetiredBy = meteringPointPeriod;
                     }
+
+                    currentlyActiveMeteringPointPeriod.RetiredAt = DateTimeOffset.UtcNow;
+                    currentlyActiveMeteringPointPeriod.RetiredBy = meteringPointPeriod;
                 }
                 else
                 {
