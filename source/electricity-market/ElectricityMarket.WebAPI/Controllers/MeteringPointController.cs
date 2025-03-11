@@ -76,6 +76,26 @@ public class MeteringPointController : ControllerBase
         return Ok(new { result = meteringPoint.MeteringPoint });
     }
 
+    [HttpGet("debug")]
+    [EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "gridAreaCode")]
+    public async Task<ActionResult<IEnumerable<MeteringPointDto>>> GetMeteringPointsByGridAreaCodeAsync([FromQuery] string gridAreaCode, [FromQuery] TenantDto tenant)
+    {
+        ArgumentNullException.ThrowIfNull(tenant);
+
+        if (tenant.MarketRole != MarketRole.DataHubAdministrator)
+        {
+            return Unauthorized();
+        }
+
+        var command = new GetMeteringPointByGridAreaCodeCommand(gridAreaCode);
+
+        var meteringPoints = (await _mediator
+            .Send(command)
+            .ConfigureAwait(false)).MeteringPoints;
+
+        return Ok(meteringPoints);
+    }
+
     [HttpGet("contact/{contactId:long}/cpr")]
     [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
     public async Task<ActionResult<CPRResponse>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
