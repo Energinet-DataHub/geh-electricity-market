@@ -14,7 +14,6 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Mappers;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
 
