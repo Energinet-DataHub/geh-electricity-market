@@ -14,10 +14,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
@@ -28,7 +28,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "HTXCOR", "LNKCHLDMP", "MANCOR", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "MSTDATSBM" };
 
-    private readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BULKCOR", "HTXCOR", "INCCHGSUP", "INCMOVEAUT", "INCMOVEIN", "INCMOVEMAN", "MANCOR" };
+    private readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BULKCOR", "INCCHGSUP", "INCMOVEAUT", "INCMOVEIN", "INCMOVEMAN", "MANCOR" };
 
     public Task<(bool Imported, string Message)> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
     {
@@ -63,144 +63,11 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private (bool Imported, string Message) TryImportTransaction(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
-        var currentTransactionType = importedTransaction.transaction_type.TrimEnd();
+        if (!TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var newMpPeriod, out var errorMessage))
+            return (false, errorMessage);
 
-        if (_ignoredTransactions.Contains(currentTransactionType))
+        if (_ignoredTransactions.Contains(newMpPeriod.TransactionType))
             return (true, string.Empty);
-
-        // HTX is ignored for now.
-        if (meteringPoint.MeteringPointPeriods.Count > 0 &&
-            meteringPoint.MeteringPointPeriods.Max(p => p.ValidFrom) > importedTransaction.valid_from_date)
-        {
-            return (false, string.Empty);
-        }
-
-        var newMpPeriod = new MeteringPointPeriodEntity
-        {
-            ValidFrom = importedTransaction.valid_from_date,
-            ValidTo = DateTimeOffset.MaxValue,
-            CreatedAt = importedTransaction.dh2_created,
-            ParentIdentification = importedTransaction.parent_metering_point_id?.TrimEnd(),
-
-            Type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp),
-            SubType = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointSubTypes, importedTransaction.sub_type_of_mp),
-            ConnectionState = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.ConnectionStates, importedTransaction.physical_status_of_mp),
-            Resolution = importedTransaction.meter_reading_occurrence.TrimEnd(),
-            GridAreaCode = importedTransaction.metering_grid_area_id.TrimEnd(),
-            ConnectionType = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.ConnectionTypes, importedTransaction.mp_connection_type),
-            DisconnectionType = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.DisconnectionTypes, importedTransaction.disconnection_type),
-            Product = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.Products, importedTransaction.product),
-            ProductObligation = importedTransaction.product_obligation,
-            MeasureUnit = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeasureUnits, importedTransaction.energy_timeseries_measure_unit),
-            AssetType = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.AssetTypes, importedTransaction.asset_type),
-            FuelType = importedTransaction.fuel_type,
-            Capacity = importedTransaction.mp_capacity?.TrimEnd(),
-            PowerLimitKw = importedTransaction.power_limit_kw,
-            PowerLimitA = importedTransaction.power_limit_a,
-            MeterNumber = importedTransaction.meter_number?.TrimEnd(),
-            SettlementGroup = importedTransaction.net_settlement_group,
-            ScheduledMeterReadingMonth = -1, // TODO: Requires custom logic.
-            ExchangeFromGridArea = importedTransaction.from_grid_area?.TrimEnd(),
-            ExchangeToGridArea = importedTransaction.to_grid_area?.TrimEnd(),
-            PowerPlantGsrn = importedTransaction.power_plant_gsrn?.TrimEnd(),
-            SettlementMethod = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.SettlementMethods, importedTransaction.settlement_method),
-
-            InstallationAddress = new InstallationAddressEntity
-            {
-                StreetCode = importedTransaction.location_street_code?.TrimEnd(),
-                StreetName = importedTransaction.location_street_name?.TrimEnd() ?? string.Empty,
-                BuildingNumber = importedTransaction.location_building_number?.TrimEnd() ?? string.Empty,
-                CityName = importedTransaction.location_city_name?.TrimEnd() ?? string.Empty,
-                CitySubdivisionName = importedTransaction.location_city_subdivision_name?.TrimEnd(),
-                DarReference = importedTransaction.location_dar_reference != null
-                    ? Guid.Parse(importedTransaction.location_dar_reference)
-                    : null,
-                CountryCode = importedTransaction.location_country_name?.TrimEnd() ?? string.Empty,
-                Floor = importedTransaction.location_floor_id?.TrimEnd(),
-                Room = importedTransaction.location_room_id?.TrimEnd(),
-                PostCode = importedTransaction.location_postcode?.TrimEnd() ?? string.Empty,
-                MunicipalityCode = importedTransaction.location_municipality_code?.TrimEnd(),
-                LocationDescription = importedTransaction.location_location_description?.TrimEnd()
-            },
-
-            OwnedBy = string.Empty, // Works as an override, will be resolved through mark-part.
-            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
-            MeteringPointStateId = importedTransaction.metering_point_state_id,
-            EffectuationDate = importedTransaction.effectuation_date,
-            TransactionType = importedTransaction.transaction_type.TrimEnd(),
-        };
-
-        if (_changeTransactions.Contains(currentTransactionType))
-        {
-            var overlappingPeriod = meteringPoint.MeteringPointPeriods
-                .SingleOrDefault(p => p.RetiredBy == null && p.ValidTo > importedTransaction.valid_from_date);
-
-            if (overlappingPeriod != null)
-            {
-                var closedOverlappingPeriod = new MeteringPointPeriodEntity
-                {
-                    ValidTo = importedTransaction.valid_from_date,
-
-                    ValidFrom = overlappingPeriod.ValidFrom,
-                    CreatedAt = overlappingPeriod.CreatedAt,
-                    ParentIdentification = overlappingPeriod.ParentIdentification,
-                    Type = overlappingPeriod.Type,
-                    SubType = overlappingPeriod.SubType,
-                    ConnectionState = overlappingPeriod.ConnectionState,
-                    Resolution = overlappingPeriod.Resolution,
-                    GridAreaCode = overlappingPeriod.GridAreaCode,
-                    ConnectionType = overlappingPeriod.ConnectionType,
-                    DisconnectionType = overlappingPeriod.DisconnectionType,
-                    Product = overlappingPeriod.Product,
-                    ProductObligation = overlappingPeriod.ProductObligation,
-                    MeasureUnit = overlappingPeriod.MeasureUnit,
-                    AssetType = overlappingPeriod.AssetType,
-                    FuelType = overlappingPeriod.FuelType,
-                    Capacity = overlappingPeriod.Capacity,
-                    PowerLimitKw = overlappingPeriod.PowerLimitKw,
-                    PowerLimitA = overlappingPeriod.PowerLimitA,
-                    MeterNumber = overlappingPeriod.MeterNumber,
-                    SettlementGroup = overlappingPeriod.SettlementGroup,
-                    ScheduledMeterReadingMonth = overlappingPeriod.ScheduledMeterReadingMonth,
-                    ExchangeFromGridArea = overlappingPeriod.ExchangeFromGridArea,
-                    ExchangeToGridArea = overlappingPeriod.ExchangeToGridArea,
-                    PowerPlantGsrn = overlappingPeriod.PowerPlantGsrn,
-                    SettlementMethod = overlappingPeriod.SettlementMethod,
-                    InstallationAddress = new InstallationAddressEntity
-                    {
-                        StreetCode = overlappingPeriod.InstallationAddress.StreetCode,
-                        StreetName = overlappingPeriod.InstallationAddress.StreetName,
-                        BuildingNumber = overlappingPeriod.InstallationAddress.BuildingNumber,
-                        CityName = overlappingPeriod.InstallationAddress.CityName,
-                        CitySubdivisionName = overlappingPeriod.InstallationAddress.CitySubdivisionName,
-                        DarReference = overlappingPeriod.InstallationAddress.DarReference,
-                        CountryCode = overlappingPeriod.InstallationAddress.CountryCode,
-                        Floor = overlappingPeriod.InstallationAddress.Floor,
-                        Room = overlappingPeriod.InstallationAddress.Room,
-                        PostCode = overlappingPeriod.InstallationAddress.PostCode,
-                        MunicipalityCode = overlappingPeriod.InstallationAddress.MunicipalityCode,
-                        LocationDescription = overlappingPeriod.InstallationAddress.LocationDescription
-                    },
-
-                    OwnedBy = overlappingPeriod.OwnedBy,
-                    BusinessTransactionDosId = overlappingPeriod.BusinessTransactionDosId,
-                    MeteringPointStateId = overlappingPeriod.MeteringPointStateId,
-                    EffectuationDate = overlappingPeriod.EffectuationDate,
-                    TransactionType = overlappingPeriod.TransactionType,
-                };
-
-                meteringPoint.MeteringPointPeriods.Add(closedOverlappingPeriod);
-
-                overlappingPeriod.RetiredAt = importedTransaction.dh2_created; // TODO: Different from example.
-                overlappingPeriod.RetiredBy = closedOverlappingPeriod;
-            }
-
-            meteringPoint.MeteringPointPeriods.Add(newMpPeriod);
-        }
-        else
-        {
-            // TODO: This is not modelled.
-        }
 
         if (newMpPeriod.Type is not "Production" and not "Consumption")
             return (true, string.Empty);
@@ -214,7 +81,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             ModifiedAt = importedTransaction.dh2_created,
         };
 
-        if (currentTransactionType is "MOVEINES")
+        if (newMpPeriod.TransactionType is "MOVEINES")
         {
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
             {
@@ -227,7 +94,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             applyNewCommercialRelation = true;
         }
 
-        if (currentTransactionType is "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP")
+        if (newMpPeriod.TransactionType is "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP")
         {
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
                 throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction id: {importedTransaction.Id}.");
@@ -241,7 +108,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             applyNewCommercialRelation = true;
         }
 
-        if (currentTransactionType is "MOVEOUTES")
+        if (newMpPeriod.TransactionType is "MOVEOUTES")
         {
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
             {
@@ -254,7 +121,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             applyNewCommercialRelation = true;
         }
 
-        if (currentTransactionType is "ENDSUPPLY")
+        if (newMpPeriod.TransactionType is "ENDSUPPLY")
         {
             activeCommercialRelation.EnergySupplier = string.Empty;
             activeCommercialRelation.ClientId = null;
@@ -275,8 +142,8 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         }
         else
         {
-            if (_unhandledTransactions.Contains(currentTransactionType))
-                return (false, $"Unhandled transaction type {currentTransactionType}");
+            if (_unhandledTransactions.Contains(newMpPeriod.TransactionType))
+                return (false, $"Unhandled transaction type {newMpPeriod.TransactionType}");
 
             // TODO: Not matching Miro. Verify!
             activeCommercialRelation = meteringPoint.CommercialRelations
@@ -401,7 +268,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         var closedOverlappingEnergySupplyPeriod = new EnergySupplyPeriodEntity
         {
             ValidTo = importedTransaction.valid_from_date,
-
             ValidFrom = overlappingEnergySupplyPeriod.ValidFrom,
             CreatedAt = overlappingEnergySupplyPeriod.CreatedAt,
             BusinessTransactionDosId = overlappingEnergySupplyPeriod.BusinessTransactionDosId,
@@ -415,5 +281,75 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         overlappingEnergySupplyPeriod.RetiredAt = importedTransaction.dh2_created; // TODO: Different from example.
 
         return (true, string.Empty);
+    }
+
+    private bool TryAddMeteringPointPeriod(
+        ImportedTransactionEntity importedTransaction,
+        MeteringPointEntity meteringPoint,
+        [NotNullWhen(true)] out MeteringPointPeriodEntity? addedMeteringPointPeriod,
+        [NotNullWhen(false)] out string? errorMessage)
+    {
+        if (_changeTransactions.Contains(importedTransaction.transaction_type.TrimEnd()))
+        {
+            var meteringPointPeriod = MeteringPointPeriodFactory.CreateMeteringPointPeriod(importedTransaction);
+
+            var currentlyActiveMeteringPointPeriod = meteringPoint.MeteringPointPeriods
+                .Where(p => p.RetiredBy == null && p.ValidFrom <= importedTransaction.valid_from_date)
+                .MaxBy(x => x.ValidFrom);
+
+            if (currentlyActiveMeteringPointPeriod != null)
+            {
+                if (currentlyActiveMeteringPointPeriod.ValidTo != DateTimeOffset.MaxValue && currentlyActiveMeteringPointPeriod.ValidTo != importedTransaction.valid_to_date)
+                {
+                    addedMeteringPointPeriod = null;
+                    errorMessage = "Currently active mpps valid to is neither infinity nor equal to the valid to of the imported transaction";
+                    return false;
+                }
+
+                if (currentlyActiveMeteringPointPeriod.ValidFrom == importedTransaction.valid_from_date)
+                {
+                    if (currentlyActiveMeteringPointPeriod.ValidTo == DateTimeOffset.MaxValue)
+                    {
+                        meteringPointPeriod.ValidTo = DateTimeOffset.MaxValue;
+                    }
+                    else
+                    {
+                        meteringPointPeriod.ValidTo = meteringPoint.MeteringPointPeriods
+                            .Where(p => p.ValidFrom > meteringPointPeriod.ValidFrom && p.RetiredBy == null)
+                            .Min(p => p.ValidFrom);
+
+                        currentlyActiveMeteringPointPeriod.RetiredAt = DateTimeOffset.UtcNow;
+                        currentlyActiveMeteringPointPeriod.RetiredBy = meteringPointPeriod;
+                    }
+                }
+                else
+                {
+                    var copy = MeteringPointPeriodFactory.CopyMeteringPointPeriod(currentlyActiveMeteringPointPeriod);
+
+                    copy.ValidTo = importedTransaction.valid_from_date;
+
+                    meteringPoint.MeteringPointPeriods.Add(copy);
+
+                    currentlyActiveMeteringPointPeriod.RetiredAt = DateTimeOffset.UtcNow;
+                    currentlyActiveMeteringPointPeriod.RetiredBy = copy;
+
+                    meteringPointPeriod.ValidTo = currentlyActiveMeteringPointPeriod.ValidTo == DateTimeOffset.MaxValue
+                        ? DateTimeOffset.MaxValue
+                        : meteringPoint.MeteringPointPeriods
+                            .Where(p => p.ValidFrom > meteringPointPeriod.ValidFrom && p.RetiredBy == null)
+                            .Min(p => p.ValidFrom);
+                }
+            }
+
+            meteringPoint.MeteringPointPeriods.Add(meteringPointPeriod);
+            addedMeteringPointPeriod = meteringPointPeriod;
+            errorMessage = null;
+            return true;
+        }
+
+        // TODO: When transaction type is not in changeTransactions. This is not modelled.
+        addedMeteringPointPeriod = null;
+        errorMessage = "Transaction type was not in changeTransactions";
+        return false;
     }
 }
