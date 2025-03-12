@@ -15,7 +15,7 @@
 using System.Security.Claims;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
 
-namespace ElectricityMarket.WebAPI.Security;
+namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
 public sealed class FrontendUserProvider : IUserProvider<FrontendUser>
 {

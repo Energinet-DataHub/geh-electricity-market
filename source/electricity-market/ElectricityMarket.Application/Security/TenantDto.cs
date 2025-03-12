@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.WebAPI.Security;
+namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
 public sealed record TenantDto(string ActorNumber, string ActorRole)
 {
