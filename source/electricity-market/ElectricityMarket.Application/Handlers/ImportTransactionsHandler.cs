@@ -35,7 +35,7 @@ public sealed class ImportTransactionsHandler : IRequestHandler<ImportTransactio
         ArgumentNullException.ThrowIfNull(request, nameof(request));
         var transactions = await _csvImporter.ImportAsync(request.TransactionsStream).ConfigureAwait(false);
 
-        var existingMeteringPoints = await _importedTransactionRepository.GetImportedTransactionsAsync(transactions).ConfigureAwait(false);
+        var existingMeteringPoints = new List<long>(); // await _importedTransactionRepository.GetImportedTransactionsAsync(transactions).ConfigureAwait(false);
 
         var newTransactions = transactions.Where(t => existingMeteringPoints.All(x => t.metering_point_id != x));
 

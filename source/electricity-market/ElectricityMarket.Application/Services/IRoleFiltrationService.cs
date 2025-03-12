@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
-using MediatR;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
-public sealed record GetMeteringPointCommand(string Identification, TenantDto Tenant) : IRequest<GetMeteringPointResponse?>;
+public interface IRoleFiltrationService
+{
+    MeteringPointDto? FilterFields(MeteringPointDto meteringPoint, TenantDto tenant);
+}

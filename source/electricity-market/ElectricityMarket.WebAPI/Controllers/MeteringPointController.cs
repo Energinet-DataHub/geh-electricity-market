@@ -14,10 +14,10 @@
 
 using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
-using ElectricityMarket.WebAPI.Security;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Security;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
@@ -42,16 +42,16 @@ public class MeteringPointController : ControllerBase
     {
         ArgumentNullException.ThrowIfNull(tenant);
 
-        if (tenant.MarketRole != MarketRole.DataHubAdministrator)
-        {
-            return Unauthorized();
-        }
-
-        var getMeteringPointCommand = new GetMeteringPointCommand(identification);
+        var getMeteringPointCommand = new GetMeteringPointCommand(identification, tenant);
 
         var meteringPoint = await _mediator
             .Send(getMeteringPointCommand)
             .ConfigureAwait(false);
+
+        if (meteringPoint == null)
+        {
+            return NotFound();
+        }
 
         return Ok(meteringPoint.MeteringPoint);
     }
