@@ -43,10 +43,18 @@ public sealed class InitialImportOrchestrator
 
     private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
     {
-        await orchestrationContext.CallActivityAsync(nameof(ImportGoldModelActivity), new ImportGoldModelActivityInput
-        {
-            Cutoff = cutoff,
-        });
+        const long cutoffRange = 100_000;
+
+        var tasks = Enumerable.Range(0, (int)Math.Ceiling(cutoff / (double)cutoffRange))
+            .Select(i => orchestrationContext.CallActivityAsync(
+                nameof(ImportGoldModelActivity),
+                new ImportGoldModelActivityInput
+                {
+                    CutoffFromInclusive = i * cutoffRange,
+                    CutoffToExclusive = Math.Min((i * cutoffRange) + cutoffRange, cutoff),
+                }));
+
+        await Task.WhenAll(tasks);
     }
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)

@@ -16,5 +16,6 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public class ImportGoldModelActivityInput
 {
-    public long Cutoff { get; set; }
+    public long CutoffFromInclusive { get; set; }
+    public long CutoffToExclusive { get; set; }
 }
