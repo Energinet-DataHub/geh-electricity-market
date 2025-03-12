@@ -44,20 +44,17 @@ public sealed class InitialImportOrchestrator
     private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
     {
         const long cutoffRange = 100_000;
-        var partitions = Enumerable.Range(0, (int)Math.Ceiling(cutoff / (double)cutoffRange));
 
-        foreach (var parallelPartitions in partitions.Chunk(5))
-        {
-            var tasks = parallelPartitions.Select(partition => orchestrationContext.CallActivityAsync(
+        var tasks = Enumerable.Range(0, (int)Math.Ceiling(cutoff / (double)cutoffRange))
+            .Select(i => orchestrationContext.CallActivityAsync(
                 nameof(ImportGoldModelActivity),
                 new ImportGoldModelActivityInput
                 {
-                    CutoffFromInclusive = partition * cutoffRange,
-                    CutoffToExclusive = Math.Min((partition * cutoffRange) + cutoffRange, cutoff),
+                    CutoffFromInclusive = i * cutoffRange,
+                    CutoffToExclusive = Math.Min((i * cutoffRange) + cutoffRange, cutoff),
                 }));
 
-            await Task.WhenAll(tasks);
-        }
+        await Task.WhenAll(tasks);
     }
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
