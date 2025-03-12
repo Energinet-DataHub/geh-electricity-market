@@ -58,7 +58,7 @@ public sealed class ImportGoldModelActivity : IDisposable
 
         var sw = Stopwatch.StartNew();
 
-        await ImportAsync(input.Cutoff).ConfigureAwait(false);
+        await ImportAsync(input.CutoffFromInclusive, input.CutoffToExclusive).ConfigureAwait(false);
 
         _logger.LogWarning("Gold model imported in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
     }
@@ -69,13 +69,13 @@ public sealed class ImportGoldModelActivity : IDisposable
         _submitCollection.Dispose();
     }
 
-    private async Task ImportAsync(long cutoff)
+    private async Task ImportAsync(long cutoffFromInclusive, long cutoffToExclusive)
     {
         var importSilver = Task.Run(async () =>
         {
             try
             {
-                await ImportDataAsync(cutoff).ConfigureAwait(false);
+                await ImportDataAsync(cutoffFromInclusive, cutoffToExclusive).ConfigureAwait(false);
             }
             catch
             {
@@ -114,7 +114,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         await Task.WhenAll(importSilver, goldTransform, bulkInsert).ConfigureAwait(false);
     }
 
-    private async Task ImportDataAsync(long cutoff)
+    private async Task ImportDataAsync(long cutoffFromInclusive, long cutoffToExclusive)
     {
         var query = DatabricksStatement.FromRawSql(
             $"""
@@ -209,7 +209,7 @@ public sealed class ImportGoldModelActivity : IDisposable
                 dossier_status
 
              FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v4
-             WHERE btd_trans_doss_id < {cutoff}
+             WHERE btd_trans_doss_id >= {cutoffFromInclusive} AND btd_trans_doss_id < {cutoffToExclusive}
              """);
 
         var sw = Stopwatch.StartNew();
@@ -279,7 +279,7 @@ public sealed class ImportGoldModelActivity : IDisposable
     {
         using var bulkCopy = new SqlBulkCopy(
             _databaseOptions.Value.ConnectionString,
-            SqlBulkCopyOptions.TableLock);
+            SqlBulkCopyOptions.Default);
 
         bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";
         bulkCopy.BulkCopyTimeout = 0;
@@ -288,8 +288,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         {
             var sw = Stopwatch.StartNew();
 
-            // await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
-            await Task.CompletedTask.ConfigureAwait(false);
+            await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
             batch.Dispose();
 
             _logger.LogWarning("A batch was inserted in {InsertTime} ms.", sw.ElapsedMilliseconds);
