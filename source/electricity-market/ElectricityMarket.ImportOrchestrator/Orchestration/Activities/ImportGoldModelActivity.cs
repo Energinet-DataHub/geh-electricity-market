@@ -288,7 +288,8 @@ public sealed class ImportGoldModelActivity : IDisposable
         {
             var sw = Stopwatch.StartNew();
 
-            await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
+            // await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
+            await Task.CompletedTask.ConfigureAwait(false);
             batch.Dispose();
 
             _logger.LogWarning("A batch was inserted in {InsertTime} ms.", sw.ElapsedMilliseconds);
