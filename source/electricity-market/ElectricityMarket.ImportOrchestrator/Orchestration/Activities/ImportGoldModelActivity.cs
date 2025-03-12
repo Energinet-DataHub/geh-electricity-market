@@ -223,14 +223,14 @@ public sealed class ImportGoldModelActivity : IDisposable
         {
             if (firstLog)
             {
-                _logger.LogWarning("Databricks first result after {FirstResult} ms.", sw.ElapsedMilliseconds);
+                _logger.LogWarning("Databricks {ActivityCutoff} first result after {FirstResult} ms.", cutoffFromInclusive, sw.ElapsedMilliseconds);
                 firstLog = false;
             }
 
             _importCollection.Add(record);
         }
 
-        _logger.LogWarning("All databricks results added after {DatabricksCompleted} ms.", sw.ElapsedMilliseconds);
+        _logger.LogWarning("Databricks {ActivityCutoff} results added after {DatabricksCompleted} ms.", cutoffFromInclusive, sw.ElapsedMilliseconds);
         _importCollection.CompleteAdding();
     }
 
@@ -270,7 +270,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         }
 
         _submitCollection.Add(ObjectReader.Create(batch, columnOrder));
-        _logger.LogWarning("Final batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
+        _logger.LogWarning("A batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
 
         _submitCollection.CompleteAdding();
     }
