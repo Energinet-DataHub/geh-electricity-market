@@ -27,7 +27,8 @@ public class RoleFiltrationService : IRoleFiltrationService
 
         return tenant.MarketRole switch
         {
-            MarketRole.DataHubAdministrator or MarketRole.EnergySupplier when energySupplierNumber == tenant.ActorNumber => meteringPoint,
+            MarketRole.DataHubAdministrator => meteringPoint,
+            MarketRole.EnergySupplier when energySupplierNumber == tenant.ActorNumber => meteringPoint,
             MarketRole.GridAccessProvider => GridAccessProviderFiltering(meteringPoint),
             MarketRole.EnergySupplier when energySupplierNumber != tenant.ActorNumber => EnergySupplierFiltering(meteringPoint),
             _ => null
