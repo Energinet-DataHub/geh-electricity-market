@@ -43,12 +43,12 @@ internal static class MeteringPointMapper
             from.Resolution,
             from.GridAreaCode,
             from.OwnedBy!,
-            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.ConnectionTypes, from.ConnectionType),
-            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.DisconnectionTypes, from.DisconnectionType),
+            MeteringPointEnumMapper.MapOptionalEntity(MeteringPointEnumMapper.ConnectionTypes, from.ConnectionType),
+            MeteringPointEnumMapper.MapOptionalEntity(MeteringPointEnumMapper.DisconnectionTypes, from.DisconnectionType),
             MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.Products, from.Product),
             from.ProductObligation,
             MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.MeasureUnits, from.MeasureUnit),
-            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.AssetTypes, from.AssetType),
+            MeteringPointEnumMapper.MapOptionalEntity(MeteringPointEnumMapper.AssetTypes, from.AssetType),
             from.FuelType,
             from.Capacity,
             from.PowerLimitKw,
@@ -58,7 +58,7 @@ internal static class MeteringPointMapper
             from.ExchangeFromGridArea,
             from.ExchangeToGridArea,
             from.PowerPlantGsrn,
-            MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.SettlementMethods, from.SettlementMethod),
+            MeteringPointEnumMapper.MapOptionalEntity(MeteringPointEnumMapper.SettlementMethods, from.SettlementMethod),
             MapFromEntity(from.InstallationAddress));
     }
 
