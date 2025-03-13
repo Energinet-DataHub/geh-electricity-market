@@ -43,7 +43,7 @@ public sealed class InitialImportOrchestrator
 
     private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
     {
-        const long cutoffRange = 100_000;
+        const long cutoffRange = 10_000_000;
 
         var tasks = Enumerable.Range(0, (int)Math.Ceiling(cutoff / (double)cutoffRange))
             .Select(i => orchestrationContext.CallActivityAsync(
