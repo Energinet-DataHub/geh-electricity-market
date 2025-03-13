@@ -30,7 +30,10 @@ public static class ScheduledMeterReadingMonthHelper
             throw new ArgumentException("Date for scheduled meter reading month is invalid", nameof(input));
         }
 
-        var (month, day) = (int.Parse(input[..2], CultureInfo.InvariantCulture), int.Parse(input[2..], CultureInfo.InvariantCulture));
+        var (month, day) = (
+            int.Parse(input.AsSpan(0, 2), CultureInfo.InvariantCulture),
+            int.Parse(input.AsSpan(2, 2), CultureInfo.InvariantCulture));
+
         switch (day)
         {
             case >= 1 and < 28:
