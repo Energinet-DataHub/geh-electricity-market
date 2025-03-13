@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -97,5 +98,17 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             entity != null ? [[entity]] : [],
             quarantined != null ? [[quarantined]] : [],
             CultureInfo.GetCultureInfo("da-DK")).ConfigureAwait(false);
+    }
+
+    public async Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode)
+    {
+        ArgumentNullException.ThrowIfNull(gridAreaCode);
+
+        var entities = await _electricityMarketDatabaseContext.MeteringPoints
+            .Where(x => x.MeteringPointPeriods.Any(mpp => mpp.GridAreaCode == gridAreaCode))
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        return entities.Select(MeteringPointMapper.MapFromEntity);
     }
 }

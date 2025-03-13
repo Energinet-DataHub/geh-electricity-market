@@ -31,8 +31,8 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class ImportGoldModelActivity : IDisposable
 {
-    private readonly BlockingCollection<ExpandoObject> _importCollection = new(1000000);
-    private readonly BlockingCollection<IDataReader> _submitCollection = new(5);
+    private readonly BlockingCollection<ExpandoObject> _importCollection = new(500_000);
+    private readonly BlockingCollection<IDataReader> _submitCollection = new(2);
 
     private readonly IOptions<DatabaseOptions> _databaseOptions;
     private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
@@ -58,7 +58,7 @@ public sealed class ImportGoldModelActivity : IDisposable
 
         var sw = Stopwatch.StartNew();
 
-        await ImportAsync(input.Cutoff).ConfigureAwait(false);
+        await ImportAsync(input.CutoffFromInclusive, input.CutoffToExclusive).ConfigureAwait(false);
 
         _logger.LogWarning("Gold model imported in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
     }
@@ -69,13 +69,13 @@ public sealed class ImportGoldModelActivity : IDisposable
         _submitCollection.Dispose();
     }
 
-    private async Task ImportAsync(long cutoff)
+    private async Task ImportAsync(long cutoffFromInclusive, long cutoffToExclusive)
     {
         var importSilver = Task.Run(async () =>
         {
             try
             {
-                await ImportDataAsync(cutoff).ConfigureAwait(false);
+                await ImportDataAsync(cutoffFromInclusive, cutoffToExclusive).ConfigureAwait(false);
             }
             catch
             {
@@ -114,7 +114,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         await Task.WhenAll(importSilver, goldTransform, bulkInsert).ConfigureAwait(false);
     }
 
-    private async Task ImportDataAsync(long cutoff)
+    private async Task ImportDataAsync(long cutoffFromInclusive, long cutoffToExclusive)
     {
         var query = DatabricksStatement.FromRawSql(
             $"""
@@ -209,7 +209,7 @@ public sealed class ImportGoldModelActivity : IDisposable
                 dossier_status
 
              FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v4
-             WHERE btd_trans_doss_id < {cutoff}
+             WHERE btd_trans_doss_id >= {cutoffFromInclusive} AND btd_trans_doss_id < {cutoffToExclusive}
              """);
 
         var sw = Stopwatch.StartNew();
@@ -223,14 +223,14 @@ public sealed class ImportGoldModelActivity : IDisposable
         {
             if (firstLog)
             {
-                _logger.LogWarning("Databricks first result after {FirstResult} ms.", sw.ElapsedMilliseconds);
+                _logger.LogWarning("Databricks {ActivityCutoff} first result after {FirstResult} ms.", cutoffFromInclusive, sw.ElapsedMilliseconds);
                 firstLog = false;
             }
 
             _importCollection.Add(record);
         }
 
-        _logger.LogWarning("All databricks results added after {DatabricksCompleted} ms.", sw.ElapsedMilliseconds);
+        _logger.LogWarning("Databricks {ActivityCutoff} results added after {DatabricksCompleted} ms.", cutoffFromInclusive, sw.ElapsedMilliseconds);
         _importCollection.CompleteAdding();
     }
 
@@ -270,7 +270,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         }
 
         _submitCollection.Add(ObjectReader.Create(batch, columnOrder));
-        _logger.LogWarning("Final batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
+        _logger.LogWarning("A batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
 
         _submitCollection.CompleteAdding();
     }
@@ -279,7 +279,7 @@ public sealed class ImportGoldModelActivity : IDisposable
     {
         using var bulkCopy = new SqlBulkCopy(
             _databaseOptions.Value.ConnectionString,
-            SqlBulkCopyOptions.TableLock);
+            SqlBulkCopyOptions.Default);
 
         bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";
         bulkCopy.BulkCopyTimeout = 0;
