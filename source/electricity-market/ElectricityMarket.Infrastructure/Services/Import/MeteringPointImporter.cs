@@ -121,7 +121,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         return true;
     }
 
-
     private (bool Imported, string Message) TryImportTransaction(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
         var transactionType = importedTransaction.transaction_type.TrimEnd();
