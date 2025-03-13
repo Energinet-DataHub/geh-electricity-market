@@ -140,11 +140,21 @@ internal static class MeteringPointEnumMapper
         new(SettlementMethod.NonProfiled, "NonProfiled", "E02"),
     ];
 
-    public static T? MapEntity<T>(IEnumerable<EnumMap<T>> lookup, string? entityValue)
-        where T : Enum
+    public static T MapEntity<T>(IEnumerable<EnumMap<T>> lookup, string entityValue)
+        where T : struct, Enum
+    {
+        var result = lookup.FirstOrDefault(v => v.EntityValue == entityValue);
+        if (result == null)
+            throw new InvalidOperationException($"Could not find value {entityValue} in map {typeof(T)}.");
+
+        return result.Enum;
+    }
+
+    public static T? MapOptionalEntity<T>(IEnumerable<EnumMap<T>> lookup, string? entityValue)
+        where T : struct, Enum
     {
         if (entityValue == null)
-            return default;
+            return null;
 
         var result = lookup.FirstOrDefault(v => v.EntityValue == entityValue);
         if (result == null)
