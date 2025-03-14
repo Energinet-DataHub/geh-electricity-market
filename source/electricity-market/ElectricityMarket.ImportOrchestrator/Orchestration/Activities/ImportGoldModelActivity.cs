@@ -31,6 +31,8 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class ImportGoldModelActivity : IDisposable
 {
+    public const string ActivityName = "ImportGoldModelActivityV1";
+
     private readonly BlockingCollection<ExpandoObject> _importCollection = new(500_000);
     private readonly BlockingCollection<IDataReader> _submitCollection = new(2);
 
@@ -51,7 +53,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         _logger = logger;
     }
 
-    [Function(nameof(ImportGoldModelActivity))]
+    [Function(ActivityName)]
     public async Task RunAsync([ActivityTrigger] ImportGoldModelActivityInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
