@@ -279,7 +279,7 @@ public sealed class ImportGoldModelActivity : IDisposable
     {
         using var bulkCopy = new SqlBulkCopy(
             _databaseOptions.Value.ConnectionString,
-            SqlBulkCopyOptions.TableLock);
+            SqlBulkCopyOptions.Default);
 
         bulkCopy.DestinationTableName = "electricitymarket.GoldenImport";
         bulkCopy.BulkCopyTimeout = 0;
