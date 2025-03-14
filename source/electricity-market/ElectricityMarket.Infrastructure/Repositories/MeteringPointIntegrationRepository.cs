@@ -33,7 +33,6 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }
 
-    // TODO: Test
     public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
         string meteringPointIdentification,
         DateTimeOffset startDate,
@@ -65,7 +64,16 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                 ValidTo = mpp.ValidTo.ToInstant(),
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
                 GridAccessProvider = mpp.OwnedBy ?? gridArea.ActorNumber,
-                NeighborGridAreaOwners = new[] { exchangeFromGridArea.ActorNumber, exchangeToGridArea.ActorNumber }.Where(x => x != null).ToList(),
+
+                // This ugliness is needed for EF Core to translate the left join into a working query.
+                NeighborGridAreaOwners = exchangeFromGridArea.ActorNumber != null && exchangeToGridArea.ActorNumber != null
+                    ? new List<string> { exchangeFromGridArea.ActorNumber, exchangeToGridArea.ActorNumber }
+                    : exchangeFromGridArea.ActorNumber != null && exchangeToGridArea.ActorNumber == null
+                        ? new List<string> { exchangeFromGridArea.ActorNumber }
+                        : exchangeFromGridArea.ActorNumber == null && exchangeToGridArea.ActorNumber != null
+                            ? new List<string> { exchangeToGridArea.ActorNumber }
+                            : new List<string>(),
+
                 ConnectionState = Enum.Parse<ConnectionState>(mpp.ConnectionState),
                 Type = Enum.Parse<MeteringPointType>(mpp.Type),
                 SubType = Enum.Parse<MeteringPointSubType>(mpp.SubType),

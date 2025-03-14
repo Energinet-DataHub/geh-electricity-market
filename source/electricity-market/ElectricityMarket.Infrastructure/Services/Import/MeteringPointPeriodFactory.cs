@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
@@ -47,7 +48,7 @@ public static class MeteringPointPeriodFactory
             PowerLimitA = importedTransaction.power_limit_a,
             MeterNumber = importedTransaction.meter_number?.TrimEnd(),
             SettlementGroup = importedTransaction.net_settlement_group,
-            ScheduledMeterReadingMonth = -1, // TODO: Requires custom logic.
+            ScheduledMeterReadingMonth = ScheduledMeterReadingMonthHelper.ConvertToSingleMonth(importedTransaction.scheduled_meter_reading_date01),
             ExchangeFromGridArea = importedTransaction.from_grid_area?.TrimEnd(),
             ExchangeToGridArea = importedTransaction.to_grid_area?.TrimEnd(),
             PowerPlantGsrn = importedTransaction.power_plant_gsrn?.TrimEnd(),
