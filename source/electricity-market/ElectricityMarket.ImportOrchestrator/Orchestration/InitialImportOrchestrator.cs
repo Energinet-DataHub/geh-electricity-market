@@ -47,7 +47,7 @@ public sealed class InitialImportOrchestrator
 
         var tasks = Enumerable.Range(0, (int)Math.Ceiling(cutoff / (double)cutoffRange))
             .Select(i => orchestrationContext.CallActivityAsync(
-                nameof(ImportGoldModelActivity),
+                ImportGoldModelActivity.ActivityName,
                 new ImportGoldModelActivityInput
                 {
                     CutoffFromInclusive = i * cutoffRange,
