@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 

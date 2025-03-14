@@ -14,7 +14,6 @@
 
 using System;
 using System.Linq;
-using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.UnitTests.Common;

@@ -15,7 +15,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Transactions;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
