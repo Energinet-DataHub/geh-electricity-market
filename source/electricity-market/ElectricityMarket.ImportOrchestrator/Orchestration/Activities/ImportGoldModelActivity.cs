@@ -79,9 +79,11 @@ public sealed class ImportGoldModelActivity : IDisposable
             {
                 await ImportDataAsync(cutoffFromInclusive, cutoffToExclusive).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
                 _importCollection.Dispose();
+                _submitCollection.Dispose();
+                _logger.LogError(ex, "Error during ImportDataAsync.");
                 throw;
             }
         });
@@ -92,9 +94,11 @@ public sealed class ImportGoldModelActivity : IDisposable
             {
                 PackageRecords();
             }
-            catch
+            catch (Exception ex)
             {
+                _importCollection.Dispose();
                 _submitCollection.Dispose();
+                _logger.LogError(ex, "Error during PackageRecords.");
                 throw;
             }
         });
@@ -105,10 +109,11 @@ public sealed class ImportGoldModelActivity : IDisposable
             {
                 await BulkInsertAsync().ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
                 _importCollection.Dispose();
                 _submitCollection.Dispose();
+                _logger.LogError(ex, "Error during BulkInsertAsync.");
                 throw;
             }
         });
