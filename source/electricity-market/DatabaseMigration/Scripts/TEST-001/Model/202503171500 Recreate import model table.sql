@@ -1,6 +1,3 @@
-DROP VIEW IF EXISTS electricitymarket.vw_MeteringPointEnergySuppliers;
-DROP VIEW IF EXISTS electricitymarket.vw_MeteringPointChanges;
-
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPointTransaction;
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPoint;
 DROP TABLE IF EXISTS electricitymarket.ElectricalHeatingPeriod;
@@ -150,7 +147,7 @@ CREATE TABLE [electricitymarket].[ContactAddress]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
     [IsProtectedAddress]         bit NOT NULL,
-    [Attention]                  nvarchar(128) NULL,
+    [Attention]                  nvarchar(256) NULL,
     [StreetCode]                 char(4) NULL,
     [StreetName]                 nvarchar(64) NULL,
     [BuildingNumber]             nvarchar(64) NULL,
@@ -172,13 +169,13 @@ CREATE TABLE [electricitymarket].[Contact]
     [EnergySupplyPeriodId]       bigint NOT NULL,
     
     [RelationType]               varchar(64) NOT NULL,
-    [DisponentName]              nvarchar(128) NOT NULL,
+    [DisponentName]              nvarchar(256) NOT NULL,
     [CPR]                        char(12) NULL,
     [CVR]                        char(8) NULL,
 
     [ContactAddressId]           bigint NULL,
-    [ContactName]                nvarchar(128) NULL,
-    [Email]                      nvarchar(128) NULL,
+    [ContactName]                nvarchar(256) NULL,
+    [Email]                      nvarchar(256) NULL,
     [Phone]                      nvarchar(64) NULL,
     [Mobile]                     nvarchar(64) NULL,
     [IsProtectedName]            bit NOT NULL,
@@ -265,18 +262,18 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [location_municipality_code]      NVARCHAR(64)       NULL,
     [location_location_description]   NVARCHAR(512)      NULL,
 
-    [first_consumer_party_name]       NVARCHAR(128)      NULL,
+    [first_consumer_party_name]       NVARCHAR(256)      NULL,
     [first_consumer_cpr]              CHAR(10)           NULL,
-    [second_consumer_party_name]      NVARCHAR(128)      NULL,
+    [second_consumer_party_name]      NVARCHAR(256)      NULL,
     [second_consumer_cpr]             CHAR(10)           NULL,
     [consumer_cvr]                    CHAR(8)            NULL,
     [protected_name]                  BIT                NULL,
 
-    [contact_1_contact_name1]         NVARCHAR(128)      NULL,
+    [contact_1_contact_name1]         NVARCHAR(256)      NULL,
     [contact_1_protected_address]     BIT                NULL,
     [contact_1_phone_number]          NVARCHAR(64)       NULL,
     [contact_1_mobile_number]         NVARCHAR(64)       NULL,
-    [contact_1_email_address]         NVARCHAR(128)      NULL,
+    [contact_1_email_address]         NVARCHAR(256)      NULL,
     [contact_1_attention]             NVARCHAR(64)       NULL,
     [contact_1_street_code]           CHAR(4)            NULL,
     [contact_1_street_name]           NVARCHAR(64)       NULL,
@@ -291,11 +288,11 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [contact_1_post_box]              NVARCHAR(64)       NULL,
     [contact_1_municipality_code]     NVARCHAR(64)       NULL,
 
-    [contact_4_contact_name1]         NVARCHAR(128)      NULL,
+    [contact_4_contact_name1]         NVARCHAR(256)      NULL,
     [contact_4_protected_address]     BIT                NULL,
     [contact_4_phone_number]          NVARCHAR(64)       NULL,
     [contact_4_mobile_number]         NVARCHAR(64)       NULL,
-    [contact_4_email_address]         NVARCHAR(128)      NULL,
+    [contact_4_email_address]         NVARCHAR(256)      NULL,
     [contact_4_attention]             NVARCHAR(64)       NULL,
     [contact_4_street_code]           CHAR(4)            NULL,
     [contact_4_street_name]           NVARCHAR(64)       NULL,
