@@ -81,8 +81,7 @@ public sealed class ImportGoldModelActivity : IDisposable
             }
             catch (Exception ex)
             {
-                _importCollection.Dispose();
-                _submitCollection.Dispose();
+                ReleaseBlockingCollections();
                 _logger.LogError(ex, "Error during ImportDataAsync.");
                 throw;
             }
@@ -96,8 +95,7 @@ public sealed class ImportGoldModelActivity : IDisposable
             }
             catch (Exception ex)
             {
-                _importCollection.Dispose();
-                _submitCollection.Dispose();
+                ReleaseBlockingCollections();
                 _logger.LogError(ex, "Error during PackageRecords.");
                 throw;
             }
@@ -111,14 +109,21 @@ public sealed class ImportGoldModelActivity : IDisposable
             }
             catch (Exception ex)
             {
-                _importCollection.Dispose();
-                _submitCollection.Dispose();
+                ReleaseBlockingCollections();
                 _logger.LogError(ex, "Error during BulkInsertAsync.");
                 throw;
             }
         });
 
         await Task.WhenAll(importSilver, goldTransform, bulkInsert).ConfigureAwait(false);
+
+        void ReleaseBlockingCollections()
+        {
+            _importCollection.CompleteAdding();
+            _importCollection.Dispose();
+            _submitCollection.CompleteAdding();
+            _submitCollection.Dispose();
+        }
     }
 
     private async Task ImportDataAsync(long cutoffFromInclusive, long cutoffToExclusive)
