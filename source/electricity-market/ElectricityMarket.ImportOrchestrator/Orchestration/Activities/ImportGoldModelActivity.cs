@@ -92,7 +92,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         {
             try
             {
-                PackageRecords();
+                PackageRecords(chunk);
             }
             catch (Exception ex)
             {
@@ -106,7 +106,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         {
             try
             {
-                await BulkInsertAsync().ConfigureAwait(false);
+                await BulkInsertAsync(chunk).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -151,7 +151,7 @@ public sealed class ImportGoldModelActivity : IDisposable
         _importCollection.CompleteAdding();
     }
 
-    private void PackageRecords()
+    private void PackageRecords(Chunks chunk)
     {
         var lookup = ImportModelHelper.ImportFields.ToImmutableDictionary(k => k.Key, v => v.Value);
 
@@ -170,7 +170,7 @@ public sealed class ImportGoldModelActivity : IDisposable
             if (batch.Count == capacity)
             {
                 _submitCollection.Add(ObjectReader.Create(batch, columnOrder));
-                _logger.LogWarning("A batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
+                _logger.LogWarning("A batch {ActivityChunk} was prepared in {BatchTime} ms.", chunk.chunk_index, sw.ElapsedMilliseconds);
 
                 sw = Stopwatch.StartNew();
                 batch = new List<ImportedTransactionEntity>(capacity);
@@ -187,12 +187,12 @@ public sealed class ImportGoldModelActivity : IDisposable
         }
 
         _submitCollection.Add(ObjectReader.Create(batch, columnOrder));
-        _logger.LogWarning("A batch was prepared in {BatchTime} ms.", sw.ElapsedMilliseconds);
+        _logger.LogWarning("A batch {ActivityChunk} was prepared in {BatchTime} ms.", chunk.chunk_index, sw.ElapsedMilliseconds);
 
         _submitCollection.CompleteAdding();
     }
 
-    private async Task BulkInsertAsync()
+    private async Task BulkInsertAsync(Chunks chunk)
     {
         using var bulkCopy = new SqlBulkCopy(
             _databaseOptions.Value.ConnectionString,
@@ -208,7 +208,7 @@ public sealed class ImportGoldModelActivity : IDisposable
             await bulkCopy.WriteToServerAsync(batch).ConfigureAwait(false);
             batch.Dispose();
 
-            _logger.LogWarning("A batch was inserted in {InsertTime} ms.", sw.ElapsedMilliseconds);
+            _logger.LogWarning("A batch {ActivityChunk} was inserted in {InsertTime} ms.", chunk.chunk_index, sw.ElapsedMilliseconds);
         }
     }
 }

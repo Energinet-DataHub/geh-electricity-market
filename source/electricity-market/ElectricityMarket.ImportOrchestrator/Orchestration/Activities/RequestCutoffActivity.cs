@@ -157,9 +157,13 @@ public sealed class RequestCutoffActivity
              WHERE btd_trans_doss_id < {foundCutOff}
              """);
 
+        sw.Restart();
+
         var (statementId, chunks) = await _databricksSqlWarehouseQueryExecutor
             .ExecuteChunkyStatementAsync(query.Build())
             .ConfigureAwait(false);
+
+        _logger.LogWarning("Statement ready with {ChunkCount} after {ElapsedMilliseconds} ms.", chunks.Length, sw.ElapsedMilliseconds);
 
         return new CutoffResponse(foundCutOff, statementId, chunks);
     }
