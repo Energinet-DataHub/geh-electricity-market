@@ -12,12 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statement;
+using System.Runtime.CompilerServices;
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
-
-public class ImportGoldModelActivityInput
-{
-    public string StatementId { get; set; } = null!;
-    public Chunks Chunk { get; set; } = null!;
-}
+[assembly: InternalsVisibleTo("Energinet.DataHub.Core.Databricks.SqlStatementExecution.UnitTests")]
+[assembly: InternalsVisibleTo("Energinet.DataHub.Core.Databricks.SqlStatementExecution.IntegrationTests")]

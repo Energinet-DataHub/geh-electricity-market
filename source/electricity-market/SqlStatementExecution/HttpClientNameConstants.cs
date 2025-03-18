@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statement;
+namespace Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution;
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
-
-public class ImportGoldModelActivityInput
+/// <summary>
+/// Constants used for naming <see cref="HttpClient"/> instances.
+///     Databricks: Used for communicating with the Databricks API.
+///     External: Used for communicating with external services without authorization.
+/// </summary>
+internal static class HttpClientNameConstants
 {
-    public string StatementId { get; set; } = null!;
-    public Chunks Chunk { get; set; } = null!;
+    public const string Databricks = "Databricks";
+    public const string External = "External";
 }

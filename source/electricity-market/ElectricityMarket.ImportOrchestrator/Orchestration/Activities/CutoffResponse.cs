@@ -16,8 +16,4 @@ using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statem
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public class ImportGoldModelActivityInput
-{
-    public string StatementId { get; set; } = null!;
-    public Chunks Chunk { get; set; } = null!;
-}
+public sealed record CutoffResponse(long Cutoff, string StatementId, IReadOnlyList<Chunks> Chunks);

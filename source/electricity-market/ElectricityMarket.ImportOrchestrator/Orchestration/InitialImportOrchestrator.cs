@@ -30,45 +30,30 @@ public sealed class InitialImportOrchestrator
         ArgumentNullException.ThrowIfNull(orchestrationContext);
         ArgumentNullException.ThrowIfNull(executionContext);
 
-        var cutoff = await orchestrationContext.CallActivityAsync<long>(nameof(FindCutoffActivity));
+        var cutoffResponse = await orchestrationContext.CallActivityAsync<CutoffResponse>(nameof(RequestCutoffActivity));
 
-        await ImportGoldModelAsync(orchestrationContext, cutoff);
+        await ImportGoldModelAsync(orchestrationContext, cutoffResponse);
         await ImportRelationalModelAsync(orchestrationContext);
 
         await orchestrationContext.CallActivityAsync(nameof(SwitchToStreamingActivity), new SwitchToStreamingActivityInput
         {
-            Cutoff = cutoff
+            Cutoff = cutoffResponse.Cutoff
         });
     }
 
-    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
+    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, CutoffResponse cutoffResponse)
     {
-        const long cutoffRange = 10_000_000;
-
-        var tasks = Enumerable
-            .Range(0, (int)Math.Ceiling(cutoff / (double)cutoffRange))
-            .Select(i => orchestrationContext.CallActivityAsync(
+        var tasks = cutoffResponse
+            .Chunks
+            .Select(chunk => orchestrationContext.CallActivityAsync(
                 ImportGoldModelActivity.ActivityName,
                 new ImportGoldModelActivityInput
                 {
-                    CutoffFromInclusive = i * cutoffRange,
-                    CutoffToExclusive = Math.Min((i * cutoffRange) + cutoffRange, cutoff),
+                    StatementId = cutoffResponse.StatementId,
+                    Chunk = chunk
                 }));
 
-        var runningTasks = new List<Task>();
-
-        foreach (var task in tasks)
-        {
-            runningTasks.Add(task);
-
-            if (runningTasks.Count >= 3)
-            {
-                var completedTask = await Task.WhenAny(runningTasks);
-                runningTasks.Remove(completedTask);
-            }
-        }
-
-        await Task.WhenAll(runningTasks);
+        await Task.WhenAll(tasks);
     }
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
