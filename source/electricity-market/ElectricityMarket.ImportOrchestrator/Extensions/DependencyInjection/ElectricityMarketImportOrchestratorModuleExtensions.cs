@@ -52,6 +52,9 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
 
         services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
+        Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.DatabricksSqlStatementExecutionExtensions
+            .AddDatabricksSqlStatementExecution(services, configuration.GetSection("Databricks"));
+
         services.AddScoped<FindCutoffActivity>();
         services.AddScoped<IImportStateService, ImportStateService>();
 

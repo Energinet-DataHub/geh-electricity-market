@@ -12,12 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statement;
+namespace Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Formats;
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
-
-public class ImportGoldModelActivityInput
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class ArrowFieldAttribute : Attribute
 {
-    public string StatementId { get; set; } = null!;
-    public Chunks Chunk { get; set; } = null!;
+    public ArrowFieldAttribute(string name, int constructorOrder)
+    {
+        Name = name;
+        ConstructorOrder = constructorOrder;
+    }
+
+    public string Name { get; }
+
+    public int ConstructorOrder { get; }
 }

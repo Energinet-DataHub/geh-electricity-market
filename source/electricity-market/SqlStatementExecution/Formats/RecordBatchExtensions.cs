@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statement;
+using Apache.Arrow;
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
+namespace Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Formats;
 
-public class ImportGoldModelActivityInput
+internal static class RecordBatchExtensions
 {
-    public string StatementId { get; set; } = null!;
-    public Chunks Chunk { get; set; } = null!;
+    public static T ReadRecord<T>(this RecordBatch batch, int row)
+        where T : class
+    {
+        var fieldNames = Reflections.GetArrowFieldNames<T>();
+        var values = fieldNames.Select(field => batch.Column(field).GetValue(row)).ToArray();
+        return Reflections.CreateInstance<T>(values);
+    }
 }
