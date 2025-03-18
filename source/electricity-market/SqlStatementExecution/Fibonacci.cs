@@ -12,12 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statement;
+namespace Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution;
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
-
-public class ImportGoldModelActivityInput
+internal sealed class Fibonacci
 {
-    public string StatementId { get; set; } = null!;
-    public Chunks Chunk { get; set; } = null!;
+    private int _firstNumber;
+    private int _secondNumber = 1;
+
+    /// <summary>
+    /// Get the next number in the Fibonacci sequence.
+    /// </summary>
+    public int GetNextNumber()
+    {
+        var result = _firstNumber + _secondNumber;
+        _firstNumber = _secondNumber;
+        _secondNumber = result;
+        return result;
+    }
 }

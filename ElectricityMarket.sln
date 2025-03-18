@@ -31,6 +31,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{805DBA20
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemImporter", "source\electricity-market\InMemImporter\InMemImporter.csproj", "{9043D8E0-CD58-4CC1-9F15-72B92418B5DE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DatabricksIntegration", "DatabricksIntegration", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlStatementExecution", "source\electricity-market\SqlStatementExecution\SqlStatementExecution.csproj", "{2A340B14-ACC9-4AF9-3CD3-2735159118F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,10 @@ Global
 		{9043D8E0-CD58-4CC1-9F15-72B92418B5DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9043D8E0-CD58-4CC1-9F15-72B92418B5DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9043D8E0-CD58-4CC1-9F15-72B92418B5DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A340B14-ACC9-4AF9-3CD3-2735159118F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A340B14-ACC9-4AF9-3CD3-2735159118F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A340B14-ACC9-4AF9-3CD3-2735159118F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A340B14-ACC9-4AF9-3CD3-2735159118F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +100,7 @@ Global
 		{8973DFB9-B071-418B-9EEB-08629646DC26} = {B7F4F1FB-15F3-408B-BD98-59D27D23518F}
 		{1C229DDF-B194-4B3E-BA2A-E3FADB4E9AF3} = {B7F4F1FB-15F3-408B-BD98-59D27D23518F}
 		{9043D8E0-CD58-4CC1-9F15-72B92418B5DE} = {805DBA20-D5C0-4445-8BBB-993CEFBAFA5B}
+		{2A340B14-ACC9-4AF9-3CD3-2735159118F4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FDCE37D-9697-414A-BB98-DAD75154D454}
