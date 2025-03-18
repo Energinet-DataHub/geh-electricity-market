@@ -45,21 +45,30 @@ public sealed class InitialImportOrchestrator
     {
         const long cutoffRange = 10_000_000;
 
-        var ranges = Enumerable.Range(0, (int)Math.Ceiling(cutoff / (double)cutoffRange));
+        var tasks = Enumerable
+            .Range(0, (int)Math.Ceiling(cutoff / (double)cutoffRange))
+            .Select(i => orchestrationContext.CallActivityAsync(
+                ImportGoldModelActivity.ActivityName,
+                new ImportGoldModelActivityInput
+                {
+                    CutoffFromInclusive = i * cutoffRange,
+                    CutoffToExclusive = Math.Min((i * cutoffRange) + cutoffRange, cutoff),
+                }));
 
-        foreach (var range in ranges.Chunk(1))
+        var runningTasks = new List<Task>();
+
+        foreach (var task in tasks)
         {
-            var tasks = range
-                .Select(i => orchestrationContext.CallActivityAsync(
-                    ImportGoldModelActivity.ActivityName,
-                    new ImportGoldModelActivityInput
-                    {
-                        CutoffFromInclusive = i * cutoffRange,
-                        CutoffToExclusive = Math.Min((i * cutoffRange) + cutoffRange, cutoff),
-                    }));
+            runningTasks.Add(task);
 
-            await Task.WhenAll(tasks);
+            if (runningTasks.Count >= 3)
+            {
+                var completedTask = await Task.WhenAny(runningTasks);
+                runningTasks.Remove(completedTask);
+            }
         }
+
+        await Task.WhenAll(runningTasks);
     }
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
