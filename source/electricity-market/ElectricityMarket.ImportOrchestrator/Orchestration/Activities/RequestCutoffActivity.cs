@@ -37,7 +37,7 @@ public sealed class RequestCutoffActivity
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
     }
 
-    [Function(nameof(FindCutoffActivity))]
+    [Function(nameof(RequestCutoffActivity))]
     public async Task<CutoffResponse> RunAsync([ActivityTrigger] NoInput input)
     {
         var sw = Stopwatch.StartNew();
