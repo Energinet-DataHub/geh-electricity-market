@@ -398,4 +398,4 @@ test_localsystem.txt
 # tools folder
 tools/*
 !tools/inmemimporter.ps1
-
+!tools/run-scenario-tests.ps1
