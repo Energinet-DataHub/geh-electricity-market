@@ -30,30 +30,60 @@ public sealed class InitialImportOrchestrator
         ArgumentNullException.ThrowIfNull(orchestrationContext);
         ArgumentNullException.ThrowIfNull(executionContext);
 
-        var cutoffResponse = await orchestrationContext.CallActivityAsync<CutoffResponse>(nameof(RequestCutoffActivity));
+        var cutoff = await orchestrationContext.CallActivityAsync<long>(nameof(FindCutoffActivity));
 
-        await ImportGoldModelAsync(orchestrationContext, cutoffResponse);
+        await ImportGoldModelAsync(orchestrationContext, cutoff);
         await ImportRelationalModelAsync(orchestrationContext);
 
         await orchestrationContext.CallActivityAsync(nameof(SwitchToStreamingActivity), new SwitchToStreamingActivityInput
         {
-            Cutoff = cutoffResponse.Cutoff
+            Cutoff = cutoff
         });
     }
 
-    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, CutoffResponse cutoffResponse)
+    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
     {
-        var tasks = cutoffResponse
-            .Chunks
-            .Select(chunk => orchestrationContext.CallActivityAsync(
-                ImportGoldModelActivity.ActivityName,
-                new ImportGoldModelActivityInput
-                {
-                    StatementId = cutoffResponse.StatementId,
-                    Chunk = chunk
-                }));
+        var itemsInOneHour = 60_000_000;
+        var itemsInOneHourCount = (int)Math.Ceiling(cutoff / (double)itemsInOneHour);
 
-        await Task.WhenAll(tasks);
+        var itemTasks = new List<Func<Task<CutoffResponse>>>();
+
+        for (var i = 0; i < itemsInOneHourCount; i++)
+        {
+            var offset = i;
+
+            itemTasks.Add(() => orchestrationContext.CallActivityAsync<CutoffResponse>(
+                nameof(RequestCutoffActivity),
+                new RequestCutoffActivityInput
+                {
+                    CutoffFromInclusive = offset * itemsInOneHour,
+                    CutoffToExclusive = Math.Min((offset + 1) * itemsInOneHour, cutoff)
+                }));
+        }
+
+        for (var i = 0; i < itemTasks.Count; i++)
+        {
+            var itemTask = itemTasks[i];
+            var cutoffResponse = await itemTask();
+
+            var tasks = cutoffResponse
+                .Chunks
+                .Select(chunk => orchestrationContext.CallActivityAsync(
+                    ImportGoldModelActivity.ActivityName,
+                    new ImportGoldModelActivityInput
+                    {
+                        StatementId = cutoffResponse.StatementId,
+                        Chunk = chunk
+                    }))
+                .ToList();
+
+            if (tasks.Count(t => t.IsCompleted) > tasks.Count * 4 / 3 && i + 1 < itemTasks.Count)
+            {
+                _ = itemTasks[i + 1]();
+            }
+
+            await Task.WhenAll(tasks);
+        }
     }
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
