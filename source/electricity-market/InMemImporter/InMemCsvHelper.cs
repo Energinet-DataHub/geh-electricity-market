@@ -22,7 +22,7 @@ public static class InMemCsvHelper
     {
         ArgumentNullException.ThrowIfNull(rawCsv);
 
-        var lines = rawCsv.Remove('\r').Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var lines = rawCsv.Replace("\r", string.Empty, StringComparison.InvariantCultureIgnoreCase).Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
         var cultureInfo = lines[0].Contains(',', StringComparison.InvariantCultureIgnoreCase)
             ? CultureInfo.GetCultureInfo("en-US")
