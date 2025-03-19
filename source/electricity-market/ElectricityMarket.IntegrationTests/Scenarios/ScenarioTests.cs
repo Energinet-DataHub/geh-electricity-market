@@ -112,7 +112,7 @@ public class ScenarioTests
 
     private static string Sanitize(string csv)
     {
-        var lines = csv.Split(Environment.NewLine).ToList();
+        var lines = csv.Split('\n').ToList();
         var sanitizedLines = new List<string>();
 
         var commercialRelationIndex = lines.IndexOf("CommercialRelation");
