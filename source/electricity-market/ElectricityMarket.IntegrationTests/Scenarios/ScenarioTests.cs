@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
-using FakeTimeZone;
 using InMemImporter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,82 +31,86 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Scenarios;
 
 public class ScenarioTests
 {
-    [Fact]
-    public async Task Run_All_Scenarios_And_Verify_Results()
+    public static IEnumerable<object[]> GetTestScenarios()
     {
-        // Arrange + Act
-        var results = await RunScenariosWithinTransactionWithRollbackAsync();
+        var files = typeof(ScenarioTests).Assembly.GetManifestResourceNames()
+            .Where(x => x.Contains("IntegrationTests", StringComparison.OrdinalIgnoreCase) &&
+                        x.Contains("TestData", StringComparison.OrdinalIgnoreCase) &&
+                        x.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
 
-        // Assert
-        Assert.All(results, result => Assert.True(result.Success));
+        foreach (var file in files)
+        {
+            yield return
+            [
+                Path.GetFileNameWithoutExtension(file).Replace("Energinet.DataHub.ElectricityMarket.IntegrationTests.TestData.", string.Empty, StringComparison.InvariantCultureIgnoreCase),
+                file,
+            ];
+        }
     }
 
-    private static async Task<IEnumerable<ScenarioTestResult>> RunScenariosWithinTransactionWithRollbackAsync()
+    [Theory]
+    [MemberData(nameof(GetTestScenarios))]
+    public async Task Test_Scenario(string name, string path)
     {
-        var scenarioResults = new List<ScenarioTestResult>();
-        using (new FakeLocalTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time")))
+        // Arrange + Act
+        var (success, message) = await RunScenariosWithinTransactionWithRollbackAsync(name, path);
+
+        // Assert
+        Assert.True(success, message);
+    }
+
+    private static async Task<(bool Success, string? Message)> RunScenariosWithinTransactionWithRollbackAsync(string name, string path)
+    {
+        var assembly = typeof(ScenarioTests).Assembly;
+        await using var fixture = new ScenarioTestFixture();
+        await fixture.InitializeAsync();
+
+        using var scope = fixture.ServiceProvider.CreateScope();
+        await using var context = fixture.DatabaseManager.CreateDbContext();
+
+        await using var csvStream = assembly.GetManifestResourceStream(path);
+        using var streamReader = new StreamReader(csvStream!);
+        var rawCsv = await streamReader.ReadToEndAsync();
+        var (cultureInfo, csv) = InMemCsvHelper.PreapareCsv(rawCsv);
+
+        using var bulkImporter = new BulkImporter(
+            NullLogger<BulkImporter>.Instance,
+            new CsvImportedTransactionModelReader(csv, cultureInfo),
+            new RelationalModelWriter(scope.ServiceProvider.GetRequiredService<IOptions<DatabaseOptions>>(), NullLogger<RelationalModelWriter>.Instance),
+            new MeteringPointImporter());
+
+        await bulkImporter.RunAsync(0, int.MaxValue).ConfigureAwait(false);
+
+        // Read the results and pretty print them
+        var meteringPointEntities = await context.MeteringPoints.ToListAsync();
+        var quarantinedEntities = await context.QuarantinedMeteringPointEntities.ToListAsync();
+        var actual = Sanitize(await new RelationalModelPrinter().PrintAsync(
+            [meteringPointEntities],
+            [quarantinedEntities],
+            cultureInfo,
+            html: false));
+
+        // Compare the results with the expected results
+        var expectedResults = assembly.GetManifestResourceStream(path.Replace(".csv", ".txt", StringComparison.OrdinalIgnoreCase));
+        if (expectedResults is null)
         {
-            var assembly = typeof(ScenarioTests).Assembly;
-
-            // Load all scenario files
-            var scenarioFiles = assembly.GetManifestResourceNames().Where(IsScenarioTestFile);
-            foreach (var scenarioFile in scenarioFiles)
-            {
-                await using var fixture = new ScenarioTestFixture();
-                await fixture.InitializeAsync();
-
-                using var scope = fixture.ServiceProvider.CreateScope();
-                await using var context = fixture.DatabaseManager.CreateDbContext();
-
-                // Import the test data
-                var scenarioName = scenarioFile.Replace(
-                    "Energinet.DataHub.ElectricityMarket.IntegrationTests.TestData.",
-                    string.Empty,
-                    StringComparison.OrdinalIgnoreCase);
-
-                await using var csvStream = assembly.GetManifestResourceStream(scenarioFile);
-                using var streamReader = new StreamReader(csvStream!);
-                var rawCsv = await streamReader.ReadToEndAsync();
-                var (cultureInfo, csv) = InMemCsvHelper.PreapareCsv(rawCsv);
-
-                using var bulkImporter = new BulkImporter(
-                    NullLogger<BulkImporter>.Instance,
-                    new CsvImportedTransactionModelReader(csv, cultureInfo),
-                    new RelationalModelWriter(scope.ServiceProvider.GetRequiredService<IOptions<DatabaseOptions>>(), NullLogger<RelationalModelWriter>.Instance),
-                    new MeteringPointImporter());
-
-                await bulkImporter.RunAsync(0, int.MaxValue).ConfigureAwait(false);
-
-                // Read the results and pretty print them
-                var meteringPointEntities = await context.MeteringPoints.ToListAsync();
-                var quarantinedEntities = await context.QuarantinedMeteringPointEntities.ToListAsync();
-                var actual = Sanitize(await new RelationalModelPrinter().PrintAsync(
-                    [meteringPointEntities],
-                    [quarantinedEntities],
-                    cultureInfo,
-                    html: false));
-
-                // Compare the results with the expected results
-                var expectedResults = assembly.GetManifestResourceStream(scenarioFile.Replace(".csv", ".txt", StringComparison.OrdinalIgnoreCase));
-                if (expectedResults is null)
-                {
-                    scenarioResults.Add(new ScenarioTestResult(scenarioName, false, "Expected results file not found"));
-                    continue;
-                }
-
-                string expected;
-                using (var reader = new StreamReader(expectedResults))
-                {
-                    expected = Sanitize(await reader.ReadToEndAsync());
-                }
-
-                scenarioResults.Add(actual.Equals(expected, StringComparison.OrdinalIgnoreCase)
-                    ? new ScenarioTestResult(scenarioName, true, string.Empty)
-                    : new ScenarioTestResult(scenarioName, false, "Results does not match expected\n-----------------------------\nGenerated\n-----------------------------\n" + actual + "\n-----------------------------\nExpected\n-----------------------------\n" + expected));
-            }
+            return (false, $"No data found for {name}");
         }
 
-        return scenarioResults;
+        string expected;
+        using (var reader = new StreamReader(expectedResults))
+        {
+            expected = Sanitize(await reader.ReadToEndAsync());
+        }
+
+        return actual.Equals(expected, StringComparison.OrdinalIgnoreCase)
+            ? (true, string.Empty)
+            : (false, $"""
+                       -----------------------------Generated-----------------------------
+                       {actual}
+                       -----------------------------Expected------------------------------
+                       {expected}
+                       """);
     }
 
     private static string Sanitize(string csv)
@@ -135,12 +138,5 @@ public class ScenarioTests
         sanitizedLines.AddRange(lines[dataStopIndex..]);
 
         return string.Join(Environment.NewLine, sanitizedLines);
-    }
-
-    private static bool IsScenarioTestFile(string resourceName)
-    {
-        return resourceName.Contains("IntegrationTests", StringComparison.OrdinalIgnoreCase)
-               && resourceName.Contains("TestData", StringComparison.OrdinalIgnoreCase)
-               && resourceName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
     }
 }
