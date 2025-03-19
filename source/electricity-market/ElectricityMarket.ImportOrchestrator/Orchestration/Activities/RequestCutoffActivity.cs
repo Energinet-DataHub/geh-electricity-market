@@ -38,28 +38,11 @@ public sealed class RequestCutoffActivity
     }
 
     [Function(nameof(RequestCutoffActivity))]
-    public async Task<CutoffResponse> RunAsync([ActivityTrigger] NoInput input)
+    public async Task<CutoffResponse> RunAsync([ActivityTrigger] RequestCutoffActivityInput input)
     {
+        ArgumentNullException.ThrowIfNull(input);
+
         var sw = Stopwatch.StartNew();
-
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(
-            DatabricksStatement.FromRawSql(
-                $"""
-                SELECT MAX(btd_trans_doss_id) AS cutoff FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v4
-                """).Build()).ConfigureAwait(false);
-
-        long foundCutOff = -1;
-
-        await foreach (var r in result)
-        {
-            _logger.LogWarning("Cutoff fetched in {ElapsedMilliseconds} ms", sw.ElapsedMilliseconds);
-            foundCutOff = r.cutoff;
-        }
-
-        if (foundCutOff == -1)
-        {
-            throw new InvalidOperationException("No rows found in silver model");
-        }
 
         var query = DatabricksStatement.FromRawSql(
             $"""
@@ -154,17 +137,20 @@ public sealed class RequestCutoffActivity
                 dossier_status
 
              FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v4
-             WHERE btd_trans_doss_id < {foundCutOff}
+             WHERE btd_trans_doss_id >= {input.CutoffFromInclusive} AND btd_trans_doss_id < {input.CutoffToExclusive}
              """);
-
-        sw.Restart();
 
         var (statementId, chunks) = await _databricksSqlWarehouseQueryExecutor
             .ExecuteChunkyStatementAsync(query.Build())
             .ConfigureAwait(false);
 
-        _logger.LogWarning("Statement ready with {ChunkCount} after {ElapsedMilliseconds} ms.", chunks.Length, sw.ElapsedMilliseconds);
+        _logger.LogWarning(
+            "Statement ready for range ({CutoffFromInclusive}-{CutoffToExclusive}) with {ChunkCount} chunks after {ElapsedMilliseconds} ms.",
+            input.CutoffFromInclusive,
+            input.CutoffToExclusive,
+            chunks.Length,
+            sw.ElapsedMilliseconds);
 
-        return new CutoffResponse(foundCutOff, statementId, chunks);
+        return new CutoffResponse(statementId, chunks);
     }
 }

@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statement;
-
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed record CutoffResponse(string StatementId, IReadOnlyList<Chunks> Chunks);
+public sealed class RequestCutoffActivityInput
+{
+    public long CutoffFromInclusive { get; set; }
+    public long CutoffToExclusive { get; set; }
+}
