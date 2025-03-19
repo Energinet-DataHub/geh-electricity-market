@@ -30,30 +30,45 @@ public sealed class InitialImportOrchestrator
         ArgumentNullException.ThrowIfNull(orchestrationContext);
         ArgumentNullException.ThrowIfNull(executionContext);
 
-        var cutoffResponse = await orchestrationContext.CallActivityAsync<CutoffResponse>(nameof(RequestCutoffActivity));
+        var cutoff = await orchestrationContext.CallActivityAsync<long>(nameof(FindCutoffActivity));
 
-        await ImportGoldModelAsync(orchestrationContext, cutoffResponse);
+        await ImportGoldModelAsync(orchestrationContext, cutoff);
         await ImportRelationalModelAsync(orchestrationContext);
 
         await orchestrationContext.CallActivityAsync(nameof(SwitchToStreamingActivity), new SwitchToStreamingActivityInput
         {
-            Cutoff = cutoffResponse.Cutoff
+            Cutoff = cutoff
         });
     }
 
-    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, CutoffResponse cutoffResponse)
+    private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
     {
-        var tasks = cutoffResponse
-            .Chunks
-            .Select(chunk => orchestrationContext.CallActivityAsync(
-                ImportGoldModelActivity.ActivityName,
-                new ImportGoldModelActivityInput
-                {
-                    StatementId = cutoffResponse.StatementId,
-                    Chunk = chunk
-                }));
+        var itemsInOneHour = 60_000_000;
+        var itemsInOneHourCount = (int)Math.Ceiling(cutoff / (double)itemsInOneHour);
 
-        await Task.WhenAll(tasks);
+        for (var i = 0; i < itemsInOneHourCount; i++)
+        {
+            var offset = i;
+            var cutoffResponse = await orchestrationContext.CallActivityAsync<CutoffResponse>(
+                nameof(RequestCutoffActivity),
+                new RequestCutoffActivityInput
+                {
+                    CutoffFromInclusive = offset * itemsInOneHour,
+                    CutoffToExclusive = Math.Min((offset + 1) * itemsInOneHour, cutoff)
+                });
+
+            var tasks = cutoffResponse
+                .Chunks
+                .Select(chunk => orchestrationContext.CallActivityAsync(
+                    ImportGoldModelActivity.ActivityName,
+                    new ImportGoldModelActivityInput
+                    {
+                        StatementId = cutoffResponse.StatementId,
+                        Chunk = chunk
+                    }));
+
+            await Task.WhenAll(tasks);
+        }
     }
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
