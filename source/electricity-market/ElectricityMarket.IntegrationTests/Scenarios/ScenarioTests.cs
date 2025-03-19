@@ -103,7 +103,7 @@ public class ScenarioTests
 
                 scenarioResults.Add(actual.Equals(expected, StringComparison.OrdinalIgnoreCase)
                     ? new ScenarioTestResult(scenarioName, true, string.Empty)
-                    : new ScenarioTestResult(scenarioName, false, "Results does not match expected\n-----------------------------\nGenerated\n-----------------------------" + actual + "\n-----------------------------\nExpected\n-----------------------------" + expected));
+                    : new ScenarioTestResult(scenarioName, false, "Results does not match expected\n-----------------------------\nGenerated\n-----------------------------\n" + actual + "\n-----------------------------\nExpected\n-----------------------------\n" + expected));
             }
         }
 
@@ -112,6 +112,8 @@ public class ScenarioTests
 
     private static string Sanitize(string csv)
     {
+        csv = csv.Replace("\r", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+
         var lines = csv.Split('\n').ToList();
         var sanitizedLines = new List<string>();
 
