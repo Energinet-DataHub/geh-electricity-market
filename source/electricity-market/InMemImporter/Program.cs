@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Concurrent;
-using System.Globalization;
-using CsvHelper;
-using CsvHelper.Configuration;
-using CsvHelper.TypeConversion;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -31,11 +25,11 @@ public static class Program
         {
             ArgumentNullException.ThrowIfNull(args);
 
-            var cultureInfo = CultureInfo.GetCultureInfo(args[0]);
+            var (cultureInfo, csv) = InMemCsvHelper.PreapareCsv(await File.ReadAllTextAsync(args[0]).ConfigureAwait(false));
 
             using var importer = new BulkImporter(
                 NullLogger<BulkImporter>.Instance,
-                new CsvImportedTransactionModelReader(args[1], cultureInfo),
+                new CsvImportedTransactionModelReader(csv, cultureInfo),
                 new StdOutRelationalModelWriter(new RelationalModelPrinter(), cultureInfo),
                 new MeteringPointImporter());
 
@@ -46,58 +40,6 @@ public static class Program
 #pragma warning restore CA1031
         {
             Console.WriteLine(e);
-        }
-    }
-
-    private sealed class CsvImportedTransactionModelReader : IImportedTransactionModelReader
-    {
-        private readonly string _path;
-        private readonly CultureInfo _cultureInfo;
-
-        public CsvImportedTransactionModelReader(string path, CultureInfo cultureInfo)
-        {
-            _path = path;
-            _cultureInfo = cultureInfo;
-        }
-
-        public async Task ReadImportedTransactionsAsync(int skip, int take, BlockingCollection<IList<ImportedTransactionEntity>> result)
-        {
-            using var reader = new StreamReader(_path);
-
-            using var csv = new CsvReader(reader, new CsvConfiguration(_cultureInfo)
-            {
-                HasHeaderRecord = true,
-            });
-
-            var options = new TypeConverterOptions
-            {
-                NullValues =
-                {
-                    string.Empty,
-                },
-            };
-            csv.Context.TypeConverterOptionsCache.AddOptions<string>(options);
-            csv.Context.TypeConverterOptionsCache.AddOptions<int?>(options);
-
-            result.Add(await csv.GetRecordsAsync<ImportedTransactionEntity>().ToListAsync().ConfigureAwait(false));
-            result.CompleteAdding();
-        }
-    }
-
-    private sealed class StdOutRelationalModelWriter : IRelationalModelWriter
-    {
-        private readonly IRelationalModelPrinter _modelPrinter;
-        private readonly CultureInfo _cultureInfo;
-
-        public StdOutRelationalModelWriter(IRelationalModelPrinter modelPrinter, CultureInfo cultureInfo)
-        {
-            _modelPrinter = modelPrinter;
-            _cultureInfo = cultureInfo;
-        }
-
-        public async Task WriteRelationalModelAsync(IEnumerable<IList<MeteringPointEntity>> relationalModelBatches, IEnumerable<IList<QuarantinedMeteringPointEntity>> quarantined)
-        {
-            await Console.Out.WriteLineAsync(await _modelPrinter.PrintAsync(relationalModelBatches, quarantined, _cultureInfo, html: true).ConfigureAwait(false)).ConfigureAwait(false);
         }
     }
 }
