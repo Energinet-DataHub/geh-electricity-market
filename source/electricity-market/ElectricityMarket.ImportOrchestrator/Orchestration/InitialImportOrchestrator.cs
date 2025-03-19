@@ -46,25 +46,16 @@ public sealed class InitialImportOrchestrator
         var itemsInOneHour = 60_000_000;
         var itemsInOneHourCount = (int)Math.Ceiling(cutoff / (double)itemsInOneHour);
 
-        var itemTasks = new List<Func<Task<CutoffResponse>>>();
-
         for (var i = 0; i < itemsInOneHourCount; i++)
         {
             var offset = i;
-
-            itemTasks.Add(() => orchestrationContext.CallActivityAsync<CutoffResponse>(
+            var cutoffResponse = await orchestrationContext.CallActivityAsync<CutoffResponse>(
                 nameof(RequestCutoffActivity),
                 new RequestCutoffActivityInput
                 {
                     CutoffFromInclusive = offset * itemsInOneHour,
                     CutoffToExclusive = Math.Min((offset + 1) * itemsInOneHour, cutoff)
-                }));
-        }
-
-        for (var i = 0; i < itemTasks.Count; i++)
-        {
-            var itemTask = itemTasks[i];
-            var cutoffResponse = await itemTask();
+                });
 
             var tasks = cutoffResponse
                 .Chunks
@@ -74,13 +65,7 @@ public sealed class InitialImportOrchestrator
                     {
                         StatementId = cutoffResponse.StatementId,
                         Chunk = chunk
-                    }))
-                .ToList();
-
-            if (tasks.Count(t => t.IsCompleted) > tasks.Count * 4 / 3 && i + 1 < itemTasks.Count)
-            {
-                _ = itemTasks[i + 1]();
-            }
+                    }));
 
             await Task.WhenAll(tasks);
         }
