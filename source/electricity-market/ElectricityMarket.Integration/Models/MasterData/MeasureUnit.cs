@@ -20,7 +20,7 @@ public enum MeasureUnit
 #pragma warning disable SA1300
     Ampere,
     STK,
-    kVArh,
+    VArh,
     kWh,
     kW,
     MW,

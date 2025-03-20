@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System.Diagnostics;
+using System.Net.Sockets;
 using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Microsoft.Azure.Functions.Worker;
@@ -140,17 +141,34 @@ public sealed class RequestCutoffActivity
              WHERE btd_trans_doss_id >= {input.CutoffFromInclusive} AND btd_trans_doss_id < {input.CutoffToExclusive}
              """);
 
-        var (statementId, chunks) = await _databricksSqlWarehouseQueryExecutor
-            .ExecuteChunkyStatementAsync(query.Build())
-            .ConfigureAwait(false);
+        var retryCount = 0;
 
-        _logger.LogWarning(
-            "Statement ready for range ({CutoffFromInclusive}-{CutoffToExclusive}) with {ChunkCount} chunks after {ElapsedMilliseconds} ms.",
-            input.CutoffFromInclusive,
-            input.CutoffToExclusive,
-            chunks.Length,
-            sw.ElapsedMilliseconds);
+Retry:
+        try
+        {
+            var (statementId, chunks) = await _databricksSqlWarehouseQueryExecutor
+                .ExecuteChunkyStatementAsync(query.Build())
+                .ConfigureAwait(false);
 
-        return new CutoffResponse(statementId, chunks);
+            _logger.LogWarning(
+                "Statement ready for range ({CutoffFromInclusive}-{CutoffToExclusive}) with {ChunkCount} chunks after {ElapsedMilliseconds} ms.",
+                input.CutoffFromInclusive,
+                input.CutoffToExclusive,
+                chunks.Length,
+                sw.ElapsedMilliseconds);
+
+            return new CutoffResponse(statementId, chunks);
+        }
+        catch (SocketException)
+        {
+            retryCount++;
+
+            if (retryCount < 2)
+            {
+                goto Retry;
+            }
+
+            throw;
+        }
     }
 }
