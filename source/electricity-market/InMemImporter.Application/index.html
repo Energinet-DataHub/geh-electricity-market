@@ -95,6 +95,21 @@
       .infinity-datetimeoffset-span {
         color: #d788d4;
       }
+
+      .clip-button {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background-color: transparent;
+        color: #bdbdbe;
+        border: none;
+        cursor: pointer;
+        font-size: 32px;
+      }
+
+      .clip-button:hover {
+        color: #e09962;
+      }
     </style>
   </head>
   <body>
@@ -112,8 +127,21 @@
   - Decrease/increase size of transactions and output area with F10/F11."
     ></textarea>
     <div id="output-textarea" class="output"></div>
+    <button id="clip" class="clip-button">Copy</button>
     <script>
       const { ipcRenderer } = require("electron");
+
+      copy = () => {
+        const output = document.getElementById("output-textarea");
+        const text =
+          output.innerText
+            .replace(/\u00A0/g, " ")
+            .replace(/\u200B/g, "")
+            .trim() + "\n";
+        navigator.clipboard.writeText(text);
+      };
+
+      document.getElementById("clip").addEventListener("click", copy);
 
       const changeSize = (increase) => {
         const transactions = document.getElementById("transactions-textarea");
@@ -136,7 +164,7 @@
         if (e.key === "F5") {
           event.preventDefault();
 
-          document.getElementById("output-textarea").value = "Importing...";
+          document.getElementById("output-textarea").innerHTML = "Importing...";
           const inputTextArea = document.getElementById(
             "transactions-textarea"
           );
