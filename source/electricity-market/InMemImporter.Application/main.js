@@ -45,15 +45,7 @@ const determineDelimiter = (inputString) => {
 
 const createCsvFile = (delimiter, inputString) => {
   const tempFilePath = path.join(tempDir, randomUUID() + ".csv");
-  var lines = inputString.split("\n");
-
-  if (lines.length > 0) {
-    lines = lines.map((line, index) =>
-      line ? `${index == 0 ? "Id" : "0"}${delimiter}${line}` : ""
-    );
-  }
-
-  fs.writeFileSync(tempFilePath, lines.join("\n"), "utf-8");
+  fs.writeFileSync(tempFilePath, inputString, "utf-8");
   logToFile(`Created CSV file: ${tempFilePath}`);
   return tempFilePath;
 };
@@ -108,9 +100,7 @@ ipcMain.handle("run-console-app", async (_, inputString) => {
   return new Promise((resolve) => {
     const delimiter = determineDelimiter(inputString);
     const filePath = createCsvFile(delimiter, inputString);
-    const command = `dotnet run --project ${gitRoot}/source/electricity-market/InMemImporter/InMemImporter.csproj ${
-      delimiter === ";" ? "da-DK" : "en-US"
-    } ${filePath}`;
+    const command = `dotnet run --project ${gitRoot}/source/electricity-market/InMemImporter/InMemImporter.csproj ${filePath}`;
 
     exec(command, (error, stdout, stderr) => {
       running = false;

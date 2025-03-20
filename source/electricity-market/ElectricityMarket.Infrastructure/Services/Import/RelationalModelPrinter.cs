@@ -84,7 +84,7 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
                 .Select(i =>
                 {
                     var value = p.GetValue(i);
-                    return value is DateTimeOffset dateTimeOffset ? dateTimeOffset.ToString(cultureInfo).Length : value?.ToString()?.Length ?? 0;
+                    return value is DateTimeOffset dateTimeOffset ? dateTimeOffset.ToString("u", cultureInfo).Length : value?.ToString()?.TrimEnd().Length ?? 0;
                 })
                 .Prepend(p.Name.Length)
                 .Max())
@@ -106,7 +106,12 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
                     if (value is null) return string.Empty.PadRight(columnWidths[i]);
                     var cultureAwareToString = value.GetType().GetMethod("ToString", [typeof(CultureInfo)]);
 
-                    var stringValue = (cultureAwareToString is not null ? cultureAwareToString.Invoke(value, [cultureInfo]) : value)!.ToString()!.PadRight(columnWidths[i]);
+                    var stringValue = value switch
+                    {
+                        DateTimeOffset dateTimeOffset => dateTimeOffset.ToString("u", cultureInfo),
+                        _ => (cultureAwareToString is not null ? cultureAwareToString.Invoke(value, [cultureInfo]) : value)!.ToString()!.TrimEnd().PadRight(columnWidths[i]),
+                    };
+
 #pragma warning disable CA1308
                     return html
                         ? $"<span class=\"{(value is DateTimeOffset { Year: 9999 } ? "infinity-" : string.Empty) + value.GetType().Name.ToLower(CultureInfo.InvariantCulture)}-span\">{
