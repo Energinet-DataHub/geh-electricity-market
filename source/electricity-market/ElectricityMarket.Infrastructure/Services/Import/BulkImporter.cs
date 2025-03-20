@@ -98,10 +98,29 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
 
         void ReleaseBlockingCollections()
         {
-            _importedTransactions.CompleteAdding();
-            _importedTransactions.Dispose();
-            _relationalModelBatches.CompleteAdding();
-            _relationalModelBatches.Dispose();
+            try
+            {
+                _importedTransactions.CompleteAdding();
+                _importedTransactions.Dispose();
+            }
+#pragma warning disable CA1031
+            catch (Exception)
+#pragma warning restore CA1031
+            {
+                // ignored
+            }
+
+            try
+            {
+                _relationalModelBatches.CompleteAdding();
+                _relationalModelBatches.Dispose();
+            }
+#pragma warning disable CA1031
+            catch (Exception)
+#pragma warning restore CA1031
+            {
+                // ignored
+            }
         }
     }
 

@@ -15,17 +15,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Transactions;
-using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
-using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
@@ -34,6 +26,7 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
 {
     private readonly ElectricityMarketDatabaseFixture _databaseFixture = new();
     private ServiceProvider? _serviceProvider;
+
     public IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized. Ensure InitializeAsync has been called.");
     public ElectricityMarketDatabaseManager DatabaseManager => _databaseFixture.DatabaseManager;
 
@@ -51,32 +44,6 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
             options.ConnectionString = DatabaseManager.ConnectionString;
         });
         services.AddSingleton(configuration);
-
-        // Add logging services
-        services.AddLogging(builder =>
-        {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Debug);
-        });
-
-        // Register database context factory
-        services.AddDbContextFactory<ElectricityMarketDatabaseContext>((p, o) =>
-        {
-            o.UseSqlServer(DatabaseManager.ConnectionString, sqlOptions =>
-                {
-                    sqlOptions.UseNodaTime();
-                })
-                .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], LogLevel.None);
-        });
-
-        // Register dependencies
-        services.AddScoped<ICsvImporter, CsvImporter>();
-        services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
-        services.AddScoped<IMeteringPointImporter, MeteringPointImporter>();
-        services.AddScoped<IImportedTransactionModelReader, ImportedTransactionModelReader>();
-        services.AddScoped<IRelationalModelWriter, RelationalModelWriter>();
-        services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
-        services.AddScoped<IStreamingImporter, StreamingImporter>();
 
         _serviceProvider = services.BuildServiceProvider();
     }
@@ -98,12 +65,11 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
     private IConfiguration BuildConfiguration()
     {
         return new ConfigurationBuilder()
-            .AddInMemoryCollection(new[]
-            {
+            .AddInMemoryCollection([
                 new KeyValuePair<string, string?>(
                     $"{nameof(DatabaseOptions)}:{nameof(DatabaseOptions.ConnectionString)}",
-                    DatabaseManager.ConnectionString)
-            })
+                    DatabaseManager.ConnectionString),
+            ])
             .AddEnvironmentVariables()
             .Build();
     }
