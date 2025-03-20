@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.3.3
+
+- Fix incorrect mapping of ProductId.
+
 ## Version 4.3.2
 
 - Internal cleanup of option sectionname, no functional changes.

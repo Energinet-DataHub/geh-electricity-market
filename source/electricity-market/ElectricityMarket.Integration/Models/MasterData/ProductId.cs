@@ -20,6 +20,6 @@ public enum ProductId
     FuelQuantity,
     PowerActive,
     PowerReactive,
-    EnergyActivate,
+    EnergyActive,
     EnergyReactive,
 }
