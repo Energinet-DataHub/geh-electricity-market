@@ -56,9 +56,10 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
                     .ReadImportedTransactionsAsync(skip, take, _importedTransactions)
                     .ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                _importedTransactions.Dispose();
+                ReleaseBlockingCollections();
+                _logger.LogError(ex, "Error during gold model read.");
                 throw;
             }
         });
@@ -69,21 +70,58 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
             {
                 await ImportAndPackageTransactionsAsync(skip + 1).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                _relationalModelBatches.Dispose();
+                ReleaseBlockingCollections();
+                _logger.LogError(ex, "Error during package.");
                 throw;
             }
         });
 
         var write = Task.Run(async () =>
         {
-            await _relationalModelWriter
-                .WriteRelationalModelAsync(_relationalModelBatches.GetConsumingEnumerable(), _quarantined)
-                .ConfigureAwait(false);
+            try
+            {
+                await _relationalModelWriter
+                    .WriteRelationalModelAsync(_relationalModelBatches.GetConsumingEnumerable(), _quarantined)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                ReleaseBlockingCollections();
+                _logger.LogError(ex, "Error during package.");
+                throw;
+            }
         });
 
         await Task.WhenAll(read, package, write).ConfigureAwait(false);
+
+        void ReleaseBlockingCollections()
+        {
+            try
+            {
+                _importedTransactions.CompleteAdding();
+                _importedTransactions.Dispose();
+            }
+#pragma warning disable CA1031
+            catch (Exception)
+#pragma warning restore CA1031
+            {
+                // ignored
+            }
+
+            try
+            {
+                _relationalModelBatches.CompleteAdding();
+                _relationalModelBatches.Dispose();
+            }
+#pragma warning disable CA1031
+            catch (Exception)
+#pragma warning restore CA1031
+            {
+                // ignored
+            }
+        }
     }
 
     public void Dispose()

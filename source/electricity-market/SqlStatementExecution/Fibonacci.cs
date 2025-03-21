@@ -12,6 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Scenarios;
+namespace Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution;
 
-public record ScenarioTestResult(string ScenarioName, bool Success, string Message);
+internal sealed class Fibonacci
+{
+    private int _firstNumber;
+    private int _secondNumber = 1;
+
+    /// <summary>
+    /// Get the next number in the Fibonacci sequence.
+    /// </summary>
+    public int GetNextNumber()
+    {
+        var result = _firstNumber + _secondNumber;
+        _firstNumber = _secondNumber;
+        _secondNumber = result;
+        return result;
+    }
+}

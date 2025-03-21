@@ -14,6 +14,8 @@
 
 using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
+using ElectricityMarket.WebAPI.Security;
+using Energinet.DataHub.Core.App.Common.Abstractions.Users;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
@@ -31,19 +33,20 @@ namespace ElectricityMarket.WebAPI.Controllers;
 public class MeteringPointController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IUserContext<FrontendUser> _userContext;
 
-    public MeteringPointController(IMediator mediator)
+    public MeteringPointController(IMediator mediator, IUserContext<FrontendUser> userContext)
     {
         _mediator = mediator;
+        _userContext = userContext;
     }
 
     [HttpGet("{identification}")]
     [EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "identification")]
-    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification, [FromQuery] TenantDto tenant)
+    [Authorize(Roles = "metering-point:search")]
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification)
     {
-        ArgumentNullException.ThrowIfNull(tenant);
-
-        var getMeteringPointCommand = new GetMeteringPointCommand(identification, tenant);
+        var getMeteringPointCommand = new GetMeteringPointCommand(identification);
 
         var meteringPoint = await _mediator
             .Send(getMeteringPointCommand)
@@ -57,13 +60,25 @@ public class MeteringPointController : ControllerBase
         return Ok(meteringPoint.MeteringPoint);
     }
 
+    [HttpGet("contact/{contactId:long}/cpr")]
+    [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
+    [Authorize(Roles = "cpr:view")]
+    public async Task<ActionResult<CPRResponse>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
+    {
+        var command = new GetContactCprCommand(contactId, contactCprRequest);
+
+        var cpr = await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok(new { result = cpr });
+    }
+
     [HttpGet("{identification}/debug-view")]
     [EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "identification")]
-    public async Task<ActionResult<DebugResponse>> GetMeteringPointDebugViewAsync(string identification, [FromQuery] TenantDto tenant)
+    public async Task<ActionResult<DebugResponse>> GetMeteringPointDebugViewAsync(string identification)
     {
-        ArgumentNullException.ThrowIfNull(tenant);
-
-        if (tenant.MarketRole != MarketRole.DataHubAdministrator)
+        if (!_userContext.CurrentUser.IsFas)
         {
             return Unauthorized();
         }
@@ -79,11 +94,9 @@ public class MeteringPointController : ControllerBase
 
     [HttpGet("debug")]
     [EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "gridAreaCode")]
-    public async Task<ActionResult<IEnumerable<MeteringPointDto>>> GetMeteringPointsByGridAreaCodeAsync([FromQuery] string gridAreaCode, [FromQuery] TenantDto tenant)
+    public async Task<ActionResult<IEnumerable<MeteringPointDto>>> GetMeteringPointsByGridAreaCodeAsync([FromQuery] string gridAreaCode)
     {
-        ArgumentNullException.ThrowIfNull(tenant);
-
-        if (tenant.MarketRole != MarketRole.DataHubAdministrator)
+        if (!_userContext.CurrentUser.IsFas)
         {
             return Unauthorized();
         }
@@ -95,19 +108,5 @@ public class MeteringPointController : ControllerBase
             .ConfigureAwait(false)).MeteringPoints;
 
         return Ok(meteringPoints);
-    }
-
-    [HttpGet("contact/{contactId:long}/cpr")]
-    [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
-    [Authorize(Roles = "cpr:view")]
-    public async Task<ActionResult<CPRResponse>> GetContactCprAsync(long contactId, [FromBody] ContactCprRequestDto contactCprRequest)
-    {
-        var command = new GetContactCprCommand(contactId, contactCprRequest);
-
-        var cpr = await _mediator
-            .Send(command)
-            .ConfigureAwait(false);
-
-        return Ok(new { result = cpr });
     }
 }
