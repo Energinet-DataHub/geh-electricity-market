@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
-public sealed record MeteringPointDto(
-    long Id,
-    string Identification,
-    MeteringPointMetadataDto? Metadata,
-    IEnumerable<MeteringPointMetadataDto> MetadataTimeline,
-    CommercialRelationDto? CommercialRelation,
-    IEnumerable<CommercialRelationDto> CommercialRelationTimeline);
+public sealed record TenantDto(string ActorNumber, MarketRole? MarketRole);
