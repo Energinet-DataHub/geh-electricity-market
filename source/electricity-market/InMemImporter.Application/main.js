@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const { exec } = require("child_process");
 const { randomUUID } = require("crypto");
 const path = require("path");
@@ -90,9 +90,9 @@ app.on("will-quit", () => {
 
 let running = false;
 
-ipcMain.handle("run-console-app", async (_, inputString) => {
+ipcMain.handle("run-import", async (_, inputString) => {
   if (running) {
-    return "Another export is already running, please wait for it to finish.";
+    return "Another action is already running, please wait for it to finish.";
   }
 
   running = true;
@@ -119,5 +119,144 @@ ipcMain.handle("run-console-app", async (_, inputString) => {
         );
       }
     });
+  });
+});
+
+ipcMain.handle("create-scenario", (_, csv, importResult) => {
+  if (running) {
+    return "Another action is already running, please wait for it to finish.";
+  }
+
+  if (!importResult.includes("+-")) {
+    return "Please make an import first.";
+  }
+
+  running = true;
+
+  return new Promise((resolve) => {
+    dialog
+      .showSaveDialog({
+        title: "Save As",
+        defaultPath: path.join(
+          gitRoot,
+          "source",
+          "electricity-market",
+          "ElectricityMarket.IntegrationTests",
+          "TestData",
+          "SCENARIO_NAME.csv"
+        ),
+      })
+      .then((result) => {
+        running = false;
+        if (!result.canceled && result.filePath) {
+          fs.writeFile(result.filePath, csv, (err) => {
+            if (err) {
+              logToFile(err);
+              resolve("Failed to save scenario.");
+              return;
+            }
+            fs.writeFile(
+              result.filePath.replace(".csv", "") + ".txt",
+              importResult,
+              (err) => {
+                if (err) {
+                  logToFile(err);
+                  resolve("Failed to save scenario.");
+                  return;
+                }
+                resolve("Scenario saved successfully.");
+              }
+            );
+          });
+        }
+      });
+  });
+});
+
+ipcMain.handle("run-scenarios", () => {
+  if (running) {
+    return "Another action is already running, please wait for it to finish.";
+  }
+
+  running = true;
+
+  return new Promise((resolve) => {
+    const sep = process.platform === "win32" ? "&" : "&&";
+    const command = `cd ${path.join(
+      gitRoot,
+      "source",
+      "electricity-market",
+      "ElectricityMarket.IntegrationTests"
+    )} ${sep} dotnet build --no-incremental ${sep} dotnet test --logger "console;verbosity=detailed" --filter "Energinet.DataHub.ElectricityMarket.IntegrationTests.Scenarios.ScenarioTests.Test_Scenario"`;
+
+    exec(command, (error, stdout, stderr) => {
+      running = false;
+      if (error) {
+        logToFile("error: " + error.message);
+      }
+      if (stderr) {
+        logToFile("stderr: " + stderr);
+      }
+      if (stdout) {
+        resolve(
+          "Results:\n" +
+            stdout
+              .split("\n")
+              .filter(
+                (line) =>
+                  line.includes("Passed") ||
+                  line.includes("Failed") ||
+                  line.includes("Total tests") ||
+                  line.includes("Total time")
+              )
+              .join("\n")
+        );
+      }
+    });
+  });
+});
+
+ipcMain.handle("delete-scenario", () => {
+  if (running) {
+    return "Another action is already running, please wait for it to finish.";
+  }
+
+  running = true;
+
+  return new Promise((resolve) => {
+    dialog
+      .showOpenDialog({
+        title: "Select scenario to delete",
+        defaultPath: path.join(
+          gitRoot,
+          "source",
+          "electricity-market",
+          "ElectricityMarket.IntegrationTests",
+          "TestData"
+        ),
+        filters: [{ name: "CSV Files", extensions: ["csv"] }],
+        properties: ["openFile"],
+      })
+      .then((result) => {
+        running = false;
+        if (!result.canceled && result.filePaths.length) {
+          const file = result.filePaths[0];
+          fs.unlink(file, (err) => {
+            if (err) {
+              logToFile(err);
+              resolve("Failed to delete scenario.");
+              return;
+            }
+            fs.unlink(file.replace(".csv", "") + ".txt", (err) => {
+              if (err) {
+                logToFile(err);
+                resolve("Failed to delete scenario.");
+                return;
+              }
+              resolve("Scenario deleted successfully");
+            });
+          });
+        }
+      });
   });
 });
