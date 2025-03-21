@@ -127,6 +127,5 @@ public class RoleFiltrationService : IRoleFiltrationService
             ActiveEnergySupplyPeriod = null,
             EnergySupplyPeriodTimeline = []
         };
-
     }
 }
