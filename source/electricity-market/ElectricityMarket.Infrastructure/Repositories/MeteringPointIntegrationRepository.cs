@@ -63,7 +63,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                 ValidFrom = mpp.ValidFrom.ToInstant(),
                 ValidTo = mpp.ValidTo.ToInstant(),
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
-                GridAccessProvider = mpp.OwnedBy ?? gridArea.ActorNumber,
+                GridAccessProvider = string.IsNullOrWhiteSpace(mpp.OwnedBy) ? gridArea.ActorNumber : mpp.OwnedBy,
 
                 // This ugliness is needed for EF Core to translate the left join into a working query.
                 NeighborGridAreaOwners = exchangeFromGridArea.ActorNumber != null && exchangeToGridArea.ActorNumber != null
