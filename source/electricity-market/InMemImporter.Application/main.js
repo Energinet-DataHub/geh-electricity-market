@@ -170,7 +170,7 @@ ipcMain.handle("run-scenarios", () => {
   running = true;
 
   return new Promise((resolve) => {
-    const sep = process.platform === "win32" ? ";" : "&&";
+    const sep = process.platform === "win32" ? "&" : "&&";
     const command = `cd ${gitRoot}/source/electricity-market/ElectricityMarket.IntegrationTests ${sep} dotnet build --no-incremental ${sep} dotnet test --logger "console;verbosity=detailed" --filter "Energinet.DataHub.ElectricityMarket.IntegrationTests.Scenarios.ScenarioTests.Test_Scenario"`;
 
     exec(command, (error, stdout, stderr) => {
