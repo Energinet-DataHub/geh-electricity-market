@@ -30,16 +30,16 @@ public static class MockedMeteringPointObjects
         IEnumerable<CommercialRelationDto> commercialRelationTimeline)
         => new(id, identification, metadata, metadataTimeline, commercialRelation, commercialRelationTimeline);
 
-    public static MeteringPointDto GetMockedMeteringPoint(long id)
+    public static MeteringPointDto GetMockedMeteringPoint(long id, string ownedBy)
         => new(
             id,
             "Identification",
-            GetMockedMeteringPointMetadata(1),
+            GetMockedMeteringPointMetadata(1, ownedBy),
             [],
-            GetMockedCommercialRelation(2, "123456789"),
+            GetMockedCommercialRelation(2, ownedBy),
             []);
 
-    public static MeteringPointMetadataDto GetMockedMeteringPointMetadata(long id)
+    public static MeteringPointMetadataDto GetMockedMeteringPointMetadata(long id, string ownedBy)
     => new(
         id,
         DateTimeOffset.Now.AddDays(-1),
@@ -50,7 +50,7 @@ public static class MockedMeteringPointObjects
         ConnectionState.Connected,
         "Resolution",
         "GridAreaCode",
-        "OwnedBy",
+        ownedBy,
         ConnectionType.Direct,
         DisconnectionType.ManualDisconnection,
         Product.EnergyActive,

@@ -23,21 +23,21 @@ public class RoleFiltrationService : IRoleFiltrationService
     {
         ArgumentNullException.ThrowIfNull(meteringPoint, nameof(meteringPoint));
         ArgumentNullException.ThrowIfNull(tenant, nameof(tenant));
-        var energySupplierNumber = meteringPoint.CommercialRelation?.EnergySupplier;
 
         return tenant.MarketRole switch
         {
             MarketRole.DataHubAdministrator => meteringPoint,
-            MarketRole.EnergySupplier when energySupplierNumber == tenant.ActorNumber => meteringPoint,
-            MarketRole.GridAccessProvider => GridAccessProviderFiltering(meteringPoint),
-            MarketRole.EnergySupplier when energySupplierNumber != tenant.ActorNumber => EnergySupplierFiltering(meteringPoint),
+            MarketRole.EnergySupplier => EnergySupplierFiltering(meteringPoint, tenant),
+            MarketRole.GridAccessProvider => GridAccessProviderFiltering(meteringPoint, tenant),
             _ => null
         };
     }
 
-    private static MeteringPointDto GridAccessProviderFiltering(MeteringPointDto meteringPoint)
+    private static MeteringPointDto GridAccessProviderFiltering(MeteringPointDto meteringPoint, TenantDto tenant)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
+        ArgumentNullException.ThrowIfNull(tenant);
+
         if (meteringPoint.CommercialRelation != null)
         {
             EnergySupplyPeriodDto? replacementActiveEnergySupplyPeriod = null;
@@ -50,48 +50,83 @@ public class RoleFiltrationService : IRoleFiltrationService
                 };
             }
 
+            var commercialRelation = meteringPoint.CommercialRelation with
+            {
+                EnergySupplier = string.Empty,
+                ActiveEnergySupplyPeriod = replacementActiveEnergySupplyPeriod,
+                EnergySupplyPeriodTimeline = []
+            };
+
             return meteringPoint with
             {
-                CommercialRelation = meteringPoint.CommercialRelation with
-                {
-                    EnergySupplier = string.Empty,
-                    ActiveEnergySupplyPeriod = replacementActiveEnergySupplyPeriod,
-                    EnergySupplyPeriodTimeline = []
-                }
+                CommercialRelation = commercialRelation,
+                CommercialRelationTimeline = [commercialRelation],
+                MetadataTimeline = meteringPoint.MetadataTimeline.Where(x => x.OwnedBy == tenant.ActorNumber).ToList(),
+                Metadata = meteringPoint?.Metadata?.OwnedBy == tenant.ActorNumber ? meteringPoint?.Metadata : null
             };
         }
 
         return meteringPoint;
     }
 
-    private static MeteringPointDto EnergySupplierFiltering(MeteringPointDto meteringPoint)
+    private static MeteringPointDto EnergySupplierFiltering(MeteringPointDto meteringPoint, TenantDto tenant)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
-        if (meteringPoint.CommercialRelation != null)
-        {
-            EnergySupplyPeriodDto? replacementActiveEnergySupplyPeriod = null;
-            if (meteringPoint.CommercialRelation.ActiveEnergySupplyPeriod != null)
-            {
-                var cvrCustomer = meteringPoint.CommercialRelation.ActiveEnergySupplyPeriod.Customers.FirstOrDefault(c => !string.IsNullOrEmpty(c.Cvr));
-                replacementActiveEnergySupplyPeriod = meteringPoint.CommercialRelation.ActiveEnergySupplyPeriod with
-                {
-                    ValidFrom = DateTimeOffset.MinValue,
-                    ValidTo = DateTimeOffset.MaxValue,
-                    Customers = cvrCustomer is null ? [] : [cvrCustomer with { IsProtectedName = false, LegalContact = null, TechnicalContact = null }]
-                };
-            }
+        ArgumentNullException.ThrowIfNull(tenant);
 
-            return meteringPoint with
+        var isMeteringPointOwner = meteringPoint.CommercialRelation?.EnergySupplier == tenant.ActorNumber;
+
+        var ownedCommercialRelations = meteringPoint.CommercialRelationTimeline
+            .Where(x => x.EnergySupplier == tenant.ActorNumber)
+            .ToList();
+
+        var notOwnedCommercialRelations = meteringPoint.CommercialRelationTimeline
+            .Where(x => x.EnergySupplier != tenant.ActorNumber)
+            .Select(x => OnlyKeepCVRCustomerInfo(x))
+            .ToList();
+
+        var filteredMeteringPoint = meteringPoint with
+        {
+            CommercialRelationTimeline = ownedCommercialRelations.Concat(notOwnedCommercialRelations),
+            CommercialRelation = !isMeteringPointOwner && meteringPoint.CommercialRelation is not null ? OnlyKeepCVRCustomerInfo(meteringPoint.CommercialRelation) : meteringPoint.CommercialRelation,
+        };
+
+        return filteredMeteringPoint;
+    }
+
+    /// <summary>
+    /// If the tenant is not the owner of the metering point, we need to remove all commercial relations, and only keep the CVR number.
+    /// If there is no cvr customer, we remove all commercial relations.
+    /// </summary>
+    private static CommercialRelationDto OnlyKeepCVRCustomerInfo(CommercialRelationDto commercialRelation)
+    {
+        ArgumentNullException.ThrowIfNull(commercialRelation);
+
+        if (commercialRelation.ActiveEnergySupplyPeriod is not null)
+        {
+            var cvrCustomer = commercialRelation.ActiveEnergySupplyPeriod.Customers.FirstOrDefault(c => !string.IsNullOrEmpty(c.Cvr));
+            var replacementActiveEnergySupplyPeriod = commercialRelation.ActiveEnergySupplyPeriod with
             {
-                CommercialRelation = meteringPoint.CommercialRelation with
-                {
-                    EnergySupplier = string.Empty,
-                    ActiveEnergySupplyPeriod = replacementActiveEnergySupplyPeriod,
-                    EnergySupplyPeriodTimeline = []
-                }
+                ValidFrom = DateTimeOffset.MinValue,
+                ValidTo = DateTimeOffset.MaxValue,
+                Customers = cvrCustomer is null ? [] : [cvrCustomer with { IsProtectedName = false, LegalContact = null, TechnicalContact = null }]
+            };
+
+            return commercialRelation with
+            {
+                EnergySupplier = string.Empty,
+                ActiveEnergySupplyPeriod = replacementActiveEnergySupplyPeriod,
+                EnergySupplyPeriodTimeline = [replacementActiveEnergySupplyPeriod]
             };
         }
 
-        return meteringPoint;
+        // ensures we dont leak any information about the commercial relation
+        return commercialRelation with
+        {
+            EnergySupplier = string.Empty,
+            ActiveEnergySupplyPeriod = null,
+            EnergySupplyPeriodTimeline = []
+        };
+
     }
 }

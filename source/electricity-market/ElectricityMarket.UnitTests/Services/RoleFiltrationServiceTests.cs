@@ -29,8 +29,8 @@ public class RoleFiltrationServiceTests
     public void FilterFields_WhenDatahubAdministrator_ReturnsSameMeteringPoint()
     {
         // Arrange
-        var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(1);
         var tenant = new TenantDto("101", MarketRole.DataHubAdministrator.ToString());
+        var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(1, tenant.ActorNumber);
 
         var target = new RoleFiltrationService();
 
@@ -42,68 +42,56 @@ public class RoleFiltrationServiceTests
     }
 
     [Fact]
-    public void FilterFields_WhenEnergySupplierWithOwnMP_ReturnsSameMeteringPoint()
+    public void FilterFields_WhenEnergySupplier()
     {
         // Arrange
-        var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
-            1,
-            "373",
-            MockedMeteringPointObjects.GetMockedMeteringPointMetadata(11),
-            [],
-            MockedMeteringPointObjects.GetMockedCommercialRelation(12, "373"),
-            []);
         var tenant = new TenantDto("373", MarketRole.EnergySupplier.ToString());
+        var mockedMeteringPointMetadata = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(11, tenant.ActorNumber);
+        var mockedMeteringPointMetadataNotInTenant = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(12, "123");
+        var mockedCommercialRelation = MockedMeteringPointObjects.GetMockedCommercialRelation(13, tenant.ActorNumber);
+        var mockedCommercialRelationNotInTenant = MockedMeteringPointObjects.GetMockedCommercialRelation(14, "123");
+        var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
+            1,
+            tenant.ActorNumber,
+            mockedMeteringPointMetadata,
+            [mockedMeteringPointMetadata, mockedMeteringPointMetadataNotInTenant],
+            mockedCommercialRelation,
+            [mockedCommercialRelation, mockedCommercialRelationNotInTenant]);
 
         var target = new RoleFiltrationService();
 
         // Act
         var result = target.FilterFields(meteringPoint, tenant);
 
+        var ownedCommercialRelations = result?.CommercialRelationTimeline?.FirstOrDefault(x => x.Id == 13);
+        var notOwnedCommercialRelations = result?.CommercialRelationTimeline?.FirstOrDefault(x => x.Id == 14);
         // Assert
-        Assert.Equal(meteringPoint, result);
+        Assert.Empty(notOwnedCommercialRelations!.EnergySupplier);
+        Assert.NotEmpty(ownedCommercialRelations!.EnergySupplier);
+        Assert.NotEmpty(notOwnedCommercialRelations!.ActiveEnergySupplyPeriod!.Customers!.FirstOrDefault()!.Cvr!);
+        Assert.NotNull(ownedCommercialRelations!.ActiveEnergySupplyPeriod!.Customers.First().LegalContact);
+        Assert.NotNull(ownedCommercialRelations?.ActiveEnergySupplyPeriod.Customers.First().TechnicalContact);
+        Assert.Null(notOwnedCommercialRelations?.ActiveEnergySupplyPeriod.Customers.First().LegalContact);
+        Assert.Null(notOwnedCommercialRelations?.ActiveEnergySupplyPeriod.Customers.First().TechnicalContact);
+
     }
 
     [Fact]
-    public void FilterFields_WhenEnergySupplierWithForeignMP_ReturnsNoCustomerNoEnergySupplierInfo()
+    public void FilterFields_WhenGridAccessProvider()
     {
         // Arrange
-        var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
-            1,
-            "373",
-            MockedMeteringPointObjects.GetMockedMeteringPointMetadata(11),
-            [],
-            MockedMeteringPointObjects.GetMockedCommercialRelation(12, "373"),
-            []);
-
-        var tenant = new TenantDto("45", MarketRole.EnergySupplier.ToString());
-
-        var target = new RoleFiltrationService();
-
-        // Act
-        var result = target.FilterFields(meteringPoint, tenant);
-
-        // Assert
-        Assert.NotEqual(meteringPoint, result);
-        Assert.NotNull(result);
-        Assert.Empty(result.CommercialRelation!.EnergySupplier);
-        Assert.Equal(DateTimeOffset.MinValue, result.CommercialRelation!.ActiveEnergySupplyPeriod!.ValidFrom);
-        Assert.Equal(1, result.CommercialRelation!.ActiveEnergySupplyPeriod!.Customers.Count(c => c.Cvr != null));
-        Assert.Equal(0, result.CommercialRelation!.ActiveEnergySupplyPeriod!.Customers.Count(c => c.Cvr == null));
-    }
-
-    [Fact]
-    public void FilterFields_WhenGridAccessProvider_ReturnsNoEnergySupplierInfo()
-    {
-        // Arrange
-        var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
-            1,
-            "373",
-            MockedMeteringPointObjects.GetMockedMeteringPointMetadata(11),
-            [],
-            MockedMeteringPointObjects.GetMockedCommercialRelation(12, "373"),
-            []);
-
         var tenant = new TenantDto("45", MarketRole.GridAccessProvider.ToString());
+        var mockedMeteringPointMetadata = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(11, tenant.ActorNumber);
+        var mockedMeteringPointMetadataNotInTenant = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(12, "123");
+        var mockedCommercialRelation = MockedMeteringPointObjects.GetMockedCommercialRelation(13, tenant.ActorNumber);
+        var mockedCommercialRelationNotInTenant = MockedMeteringPointObjects.GetMockedCommercialRelation(14, "123");
+        var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
+            1,
+            tenant.ActorNumber,
+            mockedMeteringPointMetadata,
+            [mockedMeteringPointMetadata, mockedMeteringPointMetadataNotInTenant],
+            mockedCommercialRelation,
+            [mockedCommercialRelation, mockedCommercialRelationNotInTenant]);
 
         var target = new RoleFiltrationService();
 
@@ -116,5 +104,8 @@ public class RoleFiltrationServiceTests
         Assert.Empty(result.CommercialRelation!.EnergySupplier);
         Assert.Equal(DateTimeOffset.MinValue, result.CommercialRelation!.ActiveEnergySupplyPeriod!.ValidFrom);
         Assert.NotEmpty(result.CommercialRelation!.ActiveEnergySupplyPeriod!.Customers);
+        Assert.NotNull(result.Metadata);
+        Assert.Equal(tenant.ActorNumber, result.Metadata!.OwnedBy);
+        Assert.Single(result.MetadataTimeline);
     }
 }
