@@ -165,6 +165,7 @@ Retry:
 
             if (retryCount < 2)
             {
+                await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
                 goto Retry;
             }
 
