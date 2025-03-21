@@ -29,7 +29,7 @@ public class RoleFiltrationServiceTests
     public void FilterFields_WhenDatahubAdministrator_ReturnsSameMeteringPoint()
     {
         // Arrange
-        var tenant = new TenantDto("101", MarketRole.DataHubAdministrator.ToString());
+        var tenant = new TenantDto("101", MarketRole.DataHubAdministrator);
         var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(1, tenant.ActorNumber);
 
         var target = new RoleFiltrationService();
@@ -45,7 +45,7 @@ public class RoleFiltrationServiceTests
     public void FilterFields_WhenEnergySupplier()
     {
         // Arrange
-        var tenant = new TenantDto("373", MarketRole.EnergySupplier.ToString());
+        var tenant = new TenantDto("373", MarketRole.EnergySupplier);
         var mockedMeteringPointMetadata = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(11, tenant.ActorNumber);
         var mockedMeteringPointMetadataNotInTenant = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(12, "123");
         var mockedCommercialRelation = MockedMeteringPointObjects.GetMockedCommercialRelation(13, tenant.ActorNumber);
@@ -80,7 +80,7 @@ public class RoleFiltrationServiceTests
     public void FilterFields_WhenGridAccessProvider()
     {
         // Arrange
-        var tenant = new TenantDto("45", MarketRole.GridAccessProvider.ToString());
+        var tenant = new TenantDto("45", MarketRole.GridAccessProvider);
         var mockedMeteringPointMetadata = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(11, tenant.ActorNumber);
         var mockedMeteringPointMetadataNotInTenant = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(12, "123");
         var mockedCommercialRelation = MockedMeteringPointObjects.GetMockedCommercialRelation(13, tenant.ActorNumber);
