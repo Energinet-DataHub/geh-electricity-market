@@ -127,13 +127,24 @@ ipcMain.handle("create-scenario", (_, csv, importResult) => {
     return "Another action is already running, please wait for it to finish.";
   }
 
+  if (!importResult.includes("+-")) {
+    return "Please make an import first.";
+  }
+
   running = true;
 
   return new Promise((resolve) => {
     dialog
       .showSaveDialog({
         title: "Save As",
-        defaultPath: `${gitRoot}/source/electricity-market/ElectricityMarket.IntegrationTests/TestData/SCENARIO_NAME.csv`,
+        defaultPath: path.join(
+          gitRoot,
+          "source",
+          "electricity-market",
+          "ElectricityMarket.IntegrationTests",
+          "TestData",
+          "SCENARIO_NAME.csv"
+        ),
       })
       .then((result) => {
         running = false;
@@ -141,7 +152,7 @@ ipcMain.handle("create-scenario", (_, csv, importResult) => {
           fs.writeFile(result.filePath, csv, (err) => {
             if (err) {
               logToFile(err);
-              resolve(false);
+              resolve("Failed to save scenario.");
               return;
             }
             fs.writeFile(
@@ -150,10 +161,10 @@ ipcMain.handle("create-scenario", (_, csv, importResult) => {
               (err) => {
                 if (err) {
                   logToFile(err);
-                  resolve(false);
+                  resolve("Failed to save scenario.");
                   return;
                 }
-                resolve(true);
+                resolve("Scenario saved successfully.");
               }
             );
           });
@@ -171,7 +182,12 @@ ipcMain.handle("run-scenarios", () => {
 
   return new Promise((resolve) => {
     const sep = process.platform === "win32" ? "&" : "&&";
-    const command = `cd ${gitRoot}/source/electricity-market/ElectricityMarket.IntegrationTests ${sep} dotnet build --no-incremental ${sep} dotnet test --logger "console;verbosity=detailed" --filter "Energinet.DataHub.ElectricityMarket.IntegrationTests.Scenarios.ScenarioTests.Test_Scenario"`;
+    const command = `cd ${path.join(
+      gitRoot,
+      "source",
+      "electricity-market",
+      "ElectricityMarket.IntegrationTests"
+    )} ${sep} dotnet build --no-incremental ${sep} dotnet test --logger "console;verbosity=detailed" --filter "Energinet.DataHub.ElectricityMarket.IntegrationTests.Scenarios.ScenarioTests.Test_Scenario"`;
 
     exec(command, (error, stdout, stderr) => {
       running = false;
@@ -211,7 +227,13 @@ ipcMain.handle("delete-scenario", () => {
     dialog
       .showOpenDialog({
         title: "Select scenario to delete",
-        defaultPath: `${gitRoot}/source/electricity-market/ElectricityMarket.IntegrationTests/TestData`,
+        defaultPath: path.join(
+          gitRoot,
+          "source",
+          "electricity-market",
+          "ElectricityMarket.IntegrationTests",
+          "TestData"
+        ),
         filters: [{ name: "CSV Files", extensions: ["csv"] }],
         properties: ["openFile"],
       })
@@ -222,16 +244,16 @@ ipcMain.handle("delete-scenario", () => {
           fs.unlink(file, (err) => {
             if (err) {
               logToFile(err);
-              resolve(false);
+              resolve("Failed to delete scenario.");
               return;
             }
             fs.unlink(file.replace(".csv", "") + ".txt", (err) => {
               if (err) {
                 logToFile(err);
-                resolve(false);
+                resolve("Failed to delete scenario.");
                 return;
               }
-              resolve(true);
+              resolve("Scenario deleted successfully");
             });
           });
         }

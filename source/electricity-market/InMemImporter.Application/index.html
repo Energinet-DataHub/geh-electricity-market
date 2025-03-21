@@ -200,9 +200,7 @@
               .trim() + "\n"
           )
           .then((output) => {
-            document.getElementById("output-textarea").innerHTML = output
-              ? "Successfully created scenario."
-              : "Error creating scenario.";
+            document.getElementById("output-textarea").innerHTML = output;
           })
           .catch((err) => {
             document.getElementById("output-textarea").innerHTML =
@@ -240,9 +238,7 @@
         ipcRenderer
           .invoke("delete-scenario")
           .then((output) => {
-            document.getElementById("output-textarea").innerHTML = output
-              ? "Successfully deleted scenario."
-              : "Error deleting scenario.";
+            document.getElementById("output-textarea").innerHTML = output;
           })
           .catch((err) => {
             document.getElementById("output-textarea").innerHTML =
