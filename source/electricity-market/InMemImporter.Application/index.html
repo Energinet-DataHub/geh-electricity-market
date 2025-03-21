@@ -30,8 +30,6 @@
         color: #bdbdbe;
         padding: 16px;
         font: 16px "Cascadia Code";
-        width: 100%;
-        height: 50%;
         resize: none;
         font-size: 16px;
         outline: none;
@@ -44,7 +42,7 @@
       .transactions {
         background: #181818;
         color: #bdbdbe;
-        padding: 16px;
+        padding: 48px 16px 16px 16px;
         font: 16px "Cascadia Code";
         width: 100%;
         height: 50%;
@@ -55,7 +53,7 @@
         box-sizing: border-box; /* Ensures padding stays */
         scrollbar-width: thin;
         scrollbar-color: #bdbdbe #181818;
-        height: 15%;
+        height: 25%;
         border-bottom: 0.5px solid #bdbdbe;
       }
 
@@ -64,7 +62,7 @@
       }
 
       .output {
-        height: 85%;
+        height: 75%;
         border-top: 0.5x solid #bdbdbe;
         overflow-x: auto;
         overflow-y: auto;
@@ -96,23 +94,43 @@
         color: #d788d4;
       }
 
-      .clip-button {
+      .actions-container {
         position: absolute;
-        bottom: 16px;
-        right: 16px;
+        top: 0;
+        left: 0;
+        height: 48px;
+      }
+
+      .action-button {
         background-color: transparent;
         color: #bdbdbe;
         border: none;
         cursor: pointer;
-        font-size: 32px;
+        font-size: 16px;
+        text-transform: uppercase;
       }
 
-      .clip-button:hover {
+      .action-button:hover {
         color: #e09962;
       }
     </style>
   </head>
   <body>
+    <div class="actions-container">
+      <button id="import-action" class="action-button">Import</button>
+      |
+      <button id="create-scenario-action" class="action-button">
+        Create Scenario
+      </button>
+      |
+      <button id="run-scenarios-action" class="action-button">
+        Run Scenarios (Requires LocalDB)
+      </button>
+      |
+      <button id="delete-scenario-action" class="action-button">
+        Delete Scenario
+      </button>
+    </div>
     <textarea
       id="transactions-textarea"
       class="transactions"
@@ -121,27 +139,120 @@
       autofocus
       placeholder="Paste gold import transactions in CSV-format here including header.
 
-  - Run import with F5
-    - if no transactions are supplied, a sample will be used.
+  - Click 'IMPORT' to run the import. If no transactions are supplied, a sample will be provided.
+    
+  - Click 'CREATE SCENARIO' to save the current import as a test scenario.
+  
+  - Click 'RUN SCENARIOS' to run ALL existing scenarios. This requires LocalDB.
 
-  - Decrease/increase size of transactions and output area with F10/F11."
+  - Click 'DELETE SCENARIO' to delete one of the existing scenarios.
+
+  - Press F10/F11 to Decrease/increase."
     ></textarea>
     <div id="output-textarea" class="output"></div>
-    <button id="clip" class="clip-button">Copy</button>
     <script>
       const { ipcRenderer } = require("electron");
 
-      copy = () => {
-        const output = document.getElementById("output-textarea");
-        const text =
-          output.innerText
-            .replace(/\u00A0/g, " ")
-            .replace(/\u200B/g, "")
-            .trim() + "\n";
-        navigator.clipboard.writeText(text);
+      const runImport = () => {
+        document.getElementById("output-textarea").innerHTML = "Importing...";
+        const inputTextArea = document.getElementById("transactions-textarea");
+        if (!inputTextArea.value) {
+          inputTextArea.value = `metering_point_id;valid_from_date;valid_to_date;dh2_created;metering_grid_area_id;metering_point_state_id;btd_trans_doss_id;parent_metering_point_id;type_of_mp;sub_type_of_mp;physical_status_of_mp;web_access_code;balance_supplier_id;effectuation_date;transaction_type;meter_reading_occurrence;mp_connection_type;disconnection_type;product;product_obligation;energy_timeseries_measure_unit;asset_type;fuel_type;mp_capacity;power_limit_kw;power_limit_a;meter_number;net_settlement_group;scheduled_meter_reading_date01;from_grid_area;to_grid_area;power_plant_gsrn;settlement_method;location_street_code;location_street_name;location_building_number;location_city_name;location_city_subdivision_name;location_dar_reference;location_country_name;location_floor_id;location_room_id;location_postcode;location_municipality_code;location_location_description;first_consumer_party_name;first_consumer_cpr;second_consumer_party_name;second_consumer_cpr;consumer_cvr;protected_name;contact_1_contact_name1;contact_1_protected_address;contact_1_phone_number;contact_1_mobile_number;contact_1_email_address;contact_1_attention;contact_1_street_code;contact_1_street_name;contact_1_building_number;contact_1_postcode;contact_1_city_name;contact_1_city_subdivision_name;contact_1_dar_reference;contact_1_country_name;contact_1_floor_id;contact_1_room_id;contact_1_post_box;contact_1_municipality_code;contact_4_contact_name1;contact_4_protected_address;contact_4_phone_number;contact_4_mobile_number;contact_4_email_address;contact_4_attention;contact_4_street_code;contact_4_street_name;contact_4_building_number;contact_4_postcode;contact_4_city_name;contact_4_city_subdivision_name;contact_4_dar_reference;contact_4_country_name;contact_4_floor_id;contact_4_room_id;contact_4_post_box;contact_4_municipality_code;dossier_status
+571313180401280327;2023-12-31 23:00:00.000000;2025-02-13 23:00:00.000000;2025-02-14T14:20:37.936000;804;224232977;339748207;"";E17;D01;E22;WAC0029;8100000000108;2023-12-31 23:00:00.000000;CREATEMP;ANDET;"";D02;8716867000030;"";KWH;"";"";"";11;16;00110048;0;0101;"";"";"";E01;6595;Raccoon Alley;29;Raccoon City;"";"";DK;"";"";9999;607;"";Anders And d. 29.;"";Fætter Højben d. 29.;"";"";"";Anders And d. 29.;"";99990029;25698574;Kontaktmail@fiktiv.dk;"";6595;Raccoon Alley;29;9999;Raccoon City;"";"";DK;"";"";"";607;Anders And d. 29.;"";99990001;99980001;Kontaktmail@fiktiv.dk;"";6595;Raccoon Alley;29;9999;Raccoon City;"";"";DK;"";"";"";607;FIN
+571313180401280327;2025-02-13 23:00:00.000000;2025-02-14 23:00:00.000000;2025-02-14T23:10:39.014000;804;224233022;339913115;"";E17;D01;E22;3rka92dd;8100000000108;2025-02-13 23:00:00.000000;MOVEINES;ANDET;"";D02;8716867000030;"";KWH;"";"";"";11;16;00110048;0;0101;"";"";"";E01;6595;Raccoon Alley;29;Raccoon City;"";"";DK;"";"";9999;607;"";Hasel Nielsen (JEM);1111110000;"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";RUN
+571313180401280327;2025-02-14 23:00:00.000000;"";2025-02-14T23:10:39.014000;804;224233013;339913119;"";E17;D01;E22;3rka92dd;8100000000115;2025-02-14 23:00:00.000000;CHANGESUP;ANDET;"";D02;8716867000030;"";KWH;"";"";"";11;16;00110048;0;0101;"";"";"";E01;6595;Raccoon Alley;29;Raccoon City;"";"";DK;"";"";9999;607;"";Hasel Nielsen (JEM);1111110000;"";"";"";1;Hasel Nielsen;1;23456789;"";xx@xx.dk;"";"";Raccoon Alley;111;9999;Raccoon City;"";"";DK;"";"";"";"";Hasel Nielsen;1;23456789;"";xx@xx.dk;"";"";Raccoon Alley;111;9999;Raccoon City;"";"";DK;"";"";"";"";FIN
+`;
+        }
+        const inputString = inputTextArea.value;
+        ipcRenderer
+          .invoke("run-import", inputString)
+          .then((output) => {
+            document.getElementById("output-textarea").innerHTML = output
+              .replace(/ /g, "&nbsp;")
+              .replace(/\r/g, "")
+              .replace(/\n/g, "<br>")
+              .replace(/span&nbsp;/g, "span ");
+          })
+          .catch((err) => {
+            document.getElementById("output-textarea").innerHTML =
+              "Error running import.";
+          });
       };
 
-      document.getElementById("clip").addEventListener("click", copy);
+      document
+        .getElementById("import-action")
+        .addEventListener("click", runImport);
+
+      const createScenario = () => {
+        const input = document.getElementById("transactions-textarea").value;
+        const result = document.getElementById("output-textarea").innerText;
+
+        document.getElementById("output-textarea").innerHTML =
+          "Creating scenario...";
+
+        ipcRenderer
+          .invoke(
+            "create-scenario",
+            input.trim() + "\n",
+            result
+              .replace(/\u00A0/g, " ")
+              .replace(/\u200B/g, "")
+              .trim() + "\n"
+          )
+          .then((output) => {
+            document.getElementById("output-textarea").innerHTML = output
+              ? "Successfully created scenario."
+              : "Error creating scenario.";
+          })
+          .catch((err) => {
+            document.getElementById("output-textarea").innerHTML =
+              "Error creating scenario.";
+          });
+      };
+
+      document
+        .getElementById("create-scenario-action")
+        .addEventListener("click", createScenario);
+
+      const runScenarios = () => {
+        document.getElementById("output-textarea").innerHTML =
+          "Running scenarios, please wait...";
+        ipcRenderer
+          .invoke("run-scenarios")
+          .then((output) => {
+            document.getElementById("output-textarea").innerHTML = output
+              .replace(/ /g, "&nbsp;")
+              .replace(/\r/g, "")
+              .replace(/\n/g, "<br>")
+              .replace(/span&nbsp;/g, "span ");
+          })
+          .catch((err) => {
+            document.getElementById("output-textarea").innerHTML =
+              "Error running scenarios.";
+          });
+      };
+
+      document
+        .getElementById("run-scenarios-action")
+        .addEventListener("click", runScenarios);
+
+      const deleteScenario = () => {
+        ipcRenderer
+          .invoke("delete-scenario")
+          .then((output) => {
+            document.getElementById("output-textarea").innerHTML = output
+              ? "Successfully deleted scenario."
+              : "Error deleting scenario.";
+          })
+          .catch((err) => {
+            document.getElementById("output-textarea").innerHTML =
+              "Error deleting scenario.";
+          });
+      };
+
+      document
+        .getElementById("delete-scenario-action")
+        .addEventListener("click", deleteScenario);
 
       const changeSize = (increase) => {
         const transactions = document.getElementById("transactions-textarea");
@@ -152,8 +263,8 @@
         let topHeight = (transactions.clientHeight / containerHeight) * 100;
 
         let newTopHeight = increase
-          ? Math.min(topHeight + 5, 85)
-          : Math.max(topHeight - 5, 15);
+          ? Math.min(topHeight + 5, 75)
+          : Math.max(topHeight - 5, 25);
         let newBottomHeight = 100 - newTopHeight;
 
         transactions.style.height = `${newTopHeight}%`;
@@ -161,35 +272,7 @@
       };
 
       document.body.addEventListener("keydown", (e) => {
-        if (e.key === "F5") {
-          event.preventDefault();
-
-          document.getElementById("output-textarea").innerHTML = "Importing...";
-          const inputTextArea = document.getElementById(
-            "transactions-textarea"
-          );
-          if (!inputTextArea.value) {
-            inputTextArea.value = `metering_point_id;valid_from_date;valid_to_date;dh2_created;metering_grid_area_id;metering_point_state_id;btd_trans_doss_id;parent_metering_point_id;type_of_mp;sub_type_of_mp;physical_status_of_mp;web_access_code;balance_supplier_id;effectuation_date;transaction_type;meter_reading_occurrence;mp_connection_type;disconnection_type;product;product_obligation;energy_timeseries_measure_unit;asset_type;fuel_type;mp_capacity;power_limit_kw;power_limit_a;meter_number;net_settlement_group;scheduled_meter_reading_date01;from_grid_area;to_grid_area;power_plant_gsrn;settlement_method;location_street_code;location_street_name;location_building_number;location_city_name;location_city_subdivision_name;location_dar_reference;location_country_name;location_floor_id;location_room_id;location_postcode;location_municipality_code;location_location_description;first_consumer_party_name;first_consumer_cpr;second_consumer_party_name;second_consumer_cpr;consumer_cvr;protected_name;contact_1_contact_name1;contact_1_protected_address;contact_1_phone_number;contact_1_mobile_number;contact_1_email_address;contact_1_attention;contact_1_street_code;contact_1_street_name;contact_1_building_number;contact_1_postcode;contact_1_city_name;contact_1_city_subdivision_name;contact_1_dar_reference;contact_1_country_name;contact_1_floor_id;contact_1_room_id;contact_1_post_box;contact_1_municipality_code;contact_4_contact_name1;contact_4_protected_address;contact_4_phone_number;contact_4_mobile_number;contact_4_email_address;contact_4_attention;contact_4_street_code;contact_4_street_name;contact_4_building_number;contact_4_postcode;contact_4_city_name;contact_4_city_subdivision_name;contact_4_dar_reference;contact_4_country_name;contact_4_floor_id;contact_4_room_id;contact_4_post_box;contact_4_municipality_code;dossier_status
-571313180401280327;2023-12-31 23:00:00.000000;2025-02-13 23:00:00.000000;2025-02-14T14:20:37.936000;804;224232977;339748207;"";E17;D01;E22;WAC0029;8100000000108;2023-12-31 23:00:00.000000;CREATEMP;ANDET;"";D02;8716867000030;"";KWH;"";"";"";11;16;00110048;0;0101;"";"";"";E01;6595;Raccoon Alley;29;Raccoon City;"";"";DK;"";"";9999;607;"";Anders And d. 29.;"";Fætter Højben d. 29.;"";"";"";Anders And d. 29.;"";99990029;25698574;Kontaktmail@fiktiv.dk;"";6595;Raccoon Alley;29;9999;Raccoon City;"";"";DK;"";"";"";607;Anders And d. 29.;"";99990001;99980001;Kontaktmail@fiktiv.dk;"";6595;Raccoon Alley;29;9999;Raccoon City;"";"";DK;"";"";"";607;FIN
-571313180401280327;2025-02-13 23:00:00.000000;2025-02-14 23:00:00.000000;2025-02-14T23:10:39.014000;804;224233022;339913115;"";E17;D01;E22;3rka92dd;8100000000108;2025-02-13 23:00:00.000000;MOVEINES;ANDET;"";D02;8716867000030;"";KWH;"";"";"";11;16;00110048;0;0101;"";"";"";E01;6595;Raccoon Alley;29;Raccoon City;"";"";DK;"";"";9999;607;"";Hasel Nielsen (JEM);1111110000;"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";RUN
-571313180401280327;2025-02-14 23:00:00.000000;"";2025-02-14T23:10:39.014000;804;224233013;339913119;"";E17;D01;E22;3rka92dd;8100000000115;2025-02-14 23:00:00.000000;CHANGESUP;ANDET;"";D02;8716867000030;"";KWH;"";"";"";11;16;00110048;0;0101;"";"";"";E01;6595;Raccoon Alley;29;Raccoon City;"";"";DK;"";"";9999;607;"";Hasel Nielsen (JEM);1111110000;"";"";"";1;Hasel Nielsen;1;23456789;"";xx@xx.dk;"";"";Raccoon Alley;111;9999;Raccoon City;"";"";DK;"";"";"";"";Hasel Nielsen;1;23456789;"";xx@xx.dk;"";"";Raccoon Alley;111;9999;Raccoon City;"";"";DK;"";"";"";"";FIN
-`;
-          }
-          const inputString = inputTextArea.value;
-          ipcRenderer
-            .invoke("run-console-app", inputString)
-            .then((output) => {
-              document.getElementById("output-textarea").innerHTML = output
-                .replace(/ /g, "&nbsp;")
-                .replace(/\r/g, "")
-                .replace(/\n/g, "<br>")
-                .replace(/span&nbsp;/g, "span ");
-            })
-            .catch((err) => {
-              document.getElementById("output-textarea").innerHTML =
-                "Error running app.";
-            });
-        } else if (e.key === "F10") {
+        if (e.key === "F10") {
           event.preventDefault();
           changeSize(false);
         } else if (e.key === "F11") {

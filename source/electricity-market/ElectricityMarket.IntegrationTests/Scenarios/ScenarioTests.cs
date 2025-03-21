@@ -113,17 +113,17 @@ public class ScenarioTests
                        """);
     }
 
-    private static string Sanitize(string csv)
+    private static string Sanitize(string result)
     {
-        csv = csv.Replace("\r", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("\r", string.Empty, StringComparison.InvariantCultureIgnoreCase);
 
-        var lines = csv.Split('\n').ToList();
+        var lines = result.Split('\n').ToList();
         var sanitizedLines = new List<string>();
 
         var commercialRelationIndex = lines.IndexOf("CommercialRelation");
         if (commercialRelationIndex == -1)
         {
-            return csv;
+            return result;
         }
 
         var dataStartIndex = commercialRelationIndex + 4;
@@ -137,6 +137,6 @@ public class ScenarioTests
         sanitizedLines.AddRange(lines[dataStartIndex..dataStopIndex].Select(x => x.Substring(0, indexOfClientId) + Guid.Empty + x.Substring(indexOfClientId + 36)));
         sanitizedLines.AddRange(lines[dataStopIndex..]);
 
-        return string.Join(Environment.NewLine, sanitizedLines);
+        return string.Join(Environment.NewLine, sanitizedLines).TrimEnd('\r', '\n');
     }
 }
