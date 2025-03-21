@@ -65,6 +65,7 @@ public class RoleFiltrationServiceTests
 
         var ownedCommercialRelations = result?.CommercialRelationTimeline?.FirstOrDefault(x => x.Id == 13);
         var notOwnedCommercialRelations = result?.CommercialRelationTimeline?.FirstOrDefault(x => x.Id == 14);
+
         // Assert
         Assert.Empty(notOwnedCommercialRelations!.EnergySupplier);
         Assert.NotEmpty(ownedCommercialRelations!.EnergySupplier);
@@ -73,7 +74,6 @@ public class RoleFiltrationServiceTests
         Assert.NotNull(ownedCommercialRelations?.ActiveEnergySupplyPeriod.Customers.First().TechnicalContact);
         Assert.Null(notOwnedCommercialRelations?.ActiveEnergySupplyPeriod.Customers.First().LegalContact);
         Assert.Null(notOwnedCommercialRelations?.ActiveEnergySupplyPeriod.Customers.First().TechnicalContact);
-
     }
 
     [Fact]
