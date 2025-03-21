@@ -14,7 +14,4 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
-public sealed record TenantDto(string ActorNumber, string ActorRole)
-{
-    public MarketRole MarketRole => Enum.Parse<MarketRole>(ActorRole, true);
-}
+public sealed record TenantDto(string ActorNumber, MarketRole? MarketRole);

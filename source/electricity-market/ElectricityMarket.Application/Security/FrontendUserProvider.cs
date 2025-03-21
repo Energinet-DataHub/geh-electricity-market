@@ -25,9 +25,14 @@ public sealed class FrontendUserProvider : IUserProvider<FrontendUser>
         bool multiTenancy,
         IEnumerable<Claim> claims)
     {
+        var marketRoleClaim = claims
+            .FirstOrDefault(claim => claim.Type.Equals("marketroles", StringComparison.OrdinalIgnoreCase))
+            ?.Value;
+        var marketRole = !string.IsNullOrEmpty(marketRoleClaim) ? (MarketRole?)Enum.Parse<MarketRole>(marketRoleClaim) : null;
         return Task.FromResult<FrontendUser?>(new FrontendUser(
             userId,
             actorId,
-            multiTenancy));
+            multiTenancy,
+            marketRole));
     }
 }

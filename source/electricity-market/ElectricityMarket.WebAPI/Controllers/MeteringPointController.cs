@@ -14,7 +14,6 @@
 
 using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
-using ElectricityMarket.WebAPI.Security;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
@@ -46,7 +45,8 @@ public class MeteringPointController : ControllerBase
     [Authorize(Roles = "metering-point:search")]
     public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification)
     {
-        var getMeteringPointCommand = new GetMeteringPointCommand(identification);
+        var tenant = new TenantDto(_userContext.CurrentUser.ActorId.ToString(), _userContext.CurrentUser.MarketRole);
+        var getMeteringPointCommand = new GetMeteringPointCommand(identification, tenant);
 
         var meteringPoint = await _mediator
             .Send(getMeteringPointCommand)
