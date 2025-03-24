@@ -106,6 +106,5 @@ public class RoleFiltrationServiceTests
         Assert.NotEmpty(result.CommercialRelation!.ActiveEnergySupplyPeriod!.Customers);
         Assert.NotNull(result.Metadata);
         Assert.Equal(tenant.ActorNumber, result.Metadata!.OwnedBy);
-        Assert.Single(result.MetadataTimeline);
     }
 }

@@ -38,44 +38,28 @@ public class RoleFiltrationService : IRoleFiltrationService
         ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(tenant);
 
-        var haveBeenOwner = meteringPoint.CommercialRelationTimeline
-            .Any(x => x.EnergySupplier == tenant.ActorNumber);
+        var haveBeenOwner = meteringPoint.MetadataTimeline.Any(x => x.OwnedBy == tenant.ActorNumber);
 
         if (!haveBeenOwner)
         {
             return null;
         }
 
-        if (meteringPoint.CommercialRelation != null)
+        return meteringPoint with
         {
-            return meteringPoint with
-            {
-                CommercialRelation = RemoveEnergySupplier(meteringPoint.CommercialRelation),
-                CommercialRelationTimeline = meteringPoint.CommercialRelationTimeline.Select(RemoveEnergySupplier),
-            };
-        }
-
-        return meteringPoint;
+            CommercialRelation = meteringPoint.CommercialRelation is not null ? RemoveEnergySupplierAndResetTimeline(meteringPoint.CommercialRelation) : null,
+            CommercialRelationTimeline = meteringPoint.CommercialRelationTimeline.Select(RemoveEnergySupplierAndResetTimeline),
+        };
     }
 
-    private static CommercialRelationDto RemoveEnergySupplier(
+    private static CommercialRelationDto RemoveEnergySupplierAndResetTimeline(
         CommercialRelationDto commercialRelation)
     {
         return commercialRelation with
         {
             EnergySupplier = string.Empty,
-            ActiveEnergySupplyPeriod = commercialRelation.ActiveEnergySupplyPeriod is not null ? ResetTimeLine(commercialRelation.ActiveEnergySupplyPeriod) : null,
-            EnergySupplyPeriodTimeline = commercialRelation.EnergySupplyPeriodTimeline.Select(ResetTimeLine),
-        };
-    }
-
-    private static EnergySupplyPeriodDto ResetTimeLine(
-        EnergySupplyPeriodDto energySupplyPeriod)
-    {
-        return energySupplyPeriod with
-        {
-            ValidFrom = DateTimeOffset.MinValue,
-            ValidTo = DateTimeOffset.MaxValue
+            StartDate = DateTimeOffset.MinValue,
+            EndDate = DateTimeOffset.MaxValue,
         };
     }
 
