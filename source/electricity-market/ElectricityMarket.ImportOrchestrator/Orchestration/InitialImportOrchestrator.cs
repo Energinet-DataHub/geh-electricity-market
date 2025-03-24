@@ -43,7 +43,7 @@ public sealed class InitialImportOrchestrator
 
     private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
     {
-        var itemsInOneHour = 35_000_000;
+        var itemsInOneHour = 30_000_000;
         var itemsInOneHourCount = (int)Math.Ceiling(cutoff / (double)itemsInOneHour);
 
         for (var i = 0; i < itemsInOneHourCount; i++)
