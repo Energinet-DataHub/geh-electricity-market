@@ -17,7 +17,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 public sealed record MeteringPointDto(
     long Id,
     string Identification,
-    MeteringPointMetadataDto? Metadata,
+    MeteringPointMetadataDto Metadata,
     IEnumerable<MeteringPointMetadataDto> MetadataTimeline,
     CommercialRelationDto? CommercialRelation,
     IEnumerable<CommercialRelationDto> CommercialRelationTimeline);

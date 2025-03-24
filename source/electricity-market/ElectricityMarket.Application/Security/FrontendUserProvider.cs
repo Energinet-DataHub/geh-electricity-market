@@ -26,13 +26,12 @@ public sealed class FrontendUserProvider : IUserProvider<FrontendUser>
         IEnumerable<Claim> claims)
     {
         var marketRoleClaim = claims
-            .FirstOrDefault(claim => claim.Type.Equals("marketroles", StringComparison.OrdinalIgnoreCase))
-            ?.Value;
-        var marketRole = !string.IsNullOrEmpty(marketRoleClaim) ? (MarketRole?)Enum.Parse<MarketRole>(marketRoleClaim) : null;
+            .Single(claim => claim.Type.Equals("marketroles", StringComparison.OrdinalIgnoreCase)).Value;
+
         return Task.FromResult<FrontendUser?>(new FrontendUser(
             userId,
             actorId,
             multiTenancy,
-            marketRole));
+            Enum.Parse<MarketRole>(marketRoleClaim)));
     }
 }
