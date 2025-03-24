@@ -16,11 +16,11 @@ namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 
 public enum MeasureUnit
 {
-// ReSharper disable InconsistentNaming
+    // ReSharper disable InconsistentNaming
 #pragma warning disable SA1300
     Ampere,
     STK,
-    VArh,
+    kVArh,
     kWh,
     kW,
     MW,
@@ -29,5 +29,5 @@ public enum MeasureUnit
     MVAr,
     DanishTariffCode,
 #pragma warning restore SA1300
-// ReSharper restore InconsistentNaming
+    // ReSharper restore InconsistentNaming
 }
