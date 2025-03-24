@@ -32,7 +32,7 @@ public enum MeteringPointMeasureUnit
     /// <summary>
     /// Code: K3.
     /// </summary>
-    VArh,
+    KVArh,
 
     /// <summary>
     /// Code: KWH.

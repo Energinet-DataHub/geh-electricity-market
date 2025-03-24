@@ -123,7 +123,7 @@ public class ScenarioTests
         var commercialRelationIndex = lines.IndexOf("CommercialRelation");
         if (commercialRelationIndex == -1)
         {
-            return result;
+            return result.TrimEnd('\n');
         }
 
         var dataStartIndex = commercialRelationIndex + 4;
@@ -137,6 +137,6 @@ public class ScenarioTests
         sanitizedLines.AddRange(lines[dataStartIndex..dataStopIndex].Select(x => x.Substring(0, indexOfClientId) + Guid.Empty + x.Substring(indexOfClientId + 36)));
         sanitizedLines.AddRange(lines[dataStopIndex..]);
 
-        return string.Join(Environment.NewLine, sanitizedLines).TrimEnd('\r', '\n');
+        return string.Join('\n', sanitizedLines).TrimEnd('\n');
     }
 }
