@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.3.4
+
+- Fix incorrect mapping of MeasureUnit.
+
 ## Version 4.3.3
 
 - Fix incorrect mapping of ProductId.
