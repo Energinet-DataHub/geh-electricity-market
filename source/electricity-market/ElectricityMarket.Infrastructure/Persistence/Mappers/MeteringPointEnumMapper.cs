@@ -98,7 +98,6 @@ internal static class MeteringPointEnumMapper
         new(MeteringPointMeasureUnit.Ampere, "Ampere", "AMP"),
         new(MeteringPointMeasureUnit.STK, "STK", "H87"),
         new(MeteringPointMeasureUnit.KVArh, "kVArh", "K3"),
-        new(MeteringPointMeasureUnit.KVArh, "VArh", "-UNUSED-"),
         new(MeteringPointMeasureUnit.KWh, "kWh", "KWH"),
         new(MeteringPointMeasureUnit.KW, "kW", "KWT"),
         new(MeteringPointMeasureUnit.MW, "MW", "MAW"),
