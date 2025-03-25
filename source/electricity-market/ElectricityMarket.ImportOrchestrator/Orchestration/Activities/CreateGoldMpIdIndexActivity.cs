@@ -42,9 +42,5 @@ public sealed class CreateGoldMpIdIndexActivity
                                  END
                                  """)
             .ConfigureAwait(false);
-
-        await _databaseContext.Database
-            .ExecuteSqlRawAsync("CREATE INDEX [IX_GoldenImport_metering_point_id] ON [electricitymarket].[GoldenImport] (metering_point_id)")
-            .ConfigureAwait(false);
     }
 }
