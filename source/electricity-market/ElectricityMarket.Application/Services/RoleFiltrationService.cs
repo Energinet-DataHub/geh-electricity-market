@@ -44,9 +44,8 @@ public class RoleFiltrationService : IRoleFiltrationService
             return null;
         }
 
-#pragma warning disable CA5394
         var mergedCommercialRelation = new CommercialRelationDto(
-            new Random().NextInt64(),
+            -1,
             string.Empty,
             DateTimeOffset.MinValue,
             DateTimeOffset.MaxValue,
@@ -54,7 +53,6 @@ public class RoleFiltrationService : IRoleFiltrationService
             meteringPoint?.CommercialRelationTimeline?.SelectMany(x => x.EnergySupplyPeriodTimeline) ?? [],
             null,
             []);
-#pragma warning restore CA5394
 
         ArgumentNullException.ThrowIfNull(meteringPoint);
 
