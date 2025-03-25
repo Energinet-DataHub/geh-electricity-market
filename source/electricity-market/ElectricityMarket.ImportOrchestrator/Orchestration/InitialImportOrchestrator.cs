@@ -83,7 +83,7 @@ public sealed class InitialImportOrchestrator
 
         var tasks = Enumerable.Range(0, activityCount)
             .Select(i => orchestrationContext.CallActivityAsync(
-                nameof(ImportRelationalModelActivity),
+                ImportRelationalModelActivity.ActivityName,
                 new ImportRelationalModelActivityInput { Skip = i * batchSize, Take = batchSize, },
                 TaskOptions.FromRetryHandler(HandleDataSourceExceptions)));
 
