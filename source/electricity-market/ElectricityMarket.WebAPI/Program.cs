@@ -15,11 +15,11 @@
 using System.Reflection;
 using Asp.Versioning;
 using ElectricityMarket.WebAPI.Extensions.DependencyInjection;
-using ElectricityMarket.WebAPI.Security;
 using Energinet.DataHub.Core.App.Common.Extensions.DependencyInjection;
 using Energinet.DataHub.Core.App.WebApp.Extensions.Builder;
 using Energinet.DataHub.Core.App.WebApp.Extensions.DependencyInjection;
 using Energinet.DataHub.Core.Logging.LoggingMiddleware;
+using Energinet.DataHub.ElectricityMarket.Application.Security;
 using Energinet.DataHub.RevisionLog.Integration.Extensions.DependencyInjection;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using Energinet.DataHub.RevisionLog.Integration.WebApi.Extensions.DependencyInjection;

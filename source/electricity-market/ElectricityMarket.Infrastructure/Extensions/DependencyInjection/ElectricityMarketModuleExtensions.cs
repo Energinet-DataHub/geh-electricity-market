@@ -67,6 +67,7 @@ public static class ElectricityMarketModuleExtensions
 
         // Services
         services.AddScoped<ICsvImporter, CsvImporter>();
+        services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
 
         return services;
