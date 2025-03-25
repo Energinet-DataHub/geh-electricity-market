@@ -19,6 +19,8 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class ImportRelationalModelActivity
 {
+    public const string ActivityName = "ImportRelationalModelActivityV2";
+
     private readonly IBulkImporter _bulkImporter;
 
     public ImportRelationalModelActivity(IBulkImporter bulkImporter)
@@ -26,7 +28,7 @@ public sealed class ImportRelationalModelActivity
         _bulkImporter = bulkImporter;
     }
 
-    [Function(nameof(ImportRelationalModelActivity))]
+    [Function(ActivityName)]
     public Task RunAsync([ActivityTrigger] ImportRelationalModelActivityInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
