@@ -12,16 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 
-public interface IMeteringPointRepository
-{
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-    Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification);
-
-    Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode);
-
-    Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification);
-}
+public sealed record GetChildAndRelatedMeteringPointsResponse(ParentWithRelatedMeteringPointDto MeteringPoint);

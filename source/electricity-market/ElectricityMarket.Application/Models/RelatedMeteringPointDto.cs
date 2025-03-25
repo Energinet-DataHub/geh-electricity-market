@@ -14,14 +14,11 @@
 
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public interface IMeteringPointRepository
-{
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-    Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification);
-
-    Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode);
-
-    Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification);
-}
+public sealed record RelatedMeteringPointDto(
+    long Id,
+    string Identification,
+    MeteringPointType Type,
+    ConnectionState ConnectionState,
+    DateTimeOffset ConnectionDate);
