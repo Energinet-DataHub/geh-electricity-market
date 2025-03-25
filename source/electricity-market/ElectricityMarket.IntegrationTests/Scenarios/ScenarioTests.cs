@@ -113,30 +113,44 @@ public class ScenarioTests
                        """);
     }
 
-    private static string Sanitize(string csv)
+    private static string Sanitize(string result)
     {
-        csv = csv.Replace("\r", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+        result = result.Replace("\r", string.Empty, StringComparison.InvariantCultureIgnoreCase);
 
-        var lines = csv.Split('\n').ToList();
-        var sanitizedLines = new List<string>();
+        var lines = result.Split('\n').ToList();
 
-        var commercialRelationIndex = lines.IndexOf("CommercialRelation");
-        if (commercialRelationIndex == -1)
+        lines = SanitizeSectionColumn(lines, "CommercialRelation", "ClientId", Guid.Empty.ToString()).ToList();
+        lines = SanitizeSectionColumn(lines, "MeteringPointPeriod", "RetiredAt", DateTimeOffset.MinValue.ToString("u")).ToList();
+
+        var trimEnd = string.Join('\n', lines).TrimEnd('\n');
+
+        return trimEnd;
+
+        static IEnumerable<string> SanitizeSectionColumn(List<string> lines, string section, string column, string value)
         {
-            return csv;
+            var sanitizedLines = new List<string>();
+
+            var headerIndex = lines.IndexOf(section);
+            if (headerIndex == -1)
+            {
+                return lines;
+            }
+
+            var dataStartIndex = headerIndex + 4;
+
+            var dataStopIndex = lines.Select((line, i) => new
+            {
+                line,
+                i,
+            }).SkipWhile(x => x.i <= dataStartIndex).First(x => x.line.StartsWith("+--", StringComparison.InvariantCultureIgnoreCase)).i;
+
+            var columnIndex = lines[headerIndex + 2].IndexOf(column, StringComparison.InvariantCultureIgnoreCase);
+
+            sanitizedLines.AddRange(lines[..dataStartIndex]);
+            sanitizedLines.AddRange(lines[dataStartIndex..dataStopIndex].Select(x => string.Concat(x.AsSpan(0, columnIndex), value, x.AsSpan(columnIndex + value.Length))));
+            sanitizedLines.AddRange(lines[dataStopIndex..]);
+
+            return sanitizedLines;
         }
-
-        var dataStartIndex = commercialRelationIndex + 4;
-
-        var energySupplyPeriodIndex = lines.IndexOf("EnergySupplyPeriod");
-        var dataStopIndex = energySupplyPeriodIndex - 2;
-
-        var indexOfClientId = lines[commercialRelationIndex + 2].IndexOf("ClientId", StringComparison.InvariantCultureIgnoreCase);
-
-        sanitizedLines.AddRange(lines[..dataStartIndex]);
-        sanitizedLines.AddRange(lines[dataStartIndex..dataStopIndex].Select(x => x.Substring(0, indexOfClientId) + Guid.Empty + x.Substring(indexOfClientId + 36)));
-        sanitizedLines.AddRange(lines[dataStopIndex..]);
-
-        return string.Join(Environment.NewLine, sanitizedLines);
     }
 }
