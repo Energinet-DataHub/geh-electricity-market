@@ -16,10 +16,11 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
 public sealed class FrontendUser
 {
-    public FrontendUser(Guid userId, Guid actorId, bool isFas, MarketRole marketRole)
+    public FrontendUser(Guid userId, Guid actorId, string actorNumber, bool isFas, MarketRole marketRole)
     {
         UserId = userId;
         ActorId = actorId;
+        ActorNumber = actorNumber;
         IsFas = isFas;
         MarketRole = marketRole;
     }
@@ -27,6 +28,7 @@ public sealed class FrontendUser
     public MarketRole MarketRole { get; }
     public Guid UserId { get; }
     public Guid ActorId { get; }
+    public string ActorNumber { get; }
     public bool IsFas { get; }
 
     public bool IsFasOrAssignedToActor(Guid actorId)

@@ -19,18 +19,26 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
 public sealed class FrontendUserProvider : IUserProvider<FrontendUser>
 {
+    private const string ActorNumberClaim = "actornumber";
+    private const string MarketRolesClaim = "marketroles";
     public Task<FrontendUser?> ProvideUserAsync(
         Guid userId,
         Guid actorId,
         bool multiTenancy,
         IEnumerable<Claim> claims)
     {
-        var marketRoleClaim = claims
-            .Single(claim => claim.Type.Equals("marketroles", StringComparison.OrdinalIgnoreCase)).Value;
+        var claimsList = claims.ToList();
+
+        var marketRoleClaim = claimsList
+            .Single(claim => claim.Type.Equals(MarketRolesClaim, StringComparison.OrdinalIgnoreCase)).Value;
+
+        var actorNumberClaim = claimsList
+            .Single(claim => claim.Type.Equals(ActorNumberClaim, StringComparison.OrdinalIgnoreCase)).Value;
 
         return Task.FromResult<FrontendUser?>(new FrontendUser(
             userId,
             actorId,
+            actorNumberClaim,
             multiTenancy,
             Enum.Parse<MarketRole>(marketRoleClaim)));
     }
