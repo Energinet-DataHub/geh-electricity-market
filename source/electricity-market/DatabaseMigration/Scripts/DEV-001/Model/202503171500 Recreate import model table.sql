@@ -214,7 +214,6 @@ CREATE TABLE [electricitymarket].[QuarantinedMeteringPoint]
 
 CREATE TABLE [electricitymarket].[GoldenImport]
 (
-    [Id]                              INT                NOT NULL IDENTITY(1,1) PRIMARY KEY,
     [metering_point_id]               BIGINT             NOT NULL,
     [valid_from_date]                 DATETIMEOFFSET     NOT NULL,
     [valid_to_date]                   DATETIMEOFFSET     NOT NULL,
@@ -308,9 +307,3 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [contact_4_municipality_code]     NVARCHAR(64)       NULL,
     [dossier_status]                  CHAR(3)            NULL,
 )
-
-CREATE INDEX [IX_GoldenImport_metering_point_id]
-    ON [electricitymarket].[GoldenImport] (metering_point_id);
-
-CREATE INDEX [IX_GoldenImport_btd_trans_doss_id]
-    ON [electricitymarket].[GoldenImport] (btd_trans_doss_id);

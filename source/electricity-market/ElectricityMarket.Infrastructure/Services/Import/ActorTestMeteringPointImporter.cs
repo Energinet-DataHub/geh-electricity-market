@@ -230,7 +230,7 @@ public sealed class ActorTestMeteringPointImporter : IMeteringPointImporter
         if (currentTransactionType is "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP")
         {
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction id: {importedTransaction.Id}.");
+                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction: {importedTransaction.metering_point_id}.");
 
             // TODO: CHANGESUP without customer is possible.
             var previousCommercialRelation = meteringPoint.CommercialRelations
