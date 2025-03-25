@@ -29,6 +29,7 @@ CREATE TABLE [electricitymarket].[InstallationAddress]
     [CityName]                   nvarchar(64) NOT NULL,
     [CitySubdivisionName]        nvarchar(64) NULL,
     [DarReference]               uniqueidentifier NULL,
+    [WashInstructions]           nvarchar(64) NULL,
     [CountryCode]                nvarchar(64) NOT NULL,
     [Floor]                      nvarchar(64) NULL,
     [Room]                       nvarchar(64) NULL,
