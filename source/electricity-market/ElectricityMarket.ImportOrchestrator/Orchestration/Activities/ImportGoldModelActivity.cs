@@ -38,18 +38,15 @@ public sealed class ImportGoldModelActivity : IDisposable
     private readonly BlockingCollection<IDataReader> _submitCollection = new(2);
 
     private readonly IOptions<DatabaseOptions> _databaseOptions;
-    private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
     private readonly ILogger<ImportGoldModelActivity> _logger;
 
     public ImportGoldModelActivity(
         IOptions<DatabaseOptions> databaseOptions,
-        IOptions<DatabricksCatalogOptions> catalogOptions,
         DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
         ILogger<ImportGoldModelActivity> logger)
     {
         _databaseOptions = databaseOptions;
-        _catalogOptions = catalogOptions;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
         _logger = logger;
     }
@@ -162,7 +159,6 @@ public sealed class ImportGoldModelActivity : IDisposable
 
         var columnOrder = ImportModelHelper.ImportFields
             .Select(f => f.Key)
-            .Prepend("Id")
             .ToArray();
 
         foreach (var record in _importCollection.GetConsumingEnumerable())

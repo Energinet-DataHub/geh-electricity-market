@@ -20,7 +20,6 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
 public sealed class ImportedTransactionEntity
 {
-    public int Id { get; set; }
     public long metering_point_id { get; set; }
     public DateTimeOffset valid_from_date { get; set; }
     public DateTimeOffset valid_to_date { get; set; }
