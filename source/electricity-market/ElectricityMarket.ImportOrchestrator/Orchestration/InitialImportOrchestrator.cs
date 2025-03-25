@@ -74,7 +74,7 @@ public sealed class InitialImportOrchestrator
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
     {
         await orchestrationContext.CallActivityAsync(nameof(CreateGoldMpIdIndexActivity), TaskOptions.FromRetryHandler(HandleDataSourceExceptions));
-        await orchestrationContext.CallActivityAsync(nameof(CreateGoldITransDossIdIndexActivity), TaskOptions.FromRetryHandler(HandleDataSourceExceptions));
+        await orchestrationContext.CallActivityAsync(nameof(CreateGoldTransDossIdIndexActivity), TaskOptions.FromRetryHandler(HandleDataSourceExceptions));
 
         var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
 
