@@ -12,25 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.ComponentModel.DataAnnotations;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Mappers;
+using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
-public sealed class GetMeteringPointHandler : IRequestHandler<GetMeteringPointCommand, GetMeteringPointResponse>
+public sealed class GetMeteringPointHandler : IRequestHandler<GetMeteringPointCommand, GetMeteringPointResponse?>
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
+    private readonly IRoleFiltrationService _roleFiltrationService;
 
-    public GetMeteringPointHandler(IMeteringPointRepository meteringPointRepository)
+    public GetMeteringPointHandler(IMeteringPointRepository meteringPointRepository, IRoleFiltrationService roleFiltrationService)
     {
         _meteringPointRepository = meteringPointRepository;
+        _roleFiltrationService = roleFiltrationService;
     }
 
-    public async Task<GetMeteringPointResponse> Handle(GetMeteringPointCommand request, CancellationToken cancellationToken)
+    public async Task<GetMeteringPointResponse?> Handle(GetMeteringPointCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -38,10 +40,18 @@ public sealed class GetMeteringPointHandler : IRequestHandler<GetMeteringPointCo
             .GetAsync(new MeteringPointIdentification(request.Identification))
             .ConfigureAwait(false);
 
-        // TODO: Not found exception.
         if (meteringPoint == null)
-            throw new ValidationException($"Metering point id '{request.Identification}' does not exists");
+        {
+            return null;
+        }
 
-        return new GetMeteringPointResponse(MeteringPointMapper.Map(meteringPoint));
+        var filteredMeteringPoint = _roleFiltrationService.FilterFields(MeteringPointMapper.Map(meteringPoint), request.Tenant);
+
+        if (filteredMeteringPoint == null)
+        {
+            return null;
+        }
+
+        return new GetMeteringPointResponse(filteredMeteringPoint);
     }
 }
