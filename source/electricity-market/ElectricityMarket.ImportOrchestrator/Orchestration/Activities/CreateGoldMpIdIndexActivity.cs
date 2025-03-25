@@ -31,7 +31,7 @@ public sealed class CreateGoldMpIdIndexActivity
     public async Task RunAsync([ActivityTrigger] NoInput input)
     {
         await _databaseContext.Database
-             .ExecuteSqlRawAsync("""
+            .ExecuteSqlRawAsync("""
                                  IF EXISTS (
                                      SELECT 1 
                                      FROM sys.indexes 
@@ -41,7 +41,7 @@ public sealed class CreateGoldMpIdIndexActivity
                                      DROP INDEX IX_GoldenImport_metering_point_id ON [electricitymarket].[GoldenImport];
                                  END
                                  """)
-             .ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         await _databaseContext.Database
             .ExecuteSqlRawAsync("CREATE INDEX [IX_GoldenImport_metering_point_id] ON [electricitymarket].[GoldenImport] (metering_point_id)")
