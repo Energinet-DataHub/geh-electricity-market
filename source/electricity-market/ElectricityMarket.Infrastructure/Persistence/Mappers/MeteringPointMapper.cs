@@ -72,6 +72,7 @@ internal static class MeteringPointMapper
             from.CityName,
             from.CitySubdivisionName,
             from.DarReference,
+            from.WashInstructions,
             from.CountryCode,
             from.Floor,
             from.Room,
