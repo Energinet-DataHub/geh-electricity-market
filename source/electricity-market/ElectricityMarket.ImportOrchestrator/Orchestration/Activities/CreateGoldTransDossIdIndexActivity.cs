@@ -44,7 +44,7 @@ public sealed class CreateGoldTransDossIdIndexActivity
             .ConfigureAwait(false);
 
         await _databaseContext.Database
-            .ExecuteSqlRawAsync("CREATE CLUSTERED INDEX [IX_GoldenImport_btd_trans_doss_id] ON [electricitymarket].[GoldenImport] (btd_trans_doss_id)")
+            .ExecuteSqlRawAsync("CREATE CLUSTERED INDEX [IX_GoldenImport_btd_trans_doss_id] ON [electricitymarket].[GoldenImport] (metering_point_id, btd_trans_doss_id, metering_point_state_id)")
             .ConfigureAwait(false);
     }
 }
