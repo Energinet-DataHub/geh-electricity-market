@@ -102,7 +102,7 @@ public class RoleFiltrationServiceTests
         Assert.NotEqual(meteringPoint, result);
         Assert.NotNull(result);
         Assert.Empty(result.CommercialRelation!.EnergySupplier);
-        Assert.Equal(DateTimeOffset.MinValue, result.CommercialRelation!.ActiveEnergySupplyPeriod!.ValidFrom);
+        Assert.Equal(DateTimeOffset.MinValue, result.CommercialRelation.StartDate);
         Assert.NotEmpty(result.CommercialRelation!.ActiveEnergySupplyPeriod!.Customers);
         Assert.NotNull(result.Metadata);
         Assert.Equal(tenant.ActorNumber, result.Metadata!.OwnedBy);

@@ -35,7 +35,6 @@ public class RoleFiltrationService : IRoleFiltrationService
 
     private static MeteringPointDto? GridAccessProviderFiltering(MeteringPointDto meteringPoint, TenantDto tenant)
     {
-        ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(tenant);
 
         var haveBeenOwner = meteringPoint.MetadataTimeline.Any(x => x.OwnedBy == tenant.ActorNumber);
@@ -45,21 +44,36 @@ public class RoleFiltrationService : IRoleFiltrationService
             return null;
         }
 
+#pragma warning disable CA5394
+        var mergedCommercialRelation = new CommercialRelationDto(
+            new Random().NextInt64(),
+            string.Empty,
+            DateTimeOffset.MinValue,
+            DateTimeOffset.MaxValue,
+            meteringPoint?.CommercialRelation?.ActiveEnergySupplyPeriod,
+            meteringPoint?.CommercialRelationTimeline?.SelectMany(x => x.EnergySupplyPeriodTimeline) ?? [],
+            null,
+            []);
+#pragma warning restore CA5394
+
+        ArgumentNullException.ThrowIfNull(meteringPoint);
+
         return meteringPoint with
         {
-            CommercialRelation = meteringPoint.CommercialRelation is not null ? RemoveEnergySupplierAndResetTimeline(meteringPoint.CommercialRelation) : null,
-            CommercialRelationTimeline = meteringPoint.CommercialRelationTimeline.Select(RemoveEnergySupplierAndResetTimeline),
+            CommercialRelation = mergedCommercialRelation,
+            CommercialRelationTimeline = [mergedCommercialRelation],
         };
     }
 
-    private static CommercialRelationDto RemoveEnergySupplierAndResetTimeline(
-        CommercialRelationDto commercialRelation)
+    private static CommercialRelationDto RemoveEnergySupplierAndMergeEnergySupplyPeriods(
+        CommercialRelationDto commercialRelation, IEnumerable<EnergySupplyPeriodDto> energySupplyPeriodTimeline)
     {
         return commercialRelation with
         {
             EnergySupplier = string.Empty,
             StartDate = DateTimeOffset.MinValue,
             EndDate = DateTimeOffset.MaxValue,
+            EnergySupplyPeriodTimeline = energySupplyPeriodTimeline,
         };
     }
 
@@ -88,10 +102,6 @@ public class RoleFiltrationService : IRoleFiltrationService
         return filteredMeteringPoint;
     }
 
-    /// <summary>
-    /// If the tenant is not the owner of the metering point, we need to remove all commercial relations, and only keep the CVR number.
-    /// If there is no cvr customer, we remove all commercial relations.
-    /// </summary>
     private static CommercialRelationDto OnlyKeepCVRCustomerInfo(CommercialRelationDto commercialRelation)
     {
         ArgumentNullException.ThrowIfNull(commercialRelation);
@@ -114,7 +124,6 @@ public class RoleFiltrationService : IRoleFiltrationService
             };
         }
 
-        // ensures we dont leak any information about the commercial relation
         return commercialRelation with
         {
             EnergySupplier = string.Empty,
