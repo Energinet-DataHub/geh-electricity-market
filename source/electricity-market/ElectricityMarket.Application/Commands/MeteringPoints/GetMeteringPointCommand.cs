@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Application.Security;
 using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 
-public sealed record GetMeteringPointCommand(string Identification) : IRequest<GetMeteringPointResponse>;
+public sealed record GetMeteringPointCommand(string Identification, TenantDto Tenant) : IRequest<GetMeteringPointResponse?>;

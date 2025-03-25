@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.WebAPI.Security;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Security;
 
-public sealed record TenantDto(string ActorNumber, string ActorRole)
+namespace Energinet.DataHub.ElectricityMarket.Application.Services;
+
+public interface IRoleFiltrationService
 {
-    public MarketRole MarketRole => Enum.Parse<MarketRole>(ActorRole, true);
+    MeteringPointDto? FilterFields(MeteringPointDto meteringPoint, TenantDto tenant);
 }

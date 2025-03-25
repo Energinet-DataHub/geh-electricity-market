@@ -12,22 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Security.Claims;
-using Energinet.DataHub.Core.App.Common.Abstractions.Users;
+namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
-namespace ElectricityMarket.WebAPI.Security;
-
-public sealed class FrontendUserProvider : IUserProvider<FrontendUser>
-{
-    public Task<FrontendUser?> ProvideUserAsync(
-        Guid userId,
-        Guid actorId,
-        bool multiTenancy,
-        IEnumerable<Claim> claims)
-    {
-        return Task.FromResult<FrontendUser?>(new FrontendUser(
-            userId,
-            actorId,
-            multiTenancy));
-    }
-}
+public sealed record TenantDto(string ActorNumber, MarketRole? MarketRole);
