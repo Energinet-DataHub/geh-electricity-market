@@ -73,7 +73,6 @@ public sealed class InitialImportOrchestrator
             await Task.WhenAll(tasks);
         }
 
-
         async Task<CutoffResponse> CreateJobAsync(int offset, CutoffResponse? previousJob)
         {
             var jobTask = orchestrationContext.CallActivityAsync<CutoffResponse>(
