@@ -78,7 +78,7 @@ public sealed class InitialImportOrchestrator
 
         var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
 
-        var batchSize = 300_000;
+        var batchSize = 100_000;
         var activityCount = (int)Math.Ceiling(numberOfMeteringPoints / (double)batchSize);
 
         var tasks = Enumerable.Range(0, activityCount)
