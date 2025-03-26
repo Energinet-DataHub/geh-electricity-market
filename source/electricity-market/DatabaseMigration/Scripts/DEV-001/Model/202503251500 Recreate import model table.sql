@@ -29,6 +29,7 @@ CREATE TABLE [electricitymarket].[InstallationAddress]
     [CityName]                   nvarchar(64) NOT NULL,
     [CitySubdivisionName]        nvarchar(64) NULL,
     [DarReference]               uniqueidentifier NULL,
+    [WashInstructions]           nvarchar(64) NULL,
     [CountryCode]                nvarchar(64) NOT NULL,
     [Floor]                      nvarchar(64) NULL,
     [Room]                       nvarchar(64) NULL,
@@ -214,7 +215,6 @@ CREATE TABLE [electricitymarket].[QuarantinedMeteringPoint]
 
 CREATE TABLE [electricitymarket].[GoldenImport]
 (
-    [Id]                              INT                NOT NULL IDENTITY(1,1) PRIMARY KEY,
     [metering_point_id]               BIGINT             NOT NULL,
     [valid_from_date]                 DATETIMEOFFSET     NOT NULL,
     [valid_to_date]                   DATETIMEOFFSET     NOT NULL,
@@ -249,18 +249,19 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [power_plant_gsrn]                CHAR(18)           NULL,
     [settlement_method]               CHAR(3)            NULL,
 
-    [location_street_code]            CHAR(4)            NULL,
-    [location_street_name]            NVARCHAR(64)       NULL,
-    [location_building_number]        NVARCHAR(64)       NULL,
-    [location_city_name]              NVARCHAR(64)       NULL,
-    [location_city_subdivision_name]  NVARCHAR(64)       NULL,
-    [location_dar_reference]          NVARCHAR(36)       NULL,
-    [location_country_name]           NVARCHAR(64)       NULL,
-    [location_floor_id]               NVARCHAR(64)       NULL,
-    [location_room_id]                NVARCHAR(64)       NULL,
-    [location_postcode]               NVARCHAR(64)       NULL,
-    [location_municipality_code]      NVARCHAR(64)       NULL,
-    [location_location_description]   NVARCHAR(512)      NULL,
+    [location_street_code]                          CHAR(4)            NULL,
+    [location_street_name]                          NVARCHAR(64)       NULL,
+    [location_building_number]                      NVARCHAR(64)       NULL,
+    [location_city_name]                            NVARCHAR(64)       NULL,
+    [location_city_subdivision_name]                NVARCHAR(64)       NULL,
+    [location_dar_reference]                        NVARCHAR(36)       NULL,
+    [location_mp_address_wash_instructions]         NVARCHAR(64)       NULL,
+    [location_country_name]                         NVARCHAR(64)       NULL,
+    [location_floor_id]                             NVARCHAR(64)       NULL,
+    [location_room_id]                              NVARCHAR(64)       NULL,
+    [location_postcode]                             NVARCHAR(64)       NULL,
+    [location_municipality_code]                    NVARCHAR(64)       NULL,
+    [location_location_description]                 NVARCHAR(512)      NULL,
 
     [first_consumer_party_name]       NVARCHAR(256)      NULL,
     [first_consumer_cpr]              CHAR(10)           NULL,
@@ -308,9 +309,3 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [contact_4_municipality_code]     NVARCHAR(64)       NULL,
     [dossier_status]                  CHAR(3)            NULL,
 )
-
-CREATE INDEX [IX_GoldenImport_metering_point_id]
-    ON [electricitymarket].[GoldenImport] (metering_point_id);
-
-CREATE INDEX [IX_GoldenImport_btd_trans_doss_id]
-    ON [electricitymarket].[GoldenImport] (btd_trans_doss_id);

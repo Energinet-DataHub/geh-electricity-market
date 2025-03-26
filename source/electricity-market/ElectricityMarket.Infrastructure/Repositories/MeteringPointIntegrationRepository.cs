@@ -50,7 +50,8 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             join mpp in _electricityMarketDatabaseContext.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
                   mpp.ValidFrom <= endDate &&
-                  mpp.ValidTo > startDate
+                  mpp.ValidTo > startDate &&
+                  mpp.RetiredById == null
             join gridArea in gridAreaOwnerQuery on mpp.GridAreaCode equals gridArea.Code
             join exchangeFromGridArea in gridAreaOwnerQuery on mpp.ExchangeFromGridArea equals exchangeFromGridArea.Code into exchangeFrom
             from exchangeFromGridArea in exchangeFrom.DefaultIfEmpty()

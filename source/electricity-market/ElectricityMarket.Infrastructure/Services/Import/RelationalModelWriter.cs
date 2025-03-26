@@ -70,7 +70,7 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
                             transaction,
                             batch.SelectMany(b => b.MeteringPointPeriods).Select(mpp => mpp.InstallationAddress),
                             "InstallationAddress",
-                            ["Id", "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubdivisionName", "DarReference", "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode", "LocationDescription"])
+                            ["Id", "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubdivisionName", "DarReference", "WashInstructions", "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode", "LocationDescription"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(

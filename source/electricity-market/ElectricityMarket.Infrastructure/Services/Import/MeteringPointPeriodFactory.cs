@@ -63,6 +63,7 @@ public static class MeteringPointPeriodFactory
                 DarReference = importedTransaction.location_dar_reference != null
                     ? Guid.Parse(importedTransaction.location_dar_reference)
                     : null,
+                WashInstructions = importedTransaction.location_mp_address_wash_instructions?.TrimEnd() ?? string.Empty,
                 CountryCode = importedTransaction.location_country_name?.TrimEnd() ?? string.Empty,
                 Floor = importedTransaction.location_floor_id?.TrimEnd(),
                 Room = importedTransaction.location_room_id?.TrimEnd(),

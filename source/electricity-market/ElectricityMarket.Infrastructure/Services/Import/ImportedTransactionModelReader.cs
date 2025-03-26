@@ -42,7 +42,7 @@ public sealed class ImportedTransactionModelReader : IImportedTransactionModelRe
         ArgumentNullException.ThrowIfNull(result);
 
         var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        readContext.Database.SetCommandTimeout(60 * 5);
+        readContext.Database.SetCommandTimeout(60 * 60);
 
         await using (readContext.ConfigureAwait(false))
         {
