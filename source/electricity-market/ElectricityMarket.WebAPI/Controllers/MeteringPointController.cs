@@ -68,16 +68,16 @@ public class MeteringPointController : ControllerBase
         var tenant = new TenantDto(_userContext.CurrentUser.ActorId.ToString(), _userContext.CurrentUser.MarketRole);
         var getMeteringPointCommand = new GetChildAndRelatedMeteringPointsCommand(identification, tenant);
 
-        var meteringPoint = await _mediator
+        var meteringPointWithRelated = await _mediator
             .Send(getMeteringPointCommand)
             .ConfigureAwait(false);
 
-        if (meteringPoint == null)
+        if (meteringPointWithRelated == null)
         {
             return NotFound();
         }
 
-        return Ok(meteringPoint.MeteringPoint);
+        return Ok(meteringPointWithRelated.ParentWithRelatedMeteringPoints);
     }
 
     [HttpGet("contact/{contactId:long}/cpr")]
