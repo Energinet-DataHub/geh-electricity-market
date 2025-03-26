@@ -32,7 +32,7 @@ public sealed class InitialImportOrchestrator
 
         var cutoff = await orchestrationContext.CallActivityAsync<long>(nameof(FindCutoffActivity));
 
-        // await ImportGoldModelAsync(orchestrationContext, cutoff);
+        await ImportGoldModelAsync(orchestrationContext, cutoff);
         await ImportRelationalModelAsync(orchestrationContext);
 
         await orchestrationContext.CallActivityAsync(nameof(SwitchToStreamingActivity), new SwitchToStreamingActivityInput
@@ -73,21 +73,23 @@ public sealed class InitialImportOrchestrator
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
     {
-        await orchestrationContext.CallActivityAsync(nameof(CreateGoldMpIdIndexActivity), TaskOptions.FromRetryHandler(HandleDataSourceExceptions));
-        await orchestrationContext.CallActivityAsync(nameof(CreateGoldTransDossIdIndexActivity), TaskOptions.FromRetryHandler(HandleDataSourceExceptions));
+        await orchestrationContext.CallActivityAsync(nameof(CreateClusteredIndexActivity), TaskOptions.FromRetryHandler(HandleDataSourceExceptions));
 
         var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
 
         var batchSize = 100_000;
         var activityCount = (int)Math.Ceiling(numberOfMeteringPoints / (double)batchSize);
 
-        var tasks = Enumerable.Range(0, activityCount)
-            .Select(i => orchestrationContext.CallActivityAsync(
-                ImportRelationalModelActivity.ActivityName,
-                new ImportRelationalModelActivityInput { Skip = i * batchSize, Take = batchSize, },
-                TaskOptions.FromRetryHandler(HandleDataSourceExceptions)));
+        foreach (var activityChunk in Enumerable.Range(0, activityCount).Chunk(5))
+        {
+            var tasks = activityChunk
+                .Select(i => orchestrationContext.CallActivityAsync(
+                    ImportRelationalModelActivity.ActivityName,
+                    new ImportRelationalModelActivityInput { Skip = i * batchSize, Take = batchSize, },
+                    TaskOptions.FromRetryHandler(HandleDataSourceExceptions)));
 
-        await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks);
+        }
 
         static bool HandleDataSourceExceptions(Microsoft.DurableTask.RetryContext context)
         {
