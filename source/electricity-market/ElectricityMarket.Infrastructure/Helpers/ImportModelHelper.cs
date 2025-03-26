@@ -63,6 +63,7 @@ public static class ImportModelHelper
         MapProperty(t => t.location_city_name),
         MapProperty(t => t.location_city_subdivision_name),
         MapProperty(t => t.location_dar_reference),
+        MapProperty(t => t.location_mp_address_wash_instructions),
         MapProperty(t => t.location_country_name),
         MapProperty(t => t.location_floor_id),
         MapProperty(t => t.location_room_id),

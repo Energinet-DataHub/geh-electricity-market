@@ -25,6 +25,7 @@ public sealed class InstallationAddressEntity
     public string CityName { get; set; } = null!;
     public string? CitySubdivisionName { get; set; }
     public Guid? DarReference { get; set; }
+    public string? WashInstructions { get; set; }
     public string CountryCode { get; set; } = null!;
     public string? Floor { get; set; }
     public string? Room { get; set; }

@@ -59,6 +59,7 @@ public sealed class ImportedTransactionEntity
     public string? location_city_name { get; set; }
     public string? location_city_subdivision_name { get; set; }
     public string? location_dar_reference { get; set; }
+    public string? location_mp_address_wash_instructions { get; set; }
     public string? location_country_name { get; set; }
     public string? location_floor_id { get; set; }
     public string? location_room_id { get; set; }

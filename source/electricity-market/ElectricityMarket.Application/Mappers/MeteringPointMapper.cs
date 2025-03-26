@@ -73,6 +73,7 @@ internal static class MeteringPointMapper
             installationAddress.CityName,
             installationAddress.CitySubDivisionName,
             installationAddress.DarReference,
+            installationAddress.WashInstructions,
             installationAddress.CountryCode,
             installationAddress.Floor,
             installationAddress.Room,

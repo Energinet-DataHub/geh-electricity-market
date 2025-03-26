@@ -14,18 +14,18 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public sealed record InstallationAddress(
-    long Id,
-    string? StreetCode,
-    string StreetName,
-    string BuildingNumber,
-    string CityName,
-    string? CitySubDivisionName,
-    Guid? DarReference,
-    WashInstructions? WashInstructions,
-    string CountryCode,
-    string? Floor,
-    string? Room,
-    string PostCode,
-    string? MunicipalityCode,
-    string? LocationDescription);
+/// <summary>
+/// Types of wash instructions.
+/// </summary>
+public enum WashInstructions
+{
+    /// <summary>
+    /// Code: D01.
+    /// </summary>
+    Washable,
+
+    /// <summary>
+    /// Code: D02.
+    /// </summary>
+    NotWashable,
+}
