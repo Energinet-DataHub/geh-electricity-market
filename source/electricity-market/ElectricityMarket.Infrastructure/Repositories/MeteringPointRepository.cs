@@ -122,8 +122,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             return null;
 
         var powerPlantGsrn = parent.MeteringPointPeriods
-            .Select(mpp => mpp.PowerPlantGsrn)
-            .FirstOrDefault();
+            .FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.Now && x.ValidTo >= DateTimeOffset.Now)?.PowerPlantGsrn;
 
         var allRelated = await _electricityMarketDatabaseContext.MeteringPoints
             .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification.Value || (powerPlantGsrn != null && powerPlantGsrn == y.PowerPlantGsrn)))

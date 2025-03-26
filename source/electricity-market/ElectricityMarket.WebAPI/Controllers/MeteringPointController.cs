@@ -61,7 +61,7 @@ public class MeteringPointController : ControllerBase
     }
 
     [HttpGet("{identification}/related")]
-    // [EnableRevision(RevisionActivities.RelatedMeteringPointsRequested, typeof(MeteringPoint), "identification")]
+    [EnableRevision(RevisionActivities.RelatedMeteringPointsRequested, typeof(MeteringPoint), "identification")]
     [Authorize(Roles = "metering-point:search")]
     public async Task<ActionResult<ParentWithRelatedMeteringPointDto>> GetRelatedMeteringPointAsync(string identification)
     {

@@ -45,13 +45,32 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
             .GetRelatedMeteringPointsAsync(new MeteringPointIdentification(request.Identification))
             .ConfigureAwait(false);
 
-        return meteringPoint == null
-            ? null
-            : new GetChildAndRelatedMeteringPointsResponse(
+        if (meteringPoint == null)
+        {
+            return null;
+        }
+
+        var relatedMeteringPoints = related?.Where(x => x.Identification != meteringPoint.Identification).ToList();
+        var childPoints = relatedMeteringPoints?
+            .Where(x => x.Metadata.Parent == meteringPoint.Identification)
+            .Select(MapToRelated) ?? [];
+
+        var relatedByGsrn = relatedMeteringPoints?
+            .Where(x => string.IsNullOrEmpty(x.Metadata?.Parent?.Value) && !string.IsNullOrWhiteSpace(x.Metadata?.PowerPlantGsrn) && x.Metadata.PowerPlantGsrn == meteringPoint.Metadata.PowerPlantGsrn)
+            .Select(MapToRelated) ?? [];
+
+        var historical = relatedMeteringPoints?
+            .Where(x => x.MetadataTimeline.Any(
+                            y => y.Parent == meteringPoint.Identification && y.Valid.End < x.Metadata.Valid.Start) &&
+                        x.Metadata.PowerPlantGsrn != meteringPoint.Metadata.PowerPlantGsrn)
+            .Select(MapToRelated) ?? [];
+
+        return new GetChildAndRelatedMeteringPointsResponse(
             new ParentWithRelatedMeteringPointDto(
                 MapToRelated(meteringPoint),
-                related?.Where(x => x.Metadata.Parent == meteringPoint.Identification).Select(MapToRelated) ?? [],
-                related?.Where(x => x.MetadataTimeline.Any(y => y.Parent == meteringPoint.Identification)).Select(MapToRelated) ?? []));
+                childPoints,
+                relatedByGsrn,
+                historical));
     }
 
     private static RelatedMeteringPointDto MapToRelated(MeteringPoint meteringPoint)
