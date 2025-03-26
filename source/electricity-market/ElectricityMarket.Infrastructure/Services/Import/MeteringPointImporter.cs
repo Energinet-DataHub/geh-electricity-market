@@ -121,14 +121,73 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         return true;
     }
 
+    private static bool TryAddCommercialRelation(
+        ImportedTransactionEntity importedTransaction,
+        MeteringPointEntity meteringPoint,
+        [NotNullWhen(false)] out string? errorMessage)
+    {
+        var transactionType = importedTransaction.transaction_type.TrimEnd();
+
+        if (meteringPoint.CommercialRelations.Count > 0)
+        {
+            if (transactionType is "MOVEINES")
+            {
+                var prevCrs = meteringPoint.CommercialRelations
+                    .Where(x => x.StartDate >= importedTransaction.valid_from_date)
+                    .ToList();
+
+                if (prevCrs.Count == 0)
+                {
+                    var overlappingCr = meteringPoint.CommercialRelations
+                        .Where(x => x.StartDate < x.EndDate)
+                        .OrderBy(x => x.StartDate)
+                        .FirstOrDefault(x => x.StartDate < importedTransaction.valid_from_date && x.EndDate >= importedTransaction.valid_from_date);
+
+                    if (overlappingCr != null)
+                    {
+                        overlappingCr.EndDate = importedTransaction.valid_from_date;
+                    }
+
+                    var activeEsp = meteringPoint.CommercialRelations
+                        .Where(x => x.StartDate < x.EndDate)
+                        .SelectMany(x => x.EnergySupplyPeriods)
+                        .OrderBy(x => x.ValidFrom)
+                        .LastOrDefault(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy == null);
+
+                    if (activeEsp == null)
+                    {
+                        meteringPoint.CommercialRelations.Add(CommercialRelationFactory.CreateCommercialRelation(importedTransaction));
+                        errorMessage = string.Empty;
+                        return true;
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (transactionType is "ENDSUPPLY" or "INCMOVEOUT" or "INCMOVEIN" or "INCMOVEMAN")
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
+
+            meteringPoint.CommercialRelations.Add(CommercialRelationFactory.CreateCommercialRelation(importedTransaction));
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        errorMessage = "WIP";
+        return false;
+    }
+
     private (bool Imported, string Message) TryImportTransaction(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
         var transactionType = importedTransaction.transaction_type.TrimEnd();
         var dossierStatus = importedTransaction.transaction_type.TrimEnd();
         var type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp);
 
-        if (_changeTransactions.Contains(transactionType) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var errorMessage))
-            return (false, errorMessage);
+        if (_changeTransactions.Contains(transactionType) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var addMeteringPointPeriodError))
+            return (false, addMeteringPointPeriodError);
 
         if (_ignoredTransactions.Contains(transactionType))
             return (true, string.Empty);
@@ -142,213 +201,8 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         if (_unhandledTransactions.Contains(transactionType))
             return (false, $"Unhandled transaction type {transactionType}");
 
-        var applyNewCommercialRelation = false;
-
-        var activeCommercialRelation = new CommercialRelationEntity
-        {
-            StartDate = importedTransaction.valid_from_date,
-            EndDate = DateTimeOffset.MaxValue,
-            ModifiedAt = importedTransaction.dh2_created,
-        };
-
-        if (transactionType is "MOVEINES")
-        {
-            if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-            {
-                // TODO: This does happen.
-                return (false, "No balance_supplier_id for MOVEINES");
-            }
-
-            activeCommercialRelation.EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd();
-            activeCommercialRelation.ClientId = Guid.NewGuid();
-            applyNewCommercialRelation = true;
-        }
-
-        if (transactionType is "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP")
-        {
-            if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction: {importedTransaction.metering_point_id}.");
-
-            // TODO: CHANGESUP without customer is possible.
-            var previousCommercialRelation = meteringPoint.CommercialRelations
-                .SingleOrDefault(cr => cr.EndDate > importedTransaction.valid_from_date);
-
-            activeCommercialRelation.EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd();
-            activeCommercialRelation.ClientId = previousCommercialRelation?.ClientId;
-            applyNewCommercialRelation = true;
-        }
-
-        if (transactionType is "MOVEOUTES")
-        {
-            if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-            {
-                // TODO: This does happen.
-                return (false, "No balance_supplier_id for MOVEOUTES");
-            }
-
-            activeCommercialRelation.EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd();
-            activeCommercialRelation.ClientId = null;
-            applyNewCommercialRelation = true;
-        }
-
-        if (transactionType is "ENDSUPPLY")
-        {
-            activeCommercialRelation.EnergySupplier = string.Empty;
-            activeCommercialRelation.ClientId = null;
-            applyNewCommercialRelation = true;
-        }
-
-        if (applyNewCommercialRelation)
-        {
-            var previousCommercialRelation = meteringPoint.CommercialRelations
-                .SingleOrDefault(cr => cr.EndDate > importedTransaction.valid_from_date);
-
-            if (previousCommercialRelation != null)
-            {
-                previousCommercialRelation.EndDate = importedTransaction.valid_from_date;
-            }
-
-            meteringPoint.CommercialRelations.Add(activeCommercialRelation);
-        }
-        else
-        {
-            if (_unhandledTransactions.Contains(transactionType))
-                return (false, $"Unhandled transaction type {transactionType}");
-
-            // TODO: Not matching Miro. Verify!
-            activeCommercialRelation = meteringPoint.CommercialRelations
-                .SingleOrDefault(cr => cr.EndDate > importedTransaction.valid_from_date);
-
-            if (activeCommercialRelation == null)
-                return (true, string.Empty);
-        }
-
-        var newEnergySupplyPeriod = new EnergySupplyPeriodEntity
-        {
-            ValidFrom = importedTransaction.valid_from_date,
-            ValidTo = DateTimeOffset.MaxValue,
-            CreatedAt = importedTransaction.dh2_created,
-            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
-            WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? string.Empty, // TODO: This is probably wrong.
-            EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? "TODO: What?", // TODO: Fallback is sus.
-        };
-
-        // TODO: This is not verified.
-        if (importedTransaction.first_consumer_party_name != null)
-        {
-            var contact = new ContactEntity
-            {
-                RelationType = "NoContact",
-                DisponentName = importedTransaction.first_consumer_party_name.TrimEnd(),
-                Cpr = importedTransaction.first_consumer_cpr?.TrimEnd(),
-                Cvr = importedTransaction.consumer_cvr?.TrimEnd(),
-                IsProtectedName = importedTransaction.protected_name ?? false,
-            };
-
-            if (importedTransaction.contact_1_contact_name1 != null)
-            {
-                contact.RelationType = "Contact1";
-                contact.ContactName = importedTransaction.contact_1_contact_name1?.TrimEnd();
-                contact.Email = importedTransaction.contact_1_email_address?.TrimEnd();
-                contact.Phone = importedTransaction.contact_1_phone_number?.TrimEnd();
-                contact.Mobile = importedTransaction.contact_1_mobile_number?.TrimEnd();
-                contact.ContactAddress = new ContactAddressEntity
-                {
-                    IsProtectedAddress = importedTransaction.contact_1_protected_address ?? false,
-                    Attention = importedTransaction.contact_1_attention?.TrimEnd(),
-                    StreetCode = importedTransaction.contact_1_street_code?.TrimEnd(),
-                    StreetName = importedTransaction.contact_1_street_name?.TrimEnd() ?? string.Empty,
-                    BuildingNumber = importedTransaction.contact_1_building_number?.TrimEnd() ?? string.Empty,
-                    CityName = importedTransaction.contact_1_city_name?.TrimEnd() ?? string.Empty,
-                    CitySubdivisionName = importedTransaction.contact_1_city_subdivision_name?.TrimEnd(),
-                    DarReference = importedTransaction.contact_1_dar_reference != null
-                        ? Guid.Parse(importedTransaction.contact_1_dar_reference)
-                        : null,
-                    CountryCode = importedTransaction.contact_1_country_name?.TrimEnd() ?? string.Empty,
-                    Floor = importedTransaction.contact_1_floor_id?.TrimEnd(),
-                    Room = importedTransaction.contact_1_room_id?.TrimEnd(),
-                    PostCode = importedTransaction.contact_1_postcode?.TrimEnd() ?? string.Empty,
-                    MunicipalityCode = importedTransaction.contact_1_municipality_code?.TrimEnd(),
-                };
-            }
-
-            newEnergySupplyPeriod.Contacts.Add(contact);
-
-            if (importedTransaction.contact_4_contact_name1 != null)
-            {
-                var contact4 = new ContactEntity
-                {
-                    RelationType = "Contact4",
-                    DisponentName = contact.DisponentName,
-                    Cpr = contact.Cpr,
-                    Cvr = contact.Cvr,
-                    IsProtectedName = contact.IsProtectedName,
-                    ContactName = importedTransaction.contact_4_contact_name1?.TrimEnd(),
-                    Email = importedTransaction.contact_4_email_address?.TrimEnd(),
-                    Phone = importedTransaction.contact_4_phone_number?.TrimEnd(),
-                    Mobile = importedTransaction.contact_4_mobile_number?.TrimEnd(),
-                    ContactAddress = new ContactAddressEntity
-                    {
-                        IsProtectedAddress = importedTransaction.contact_4_protected_address ?? false,
-                        Attention = importedTransaction.contact_4_attention?.TrimEnd(),
-                        StreetCode = importedTransaction.contact_4_street_code?.TrimEnd(),
-                        StreetName = importedTransaction.contact_4_street_name?.TrimEnd() ?? string.Empty,
-                        BuildingNumber = importedTransaction.contact_4_building_number?.TrimEnd() ?? string.Empty,
-                        CityName = importedTransaction.contact_4_city_name?.TrimEnd() ?? string.Empty,
-                        CitySubdivisionName = importedTransaction.contact_4_city_subdivision_name?.TrimEnd(),
-                        DarReference = importedTransaction.contact_4_dar_reference != null
-                            ? Guid.Parse(importedTransaction.contact_4_dar_reference)
-                            : null,
-                        CountryCode = importedTransaction.contact_4_country_name?.TrimEnd() ?? string.Empty,
-                        Floor = importedTransaction.contact_4_floor_id?.TrimEnd(),
-                        Room = importedTransaction.contact_4_room_id?.TrimEnd(),
-                        PostCode = importedTransaction.contact_4_postcode?.TrimEnd() ?? string.Empty,
-                        MunicipalityCode = importedTransaction.contact_4_municipality_code?.TrimEnd(),
-                    }
-                };
-
-                newEnergySupplyPeriod.Contacts.Add(contact4);
-            }
-        }
-
-        // TODO: This is not verified.
-        if (importedTransaction.second_consumer_party_name != null)
-        {
-            var contact = new ContactEntity
-            {
-                RelationType = "Secondary",
-                DisponentName = importedTransaction.second_consumer_party_name.TrimEnd(),
-                Cpr = importedTransaction.second_consumer_cpr?.TrimEnd(),
-                IsProtectedName = importedTransaction.protected_name ?? false,
-            };
-
-            newEnergySupplyPeriod.Contacts.Add(contact);
-        }
-
-        // TODO: Not matching Miro. Verify!
-        var overlappingEnergySupplyPeriod = activeCommercialRelation.EnergySupplyPeriods
-            .SingleOrDefault(esp => esp.RetiredBy == null && esp.ValidTo > importedTransaction.valid_from_date);
-
-        if (overlappingEnergySupplyPeriod == null)
-        {
-            activeCommercialRelation.EnergySupplyPeriods.Add(newEnergySupplyPeriod);
-            return (true, string.Empty);
-        }
-
-        var closedOverlappingEnergySupplyPeriod = new EnergySupplyPeriodEntity
-        {
-            ValidTo = importedTransaction.valid_from_date,
-            ValidFrom = overlappingEnergySupplyPeriod.ValidFrom,
-            CreatedAt = overlappingEnergySupplyPeriod.CreatedAt,
-            BusinessTransactionDosId = overlappingEnergySupplyPeriod.BusinessTransactionDosId,
-            WebAccessCode = overlappingEnergySupplyPeriod.WebAccessCode,
-            EnergySupplier = overlappingEnergySupplyPeriod.EnergySupplier,
-        };
-
-        activeCommercialRelation.EnergySupplyPeriods.Add(closedOverlappingEnergySupplyPeriod);
-
-        overlappingEnergySupplyPeriod.RetiredBy = closedOverlappingEnergySupplyPeriod;
-        overlappingEnergySupplyPeriod.RetiredAt = importedTransaction.dh2_created; // TODO: Different from example.
+        if (!TryAddCommercialRelation(importedTransaction, meteringPoint, out var addCommercialRelationError))
+            return (false, addCommercialRelationError);
 
         return (true, string.Empty);
     }
