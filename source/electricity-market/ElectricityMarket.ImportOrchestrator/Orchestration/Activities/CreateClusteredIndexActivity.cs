@@ -18,16 +18,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class CreateGoldTransDossIdIndexActivity
+public sealed class CreateClusteredIndexActivity
 {
     private readonly ElectricityMarketDatabaseContext _databaseContext;
 
-    public CreateGoldTransDossIdIndexActivity(ElectricityMarketDatabaseContext databaseContext)
+    public CreateClusteredIndexActivity(ElectricityMarketDatabaseContext databaseContext)
     {
         _databaseContext = databaseContext;
     }
 
-    [Function(nameof(CreateGoldTransDossIdIndexActivity))]
+    [Function(nameof(CreateClusteredIndexActivity))]
     public async Task RunAsync([ActivityTrigger] NoInput input)
     {
         await _databaseContext.Database
