@@ -51,10 +51,32 @@ public sealed class InitialImportOrchestrator
         var itemsInOneHour = 30_000_000;
         var itemsInOneHourCount = (int)Math.Ceiling(cutoff / (double)itemsInOneHour);
 
+        CutoffResponse? pendingResponse = null;
+
         for (var i = 0; i < itemsInOneHourCount; i++)
         {
-            var offset = i;
-            var cutoffResponse = await orchestrationContext.CallActivityAsync<CutoffResponse>(
+            pendingResponse = await CreateJobAsync(i, pendingResponse);
+        }
+
+        if (pendingResponse != null)
+        {
+            var tasks = pendingResponse
+                .Chunks
+                .Select(chunk => orchestrationContext.CallActivityAsync(
+                    ImportGoldModelActivity.ActivityName,
+                    new ImportGoldModelActivityInput
+                    {
+                        StatementId = pendingResponse.StatementId,
+                        Chunk = chunk
+                    }));
+
+            await Task.WhenAll(tasks);
+        }
+
+
+        async Task<CutoffResponse> CreateJobAsync(int offset, CutoffResponse? previousJob)
+        {
+            var jobTask = orchestrationContext.CallActivityAsync<CutoffResponse>(
                 nameof(RequestCutoffActivity),
                 new RequestCutoffActivityInput
                 {
@@ -63,17 +85,22 @@ public sealed class InitialImportOrchestrator
                 },
                 TaskOptions.FromRetryHandler(RetryHandler));
 
-            var tasks = cutoffResponse
-                .Chunks
-                .Select(chunk => orchestrationContext.CallActivityAsync(
-                    ImportGoldModelActivity.ActivityName,
-                    new ImportGoldModelActivityInput
-                    {
-                        StatementId = cutoffResponse.StatementId,
-                        Chunk = chunk
-                    }));
+            if (previousJob != null)
+            {
+                var tasks = previousJob
+                    .Chunks
+                    .Select(chunk => orchestrationContext.CallActivityAsync(
+                        ImportGoldModelActivity.ActivityName,
+                        new ImportGoldModelActivityInput
+                        {
+                            StatementId = previousJob.StatementId,
+                            Chunk = chunk
+                        }));
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
+            }
+
+            return await jobTask;
         }
     }
 
