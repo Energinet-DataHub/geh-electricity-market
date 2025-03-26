@@ -70,7 +70,7 @@ public static class MockedMeteringPointObjects
         GetMockedInstallationAddress(11));
 
     public static InstallationAddressDto GetMockedInstallationAddress(long id)
-        => new(id, "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubDivisionName", Guid.NewGuid(), "WashMe", "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode", "LocationDescription");
+        => new(id, "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubDivisionName", Guid.NewGuid(), WashInstructions.Washable, "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode", "LocationDescription");
 
     public static CommercialRelationDto GetMockedCommercialRelation(long id, string energySypplier)
         => new(
