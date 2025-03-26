@@ -14,6 +14,7 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Mappers;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -21,7 +22,7 @@ using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
-public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<GetMeteringPointCommand, GetMeteringPointResponse?>
+public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<GetChildAndRelatedMeteringPointsCommand, GetChildAndRelatedMeteringPointsResponse?>
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
     private readonly IRoleFiltrationService _roleFiltrationService;
@@ -32,7 +33,7 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
         _roleFiltrationService = roleFiltrationService;
     }
 
-    public async Task<GetMeteringPointResponse?> Handle(GetMeteringPointCommand request, CancellationToken cancellationToken)
+    public async Task<GetChildAndRelatedMeteringPointsResponse?> Handle(GetChildAndRelatedMeteringPointsCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -44,18 +45,41 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
             .GetRelatedMeteringPointsAsync(new MeteringPointIdentification(request.Identification))
             .ConfigureAwait(false);
 
-        if (meteringPoint == null)
-        {
-            return null;
-        }
+        return meteringPoint == null
+            ? null
+            : new GetChildAndRelatedMeteringPointsResponse(
+            new ParentWithRelatedMeteringPointDto(
+                MapToRelated(meteringPoint),
+                related?.Where(x => x.Metadata.Parent == meteringPoint.Identification).Select(MapToRelated) ?? [],
+                related?.Where(x => x.MetadataTimeline.Any(y => y.Parent == meteringPoint.Identification)).Select(MapToRelated) ?? []));
+    }
 
-        var filteredMeteringPoint = _roleFiltrationService.FilterFields(MeteringPointMapper.Map(meteringPoint), request.Tenant);
+    private static RelatedMeteringPointDto MapToRelated(MeteringPoint meteringPoint)
+    {
+        return new RelatedMeteringPointDto(
+            meteringPoint.Id,
+            meteringPoint.Identification.Value,
+            meteringPoint.Metadata.Type,
+            meteringPoint.Metadata.ConnectionState,
+            FindFirstConnectedDate(meteringPoint.MetadataTimeline),
+            FindDisconnectedDate(meteringPoint.MetadataTimeline));
+    }
 
-        if (filteredMeteringPoint == null)
-        {
-            return null;
-        }
+    private static DateTimeOffset? FindFirstConnectedDate(IEnumerable<MeteringPointMetadata> meteringPointPeriods)
+    {
+        return meteringPointPeriods
+            .Where(mp => mp.ConnectionState == ConnectionState.Connected)
+            .OrderBy(mp => mp.Valid.Start)
+            .Select(mp => mp.Valid.Start.ToDateTimeOffset())
+            .FirstOrDefault();
+    }
 
-        return new GetMeteringPointResponse(filteredMeteringPoint);
+    private static DateTimeOffset? FindDisconnectedDate(IEnumerable<MeteringPointMetadata> meteringPointPeriods)
+    {
+        return meteringPointPeriods
+            .Where(mp => mp.ConnectionState == ConnectionState.Disconnected)
+            .OrderByDescending(mp => mp.Valid.Start)
+            .Select(mp => mp.Valid.Start.ToDateTimeOffset())
+            .FirstOrDefault();
     }
 }

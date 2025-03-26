@@ -21,4 +21,5 @@ public sealed record RelatedMeteringPointDto(
     string Identification,
     MeteringPointType Type,
     ConnectionState ConnectionState,
-    DateTimeOffset ConnectionDate);
+    DateTimeOffset? ConnectionDate,
+    DateTimeOffset? DisconnectionDate);

@@ -18,4 +18,5 @@ public static class RevisionActivities
 {
     public const string ContactCprRequested = "ContactCprRequested";
     public const string MeteringPointRequested = "MeteringPointRequested";
+    public const string RelatedMeteringPointsRequested = "RelatedMeteringPointsRequested";
 }
