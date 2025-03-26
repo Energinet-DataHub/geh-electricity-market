@@ -140,6 +140,12 @@ internal static class MeteringPointEnumMapper
         new(SettlementMethod.NonProfiled, "NonProfiled", "E02"),
     ];
 
+    public static EnumMap<WashInstructions>[] WashInstructionsTypes { get; } =
+    [
+        new(WashInstructions.Washable, "Washable", "D01"),
+        new(WashInstructions.NotWashable, "NotWashable", "D02"),
+    ];
+
     public static T MapEntity<T>(IEnumerable<EnumMap<T>> lookup, string entityValue)
         where T : struct, Enum
     {

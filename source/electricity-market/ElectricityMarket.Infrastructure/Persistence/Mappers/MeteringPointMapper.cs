@@ -72,7 +72,7 @@ internal static class MeteringPointMapper
             from.CityName,
             from.CitySubdivisionName,
             from.DarReference,
-            from.WashInstructions,
+            MeteringPointEnumMapper.MapOptionalEntity(MeteringPointEnumMapper.WashInstructionsTypes, from.WashInstructions),
             from.CountryCode,
             from.Floor,
             from.Room,
