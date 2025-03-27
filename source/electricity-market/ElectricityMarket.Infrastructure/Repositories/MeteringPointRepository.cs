@@ -73,7 +73,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
         foreach (var mpp in entity.MeteringPointPeriods)
         {
-            if (string.IsNullOrWhiteSpace(mpp.GridAreaCode) && gridAreaLookup.TryGetValue(mpp.GridAreaCode, out var actorNumber))
+            if (!string.IsNullOrWhiteSpace(mpp.GridAreaCode) && gridAreaLookup.TryGetValue(mpp.GridAreaCode, out var actorNumber))
             {
                 mpp.OwnedBy = actorNumber;
             }
