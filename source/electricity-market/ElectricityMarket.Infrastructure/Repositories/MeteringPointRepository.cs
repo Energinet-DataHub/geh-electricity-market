@@ -111,4 +111,24 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
         return entities.Select(MeteringPointMapper.MapFromEntity);
     }
+
+    public async Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification)
+    {
+        var parent = await _electricityMarketDatabaseContext.MeteringPoints
+            .FirstOrDefaultAsync(x => x.Identification == identification.Value)
+            .ConfigureAwait(false);
+
+        if (parent == null)
+            return null;
+
+        var powerPlantGsrn = parent.MeteringPointPeriods
+            .FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.Now && x.ValidTo >= DateTimeOffset.Now)?.PowerPlantGsrn;
+
+        var allRelated = await _electricityMarketDatabaseContext.MeteringPoints
+            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification.Value || (powerPlantGsrn != null && powerPlantGsrn == y.PowerPlantGsrn)))
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        return allRelated.Select(MeteringPointMapper.MapFromEntity);
+    }
 }
