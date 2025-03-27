@@ -50,17 +50,23 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
         }
 
         var relatedMeteringPoints = related?.Where(x => x.Identification != meteringPoint.Identification).ToList();
+
         var childPoints = relatedMeteringPoints?
-            .Where(x => x.Metadata.Parent == meteringPoint.Identification && x.Metadata.Valid.End.ToDateTimeOffset() > DateTimeOffset.Now)
+            .Where(x => x.Metadata.Parent == meteringPoint.Identification
+                        && x.Metadata.Valid.End.ToDateTimeOffset() > DateTimeOffset.Now)
             .Select(MapToRelated) ?? [];
 
         var relatedByGsrn = relatedMeteringPoints?
-            .Where(x => string.IsNullOrEmpty(x.Metadata?.Parent?.Value) && !string.IsNullOrWhiteSpace(x.Metadata?.PowerPlantGsrn) && x.Metadata.PowerPlantGsrn == meteringPoint.Metadata.PowerPlantGsrn)
+            .Where(x => string.IsNullOrEmpty(x.Metadata?.Parent?.Value)
+                        && !string.IsNullOrWhiteSpace(x.Metadata?.PowerPlantGsrn)
+                        && x.Metadata.PowerPlantGsrn == meteringPoint.Metadata.PowerPlantGsrn)
             .Select(MapToRelated) ?? [];
 
         var historical = relatedMeteringPoints?
             .Where(x => x.MetadataTimeline.Any(
-                            y => y.Parent == meteringPoint.Identification && y.Valid.End.ToDateTimeOffset() < DateTimeOffset.Now) && string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn))
+                            y => y.Parent == meteringPoint.Identification
+                                && y.Valid.End.ToDateTimeOffset() < DateTimeOffset.Now)
+                                && (string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn) || x.Metadata.PowerPlantGsrn == meteringPoint.Metadata.PowerPlantGsrn))
             .Select(MapToRelated) ?? [];
 
         return new GetChildAndRelatedMeteringPointsResponse(
