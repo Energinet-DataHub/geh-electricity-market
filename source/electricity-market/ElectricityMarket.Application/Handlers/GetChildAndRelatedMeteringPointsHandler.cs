@@ -91,7 +91,7 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
             meteringPoint.Metadata.Type,
             meteringPoint.Metadata.ConnectionState,
             FindFirstConnectedDate(meteringPoint.MetadataTimeline),
-            FindDisconnectedDate(meteringPoint.MetadataTimeline));
+            FindClosedDownDate(meteringPoint.MetadataTimeline));
     }
 
     private static DateTimeOffset? FindFirstConnectedDate(IEnumerable<MeteringPointMetadata> meteringPointPeriods)
@@ -103,10 +103,10 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
             .FirstOrDefault();
     }
 
-    private static DateTimeOffset? FindDisconnectedDate(IEnumerable<MeteringPointMetadata> meteringPointPeriods)
+    private static DateTimeOffset? FindClosedDownDate(IEnumerable<MeteringPointMetadata> meteringPointPeriods)
     {
         return meteringPointPeriods
-            .Where(mp => mp.ConnectionState == ConnectionState.Disconnected)
+            .Where(mp => mp.ConnectionState == ConnectionState.ClosedDown)
             .OrderByDescending(mp => mp.Valid.Start)
             .Select(mp => mp.Valid.Start.ToDateTimeOffset())
             .FirstOrDefault();

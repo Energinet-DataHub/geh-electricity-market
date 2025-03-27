@@ -22,4 +22,4 @@ public sealed record RelatedMeteringPointDto(
     MeteringPointType Type,
     ConnectionState ConnectionState,
     DateTimeOffset? ConnectionDate,
-    DateTimeOffset? DisconnectionDate);
+    DateTimeOffset? ClosedDownDate);
