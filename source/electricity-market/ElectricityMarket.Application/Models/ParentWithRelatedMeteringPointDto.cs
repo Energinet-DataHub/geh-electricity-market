@@ -18,4 +18,5 @@ public sealed record ParentWithRelatedMeteringPointDto(
     RelatedMeteringPointDto Parent,
     IEnumerable<RelatedMeteringPointDto> ChildMeteringPoints,
     IEnumerable<RelatedMeteringPointDto> RelatedByGsrn,
-    IEnumerable<RelatedMeteringPointDto> HistoricalMeteringPoints);
+    IEnumerable<RelatedMeteringPointDto> HistoricalMeteringPoints,
+    IEnumerable<RelatedMeteringPointDto> HistoricalMeteringPointsByGsrn);

@@ -65,8 +65,7 @@ public class MeteringPointController : ControllerBase
     [Authorize(Roles = "metering-point:search")]
     public async Task<ActionResult<ParentWithRelatedMeteringPointDto>> GetRelatedMeteringPointAsync(string identification)
     {
-        var tenant = new TenantDto(_userContext.CurrentUser.ActorId.ToString(), _userContext.CurrentUser.MarketRole);
-        var getMeteringPointCommand = new GetChildAndRelatedMeteringPointsCommand(identification, tenant);
+        var getMeteringPointCommand = new GetChildAndRelatedMeteringPointsCommand(identification);
 
         var meteringPointWithRelated = await _mediator
             .Send(getMeteringPointCommand)

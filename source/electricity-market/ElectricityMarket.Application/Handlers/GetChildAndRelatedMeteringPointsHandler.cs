@@ -14,7 +14,6 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
@@ -24,12 +23,10 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<GetChildAndRelatedMeteringPointsCommand, GetChildAndRelatedMeteringPointsResponse?>
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
-    private readonly IRoleFiltrationService _roleFiltrationService;
 
-    public GetChildAndRelatedMeteringPointsHandler(IMeteringPointRepository meteringPointRepository, IRoleFiltrationService roleFiltrationService)
+    public GetChildAndRelatedMeteringPointsHandler(IMeteringPointRepository meteringPointRepository)
     {
         _meteringPointRepository = meteringPointRepository;
-        _roleFiltrationService = roleFiltrationService;
     }
 
     public async Task<GetChildAndRelatedMeteringPointsResponse?> Handle(GetChildAndRelatedMeteringPointsCommand request, CancellationToken cancellationToken)
@@ -66,7 +63,15 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
             .Where(x => x.MetadataTimeline.Any(
                             y => y.Parent == meteringPoint.Identification
                                 && y.Valid.End.ToDateTimeOffset() < DateTimeOffset.Now)
-                                && (string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn) || x.Metadata.PowerPlantGsrn == meteringPoint.Metadata.PowerPlantGsrn))
+                                && string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn))
+            .Select(MapToRelated) ?? [];
+
+        var historicalByGsrn = relatedMeteringPoints?
+            .Where(x => x.MetadataTimeline.Any(
+                            y => y.Parent == meteringPoint.Identification
+                                 && y.Valid.End.ToDateTimeOffset() < DateTimeOffset.Now)
+                        && !string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn)
+                        && x.Metadata.PowerPlantGsrn == meteringPoint.Metadata.PowerPlantGsrn)
             .Select(MapToRelated) ?? [];
 
         return new GetChildAndRelatedMeteringPointsResponse(
@@ -74,7 +79,8 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
                 MapToRelated(meteringPoint),
                 childPoints,
                 relatedByGsrn,
-                historical));
+                historical,
+                historicalByGsrn));
     }
 
     private static RelatedMeteringPointDto MapToRelated(MeteringPoint meteringPoint)
