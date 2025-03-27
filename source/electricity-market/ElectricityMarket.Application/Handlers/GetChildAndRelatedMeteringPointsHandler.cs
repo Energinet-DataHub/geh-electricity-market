@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
-using Energinet.DataHub.ElectricityMarket.Application.Mappers;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
