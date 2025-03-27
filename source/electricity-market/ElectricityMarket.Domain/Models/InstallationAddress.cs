@@ -22,6 +22,7 @@ public sealed record InstallationAddress(
     string CityName,
     string? CitySubDivisionName,
     Guid? DarReference,
+    WashInstructions? WashInstructions,
     string CountryCode,
     string? Floor,
     string? Room,

@@ -115,6 +115,7 @@ public sealed class ActorTestMeteringPointImporter : IMeteringPointImporter
                 DarReference = importedTransaction.location_dar_reference != null
                     ? Guid.Parse(importedTransaction.location_dar_reference)
                     : null,
+                WashInstructions = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.WashInstructionsTypes, importedTransaction.location_mp_address_wash_instructions),
                 CountryCode = importedTransaction.location_country_name?.TrimEnd() ?? string.Empty,
                 Floor = importedTransaction.location_floor_id?.TrimEnd(),
                 Room = importedTransaction.location_room_id?.TrimEnd(),
@@ -230,7 +231,7 @@ public sealed class ActorTestMeteringPointImporter : IMeteringPointImporter
         if (currentTransactionType is "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP")
         {
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction id: {importedTransaction.Id}.");
+                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction: {importedTransaction.metering_point_id}.");
 
             // TODO: CHANGESUP without customer is possible.
             var previousCommercialRelation = meteringPoint.CommercialRelations

@@ -12,24 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.WebAPI.Security;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public enum MarketRole
+/// <summary>
+/// Types of wash instructions.
+/// </summary>
+public enum WashInstructions
 {
-    BalanceResponsibleParty,
-    BillingAgent,
-    EnergySupplier,
-    GridAccessProvider,
-    ImbalanceSettlementResponsible,
-    MeterOperator,
-    MeteredDataAdministrator,
-    MeteredDataResponsible,
-    MeteringPointAdministrator,
-    SystemOperator,
-    DanishEnergyAgency,
-    DataHubAdministrator,
-    IndependentAggregator,
-    SerialEnergyTrader,
-    Delegated,
-    ItSupplier,
+    /// <summary>
+    /// Code: D01.
+    /// </summary>
+    Washable,
+
+    /// <summary>
+    /// Code: D02.
+    /// </summary>
+    NotWashable,
 }

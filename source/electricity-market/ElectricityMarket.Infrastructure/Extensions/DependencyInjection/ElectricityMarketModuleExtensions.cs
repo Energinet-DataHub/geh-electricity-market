@@ -42,6 +42,7 @@ public static class ElectricityMarketModuleExtensions
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
             {
                 options.UseNodaTime();
+                options.CommandTimeout(60 * 60);
             })
             .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
         });
@@ -52,6 +53,7 @@ public static class ElectricityMarketModuleExtensions
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
             {
                 options.UseNodaTime();
+                options.CommandTimeout(60 * 60);
             })
             .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
         });
@@ -65,6 +67,7 @@ public static class ElectricityMarketModuleExtensions
 
         // Services
         services.AddScoped<ICsvImporter, CsvImporter>();
+        services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
 
         return services;

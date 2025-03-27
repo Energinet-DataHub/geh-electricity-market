@@ -12,28 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.WebAPI.Security;
+namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
-public sealed class FrontendUser
+public enum MarketRole
 {
-    public FrontendUser(Guid userId, Guid actorId, bool isFas)
-    {
-        UserId = userId;
-        ActorId = actorId;
-        IsFas = isFas;
-    }
-
-    public Guid UserId { get; }
-    public Guid ActorId { get; }
-    public bool IsFas { get; }
-
-    public bool IsFasOrAssignedToActor(Guid actorId)
-    {
-        return IsFas || actorId == ActorId;
-    }
-
-    public bool IsAssignedToActor(Guid actorId)
-    {
-        return actorId == ActorId;
-    }
+    BalanceResponsibleParty,
+    BillingAgent,
+    EnergySupplier,
+    GridAccessProvider,
+    ImbalanceSettlementResponsible,
+    MeterOperator,
+    MeteredDataAdministrator,
+    MeteredDataResponsible,
+    MeteringPointAdministrator,
+    SystemOperator,
+    DanishEnergyAgency,
+    DataHubAdministrator,
+    IndependentAggregator,
+    SerialEnergyTrader,
+    Delegated,
+    ItSupplier,
 }

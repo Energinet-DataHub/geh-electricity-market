@@ -87,6 +87,7 @@ public sealed class RequestCutoffActivity
                 location_city_name,
                 location_city_subdivision_name,
                 location_dar_reference,
+                location_mp_address_wash_instructions,
                 location_country_name,
                 location_floor_id,
                 location_room_id,

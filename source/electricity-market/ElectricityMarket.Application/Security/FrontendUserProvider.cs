@@ -15,19 +15,31 @@
 using System.Security.Claims;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
 
-namespace ElectricityMarket.WebAPI.Security;
+namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
 public sealed class FrontendUserProvider : IUserProvider<FrontendUser>
 {
+    private const string ActorNumberClaim = "actornumber";
+    private const string MarketRolesClaim = "marketroles";
     public Task<FrontendUser?> ProvideUserAsync(
         Guid userId,
         Guid actorId,
         bool multiTenancy,
         IEnumerable<Claim> claims)
     {
+        var claimsList = claims.ToList();
+
+        var marketRoleClaim = claimsList
+            .Single(claim => claim.Type.Equals(MarketRolesClaim, StringComparison.OrdinalIgnoreCase)).Value;
+
+        var actorNumberClaim = claimsList
+            .Single(claim => claim.Type.Equals(ActorNumberClaim, StringComparison.OrdinalIgnoreCase)).Value;
+
         return Task.FromResult<FrontendUser?>(new FrontendUser(
             userId,
             actorId,
-            multiTenancy));
+            actorNumberClaim,
+            multiTenancy,
+            Enum.Parse<MarketRole>(marketRoleClaim)));
     }
 }

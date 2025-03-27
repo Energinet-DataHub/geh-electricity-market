@@ -41,54 +41,86 @@ public sealed class InitialImportOrchestrator
         });
     }
 
+    private static bool RetryHandler(Microsoft.DurableTask.RetryContext context)
+    {
+        return context.LastAttemptNumber <= 3;
+    }
+
     private static async Task ImportGoldModelAsync(TaskOrchestrationContext orchestrationContext, long cutoff)
     {
         var itemsInOneHour = 30_000_000;
         var itemsInOneHourCount = (int)Math.Ceiling(cutoff / (double)itemsInOneHour);
 
+        CutoffResponse? pendingResponse = null;
+
         for (var i = 0; i < itemsInOneHourCount; i++)
         {
-            var offset = i;
-            var cutoffResponse = await orchestrationContext.CallActivityAsync<CutoffResponse>(
-                nameof(RequestCutoffActivity),
-                new RequestCutoffActivityInput
-                {
-                    CutoffFromInclusive = offset * itemsInOneHour,
-                    CutoffToExclusive = Math.Min((offset + 1) * itemsInOneHour, cutoff)
-                });
+            pendingResponse = await CreateJobAsync(i, pendingResponse);
+        }
 
-            var tasks = cutoffResponse
+        if (pendingResponse != null)
+        {
+            var tasks = pendingResponse
                 .Chunks
                 .Select(chunk => orchestrationContext.CallActivityAsync(
                     ImportGoldModelActivity.ActivityName,
                     new ImportGoldModelActivityInput
                     {
-                        StatementId = cutoffResponse.StatementId,
+                        StatementId = pendingResponse.StatementId,
                         Chunk = chunk
                     }));
 
             await Task.WhenAll(tasks);
         }
+
+        async Task<CutoffResponse> CreateJobAsync(int offset, CutoffResponse? previousJob)
+        {
+            var jobTask = orchestrationContext.CallActivityAsync<CutoffResponse>(
+                nameof(RequestCutoffActivity),
+                new RequestCutoffActivityInput
+                {
+                    CutoffFromInclusive = offset * itemsInOneHour,
+                    CutoffToExclusive = Math.Min((offset + 1) * itemsInOneHour, cutoff)
+                },
+                TaskOptions.FromRetryHandler(RetryHandler));
+
+            if (previousJob != null)
+            {
+                var tasks = previousJob
+                    .Chunks
+                    .Select(chunk => orchestrationContext.CallActivityAsync(
+                        ImportGoldModelActivity.ActivityName,
+                        new ImportGoldModelActivityInput
+                        {
+                            StatementId = previousJob.StatementId,
+                            Chunk = chunk
+                        }));
+
+                await Task.WhenAll(tasks);
+            }
+
+            return await jobTask;
+        }
     }
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
     {
+        await orchestrationContext.CallActivityAsync(nameof(CreateClusteredIndexActivity), TaskOptions.FromRetryHandler(RetryHandler));
+
         var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
 
-        var batchSize = 300_000;
+        var batchSize = 100_000;
         var activityCount = (int)Math.Ceiling(numberOfMeteringPoints / (double)batchSize);
 
-        var tasks = Enumerable.Range(0, activityCount)
-            .Select(i => orchestrationContext.CallActivityAsync(
-                nameof(ImportRelationalModelActivity),
-                new ImportRelationalModelActivityInput { Skip = i * batchSize, Take = batchSize, },
-                TaskOptions.FromRetryHandler(HandleDataSourceExceptions)));
-
-        await Task.WhenAll(tasks);
-
-        static bool HandleDataSourceExceptions(Microsoft.DurableTask.RetryContext context)
+        foreach (var activityChunk in Enumerable.Range(0, activityCount).Chunk(5))
         {
-            return context.LastAttemptNumber <= 3;
+            var tasks = activityChunk
+                .Select(i => orchestrationContext.CallActivityAsync(
+                    ImportRelationalModelActivity.ActivityName,
+                    new ImportRelationalModelActivityInput { Skip = i * batchSize, Take = batchSize, },
+                    TaskOptions.FromRetryHandler(RetryHandler)));
+
+            await Task.WhenAll(tasks);
         }
     }
 }

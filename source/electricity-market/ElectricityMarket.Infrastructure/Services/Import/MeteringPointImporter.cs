@@ -29,7 +29,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "HTXCOR", "LNKCHLDMP", "MANCOR", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "MSTDATSBM" };
 
-    private readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BULKCOR", "INCCHGSUP", "INCMOVEAUT", "INCMOVEIN", "INCMOVEMAN", "MANCOR" };
+    private readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BULKCOR", "MANCOR" };
 
     public Task<(bool Imported, string Message)> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
     {
@@ -124,6 +124,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
     private (bool Imported, string Message) TryImportTransaction(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
         var transactionType = importedTransaction.transaction_type.TrimEnd();
+        var dossierStatus = importedTransaction.transaction_type.TrimEnd();
         var type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp);
 
         if (_changeTransactions.Contains(transactionType) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var errorMessage))
@@ -134,6 +135,12 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (type is not "Production" and not "Consumption")
             return (true, string.Empty);
+
+        if (dossierStatus is "CAN" or "CNL")
+            return (true, string.Empty);
+
+        if (_unhandledTransactions.Contains(transactionType))
+            return (false, $"Unhandled transaction type {transactionType}");
 
         var applyNewCommercialRelation = false;
 
@@ -160,7 +167,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         if (transactionType is "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP")
         {
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction id: {importedTransaction.Id}.");
+                throw new InvalidOperationException($"Missing balance_supplier_id for imported transaction: {importedTransaction.metering_point_id}.");
 
             // TODO: CHANGESUP without customer is possible.
             var previousCommercialRelation = meteringPoint.CommercialRelations
