@@ -75,9 +75,9 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (currentlyActiveMeteringPointPeriod != null)
         {
-            if (currentlyActiveMeteringPointPeriod.ValidTo != DateTimeOffset.MaxValue && currentlyActiveMeteringPointPeriod.ValidTo != importedTransaction.valid_from_date)
+            if (currentlyActiveMeteringPointPeriod.ValidTo != DateTimeOffset.MaxValue && currentlyActiveMeteringPointPeriod.ValidTo != importedTransaction.valid_to_date)
             {
-                errorMessage = "Currently active mpps valid_to is neither infinity nor equal to the valid_from of the imported transaction";
+                errorMessage = "Currently active mpps valid_to is neither infinity nor equal to the valid_to of the imported transaction";
                 return false;
             }
 
