@@ -28,7 +28,7 @@ public static class MeteringPointPeriodFactory
         var meteringPointPeriod = new MeteringPointPeriodEntity
         {
             ValidFrom = importedTransaction.valid_from_date,
-            ValidTo = importedTransaction.valid_to_date,
+            ValidTo = DateTimeOffset.MaxValue,
             CreatedAt = importedTransaction.dh2_created,
             ParentIdentification = importedTransaction.parent_metering_point_id?.TrimEnd(),
             Type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp),

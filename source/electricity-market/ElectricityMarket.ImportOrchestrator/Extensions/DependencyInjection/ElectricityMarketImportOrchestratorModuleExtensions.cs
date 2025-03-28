@@ -42,6 +42,7 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
             {
                 options.UseNodaTime();
+                options.CommandTimeout(60 * 60 * 2);
             });
         });
 
