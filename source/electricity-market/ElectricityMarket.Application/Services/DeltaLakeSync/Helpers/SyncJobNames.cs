@@ -12,19 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+namespace Energinet.DataHub.ElectricityMarket.Application.Services.DeltaLakeSync.Helpers;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-
-public sealed class MeteringPointEntity
+public static class SyncJobNames
 {
-    public long Id { get; set; }
-
-    public string Identification { get; set; } = null!;
-
-    public ICollection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
-
-    public ICollection<CommercialRelationEntity> CommercialRelations { get; } = [];
-
-    public int Version { get; set; }
+    public const string ElectricalHeating = "ElectricalHeating";
 }

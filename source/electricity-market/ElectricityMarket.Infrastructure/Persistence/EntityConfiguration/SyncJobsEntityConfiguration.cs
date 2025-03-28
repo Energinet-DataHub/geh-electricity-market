@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+using System;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 
-public sealed class MeteringPointEntity
+public sealed class SyncJobsEntityConfiguration : IEntityTypeConfiguration<SyncJobsEntity>
 {
-    public long Id { get; set; }
-
-    public string Identification { get; set; } = null!;
-
-    public ICollection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
-
-    public ICollection<CommercialRelationEntity> CommercialRelations { get; } = [];
-
-    public int Version { get; set; }
+    public void Configure(EntityTypeBuilder<SyncJobsEntity> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.ToTable("SyncJobs");
+    }
 }

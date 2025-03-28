@@ -12,19 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+using System;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public sealed class MeteringPointEntity
+public sealed class SyncJobsEntity
 {
-    public long Id { get; set; }
-
-    public string Identification { get; set; } = null!;
-
-    public ICollection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
-
-    public ICollection<CommercialRelationEntity> CommercialRelations { get; } = [];
+    public string JobName { get; set; } = null!;
 
     public int Version { get; set; }
 }

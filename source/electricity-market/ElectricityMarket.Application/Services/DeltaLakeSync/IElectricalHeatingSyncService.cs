@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
+namespace Energinet.DataHub.ElectricityMarket.Application.Services.DeltaLakeSync;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-
-public sealed class MeteringPointEntity
+/// <summary>
+/// This service handles syncing of electrical heating data to the databricks delta lake.
+/// </summary>
+public interface IElectricalHeatingSyncService
 {
-    public long Id { get; set; }
-
-    public string Identification { get; set; } = null!;
-
-    public ICollection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
-
-    public ICollection<CommercialRelationEntity> CommercialRelations { get; } = [];
-
-    public int Version { get; set; }
+    /// <summary>
+    /// Syncs the updated electrical heating data to the databricks delta lake.
+    /// </summary>
+    /// <returns>True if successful, otherwise false.</returns>
+    ValueTask<bool> SyncElectricalHeatingAsync();
 }
