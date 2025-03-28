@@ -25,6 +25,6 @@ public sealed class ImportedTransactionEntityConfiguration : IEntityTypeConfigur
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
         builder.ToTable("GoldenImport");
-        builder.HasNoKey();
+        builder.HasKey(t => new { t.metering_point_id, t.btd_trans_doss_id, t.metering_point_state_id, t.transaction_type });
     }
 }

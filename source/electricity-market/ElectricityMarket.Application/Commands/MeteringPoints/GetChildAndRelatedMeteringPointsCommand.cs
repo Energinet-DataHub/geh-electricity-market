@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.WebAPI.Revision;
+using MediatR;
 
-public static class RevisionActivities
-{
-    public const string ContactCprRequested = "ContactCprRequested";
-    public const string MeteringPointRequested = "MeteringPointRequested";
-    public const string RelatedMeteringPointsRequested = "RelatedMeteringPointsRequested";
-}
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+
+public sealed record GetChildAndRelatedMeteringPointsCommand(string Identification) : IRequest<GetChildAndRelatedMeteringPointsResponse?>;

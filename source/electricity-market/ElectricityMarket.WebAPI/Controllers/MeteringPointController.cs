@@ -60,6 +60,25 @@ public class MeteringPointController : ControllerBase
         return Ok(meteringPoint.MeteringPoint);
     }
 
+    [HttpGet("{identification}/related")]
+    [EnableRevision(RevisionActivities.RelatedMeteringPointsRequested, typeof(MeteringPoint), "identification")]
+    [Authorize(Roles = "metering-point:search")]
+    public async Task<ActionResult<ParentWithRelatedMeteringPointDto>> GetRelatedMeteringPointAsync(string identification)
+    {
+        var getMeteringPointCommand = new GetChildAndRelatedMeteringPointsCommand(identification);
+
+        var meteringPointWithRelated = await _mediator
+            .Send(getMeteringPointCommand)
+            .ConfigureAwait(false);
+
+        if (meteringPointWithRelated == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(meteringPointWithRelated.ParentWithRelatedMeteringPoints);
+    }
+
     [HttpGet("contact/{contactId:long}/cpr")]
     [EnableRevision(RevisionActivities.ContactCprRequested, typeof(MeteringPoint), "contactId")]
     [Authorize(Roles = "cpr:view")]
