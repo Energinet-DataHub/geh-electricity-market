@@ -128,38 +128,61 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
     {
         var transactionType = importedTransaction.transaction_type.TrimEnd();
 
-        if (meteringPoint.CommercialRelations.Count > 0)
+        var allCrsOrdered = meteringPoint.CommercialRelations
+            .Where(x => x.StartDate < x.EndDate)
+            .OrderBy(x => x.StartDate)
+            .ToList();
+
+        if (allCrsOrdered.Count > 0)
         {
             if (transactionType is "MOVEINES")
             {
-                var prevCrs = meteringPoint.CommercialRelations
+                var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
+
+                var futures = allCrsOrdered
                     .Where(x => x.StartDate >= importedTransaction.valid_from_date)
                     .ToList();
 
-                if (prevCrs.Count == 0)
+                if (futures.Count > 0)
                 {
-                    var overlappingCr = meteringPoint.CommercialRelations
-                        .Where(x => x.StartDate < x.EndDate)
-                        .OrderBy(x => x.StartDate)
-                        .FirstOrDefault(x => x.StartDate < importedTransaction.valid_from_date && x.EndDate >= importedTransaction.valid_from_date);
+                    var indexOfOverlapping = allCrsOrdered
+                        .ToList()
+                        .IndexOf(futures[0]);
 
-                    if (overlappingCr != null)
+                    var futureEnergySupplierChanges = indexOfOverlapping > 0
+                        ? allCrsOrdered.Where((_, i) => i >= indexOfOverlapping - 1).ToList()
+                        : futures;
+
+                    var clientIdOfFirstFuture = futureEnergySupplierChanges.First().ClientId;
+
+                    var toBeInvalidated = futureEnergySupplierChanges.TakeWhile(x => x.ClientId == clientIdOfFirstFuture).ToList();
+
+                    foreach (var entity in toBeInvalidated)
                     {
-                        overlappingCr.EndDate = importedTransaction.valid_from_date;
+                        entity.EndDate = entity.StartDate;
+                        foreach (var esp in entity.EnergySupplyPeriods.Where(x => x.RetiredBy == null))
+                            esp.RetiredBy = commercialRelationEntity.EnergySupplyPeriods.Single();
                     }
+                }
 
-                    var activeEsp = meteringPoint.CommercialRelations
-                        .Where(x => x.StartDate < x.EndDate)
-                        .SelectMany(x => x.EnergySupplyPeriods)
-                        .OrderBy(x => x.ValidFrom)
-                        .LastOrDefault(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy == null);
+                var activeCr = allCrsOrdered
+                    .FirstOrDefault(x => x.StartDate < importedTransaction.valid_from_date && x.EndDate >= importedTransaction.valid_from_date);
 
-                    if (activeEsp == null)
-                    {
-                        meteringPoint.CommercialRelations.Add(CommercialRelationFactory.CreateCommercialRelation(importedTransaction));
-                        errorMessage = string.Empty;
-                        return true;
-                    }
+                if (activeCr != null)
+                {
+                    activeCr.EndDate = importedTransaction.valid_from_date;
+                }
+
+                var activeEsp = allCrsOrdered
+                    .SelectMany(x => x.EnergySupplyPeriods)
+                    .OrderBy(x => x.ValidFrom)
+                    .LastOrDefault(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy == null);
+
+                if (activeEsp == null)
+                {
+                    meteringPoint.CommercialRelations.Add(commercialRelationEntity);
+                    errorMessage = string.Empty;
+                    return true;
                 }
             }
         }
@@ -171,7 +194,9 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 return true;
             }
 
-            meteringPoint.CommercialRelations.Add(CommercialRelationFactory.CreateCommercialRelation(importedTransaction));
+            var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
+
+            meteringPoint.CommercialRelations.Add(commercialRelationEntity);
             errorMessage = string.Empty;
             return true;
         }
