@@ -12,14 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 
-public sealed class SyncJobsEntity
+public interface ISyncJobsRepository
 {
-    public SyncJobName JobName { get; set; }
-
-    public int Version { get; set; }
+    Task<bool> AddOrUpdateAsync(SyncJob job);
 }

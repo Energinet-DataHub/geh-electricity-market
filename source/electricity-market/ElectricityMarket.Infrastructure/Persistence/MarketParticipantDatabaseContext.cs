@@ -14,6 +14,7 @@
 
 using System;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
 using Energinet.DataHub.MarketParticipant.Infrastructure.Persistence.EntityConfiguration;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,7 @@ public class MarketParticipantDatabaseContext : DbContext, IMarketParticipantDat
     public DbSet<DelegationPeriodEntity> DelegationPeriods { get; private set; } = null!;
     public DbSet<MarketRoleEntity> MarketRoles { get; private set; } = null!;
     public DbSet<MarketRoleGridAreaEntity> MarketRoleGridAreas { get; private set; } = null!;
+    public DbSet<SyncJobsEntity> SyncJobs { get; private set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +49,7 @@ public class MarketParticipantDatabaseContext : DbContext, IMarketParticipantDat
         modelBuilder.ApplyConfiguration(new DelegationPeriodEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarketRoleEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarketRoleGridAreaEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SyncJobsEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

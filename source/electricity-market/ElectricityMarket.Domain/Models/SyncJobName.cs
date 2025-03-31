@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services.DeltaLakeSync.Helpers;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public static class SyncJobNames
+public enum SyncJobName
 {
-    public const string ElectricalHeating = "ElectricalHeating";
+    ElectricalHeating
 }

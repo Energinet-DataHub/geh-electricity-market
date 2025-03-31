@@ -12,14 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-
-public sealed class SyncJobsEntity
-{
-    public SyncJobName JobName { get; set; }
-
-    public int Version { get; set; }
-}
+public sealed record SyncJob(SyncJobName Name, int Version);

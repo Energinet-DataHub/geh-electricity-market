@@ -24,4 +24,8 @@
     <ProjectReference Include="..\ElectricityMarket.Integration\ElectricityMarket.Integration.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\DeltaLakeSync\Helpers\" />
+  </ItemGroup>
+
 </Project>
