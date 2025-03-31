@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+using MediatR;
 
-public sealed record ParentWithRelatedMeteringPointDto(
-    RelatedMeteringPointDto Parent,
-    IEnumerable<RelatedMeteringPointDto> ChildMeteringPoints,
-    IEnumerable<RelatedMeteringPointDto> RelatedByGsrn,
-    IEnumerable<RelatedMeteringPointDto> HistoricalMeteringPoints,
-    IEnumerable<RelatedMeteringPointDto> HistoricalMeteringPointsByGsrn);
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+
+public sealed record GetRelatedMeteringPointsCommand(string Identification) : IRequest<GetRelatedMeteringPointsResponse?>;
