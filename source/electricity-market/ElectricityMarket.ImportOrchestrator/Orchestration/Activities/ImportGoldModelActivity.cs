@@ -17,6 +17,7 @@ using System.Collections.Immutable;
 using System.Data;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Runtime.CompilerServices;
 using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution;
 using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statement;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
@@ -129,9 +130,29 @@ public sealed class ImportGoldModelActivity : IDisposable
         var sw = Stopwatch.StartNew();
         var firstLog = true;
 
-        var results = _databricksSqlWarehouseQueryExecutor
-            .ExecuteChunkyStatementAsync(statementId, chunk)
-            .ConfigureAwait(false);
+        var retryCount = 0;
+Retry:
+
+        ConfiguredCancelableAsyncEnumerable<dynamic> results;
+
+        try
+        {
+            results = _databricksSqlWarehouseQueryExecutor
+                .ExecuteChunkyStatementAsync(statementId, chunk)
+                .ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            retryCount++;
+
+            if (retryCount < 2)
+            {
+                await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
+                goto Retry;
+            }
+
+            throw;
+        }
 
         await foreach (var record in results)
         {

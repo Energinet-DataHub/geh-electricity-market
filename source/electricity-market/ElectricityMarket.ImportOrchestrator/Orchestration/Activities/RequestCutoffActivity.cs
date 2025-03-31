@@ -160,7 +160,7 @@ Retry:
 
             return new CutoffResponse(statementId, chunks);
         }
-        catch (SocketException)
+        catch (Exception)
         {
             retryCount++;
 
