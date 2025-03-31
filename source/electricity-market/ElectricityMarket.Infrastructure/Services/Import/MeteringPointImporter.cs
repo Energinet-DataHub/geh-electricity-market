@@ -138,6 +138,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             if (transactionType is "MOVEINES")
             {
                 var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
+                meteringPoint.CommercialRelations.Add(commercialRelationEntity);
                 return TryHandleMoveIn(importedTransaction, meteringPoint, allCrsOrdered, commercialRelationEntity, out errorMessage);
             }
 
@@ -145,6 +146,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             {
                 var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
                 commercialRelationEntity.ClientId = allCrsOrdered.Last(x => x.StartDate < importedTransaction.valid_from_date).ClientId;
+                meteringPoint.CommercialRelations.Add(commercialRelationEntity);
 
                 TryCloseActiveCr(importedTransaction, allCrsOrdered);
 
@@ -155,6 +157,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             {
                 var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
                 commercialRelationEntity.ClientId = null;
+                meteringPoint.CommercialRelations.Add(commercialRelationEntity);
 
                 TryCloseActiveCr(importedTransaction, allCrsOrdered);
 
@@ -165,6 +168,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             {
                 var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
                 commercialRelationEntity.EndDate = importedTransaction.valid_from_date;
+                meteringPoint.CommercialRelations.Add(commercialRelationEntity);
                 TryCloseActiveCr(importedTransaction, allCrsOrdered);
                 return TryHandleEspStuff(importedTransaction, meteringPoint, allCrsOrdered, commercialRelationEntity, out errorMessage);
             }
@@ -177,6 +181,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             {
                 var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
                 commercialRelationEntity.EndDate = importedTransaction.valid_from_date;
+                meteringPoint.CommercialRelations.Add(commercialRelationEntity);
                 return TryHandleEspStuff(importedTransaction, meteringPoint, allCrsOrdered, commercialRelationEntity, out errorMessage);
             }
 
@@ -184,6 +189,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         else if (transactionType is not ("ENDSUPPLY" or "INCMOVEOUT" or "INCMOVEIN" or "INCMOVEMAN"))
         {
             var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
+            meteringPoint.CommercialRelations.Add(commercialRelationEntity);
             return TryHandleMoveIn(importedTransaction, meteringPoint, allCrsOrdered, commercialRelationEntity, out errorMessage);
         }
         else
@@ -244,17 +250,17 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             .OrderBy(x => x.ValidFrom)
             .LastOrDefault(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy == null);
 
+        var changeEsp = CommercialRelationFactory.CreateEnergySupplyPeriodEntity(importedTransaction);
+        commercialRelationEntity.EnergySupplyPeriods.Add(changeEsp);
+
         if (activeEsp == null)
         {
-            meteringPoint.CommercialRelations.Add(commercialRelationEntity);
+            changeEsp.ValidTo = DateTimeOffset.MaxValue;
             errorMessage = string.Empty;
             return true;
         }
 
-        meteringPoint.CommercialRelations.Add(commercialRelationEntity);
         errorMessage = string.Empty;
-
-        var changeEsp = CommercialRelationFactory.CreateEnergySupplyPeriodEntity(importedTransaction);
 
         if (activeEsp.ValidFrom == importedTransaction.valid_from_date)
         {
