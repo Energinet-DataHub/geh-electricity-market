@@ -27,10 +27,21 @@ public static class CommercialRelationFactory
         {
             StartDate = importedTransaction.valid_from_date,
             EndDate = DateTimeOffset.MaxValue,
-            EnergySupplier = importedTransaction.balance_supplier_id!.TrimEnd(),
+            EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? string.Empty, // TODO: Fallback is sus.
             ModifiedAt = importedTransaction.dh2_created,
             ClientId = Guid.NewGuid(),
         };
+
+        var energySupplyPeriodEntity = CreateEnergySupplyPeriodEntity(importedTransaction);
+
+        commercialRelation.EnergySupplyPeriods.Add(energySupplyPeriodEntity);
+
+        return commercialRelation;
+    }
+
+    public static EnergySupplyPeriodEntity CreateEnergySupplyPeriodEntity(ImportedTransactionEntity importedTransaction)
+    {
+        ArgumentNullException.ThrowIfNull(importedTransaction);
 
         var energySupplyPeriodEntity = new EnergySupplyPeriodEntity
         {
@@ -41,8 +52,6 @@ public static class CommercialRelationFactory
             WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? string.Empty, // TODO: This is probably wrong.
             EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? "TODO: What?", // TODO: Fallback is sus.
         };
-
-        commercialRelation.EnergySupplyPeriods.Add(energySupplyPeriodEntity);
 
         if (importedTransaction.first_consumer_party_name != null)
         {
@@ -135,6 +144,61 @@ public static class CommercialRelationFactory
             energySupplyPeriodEntity.Contacts.Add(contact);
         }
 
-        return commercialRelation;
+        return energySupplyPeriodEntity;
+    }
+
+    public static EnergySupplyPeriodEntity CopyEnergySupplyPeriod(EnergySupplyPeriodEntity energySupplyPeriodEntity)
+    {
+        ArgumentNullException.ThrowIfNull(energySupplyPeriodEntity);
+
+        var copy = new EnergySupplyPeriodEntity
+        {
+            ValidFrom = energySupplyPeriodEntity.ValidFrom,
+            ValidTo = energySupplyPeriodEntity.ValidTo,
+            CreatedAt = energySupplyPeriodEntity.CreatedAt,
+            BusinessTransactionDosId = energySupplyPeriodEntity.BusinessTransactionDosId,
+            WebAccessCode = energySupplyPeriodEntity.WebAccessCode,
+            EnergySupplier = energySupplyPeriodEntity.EnergySupplier,
+        };
+
+        foreach (var contact in energySupplyPeriodEntity.Contacts)
+        {
+            var contactCopy = new ContactEntity
+            {
+                RelationType = contact.RelationType,
+                DisponentName = contact.DisponentName,
+                Cpr = contact.Cpr,
+                Cvr = contact.Cvr,
+                IsProtectedName = contact.IsProtectedName,
+                ContactName = contact.ContactName,
+                Email = contact.Email,
+                Phone = contact.Phone,
+                Mobile = contact.Mobile,
+            };
+
+            if (contact.ContactAddress != null)
+            {
+                contactCopy.ContactAddress = new ContactAddressEntity
+                {
+                    IsProtectedAddress = contact.ContactAddress.IsProtectedAddress,
+                    Attention = contact.ContactAddress.Attention,
+                    StreetCode = contact.ContactAddress.StreetCode,
+                    StreetName = contact.ContactAddress.StreetName,
+                    BuildingNumber = contact.ContactAddress.BuildingNumber,
+                    CityName = contact.ContactAddress.CityName,
+                    CitySubdivisionName = contact.ContactAddress.CitySubdivisionName,
+                    DarReference = contact.ContactAddress.DarReference,
+                    CountryCode = contact.ContactAddress.CountryCode,
+                    Floor = contact.ContactAddress.Floor,
+                    Room = contact.ContactAddress.Room,
+                    PostCode = contact.ContactAddress.PostCode,
+                    MunicipalityCode = contact.ContactAddress.MunicipalityCode,
+                };
+            }
+
+            copy.Contacts.Add(contactCopy);
+        }
+
+        return copy;
     }
 }
