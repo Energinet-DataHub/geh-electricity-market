@@ -20,16 +20,16 @@ using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
-public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<GetChildAndRelatedMeteringPointsCommand, GetChildAndRelatedMeteringPointsResponse?>
+public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelatedMeteringPointsCommand, GetRelatedMeteringPointsResponse?>
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
 
-    public GetChildAndRelatedMeteringPointsHandler(IMeteringPointRepository meteringPointRepository)
+    public GetRelatedMeteringPointsHandler(IMeteringPointRepository meteringPointRepository)
     {
         _meteringPointRepository = meteringPointRepository;
     }
 
-    public async Task<GetChildAndRelatedMeteringPointsResponse?> Handle(GetChildAndRelatedMeteringPointsCommand request, CancellationToken cancellationToken)
+    public async Task<GetRelatedMeteringPointsResponse?> Handle(GetRelatedMeteringPointsCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -37,18 +37,31 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
             .GetAsync(new MeteringPointIdentification(request.Identification))
             .ConfigureAwait(false);
 
-        var related = await _meteringPointRepository
-            .GetRelatedMeteringPointsAsync(new MeteringPointIdentification(request.Identification))
-            .ConfigureAwait(false);
-
         if (meteringPoint == null)
         {
             return null;
         }
 
-        var relatedMeteringPoints = related?.Where(x => x.Identification != meteringPoint.Identification).ToList();
+        IEnumerable<MeteringPoint>? relatedMeteringPoints;
+        RelatedMeteringPointDto? parent = null;
+        if (meteringPoint.Metadata.Parent is not null)
+        {
+            relatedMeteringPoints = await _meteringPointRepository
+                .GetRelatedMeteringPointsAsync(meteringPoint.Metadata.Parent)
+                .ConfigureAwait(false);
+            parent = MapToRelated(await _meteringPointRepository.GetAsync(meteringPoint.Metadata.Parent).ConfigureAwait(false)
+                            ?? throw new InvalidOperationException("Parent metering point not found even though it should have one"));
+        }
+        else
+        {
+            relatedMeteringPoints = await _meteringPointRepository
+                .GetRelatedMeteringPointsAsync(new MeteringPointIdentification(request.Identification))
+                .ConfigureAwait(false);
+        }
 
-        var childPoints = relatedMeteringPoints?
+        relatedMeteringPoints = relatedMeteringPoints?.Where(x => x.Identification != meteringPoint.Identification).ToList();
+
+        var relatedPoints = relatedMeteringPoints?
             .Where(x => x.Metadata.Parent == meteringPoint.Identification
                         && x.Metadata.Valid.End.ToDateTimeOffset() > DateTimeOffset.Now)
             .OrderBy(y => y.Metadata.Type)
@@ -78,10 +91,11 @@ public sealed class GetChildAndRelatedMeteringPointsHandler : IRequestHandler<Ge
             .OrderBy(y => y.Metadata.Type)
             .Select(MapToRelated) ?? [];
 
-        return new GetChildAndRelatedMeteringPointsResponse(
-            new ParentWithRelatedMeteringPointDto(
+        return new GetRelatedMeteringPointsResponse(
+            new RelatedMeteringPointsDto(
                 MapToRelated(meteringPoint),
-                childPoints,
+                parent,
+                relatedPoints,
                 relatedByGsrn,
                 historical,
                 historicalByGsrn));
