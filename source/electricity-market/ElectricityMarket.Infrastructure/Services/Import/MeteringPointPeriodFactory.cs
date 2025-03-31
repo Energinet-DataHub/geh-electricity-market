@@ -125,7 +125,8 @@ public static class MeteringPointPeriodFactory
                 Room = source.InstallationAddress.Room,
                 PostCode = source.InstallationAddress.PostCode,
                 MunicipalityCode = source.InstallationAddress.MunicipalityCode,
-                LocationDescription = source.InstallationAddress.LocationDescription
+                LocationDescription = source.InstallationAddress.LocationDescription,
+                WashInstructions = source.InstallationAddress.WashInstructions,
             },
             OwnedBy = source.OwnedBy,
             BusinessTransactionDosId = source.BusinessTransactionDosId,
