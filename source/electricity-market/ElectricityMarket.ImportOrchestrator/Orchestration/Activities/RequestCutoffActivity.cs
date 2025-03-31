@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System.Diagnostics;
-using System.Net.Sockets;
 using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Microsoft.Azure.Functions.Worker;
