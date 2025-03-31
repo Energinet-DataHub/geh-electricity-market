@@ -137,7 +137,7 @@ public sealed class RequestCutoffActivity
                 contact_4_municipality_code,
                 dossier_status
 
-             FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v4
+             FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v5
              WHERE btd_trans_doss_id >= {input.CutoffFromInclusive} AND btd_trans_doss_id < {input.CutoffToExclusive}
              """);
 
