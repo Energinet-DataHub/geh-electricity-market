@@ -217,11 +217,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             var toBeInvalidated = futureEnergySupplierChanges.TakeWhile(x => x.ClientId == clientIdOfFirstFuture).ToList();
 
             foreach (var entity in toBeInvalidated)
-            {
                 entity.EndDate = entity.StartDate;
-                foreach (var esp in entity.EnergySupplyPeriods.Where(x => x.RetiredBy == null))
-                    esp.RetiredBy = commercialRelationEntity.EnergySupplyPeriods.Single();
-            }
         }
 
         TryCloseActiveCr(importedTransaction, allCrsOrdered);
@@ -243,6 +239,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
     private static bool TryHandleEspStuff(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint, List<CommercialRelationEntity> allCrsOrdered, CommercialRelationEntity commercialRelationEntity, out string errorMessage)
     {
         var activeEsp = allCrsOrdered
+            .Where(x => x.StartDate < x.EndDate)
             .SelectMany(x => x.EnergySupplyPeriods)
             .OrderBy(x => x.ValidFrom)
             .LastOrDefault(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy == null);
