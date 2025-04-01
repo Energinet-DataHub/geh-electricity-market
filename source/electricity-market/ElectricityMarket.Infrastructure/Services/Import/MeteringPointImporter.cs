@@ -56,7 +56,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         catch (Exception ex)
 #pragma warning restore CA1031
         {
-            return Task.FromResult((false, $"Crash during import of MP: {meteringPoint.Identification} {ex}"));
+            return Task.FromResult((false, $"Crash during import of MP: {ex}"));
         }
 
         return Task.FromResult((true, string.Empty));
