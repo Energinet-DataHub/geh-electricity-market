@@ -38,7 +38,6 @@ public class MarketParticipantDatabaseContext : DbContext, IMarketParticipantDat
     public DbSet<DelegationPeriodEntity> DelegationPeriods { get; private set; } = null!;
     public DbSet<MarketRoleEntity> MarketRoles { get; private set; } = null!;
     public DbSet<MarketRoleGridAreaEntity> MarketRoleGridAreas { get; private set; } = null!;
-    public DbSet<SyncJobsEntity> SyncJobs { get; private set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,7 +48,6 @@ public class MarketParticipantDatabaseContext : DbContext, IMarketParticipantDat
         modelBuilder.ApplyConfiguration(new DelegationPeriodEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarketRoleEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarketRoleGridAreaEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new SyncJobsEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

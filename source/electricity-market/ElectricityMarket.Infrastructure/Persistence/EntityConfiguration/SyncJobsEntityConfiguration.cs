@@ -25,5 +25,6 @@ public sealed class SyncJobsEntityConfiguration : IEntityTypeConfiguration<SyncJ
     {
         ArgumentNullException.ThrowIfNull(builder);
         builder.ToTable("SyncJobs");
+        builder.HasKey(d => d.JobName);
     }
 }
