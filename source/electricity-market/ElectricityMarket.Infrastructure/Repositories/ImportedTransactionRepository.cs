@@ -82,7 +82,7 @@ public sealed class ImportedTransactionRepository : IImportedTransactionReposito
 
         foreach (var transaction in transactions)
         {
-            var entity = new ImportedTransactionEntity();
+            var entity = new ImportedTransactionEntity { Id = Guid.NewGuid() };
 
             foreach (var propertyInfo in _importedTransactionProperties)
             {

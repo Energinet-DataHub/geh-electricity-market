@@ -174,7 +174,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 
             await foreach (var record in results)
             {
-                var importedTransaction = new ImportedTransactionEntity();
+                var importedTransaction = new ImportedTransactionEntity { Id = Guid.NewGuid() };
 
                 foreach (var keyValuePair in record)
                 {

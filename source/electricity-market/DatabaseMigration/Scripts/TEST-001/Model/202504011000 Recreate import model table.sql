@@ -215,6 +215,7 @@ CREATE TABLE [electricitymarket].[QuarantinedMeteringPoint]
 
 CREATE TABLE [electricitymarket].[GoldenImport]
 (
+    [Id]                              UNIQUEIDENTIFIER   NOT NULL,
     [metering_point_id]               BIGINT             NOT NULL,
     [valid_from_date]                 DATETIMEOFFSET     NOT NULL,
     [valid_to_date]                   DATETIMEOFFSET     NOT NULL,

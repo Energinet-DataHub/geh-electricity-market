@@ -180,6 +180,7 @@ Retry:
 
         var columnOrder = ImportModelHelper.ImportFields
             .Select(f => f.Key)
+            .Prepend("Id")
             .ToArray();
 
         foreach (var record in _importCollection.GetConsumingEnumerable())
@@ -193,7 +194,7 @@ Retry:
                 batch = new List<ImportedTransactionEntity>(capacity);
             }
 
-            var importedTransaction = new ImportedTransactionEntity();
+            var importedTransaction = new ImportedTransactionEntity { Id = Guid.NewGuid() };
 
             foreach (var keyValuePair in record)
             {
