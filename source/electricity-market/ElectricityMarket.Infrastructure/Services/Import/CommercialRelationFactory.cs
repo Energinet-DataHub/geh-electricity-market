@@ -64,70 +64,64 @@ public static class CommercialRelationFactory
                 IsProtectedName = importedTransaction.protected_name ?? false,
             };
 
-            if (importedTransaction.contact_1_contact_name1 != null)
+            contact.RelationType = "Contact1";
+            contact.ContactName = importedTransaction.contact_1_contact_name1?.TrimEnd();
+            contact.Email = importedTransaction.contact_1_email_address?.TrimEnd();
+            contact.Phone = importedTransaction.contact_1_phone_number?.TrimEnd();
+            contact.Mobile = importedTransaction.contact_1_mobile_number?.TrimEnd();
+            contact.ContactAddress = new ContactAddressEntity
             {
-                contact.RelationType = "Contact1";
-                contact.ContactName = importedTransaction.contact_1_contact_name1.TrimEnd();
-                contact.Email = importedTransaction.contact_1_email_address?.TrimEnd();
-                contact.Phone = importedTransaction.contact_1_phone_number?.TrimEnd();
-                contact.Mobile = importedTransaction.contact_1_mobile_number?.TrimEnd();
-                contact.ContactAddress = new ContactAddressEntity
-                {
-                    IsProtectedAddress = importedTransaction.contact_1_protected_address ?? false,
-                    Attention = importedTransaction.contact_1_attention?.TrimEnd(),
-                    StreetCode = importedTransaction.contact_1_street_code?.TrimEnd(),
-                    StreetName = importedTransaction.contact_1_street_name?.TrimEnd() ?? string.Empty,
-                    BuildingNumber = importedTransaction.contact_1_building_number?.TrimEnd() ?? string.Empty,
-                    CityName = importedTransaction.contact_1_city_name?.TrimEnd() ?? string.Empty,
-                    CitySubdivisionName = importedTransaction.contact_1_city_subdivision_name?.TrimEnd(),
-                    DarReference = importedTransaction.contact_1_dar_reference != null
-                        ? Guid.Parse(importedTransaction.contact_1_dar_reference)
-                        : null,
-                    CountryCode = importedTransaction.contact_1_country_name?.TrimEnd() ?? string.Empty,
-                    Floor = importedTransaction.contact_1_floor_id?.TrimEnd(),
-                    Room = importedTransaction.contact_1_room_id?.TrimEnd(),
-                    PostCode = importedTransaction.contact_1_postcode?.TrimEnd() ?? string.Empty,
-                    MunicipalityCode = importedTransaction.contact_1_municipality_code?.TrimEnd(),
-                };
-            }
+                IsProtectedAddress = importedTransaction.contact_1_protected_address ?? false,
+                Attention = importedTransaction.contact_1_attention?.TrimEnd(),
+                StreetCode = importedTransaction.contact_1_street_code?.TrimEnd(),
+                StreetName = importedTransaction.contact_1_street_name?.TrimEnd() ?? string.Empty,
+                BuildingNumber = importedTransaction.contact_1_building_number?.TrimEnd() ?? string.Empty,
+                CityName = importedTransaction.contact_1_city_name?.TrimEnd() ?? string.Empty,
+                CitySubdivisionName = importedTransaction.contact_1_city_subdivision_name?.TrimEnd(),
+                DarReference = importedTransaction.contact_1_dar_reference != null
+                    ? Guid.Parse(importedTransaction.contact_1_dar_reference)
+                    : null,
+                CountryCode = importedTransaction.contact_1_country_name?.TrimEnd() ?? string.Empty,
+                Floor = importedTransaction.contact_1_floor_id?.TrimEnd(),
+                Room = importedTransaction.contact_1_room_id?.TrimEnd(),
+                PostCode = importedTransaction.contact_1_postcode?.TrimEnd() ?? string.Empty,
+                MunicipalityCode = importedTransaction.contact_1_municipality_code?.TrimEnd(),
+            };
 
             energySupplyPeriodEntity.Contacts.Add(contact);
 
-            if (importedTransaction.contact_4_contact_name1 != null)
+            var contact4 = new ContactEntity
             {
-                var contact4 = new ContactEntity
+                RelationType = "Contact4",
+                DisponentName = contact.DisponentName,
+                Cpr = contact.Cpr,
+                Cvr = contact.Cvr,
+                IsProtectedName = contact.IsProtectedName,
+                ContactName = importedTransaction.contact_4_contact_name1?.TrimEnd(),
+                Email = importedTransaction.contact_4_email_address?.TrimEnd(),
+                Phone = importedTransaction.contact_4_phone_number?.TrimEnd(),
+                Mobile = importedTransaction.contact_4_mobile_number?.TrimEnd(),
+                ContactAddress = new ContactAddressEntity
                 {
-                    RelationType = "Contact4",
-                    DisponentName = contact.DisponentName,
-                    Cpr = contact.Cpr,
-                    Cvr = contact.Cvr,
-                    IsProtectedName = contact.IsProtectedName,
-                    ContactName = importedTransaction.contact_4_contact_name1.TrimEnd(),
-                    Email = importedTransaction.contact_4_email_address?.TrimEnd(),
-                    Phone = importedTransaction.contact_4_phone_number?.TrimEnd(),
-                    Mobile = importedTransaction.contact_4_mobile_number?.TrimEnd(),
-                    ContactAddress = new ContactAddressEntity
-                    {
-                        IsProtectedAddress = importedTransaction.contact_4_protected_address ?? false,
-                        Attention = importedTransaction.contact_4_attention?.TrimEnd(),
-                        StreetCode = importedTransaction.contact_4_street_code?.TrimEnd(),
-                        StreetName = importedTransaction.contact_4_street_name?.TrimEnd() ?? string.Empty,
-                        BuildingNumber = importedTransaction.contact_4_building_number?.TrimEnd() ?? string.Empty,
-                        CityName = importedTransaction.contact_4_city_name?.TrimEnd() ?? string.Empty,
-                        CitySubdivisionName = importedTransaction.contact_4_city_subdivision_name?.TrimEnd(),
-                        DarReference = importedTransaction.contact_4_dar_reference != null
-                            ? Guid.Parse(importedTransaction.contact_4_dar_reference)
-                            : null,
-                        CountryCode = importedTransaction.contact_4_country_name?.TrimEnd() ?? string.Empty,
-                        Floor = importedTransaction.contact_4_floor_id?.TrimEnd(),
-                        Room = importedTransaction.contact_4_room_id?.TrimEnd(),
-                        PostCode = importedTransaction.contact_4_postcode?.TrimEnd() ?? string.Empty,
-                        MunicipalityCode = importedTransaction.contact_4_municipality_code?.TrimEnd(),
-                    }
-                };
+                    IsProtectedAddress = importedTransaction.contact_4_protected_address ?? false,
+                    Attention = importedTransaction.contact_4_attention?.TrimEnd(),
+                    StreetCode = importedTransaction.contact_4_street_code?.TrimEnd(),
+                    StreetName = importedTransaction.contact_4_street_name?.TrimEnd() ?? string.Empty,
+                    BuildingNumber = importedTransaction.contact_4_building_number?.TrimEnd() ?? string.Empty,
+                    CityName = importedTransaction.contact_4_city_name?.TrimEnd() ?? string.Empty,
+                    CitySubdivisionName = importedTransaction.contact_4_city_subdivision_name?.TrimEnd(),
+                    DarReference = importedTransaction.contact_4_dar_reference != null
+                        ? Guid.Parse(importedTransaction.contact_4_dar_reference)
+                        : null,
+                    CountryCode = importedTransaction.contact_4_country_name?.TrimEnd() ?? string.Empty,
+                    Floor = importedTransaction.contact_4_floor_id?.TrimEnd(),
+                    Room = importedTransaction.contact_4_room_id?.TrimEnd(),
+                    PostCode = importedTransaction.contact_4_postcode?.TrimEnd() ?? string.Empty,
+                    MunicipalityCode = importedTransaction.contact_4_municipality_code?.TrimEnd(),
+                },
+            };
 
-                energySupplyPeriodEntity.Contacts.Add(contact4);
-            }
+            energySupplyPeriodEntity.Contacts.Add(contact4);
         }
 
         // TODO: This is not verified.
