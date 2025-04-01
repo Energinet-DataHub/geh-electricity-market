@@ -274,7 +274,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                             {(importedTransaction.contact_4_country_name == null ? "NULL" : $"'{importedTransaction.contact_4_country_name.Replace("'", "''", StringComparison.InvariantCulture)}'")},
                             {(importedTransaction.contact_4_floor_id == null ? "NULL" : $"'{importedTransaction.contact_4_floor_id.Replace("'", "''", StringComparison.InvariantCulture)}'")},
                             {(importedTransaction.contact_4_room_id == null ? "NULL" : $"'{importedTransaction.contact_4_room_id.Replace("'", "''", StringComparison.InvariantCulture)}'")},
-                            {(importedTransaction.contact_4_post_box == null ? "NULL" : $"'{importedTransaction.contact_4_post_box}.Replace(\"'\", \"''\", StringComparison.InvariantCulture)'")},
+                            {(importedTransaction.contact_4_post_box == null ? "NULL" : $"'{importedTransaction.contact_4_post_box.Replace("'", "''", StringComparison.InvariantCulture)}'")},
                             {(importedTransaction.contact_4_municipality_code == null ? "NULL" : $"'{importedTransaction.contact_4_municipality_code.Replace("'", "''", StringComparison.InvariantCulture)}'")},
                             {(importedTransaction.dossier_status == null ? "NULL" : $"'{importedTransaction.dossier_status.Replace("'", "''", StringComparison.InvariantCulture)}'")}
                             )
