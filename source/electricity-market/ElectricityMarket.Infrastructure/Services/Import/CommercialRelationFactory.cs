@@ -23,11 +23,16 @@ public static class CommercialRelationFactory
     {
         ArgumentNullException.ThrowIfNull(importedTransaction);
 
+        if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
+        {
+            throw new ArgumentException($"{nameof(importedTransaction.balance_supplier_id)} is required", nameof(importedTransaction));
+        }
+
         var commercialRelation = new CommercialRelationEntity
         {
             StartDate = importedTransaction.valid_from_date,
             EndDate = DateTimeOffset.MaxValue,
-            EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? string.Empty, // TODO: Fallback is sus.
+            EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd(),
             ModifiedAt = importedTransaction.dh2_created,
             ClientId = Guid.NewGuid(),
         };
@@ -43,14 +48,24 @@ public static class CommercialRelationFactory
     {
         ArgumentNullException.ThrowIfNull(importedTransaction);
 
+        if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
+        {
+            throw new ArgumentException($"{nameof(importedTransaction.balance_supplier_id)} is required", nameof(importedTransaction));
+        }
+
+        if (string.IsNullOrWhiteSpace(importedTransaction.web_access_code))
+        {
+            throw new ArgumentException($"{nameof(importedTransaction.web_access_code)} is required", nameof(importedTransaction));
+        }
+
         var energySupplyPeriodEntity = new EnergySupplyPeriodEntity
         {
             ValidFrom = importedTransaction.valid_from_date,
             ValidTo = DateTimeOffset.MaxValue,
             CreatedAt = importedTransaction.dh2_created,
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
-            WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? string.Empty, // TODO: This is probably wrong.
-            EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? "TODO: What?", // TODO: Fallback is sus.
+            WebAccessCode = importedTransaction.web_access_code.TrimEnd(),
+            EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd(),
         };
 
         if (importedTransaction.first_consumer_party_name != null)

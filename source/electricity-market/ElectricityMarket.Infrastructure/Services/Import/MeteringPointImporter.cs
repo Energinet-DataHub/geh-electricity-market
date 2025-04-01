@@ -226,7 +226,11 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (transactionType is not ("ENDSUPPLY" or "INCMOVEOUT" or "INCMOVEIN" or "INCMOVEMAN"))
         {
-            HandleMoveIn(importedTransaction, meteringPoint);
+            if (!string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
+            {
+                HandleMoveIn(importedTransaction, meteringPoint);
+            }
+
             return true;
         }
 
