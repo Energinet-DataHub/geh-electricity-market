@@ -112,7 +112,7 @@ public sealed class InitialImportOrchestrator
         var batchSize = 100_000;
         var activityCount = (int)Math.Ceiling(numberOfMeteringPoints / (double)batchSize);
 
-        foreach (var activityChunk in Enumerable.Range(0, activityCount).Chunk(5))
+        foreach (var activityChunk in Enumerable.Range(0, activityCount).Chunk(8))
         {
             var tasks = activityChunk
                 .Select(i => orchestrationContext.CallActivityAsync(
