@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System.Collections.Immutable;
+using System.Globalization;
 using ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
@@ -20,6 +21,7 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Services;
@@ -174,15 +176,114 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 
             await foreach (var record in results)
             {
-                var importedTransaction = new ImportedTransactionEntity { Id = Guid.NewGuid() };
+                var importedTransaction = new ImportedTransactionEntity();
 
                 foreach (var keyValuePair in record)
                 {
                     lookup[keyValuePair.Key](keyValuePair.Value, importedTransaction);
                 }
 
-                await _databaseContext.ImportedTransactions
-                    .AddAsync(importedTransaction)
+                var sql = $"""
+                            INSERT INTO [electricitymarket].[GoldenImport]
+                            (metering_point_id, valid_from_date, valid_to_date, dh2_created, metering_grid_area_id, metering_point_state_id, btd_trans_doss_id, parent_metering_point_id, type_of_mp, sub_type_of_mp, physical_status_of_mp, web_access_code, balance_supplier_id, effectuation_date, transaction_type, meter_reading_occurrence, mp_connection_type, disconnection_type, product, product_obligation, energy_timeseries_measure_unit, asset_type, fuel_type, mp_capacity, power_limit_kw, power_limit_a, meter_number, net_settlement_group, scheduled_meter_reading_date01, from_grid_area, to_grid_area, power_plant_gsrn, settlement_method, location_street_code, location_street_name, location_building_number, location_city_name, location_city_subdivision_name, location_dar_reference, location_mp_address_wash_instructions, location_country_name, location_floor_id, location_room_id, location_postcode, location_municipality_code, location_location_description, first_consumer_party_name, first_consumer_cpr, second_consumer_party_name, second_consumer_cpr, consumer_cvr, protected_name, contact_1_contact_name1, contact_1_protected_address, contact_1_phone_number, contact_1_mobile_number, contact_1_email_address, contact_1_attention, contact_1_street_code, contact_1_street_name, contact_1_building_number, contact_1_postcode, contact_1_city_name, contact_1_city_subdivision_name, contact_1_dar_reference, contact_1_country_name, contact_1_floor_id, contact_1_room_id, contact_1_post_box, contact_1_municipality_code, contact_4_contact_name1, contact_4_protected_address, contact_4_phone_number, contact_4_mobile_number, contact_4_email_address, contact_4_attention, contact_4_street_code, contact_4_street_name, contact_4_building_number, contact_4_postcode, contact_4_city_name, contact_4_city_subdivision_name, contact_4_dar_reference, contact_4_country_name, contact_4_floor_id, contact_4_room_id, contact_4_post_box, contact_4_municipality_code, dossier_status)
+                            VALUES
+                            (
+                            {importedTransaction.metering_point_id},
+                            '{importedTransaction.valid_from_date:O}',
+                            '{importedTransaction.valid_to_date:O}',
+                            '{importedTransaction.dh2_created:O}',
+                            '{importedTransaction.metering_grid_area_id}',
+                            {importedTransaction.metering_point_state_id},
+                            {importedTransaction.btd_trans_doss_id},
+                            {(importedTransaction.parent_metering_point_id == null ? "NULL" : $"'{importedTransaction.parent_metering_point_id}'")},
+                            '{importedTransaction.type_of_mp}',
+                            '{importedTransaction.sub_type_of_mp}',
+                            '{importedTransaction.physical_status_of_mp}',
+                            {(importedTransaction.web_access_code == null ? "NULL" : $"'{importedTransaction.web_access_code}'")},
+                            {(importedTransaction.balance_supplier_id == null ? "NULL" : $"'{importedTransaction.balance_supplier_id}'")},
+                            '{importedTransaction.effectuation_date:O}',
+                            '{importedTransaction.transaction_type}',
+                            '{importedTransaction.meter_reading_occurrence}',
+                            {(importedTransaction.mp_connection_type == null ? "NULL" : $"'{importedTransaction.mp_connection_type}'")},
+                            {(importedTransaction.disconnection_type == null ? "NULL" : $"'{importedTransaction.disconnection_type}'")},
+                            {importedTransaction.product},
+                            {(importedTransaction.product_obligation == null ? "NULL" : importedTransaction.product_obligation.Value ? "1" : "0")},
+                            '{importedTransaction.energy_timeseries_measure_unit}',
+                            {(importedTransaction.asset_type == null ? "NULL" : $"'{importedTransaction.asset_type}'")},
+                            {(importedTransaction.fuel_type == null ? "NULL" : importedTransaction.fuel_type.Value ? "1" : "0")},
+                            {(importedTransaction.mp_capacity == null ? "NULL" : $"'{importedTransaction.mp_capacity}'")},
+                            {(importedTransaction.power_limit_kw == null ? "NULL" : importedTransaction.power_limit_kw.Value.ToString(CultureInfo.InvariantCulture))},
+                            {(importedTransaction.power_limit_a == null ? "NULL" : importedTransaction.power_limit_a.Value.ToString(CultureInfo.InvariantCulture))},
+                            {(importedTransaction.meter_number == null ? "NULL" : $"'{importedTransaction.meter_number}'")},
+                            {(importedTransaction.net_settlement_group == null ? "NULL" : importedTransaction.net_settlement_group.Value.ToString(CultureInfo.InvariantCulture))},
+                            {(importedTransaction.scheduled_meter_reading_date01 == null ? "NULL" : $"'{importedTransaction.scheduled_meter_reading_date01}'")},
+                            {(importedTransaction.from_grid_area == null ? "NULL" : $"'{importedTransaction.from_grid_area}'")},
+                            {(importedTransaction.to_grid_area == null ? "NULL" : $"'{importedTransaction.to_grid_area}'")},
+                            {(importedTransaction.power_plant_gsrn == null ? "NULL" : $"'{importedTransaction.power_plant_gsrn}'")},
+                            {(importedTransaction.settlement_method == null ? "NULL" : $"'{importedTransaction.settlement_method}'")},
+                            {(importedTransaction.location_street_code == null ? "NULL" : $"'{importedTransaction.location_street_code}'")},
+                            {(importedTransaction.location_street_name == null ? "NULL" : $"'{importedTransaction.location_street_name}'")},
+                            {(importedTransaction.location_building_number == null ? "NULL" : $"'{importedTransaction.location_building_number}'")},
+                            {(importedTransaction.location_city_name == null ? "NULL" : $"'{importedTransaction.location_city_name}'")},
+                            {(importedTransaction.location_city_subdivision_name == null ? "NULL" : $"'{importedTransaction.location_city_subdivision_name}'")},
+                            {(importedTransaction.location_dar_reference == null ? "NULL" : $"'{importedTransaction.location_dar_reference}'")},
+                            {(importedTransaction.location_mp_address_wash_instructions == null ? "NULL" : $"'{importedTransaction.location_mp_address_wash_instructions}'")},
+                            {(importedTransaction.location_country_name == null ? "NULL" : $"'{importedTransaction.location_country_name}'")},
+                            {(importedTransaction.location_floor_id == null ? "NULL" : $"'{importedTransaction.location_floor_id}'")},
+                            {(importedTransaction.location_room_id == null ? "NULL" : $"'{importedTransaction.location_room_id}'")},
+                            {(importedTransaction.location_postcode == null ? "NULL" : $"'{importedTransaction.location_postcode}'")},
+                            {(importedTransaction.location_municipality_code == null ? "NULL" : $"'{importedTransaction.location_municipality_code}'")},
+                            {(importedTransaction.location_location_description == null ? "NULL" : $"'{importedTransaction.location_location_description}'")},
+                            {(importedTransaction.first_consumer_party_name == null ? "NULL" : $"'{importedTransaction.first_consumer_party_name}'")},
+                            {(importedTransaction.first_consumer_cpr == null ? "NULL" : $"'{importedTransaction.first_consumer_cpr}'")},
+                            {(importedTransaction.second_consumer_party_name == null ? "NULL" : $"'{importedTransaction.second_consumer_party_name}'")},
+                            {(importedTransaction.second_consumer_cpr == null ? "NULL" : $"'{importedTransaction.second_consumer_cpr}'")},
+                            {(importedTransaction.consumer_cvr == null ? "NULL" : $"'{importedTransaction.consumer_cvr}'")},
+                            {(importedTransaction.protected_name == null ? "NULL" : importedTransaction.protected_name.Value ? "1" : "0")},
+                            {(importedTransaction.contact_1_contact_name1 == null ? "NULL" : $"'{importedTransaction.contact_1_contact_name1}'")},
+                            {(importedTransaction.contact_1_protected_address == null ? "NULL" : importedTransaction.contact_1_protected_address.Value ? "1" : "0")},
+                            {(importedTransaction.contact_1_phone_number == null ? "NULL" : $"'{importedTransaction.contact_1_phone_number}'")},
+                            {(importedTransaction.contact_1_mobile_number == null ? "NULL" : $"'{importedTransaction.contact_1_mobile_number}'")},
+                            {(importedTransaction.contact_1_email_address == null ? "NULL" : $"'{importedTransaction.contact_1_email_address}'")},
+                            {(importedTransaction.contact_1_attention == null ? "NULL" : $"'{importedTransaction.contact_1_attention}'")},
+                            {(importedTransaction.contact_1_street_code == null ? "NULL" : $"'{importedTransaction.contact_1_street_code}'")},
+                            {(importedTransaction.contact_1_street_name == null ? "NULL" : $"'{importedTransaction.contact_1_street_name}'")},
+                            {(importedTransaction.contact_1_building_number == null ? "NULL" : $"'{importedTransaction.contact_1_building_number}'")},
+                            {(importedTransaction.contact_1_postcode == null ? "NULL" : $"'{importedTransaction.contact_1_postcode}'")},
+                            {(importedTransaction.contact_1_city_name == null ? "NULL" : $"'{importedTransaction.contact_1_city_name}'")},
+                            {(importedTransaction.contact_1_city_subdivision_name == null ? "NULL" : $"'{importedTransaction.contact_1_city_subdivision_name}'")},
+                            {(importedTransaction.contact_1_dar_reference == null ? "NULL" : $"'{importedTransaction.contact_1_dar_reference}'")},
+                            {(importedTransaction.contact_1_country_name == null ? "NULL" : $"'{importedTransaction.contact_1_country_name}'")},
+                            {(importedTransaction.contact_1_floor_id == null ? "NULL" : $"'{importedTransaction.contact_1_floor_id}'")},
+                            {(importedTransaction.contact_1_room_id == null ? "NULL" : $"'{importedTransaction.contact_1_room_id}'")},
+                            {(importedTransaction.contact_1_post_box == null ? "NULL" : $"'{importedTransaction.contact_1_post_box}'")},
+                            {(importedTransaction.contact_1_municipality_code == null ? "NULL" : $"'{importedTransaction.contact_1_municipality_code}'")},
+                            {(importedTransaction.contact_4_contact_name1 == null ? "NULL" : $"'{importedTransaction.contact_4_contact_name1}'")},
+                            {(importedTransaction.contact_4_protected_address == null ? "NULL" : importedTransaction.contact_4_protected_address.Value ? "1" : "0")},
+                            {(importedTransaction.contact_4_phone_number == null ? "NULL" : $"'{importedTransaction.contact_4_phone_number}'")},
+                            {(importedTransaction.contact_4_mobile_number == null ? "NULL" : $"'{importedTransaction.contact_4_mobile_number}'")},
+                            {(importedTransaction.contact_4_email_address == null ? "NULL" : $"'{importedTransaction.contact_4_email_address}'")},
+                            {(importedTransaction.contact_4_attention == null ? "NULL" : $"'{importedTransaction.contact_4_attention}'")},
+                            {(importedTransaction.contact_4_street_code == null ? "NULL" : $"'{importedTransaction.contact_4_street_code}'")},
+                            {(importedTransaction.contact_4_street_name == null ? "NULL" : $"'{importedTransaction.contact_4_street_name}'")},
+                            {(importedTransaction.contact_4_building_number == null ? "NULL" : $"'{importedTransaction.contact_4_building_number}'")},
+                            {(importedTransaction.contact_4_postcode == null ? "NULL" : $"'{importedTransaction.contact_4_postcode}'")},
+                            {(importedTransaction.contact_4_city_name == null ? "NULL" : $"'{importedTransaction.contact_4_city_name}'")},
+                            {(importedTransaction.contact_4_city_subdivision_name == null ? "NULL" : $"'{importedTransaction.contact_4_city_subdivision_name}'")},
+                            {(importedTransaction.contact_4_dar_reference == null ? "NULL" : $"'{importedTransaction.contact_4_dar_reference}'")},
+                            {(importedTransaction.contact_4_country_name == null ? "NULL" : $"'{importedTransaction.contact_4_country_name}'")},
+                            {(importedTransaction.contact_4_floor_id == null ? "NULL" : $"'{importedTransaction.contact_4_floor_id}'")},
+                            {(importedTransaction.contact_4_room_id == null ? "NULL" : $"'{importedTransaction.contact_4_room_id}'")},
+                            {(importedTransaction.contact_4_post_box == null ? "NULL" : $"'{importedTransaction.contact_4_post_box}'")},
+                            {(importedTransaction.contact_4_municipality_code == null ? "NULL" : $"'{importedTransaction.contact_4_municipality_code}'")},
+                            {(importedTransaction.dossier_status == null ? "NULL" : $"'{importedTransaction.dossier_status}'")}
+                            )
+                            """;
+
+                await _databaseContext.Database
+#pragma warning disable EF1002
+                    .ExecuteSqlRawAsync(sql)
+#pragma warning restore EF1002
                     .ConfigureAwait(false);
 
                 await _streamingImporter.ImportAsync(importedTransaction).ConfigureAwait(false);
