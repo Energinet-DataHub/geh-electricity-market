@@ -165,21 +165,25 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
                 case "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP":
                     {
-                        var commercialRelationEntity = InsertNewCustomerRelationFromTransaction(meteringPoint, importedTransaction);
+                        var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
                         commercialRelationEntity.ClientId = allCrsOrdered.Last(x => x.StartDate < importedTransaction.valid_from_date).ClientId;
 
                         TryCloseActiveCr(importedTransaction, meteringPoint);
                         HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
+
+                        meteringPoint.CommercialRelations.Add(commercialRelationEntity);
                         return true;
                     }
 
                 case "MOVEOUTES":
                     {
-                        var commercialRelationEntity = InsertNewCustomerRelationFromTransaction(meteringPoint, importedTransaction);
+                        var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
                         commercialRelationEntity.ClientId = null;
 
                         TryCloseActiveCr(importedTransaction, meteringPoint);
                         HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
+
+                        meteringPoint.CommercialRelations.Add(commercialRelationEntity);
                         return true;
                     }
 
@@ -238,23 +242,16 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         return false;
     }
 
-    private static CommercialRelationEntity InsertNewCustomerRelationFromTransaction(MeteringPointEntity meteringPoint, ImportedTransactionEntity importedTransaction)
-    {
-        var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
-        meteringPoint.CommercialRelations.Add(commercialRelationEntity);
-        return commercialRelationEntity;
-    }
-
     private static IEnumerable<CommercialRelationEntity> AllSavedValidCrs(MeteringPointEntity meteringPoint)
     {
         return meteringPoint.CommercialRelations
-            .Where(x => x.StartDate < x.EndDate && x.Id > 0)
+            .Where(x => x.StartDate < x.EndDate)
             .OrderBy(x => x.StartDate);
     }
 
     private static void HandleMoveIn(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
-        var commercialRelation = InsertNewCustomerRelationFromTransaction(meteringPoint, importedTransaction);
+        var commercialRelation = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
 
         var futures = AllSavedValidCrs(meteringPoint)
             .Where(x => x.StartDate >= importedTransaction.valid_from_date)
@@ -283,6 +280,8 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         TryCloseActiveCr(importedTransaction, meteringPoint);
 
         HandleEspStuff(importedTransaction, meteringPoint, commercialRelation);
+
+        meteringPoint.CommercialRelations.Add(commercialRelation);
     }
 
     private static void TryCloseActiveCr(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
