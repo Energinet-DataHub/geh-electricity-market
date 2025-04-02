@@ -17,7 +17,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 public sealed record CustomerContactDto(
     long Id,
     string Name,
-    string Email,
+    string? Email,
     bool IsProtectedAddress,
     string? Phone,
     string? Mobile,

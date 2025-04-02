@@ -25,9 +25,9 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public sealed class BulkImporter : IBulkImporter, IDisposable
 {
-    private readonly BlockingCollection<IList<ImportedTransactionEntity>> _importedTransactions = new(500000);
+    private readonly BlockingCollection<IList<ImportedTransactionEntity>> _importedTransactions = new(500_000);
     private readonly BlockingCollection<IList<MeteringPointEntity>> _relationalModelBatches = new(10);
-    private readonly List<List<QuarantinedMeteringPointEntity>> _quarantined = new(10);
+    private readonly List<List<QuarantinedMeteringPointEntity>> _quarantined = new();
 
     private readonly ILogger<BulkImporter> _logger;
     private readonly IImportedTransactionModelReader _importedTransactionModelReader;

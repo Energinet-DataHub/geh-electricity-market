@@ -16,4 +16,4 @@ using Energinet.DataHub.ElectricityMarket.Application.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 
-public sealed record GetChildAndRelatedMeteringPointsResponse(ParentWithRelatedMeteringPointDto ParentWithRelatedMeteringPoints);
+public sealed record GetRelatedMeteringPointsResponse(RelatedMeteringPointsDto RelatedMeteringPoints);
