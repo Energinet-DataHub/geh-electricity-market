@@ -132,13 +132,15 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return allRelated.Select(MeteringPointMapper.MapFromEntity);
     }
 
-    public async Task<IEnumerable<MeteringPoint>> GetMeteringPointsToSyncAsync(int lastSyncedVersion)
+    public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion)
     {
-        var entities = await _electricityMarketDatabaseContext.MeteringPoints
-            .Where(x => x.Version > lastSyncedVersion)
-            .ToListAsync()
-            .ConfigureAwait(false);
+        var entities = _electricityMarketDatabaseContext.MeteringPoints
+            .Where(x => x.Version >= lastSyncedVersion)
+            .AsAsyncEnumerable();
 
-        return entities.Select(MeteringPointMapper.MapFromEntity);
+        await foreach (var entity in entities)
+        {
+            yield return MeteringPointMapper.MapFromEntity(entity);
+        }
     }
 }

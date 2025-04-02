@@ -14,4 +14,4 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public sealed record SyncJob(SyncJobName Name, int Version);
+public sealed record SyncJob(SyncJobName Name, DateTimeOffset Version);

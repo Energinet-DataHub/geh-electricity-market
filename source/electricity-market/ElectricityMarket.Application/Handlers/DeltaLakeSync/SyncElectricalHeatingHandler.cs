@@ -33,17 +33,18 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
     public async Task Handle(SyncElectricalHeatingCommand request, CancellationToken cancellationToken)
     {
         var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.ElectricalHeating).ConfigureAwait(false);
-        var syncVersion = currentSyncJob?.Version ?? 0;
-        var meteringPointsToSync = await _meteringPointRepository
-            .GetMeteringPointsToSyncAsync(syncVersion)
+        var meteringPointsToSync = _meteringPointRepository
+            .GetMeteringPointsToSyncAsync(currentSyncJob.Version)
             .ConfigureAwait(false);
 
-        if (currentSyncJob is null)
+        DateTimeOffset maxVersion = currentSyncJob.Version;
+        await foreach (var meteringPoint in meteringPointsToSync)
         {
-            currentSyncJob = new SyncJob(SyncJobName.ElectricalHeating, 0);
+            // TODO: Implement the sync logic to Databricks for electrical heating metering points
+            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
         }
 
-        currentSyncJob = currentSyncJob with { Version = syncVersion + 1 };
+        currentSyncJob = currentSyncJob with { Version = maxVersion };
         await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
     }
 }

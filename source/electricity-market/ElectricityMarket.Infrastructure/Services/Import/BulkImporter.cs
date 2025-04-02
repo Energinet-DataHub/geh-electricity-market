@@ -257,7 +257,7 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
                 quarantineBatch = new List<QuarantinedMeteringPointEntity>(capacity);
             }
 
-            var meteringPoint = new MeteringPointEntity() { Version = 0 };
+            var meteringPoint = new MeteringPointEntity() { Version = DateTimeOffset.UtcNow };
 
             var (imported, message) = await _meteringPointImporter
                 .ImportAsync(meteringPoint, transactionsForOneMp)

@@ -79,6 +79,6 @@ public sealed class SyncJobRepository : ISyncJobsRepository
                 select new SyncJob(sync.JobName, sync.Version))
             .SingleOrDefaultAsync()
             .ConfigureAwait(false);
-        return syncJob ?? new SyncJob(job, 0);
+        return syncJob ?? new SyncJob(job, DateTimeOffset.UtcNow);
     }
 }

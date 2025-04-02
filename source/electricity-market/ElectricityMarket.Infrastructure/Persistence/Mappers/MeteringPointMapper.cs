@@ -26,6 +26,7 @@ internal static class MeteringPointMapper
     {
         return new MeteringPoint(
             from.Id,
+            from.Version,
             new MeteringPointIdentification(from.Identification),
             from.MeteringPointPeriods.Select(MapFromEntity).ToList(),
             from.CommercialRelations.Where(cr => cr.EndDate > cr.StartDate).Select(MapFromEntity).ToList());

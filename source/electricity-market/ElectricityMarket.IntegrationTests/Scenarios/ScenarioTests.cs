@@ -121,7 +121,7 @@ public class ScenarioTests
 
         lines = SanitizeSectionColumn(lines, "CommercialRelation", "ClientId", Guid.Empty.ToString()).ToList();
         lines = SanitizeSectionColumn(lines, "MeteringPointPeriod", "RetiredAt", DateTimeOffset.MinValue.ToString("u")).ToList();
-        lines = SanitizeSectionColumn(lines, "MeteringPoint", "Version", "0").ToList();
+        lines = SanitizeSectionColumn(lines, "MeteringPoint", "Version", DateTimeOffset.MinValue.ToString("u")).ToList();
 
         var trimEnd = string.Join('\n', lines).TrimEnd('\n');
 
