@@ -67,7 +67,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             var dossierStatus = importedTransaction.transaction_type.TrimEnd();
             var type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp);
 
-            if (_changeTransactions.Contains(transactionType) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var addMeteringPointPeriodError))
+            if ((_changeTransactions.Contains(transactionType) || meteringPoint.MeteringPointPeriods.Count == 0) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var addMeteringPointPeriodError))
                 return (false, addMeteringPointPeriodError);
 
             if (_ignoredTransactions.Contains(transactionType))
