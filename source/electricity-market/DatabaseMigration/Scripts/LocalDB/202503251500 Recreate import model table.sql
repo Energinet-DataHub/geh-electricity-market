@@ -15,6 +15,7 @@ CREATE TABLE [electricitymarket].[MeteringPoint]
 (
     [Id]                 bigint IDENTITY(1,1) NOT NULL,
     [Identification]     char(18) NOT NULL
+    [Version]            int NOT NULL DEFAULT(0),
 
     CONSTRAINT PK_MeteringPoint PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT UQ_Identification UNIQUE (Identification),

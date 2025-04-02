@@ -51,7 +51,8 @@ public sealed class StreamingImporter : IStreamingImporter
             .SingleOrDefaultAsync(mp => mp.Identification == meteringPointIdentification)
             .ConfigureAwait(false);
 
-        var meteringPointToUpdate = existingMeteringPoint ?? new MeteringPointEntity();
+        var meteringPointToUpdate = existingMeteringPoint ?? new MeteringPointEntity() { Version = 0 };
+        meteringPointToUpdate.Version++;
 
         var (imported, message) = await _meteringPointImporter
             .ImportAsync(meteringPointToUpdate, [importedTransactionEntity])

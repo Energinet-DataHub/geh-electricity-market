@@ -62,7 +62,7 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
                             transaction,
                             batch,
                             "MeteringPoint",
-                            ["Id", "Identification"])
+                            ["Id", "Identification", "Version"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(
