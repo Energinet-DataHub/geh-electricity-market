@@ -14,6 +14,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
@@ -70,7 +71,7 @@ public sealed class SyncJobRepository : ISyncJobsRepository
         return true;
     }
 
-    public async Task<SyncJob?> GetByNameAsync(SyncJobName job)
+    public async Task<SyncJob> GetByNameAsync(SyncJobName job)
     {
         var syncJob = await (
                 from sync in _context.SyncJobs
@@ -78,6 +79,6 @@ public sealed class SyncJobRepository : ISyncJobsRepository
                 select new SyncJob(sync.JobName, sync.Version))
             .SingleOrDefaultAsync()
             .ConfigureAwait(false);
-        return syncJob;
+        return syncJob ?? new SyncJob(job, 0);
     }
 }

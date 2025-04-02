@@ -19,5 +19,5 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 public interface ISyncJobsRepository
 {
     Task<bool> AddOrUpdateAsync(SyncJob job);
-    Task<SyncJob?> GetByNameAsync(SyncJobName job);
+    Task<SyncJob> GetByNameAsync(SyncJobName job);
 }
