@@ -13,23 +13,37 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
-using Energinet.DataHub.ElectricityMarket.Application.Services.DeltaLakeSync;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers.DeltaLakeSync;
 
 public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectricalHeatingCommand>
 {
-    private readonly IElectricalHeatingSyncService _electricalHeatingSyncService;
+    private readonly IMeteringPointRepository _meteringPointRepository;
+    private readonly ISyncJobsRepository _syncJobsRepository;
 
-    public SyncElectricalHeatingHandler(IElectricalHeatingSyncService electricalHeatingSyncService)
+    public SyncElectricalHeatingHandler(IMeteringPointRepository meteringPointRepository, ISyncJobsRepository syncJobsRepository)
     {
-        _electricalHeatingSyncService = electricalHeatingSyncService;
+        _meteringPointRepository = meteringPointRepository;
+        _syncJobsRepository = syncJobsRepository;
     }
 
     public async Task Handle(SyncElectricalHeatingCommand request, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-        var result = await _electricalHeatingSyncService.SyncElectricalHeatingAsync().ConfigureAwait(false);
+        var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.ElectricalHeating).ConfigureAwait(false);
+        var syncVersion = currentSyncJob?.Version ?? 0;
+        var meteringPointsToSync = await _meteringPointRepository
+            .GetMeteringPointsToSyncAsync(syncVersion)
+            .ConfigureAwait(false);
+
+        if (currentSyncJob is null)
+        {
+            currentSyncJob = new SyncJob(SyncJobName.ElectricalHeating, 0);
+        }
+
+        currentSyncJob = currentSyncJob with { Version = syncVersion + 1 };
+        await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
     }
 }
