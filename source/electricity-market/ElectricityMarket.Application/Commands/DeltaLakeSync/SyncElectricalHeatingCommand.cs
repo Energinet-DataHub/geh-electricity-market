@@ -12,20 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
+using MediatR;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 
-public sealed class MeteringPointEntity
-{
-    public long Id { get; set; }
-
-    public string Identification { get; set; } = null!;
-
-    public ICollection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
-
-    public ICollection<CommercialRelationEntity> CommercialRelations { get; } = [];
-
-    public DateTimeOffset Version { get; set; }
-}
+public sealed record SyncElectricalHeatingCommand : IRequest;

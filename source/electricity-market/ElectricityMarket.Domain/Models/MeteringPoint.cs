@@ -18,6 +18,7 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed record MeteringPoint(
     long Id,
+    DateTimeOffset Version,
     MeteringPointIdentification Identification,
     IReadOnlyList<MeteringPointMetadata> MetadataTimeline,
     IReadOnlyList<CommercialRelation> CommercialRelationTimeline)

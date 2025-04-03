@@ -14,11 +14,15 @@ DROP TABLE IF EXISTS electricitymarket.GoldenImport;
 CREATE TABLE [electricitymarket].[MeteringPoint]
 (
     [Id]                 bigint IDENTITY(1,1) NOT NULL,
-    [Identification]     char(18) NOT NULL
+    [Identification]     char(18) NOT NULL,
+    [Version]            datetimeoffset NOT NULL
 
     CONSTRAINT PK_MeteringPoint PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT UQ_Identification UNIQUE (Identification),
 )
+
+CREATE INDEX [IX_MeteringPoint_Version]
+    ON [electricitymarket].[MeteringPoint] (Version)
 
 CREATE TABLE [electricitymarket].[InstallationAddress]
 (
@@ -65,7 +69,7 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     [AssetType]                  varchar(64) NULL,
     [FuelType]                   bit NULL,
     [Capacity]                   varchar(20) NULL,
-    [PowerLimitKw]               int NULL,
+    [PowerLimitKw]               decimal(11, 1) NULL,
     [PowerLimitA]                int NULL,
     [MeterNumber]                varchar(20) NULL,
     [SettlementGroup]            int NULL,
@@ -78,7 +82,6 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
 
     [MeteringPointStateId]       bigint NOT NULL,
     [BusinessTransactionDosId]   bigint NOT NULL,
-    [EffectuationDate]           datetimeoffset NOT NULL,
     [TransactionType]            char(10) NOT NULL,
 
     CONSTRAINT PK_MeteringPointPeriod PRIMARY KEY CLUSTERED (Id),
@@ -228,7 +231,6 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [physical_status_of_mp]           CHAR(3)            NOT NULL,
     [web_access_code]                 CHAR(10)           NULL,
     [balance_supplier_id]             CHAR(16)           NULL,
-    [effectuation_date]               DATETIMEOFFSET     NOT NULL,
     [transaction_type]                CHAR(10)           NOT NULL,
     [meter_reading_occurrence]        CHAR(8)            NOT NULL,
     [mp_connection_type]              CHAR(3)            NULL,
@@ -239,7 +241,7 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [asset_type]                      CHAR(3)            NULL,
     [fuel_type]                       BIT                NULL,
     [mp_capacity]                     CHAR(20)           NULL,
-    [power_limit_kw]                  INT                NULL,
+    [power_limit_kw]                  DECIMAL(11, 1)     NULL,
     [power_limit_a]                   INT                NULL,
     [meter_number]                    CHAR(20)           NULL,
     [net_settlement_group]            INT                NULL,

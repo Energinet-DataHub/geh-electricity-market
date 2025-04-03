@@ -207,7 +207,9 @@ ipcMain.handle("run-scenarios", () => {
                   line.includes("Passed") ||
                   line.includes("Failed") ||
                   line.includes("Total tests") ||
-                  line.includes("Total time")
+                  line.includes("Total time") ||
+                  line.startsWith("-|") ||
+                  line.startsWith("+|")
               )
               .join("\n")
         );

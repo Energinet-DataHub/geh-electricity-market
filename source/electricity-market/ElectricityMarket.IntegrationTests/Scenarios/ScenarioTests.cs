@@ -14,6 +14,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -103,14 +105,55 @@ public class ScenarioTests
             expected = Sanitize(await reader.ReadToEndAsync());
         }
 
-        return actual.Equals(expected, StringComparison.OrdinalIgnoreCase)
-            ? (true, string.Empty)
-            : (false, $"""
-                       -----------------------------Generated-----------------------------
-                       {actual}
-                       -----------------------------Expected------------------------------
-                       {expected}
-                       """);
+        if (!actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
+        {
+            var expectedPath = Path.Combine(AppContext.BaseDirectory, $"{name}_expected.txt");
+            await File.WriteAllTextAsync(expectedPath, expected);
+            var actualPath = Path.Combine(AppContext.BaseDirectory, $"{name}_actual.txt");
+            await File.WriteAllTextAsync(actualPath, actual);
+
+            if (TryRunGitDiff(expectedPath, actualPath, out var diff))
+            {
+                return (false, diff);
+            }
+
+            return (false, $"""
+                            -----------------------------Generated-----------------------------
+                            {actual}
+                            -----------------------------Expected------------------------------
+                            {expected}
+                            """);
+        }
+
+        return (true, string.Empty);
+
+        static bool TryRunGitDiff(string expected, string actual, [NotNullWhen(true)] out string? result)
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"diff --no-index --color=never {expected} {actual}",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(psi);
+            try
+            {
+                var output = process!.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                result = output;
+                return true;
+            }
+#pragma warning disable CA1031
+            catch
+#pragma warning restore CA1031
+            {
+                result = null;
+                return false;
+            }
+        }
     }
 
     private static string Sanitize(string result)
@@ -121,6 +164,7 @@ public class ScenarioTests
 
         lines = SanitizeSectionColumn(lines, "CommercialRelation", "ClientId", Guid.Empty.ToString()).ToList();
         lines = SanitizeSectionColumn(lines, "MeteringPointPeriod", "RetiredAt", DateTimeOffset.MinValue.ToString("u")).ToList();
+        lines = SanitizeSectionColumn(lines, "MeteringPoint", "Version", DateTimeOffset.MinValue.ToString("u")).ToList();
 
         var trimEnd = string.Join('\n', lines).TrimEnd('\n');
 

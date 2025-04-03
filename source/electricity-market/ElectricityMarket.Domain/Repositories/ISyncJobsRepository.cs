@@ -16,13 +16,8 @@ using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 
-public interface IMeteringPointRepository
+public interface ISyncJobsRepository
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-    Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification);
-
-    Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode);
-
-    Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification);
-    IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion);
+    Task<bool> AddOrUpdateAsync(SyncJob job);
+    Task<SyncJob> GetByNameAsync(SyncJobName job);
 }
