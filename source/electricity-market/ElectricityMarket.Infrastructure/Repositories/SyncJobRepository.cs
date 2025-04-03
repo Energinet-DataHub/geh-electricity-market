@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -78,6 +79,6 @@ public sealed class SyncJobRepository : ISyncJobsRepository
                 select new SyncJob(sync.JobName, sync.Version))
             .SingleOrDefaultAsync()
             .ConfigureAwait(false);
-        return syncJob ?? new SyncJob(job, DateTimeOffset.UtcNow);
+        return syncJob ?? new SyncJob(job, new DateTimeOffset(SqlDateTime.MinValue.Value, TimeSpan.Zero));
     }
 }
