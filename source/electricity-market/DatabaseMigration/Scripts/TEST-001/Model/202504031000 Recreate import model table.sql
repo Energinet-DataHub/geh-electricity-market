@@ -227,7 +227,6 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [physical_status_of_mp]           CHAR(3)            NOT NULL,
     [web_access_code]                 CHAR(10)           NULL,
     [balance_supplier_id]             CHAR(16)           NULL,
-    [effectuation_date]               DATETIMEOFFSET     NOT NULL,
     [transaction_type]                CHAR(10)           NOT NULL,
     [meter_reading_occurrence]        CHAR(8)            NOT NULL,
     [mp_connection_type]              CHAR(3)            NULL,
