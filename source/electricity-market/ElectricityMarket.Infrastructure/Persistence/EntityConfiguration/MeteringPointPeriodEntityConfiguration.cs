@@ -25,6 +25,8 @@ public sealed class MeteringPointPeriodEntityConfiguration : IEntityTypeConfigur
     {
         ArgumentNullException.ThrowIfNull(builder);
         builder.ToTable("MeteringPointPeriod");
+        builder.Property(mpp => mpp.PowerLimitKw).HasPrecision(11, 1);
+
         builder
             .HasOne(x => x.RetiredBy)
             .WithOne()
