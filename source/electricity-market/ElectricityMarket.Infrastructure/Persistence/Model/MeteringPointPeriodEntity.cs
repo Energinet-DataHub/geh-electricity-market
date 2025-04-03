@@ -43,7 +43,7 @@ public sealed class MeteringPointPeriodEntity
     public string? AssetType { get; set; }
     public bool? FuelType { get; set; }
     public string? Capacity { get; set; }
-    public int? PowerLimitKw { get; set; }
+    public decimal? PowerLimitKw { get; set; }
     public int? PowerLimitA { get; set; }
     public string? MeterNumber { get; set; }
     public int? SettlementGroup { get; set; }
@@ -56,7 +56,6 @@ public sealed class MeteringPointPeriodEntity
 
     public long MeteringPointStateId { get; set; }
     public long BusinessTransactionDosId { get; set; }
-    public DateTimeOffset EffectuationDate { get; set; }
     public string TransactionType { get; set; } = null!;
 
     public InstallationAddressEntity InstallationAddress { get; set; } = null!;

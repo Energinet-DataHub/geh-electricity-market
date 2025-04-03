@@ -127,7 +127,6 @@ public sealed class ActorTestMeteringPointImporter : IMeteringPointImporter
             OwnedBy = string.Empty, // Works as an override, will be resolved through mark-part.
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
             MeteringPointStateId = importedTransaction.metering_point_state_id,
-            EffectuationDate = importedTransaction.effectuation_date,
             TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
 
@@ -186,7 +185,6 @@ public sealed class ActorTestMeteringPointImporter : IMeteringPointImporter
                     OwnedBy = overlappingPeriod.OwnedBy,
                     BusinessTransactionDosId = overlappingPeriod.BusinessTransactionDosId,
                     MeteringPointStateId = overlappingPeriod.MeteringPointStateId,
-                    EffectuationDate = overlappingPeriod.EffectuationDate,
                     TransactionType = overlappingPeriod.TransactionType,
                 };
 

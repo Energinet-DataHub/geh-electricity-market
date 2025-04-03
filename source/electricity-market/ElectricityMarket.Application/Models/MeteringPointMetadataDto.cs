@@ -35,7 +35,7 @@ public sealed record MeteringPointMetadataDto(
     AssetType? AssetType,
     bool? EnvironmentalFriendly,
     string? Capacity,
-    int? PowerLimitKw,
+    decimal? PowerLimitKw,
     string? MeterNumber,
     int? NetSettlementGroup,
     int? ScheduledMeterReadingMonth,

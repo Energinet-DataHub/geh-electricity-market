@@ -37,7 +37,6 @@ public static class ImportModelHelper
         MapProperty(t => t.physical_status_of_mp),
         MapProperty(t => t.web_access_code),
         MapProperty(t => t.balance_supplier_id),
-        MapProperty(t => t.effectuation_date, DateTimeOffset.MaxValue),
         MapProperty(t => t.transaction_type, string.Empty),
         MapProperty(t => t.meter_reading_occurrence),
         MapProperty(t => t.mp_connection_type),
