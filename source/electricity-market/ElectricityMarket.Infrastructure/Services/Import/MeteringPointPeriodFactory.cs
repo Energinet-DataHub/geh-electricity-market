@@ -74,7 +74,6 @@ public static class MeteringPointPeriodFactory
             OwnedBy = string.Empty, // Works as an override, will be resolved through mark-part.
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
             MeteringPointStateId = importedTransaction.metering_point_state_id,
-            EffectuationDate = importedTransaction.effectuation_date,
             TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
         return meteringPointPeriod;
@@ -131,7 +130,6 @@ public static class MeteringPointPeriodFactory
             OwnedBy = source.OwnedBy,
             BusinessTransactionDosId = source.BusinessTransactionDosId,
             MeteringPointStateId = source.MeteringPointStateId,
-            EffectuationDate = source.EffectuationDate,
             TransactionType = source.TransactionType,
         };
         return copy;

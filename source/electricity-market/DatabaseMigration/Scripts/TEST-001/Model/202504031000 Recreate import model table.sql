@@ -65,7 +65,7 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     [AssetType]                  varchar(64) NULL,
     [FuelType]                   bit NULL,
     [Capacity]                   varchar(20) NULL,
-    [PowerLimitKw]               int NULL,
+    [PowerLimitKw]               decimal(11, 1) NULL,
     [PowerLimitA]                int NULL,
     [MeterNumber]                varchar(20) NULL,
     [SettlementGroup]            int NULL,
@@ -78,7 +78,6 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
 
     [MeteringPointStateId]       bigint NOT NULL,
     [BusinessTransactionDosId]   bigint NOT NULL,
-    [EffectuationDate]           datetimeoffset NOT NULL,
     [TransactionType]            char(10) NOT NULL,
 
     CONSTRAINT PK_MeteringPointPeriod PRIMARY KEY CLUSTERED (Id),
@@ -239,7 +238,7 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [asset_type]                      CHAR(3)            NULL,
     [fuel_type]                       BIT                NULL,
     [mp_capacity]                     CHAR(20)           NULL,
-    [power_limit_kw]                  INT                NULL,
+    [power_limit_kw]                  DECIMAL(11, 1)     NULL,
     [power_limit_a]                   INT                NULL,
     [meter_number]                    CHAR(20)           NULL,
     [net_settlement_group]            INT                NULL,

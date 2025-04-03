@@ -40,7 +40,7 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
                 html,
                 orderingOverrides:
                 [
-                    (PropertiesToMove: [x => x.TransactionType, x => x.EffectuationDate, x => x.ConnectionState],
+                    (PropertiesToMove: [x => x.TransactionType, x => x.ConnectionState],
                         InsertAfter: x => x.ConnectionType),
                 ]));
         sb.Append(
