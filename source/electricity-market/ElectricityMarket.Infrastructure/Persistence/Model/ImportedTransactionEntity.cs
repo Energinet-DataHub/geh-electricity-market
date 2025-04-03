@@ -33,7 +33,6 @@ public sealed class ImportedTransactionEntity
     public string physical_status_of_mp { get; set; } = null!;
     public string? web_access_code { get; set; }
     public string? balance_supplier_id { get; set; }
-    public DateTimeOffset effectuation_date { get; set; }
     public string transaction_type { get; set; } = null!;
     public string meter_reading_occurrence { get; set; } = null!;
     public string? mp_connection_type { get; set; }
@@ -44,7 +43,7 @@ public sealed class ImportedTransactionEntity
     public string? asset_type { get; set; }
     public bool? fuel_type { get; set; }
     public string? mp_capacity { get; set; }
-    public int? power_limit_kw { get; set; }
+    public decimal? power_limit_kw { get; set; }
     public int? power_limit_a { get; set; }
     public string? meter_number { get; set; }
     public int? net_settlement_group { get; set; }

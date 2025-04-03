@@ -78,7 +78,7 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
                             transaction,
                             batch.SelectMany(b => b.MeteringPointPeriods),
                             "MeteringPointPeriod",
-                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "ParentIdentification", "Type", "SubType", "ConnectionState", "Resolution", "GridAreaCode", "OwnedBy", "ConnectionType", "DisconnectionType", "Product", "ProductObligation", "MeasureUnit", "AssetType", "FuelType", "Capacity", "PowerLimitKw", "PowerLimitA", "MeterNumber", "SettlementGroup", "ScheduledMeterReadingMonth", "ExchangeFromGridArea", "ExchangeToGridArea", "PowerPlantGsrn", "SettlementMethod", "InstallationAddressId", "MeteringPointStateId", "BusinessTransactionDosId", "EffectuationDate", "TransactionType"])
+                            ["Id", "MeteringPointId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "ParentIdentification", "Type", "SubType", "ConnectionState", "Resolution", "GridAreaCode", "OwnedBy", "ConnectionType", "DisconnectionType", "Product", "ProductObligation", "MeasureUnit", "AssetType", "FuelType", "Capacity", "PowerLimitKw", "PowerLimitA", "MeterNumber", "SettlementGroup", "ScheduledMeterReadingMonth", "ExchangeFromGridArea", "ExchangeToGridArea", "PowerPlantGsrn", "SettlementMethod", "InstallationAddressId", "MeteringPointStateId", "BusinessTransactionDosId", "TransactionType"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(
