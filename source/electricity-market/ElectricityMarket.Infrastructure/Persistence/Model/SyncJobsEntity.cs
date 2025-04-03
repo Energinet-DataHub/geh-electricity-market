@@ -12,17 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-public interface IMeteringPointRepository
+public sealed class SyncJobsEntity
 {
-    Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
-    Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification);
+    public SyncJobName JobName { get; set; }
 
-    Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode);
-
-    Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification);
-    IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion);
+    public DateTimeOffset Version { get; set; }
 }

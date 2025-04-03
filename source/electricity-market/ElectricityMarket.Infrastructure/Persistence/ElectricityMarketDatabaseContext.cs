@@ -48,6 +48,7 @@ public class ElectricityMarketDatabaseContext : DbContext
     public DbSet<ActorEntity> Actors { get; private set; } = null!;
     public DbSet<MarketRoleEntity> MarketRoles { get; private set; } = null!;
     public DbSet<MarketRoleGridAreaEntity> MarketRoleGridAreas { get; private set; } = null!;
+    public DbSet<SyncJobsEntity> SyncJobs { get; private set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,6 +71,7 @@ public class ElectricityMarketDatabaseContext : DbContext
         modelBuilder.ApplyConfiguration(new ActorEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarketRoleEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarketRoleGridAreaEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SyncJobsEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

@@ -52,6 +52,7 @@ public sealed class StreamingImporter : IStreamingImporter
             .ConfigureAwait(false);
 
         var meteringPointToUpdate = existingMeteringPoint ?? new MeteringPointEntity();
+        meteringPointToUpdate.Version = DateTimeOffset.UtcNow;
 
         var (imported, message) = await _meteringPointImporter
             .ImportAsync(meteringPointToUpdate, [importedTransactionEntity])

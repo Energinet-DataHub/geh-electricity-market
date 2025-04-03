@@ -14,11 +14,15 @@ DROP TABLE IF EXISTS electricitymarket.GoldenImport;
 CREATE TABLE [electricitymarket].[MeteringPoint]
 (
     [Id]                 bigint IDENTITY(1,1) NOT NULL,
-    [Identification]     char(18) NOT NULL
+    [Identification]     char(18) NOT NULL,
+    [Version]            datetimeoffset NOT NULL
 
     CONSTRAINT PK_MeteringPoint PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT UQ_Identification UNIQUE (Identification),
 )
+
+CREATE INDEX [IX_MeteringPoint_Version]
+    ON [electricitymarket].[MeteringPoint] (Version)
 
 CREATE TABLE [electricitymarket].[InstallationAddress]
 (
