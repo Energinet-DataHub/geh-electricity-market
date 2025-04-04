@@ -79,7 +79,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             if (dossierStatus is "CAN" or "CNL")
                 return (true, string.Empty);
 
-            if (!string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY")
+            if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY")
                 return (true, string.Empty);
 
             if (_unhandledTransactions.Contains(transactionType))
