@@ -5,6 +5,8 @@ from geh_electricity_market.database_migrations.database_definitions import (
     MeasurementsDatabaseDefinition,
 )
 
+SPARK_CATALOG_NAME = "spark_catalog"
+
 _CALCULATED_MEASUREMENTS_DATABASE_NAMES = [
     InternalDatabaseDefinition.internal_database,
     MeasurementsDatabaseDefinition.calculated_measurements_database,
