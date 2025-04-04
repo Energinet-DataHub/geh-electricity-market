@@ -26,8 +26,8 @@ def _migrate(catalog_name: str, substitution_variables: dict[str, str] | None = 
     substitution_variables = substitution_variables or substitutions.substitutions(catalog_name)
 
     spark_sql_migrations_configuration = SparkSqlMigrationsConfiguration(
-        migration_schema_name=InternalDatabaseDefinition.internal_database,
-        migration_table_name=InternalDatabaseDefinition.executed_migrations_table_name,
+        migration_schema_name=InternalDatabaseDefinition.INTERNAL_DATABASE,
+        migration_table_name=InternalDatabaseDefinition.EXECUTED_MIGRATIONS_TABLE_NAME,
         migration_scripts_folder_path="geh_electricity_market.database_migrations.migration_scripts",
         substitution_variables=substitution_variables,
         catalog_name=catalog_name,

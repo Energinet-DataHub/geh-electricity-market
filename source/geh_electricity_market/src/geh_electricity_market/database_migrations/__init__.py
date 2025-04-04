@@ -1,5 +1,3 @@
-from geh_electricity_market.database_migrations.database_definitions import (
-    InternalDatabaseDefinition as InternalDatabaseDefinition,
-)
+from geh_electricity_market.database_migrations.database_definitions import InternalDatabaseDefinition
 
 __all__ = ["InternalDatabaseDefinition"]
