@@ -28,6 +28,26 @@ jobs:
     uses: ./.github/workflows/detect-changes.yml
 
   #
+  # CD Python
+  #
+  cd_reusable:
+    name: Continuous Deployment
+    uses: Energinet-DataHub/.github/.github/workflows/python-uv-cd.yml@v14
+    with:
+      packages_directory: source
+      subsystem_name: Electricity-Market
+      notification_email: 18ac1620.energinet.onmicrosoft.com@emea.teams.ms
+      sender_email: ${{ vars.email_internal_sender }}
+      postfix_latest: true
+      dispatch_deployment_event: true
+      environment_repository_path: ${{ vars.environment_repository_path }}
+      dh3serviceaccount_appid: ${{ vars.dh3serviceaccount_appid }}
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
+      dh3serviceaccount_privatekey: ${{ secrets.dh3serviceaccount_privatekey }}
+      send_grid_api_key: ${{ secrets.sendgrid_instance_system_notifications_api_key }}
+
+  #
   # CD .NET
   #
 
@@ -73,11 +93,7 @@ jobs:
   #
 
   dispatch_failed:
-    needs:
-      [
-        dotnet_promote_prerelease,
-        dispatch_deploment_event,
-      ]
+    needs: [dotnet_promote_prerelease, dispatch_deploment_event]
     if: |
       always() &&
       contains(needs.*.result, 'failure')
