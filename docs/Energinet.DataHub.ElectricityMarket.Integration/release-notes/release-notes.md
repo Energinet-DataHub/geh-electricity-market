@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.3.5
+
+- Added missing MeteringPointTypes
+
 ## Version 4.3.4
 
 - Fix incorrect mapping of MeasureUnit.
