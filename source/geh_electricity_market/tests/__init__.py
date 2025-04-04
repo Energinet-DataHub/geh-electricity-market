@@ -5,7 +5,7 @@ from geh_electricity_market.database_migrations.database_definitions import Inte
 SPARK_CATALOG_NAME = "spark_catalog"
 
 _DATABASE_NAMES = [
-    InternalDatabaseDefinition.internal_database,
+    InternalDatabaseDefinition.INTERNAL_DATABASE,
 ]
 
 
