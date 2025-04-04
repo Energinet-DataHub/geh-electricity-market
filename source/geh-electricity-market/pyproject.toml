@@ -1,5 +1,5 @@
 [project]
-name = "geh-electricity-market"
+name = "geh_electricity_market"
 version = "0.1.0"
 description = "Allows table migrations to be executed against Databricks."
 readme = "README.md"
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-geh-electricity-market = "geh_electricity_market:main"
+migrate = "geh_electricity_market.database_migrations.entry_point:migrate"
 
 [build-system]
 requires = ["hatchling"]
