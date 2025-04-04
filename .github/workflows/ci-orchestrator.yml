@@ -58,6 +58,13 @@ jobs:
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
 
+  ci_python:
+    uses: Energinet-DataHub/.github/.github/workflows/python-uv-ci.yml@v14
+    with:
+      packages_directory: source
+      pytest_addopts: --ignore-glob 'tests/subsystem_tests/**' --ignore-glob 'tests/integration/**'
+      create_subsystem_release: true
+
   #
   # Branch policy status check
   #
@@ -69,6 +76,7 @@ jobs:
         changes,
         ci_base,
         ci_dotnet,
+        ci_python,
         ci_integration_package,
         render_c4model_views,
       ]
