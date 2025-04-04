@@ -28,6 +28,8 @@ public static class DelegationProcessMapper
             DelegatedProcess.ReceiveWholesaleResults => Domain.Models.Common.DelegatedProcess.ReceiveWholesaleResults,
             DelegatedProcess.RequestMeteringPointData => Domain.Models.Common.DelegatedProcess.RequestMeteringPointData,
             DelegatedProcess.ReceiveMeteringPointData => Domain.Models.Common.DelegatedProcess.ReceiveMeteringPointData,
+            DelegatedProcess.SendMeteringPointData => Domain.Models.Common.DelegatedProcess.SendMeteringPointData,
+            DelegatedProcess.ReceiveGapLog => Domain.Models.Common.DelegatedProcess.ReceiveGapLog,
             _ => throw new ArgumentOutOfRangeException(nameof(inputProcess), inputProcess, null),
         };
     }
@@ -42,6 +44,8 @@ public static class DelegationProcessMapper
             Domain.Models.Common.DelegatedProcess.ReceiveWholesaleResults => DelegatedProcess.ReceiveWholesaleResults,
             Domain.Models.Common.DelegatedProcess.RequestMeteringPointData => DelegatedProcess.RequestMeteringPointData,
             Domain.Models.Common.DelegatedProcess.ReceiveMeteringPointData => DelegatedProcess.ReceiveMeteringPointData,
+            Domain.Models.Common.DelegatedProcess.SendMeteringPointData => DelegatedProcess.SendMeteringPointData,
+            Domain.Models.Common.DelegatedProcess.ReceiveGapLog => DelegatedProcess.ReceiveGapLog,
             _ => throw new ArgumentOutOfRangeException(nameof(inputProcess), inputProcess, null),
         };
     }
