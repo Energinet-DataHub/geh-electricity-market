@@ -5,6 +5,9 @@ description = "Allows table migrations to be executed against Databricks."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "azure-identity>=1.21.0",
+    "azure-keyvault-secrets>=4.9.0",
+    "azure-monitor-query>=1.4.1",
     "geh_common @ git+https://git@github.com/Energinet-DataHub/opengeh-python-packages@geh_common_5.5.2#subdirectory=source/geh_common",
     "pydantic>=2.11.2",
     "pyspark>=3.5.5",
