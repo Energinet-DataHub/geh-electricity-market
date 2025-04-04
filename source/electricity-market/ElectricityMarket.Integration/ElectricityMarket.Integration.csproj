@@ -21,7 +21,7 @@ limitations under the License.
     <Nullable>enable</Nullable>
     <AssemblyName>Energinet.DataHub.ElectricityMarket.Integration</AssemblyName>
     <RootNamespace>Energinet.DataHub.ElectricityMarket.Integration</RootNamespace>
-    <PackageVersion>4.3.5$(VersionSuffix)</PackageVersion>
+    <PackageVersion>4.3.6$(VersionSuffix)</PackageVersion>
     <Title>Energinet DataHub Electricity Market Integration</Title>
     <Company>Energinet-DataHub</Company>
     <Authors>Energinet-DataHub Raccoons</Authors>
