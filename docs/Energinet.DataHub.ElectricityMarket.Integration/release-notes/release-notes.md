@@ -1,8 +1,12 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
-## Version 4.3.5
+## Version 4.3.6
 
 - Added two new Delegation process types
+
+## Version 4.3.5
+
+- Added missing MeteringPointTypes
 
 ## Version 4.3.4
 
