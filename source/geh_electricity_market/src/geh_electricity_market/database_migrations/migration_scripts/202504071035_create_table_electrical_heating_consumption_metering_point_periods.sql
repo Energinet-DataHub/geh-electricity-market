@@ -1,7 +1,7 @@
 CREATE TABLE {catalog_name}.electricity_market_measurements_input.electrical_heating_consumption_metering_point_periods (
     metering_point_id STRING NOT NULL,
-    period_from_date DATETIME NOT NULL,
-    period_to_date DATETIME
+    period_from_date TIMESTAMP NOT NULL,
+    period_to_date TIMESTAMP
     has_electrical_heating BOOLEAN NOT NULL,
     net_settlement_group INTEGER,
     settlement_month INTEGER NOT NULL,
