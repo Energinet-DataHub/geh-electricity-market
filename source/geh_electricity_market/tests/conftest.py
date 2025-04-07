@@ -8,6 +8,8 @@ import pytest
 from geh_common.testing.spark.spark_test_session import get_spark_test_session
 from pyspark.sql import SparkSession
 
+from tests import DATABASE_NAMES
+
 # pytest-xdist plugin does not work with SparkSession as a fixture. The session scope is not supported.
 # Therefore, we need to create a global variable to store the Spark session and data directory.
 # This is a workaround to avoid creating a new Spark session for each test.
@@ -36,3 +38,9 @@ def fix_print():
     with mock.patch("builtins.print") as mock_print:
         mock_print.side_effect = lambda *args, **kwargs: original_print(*args, **{"file": sys.stderr, **kwargs})
         yield mock_print
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ensure_schemas_exist(spark: SparkSession) -> None:
+    for db in DATABASE_NAMES:
+        spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
