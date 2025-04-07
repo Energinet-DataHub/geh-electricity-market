@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS {catalog_name}.electricity_market_input.child_metering_points (
+CREATE TABLE IF NOT EXISTS {catalog_name}.electricity_market_measurements_input.electrical_heating_child_metering_points (
     metering_point_id STRING NOT NULL,
     metering_point_type STRING NOT NULL,
     metering_point_sub_type STRING NOT NULL,

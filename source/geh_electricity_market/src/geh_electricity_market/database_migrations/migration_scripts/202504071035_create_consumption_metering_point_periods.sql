@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS {catalog_name}.electricity_market_input.consumption_metering_point_periods (
+CREATE TABLE IF NOT EXISTS {catalog_name}.electricity_market_measurements_input.electrical_heating_consumption_metering_point_periods (
     metering_point_id STRING NOT NULL,
     has_electrical_heating BOOLEAN NOT NULL,
     net_settlement_group INTEGER,
