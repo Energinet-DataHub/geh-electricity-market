@@ -23,7 +23,7 @@ def migrate() -> None:
 
 def _migrate(catalog_name: str, substitution_variables: dict[str, str] | None = None) -> None:
     """Test friendly part of the migration functionality."""
-    substitution_variables = substitution_variables or substitutions.substitutions(catalog_name)
+    substitution_variables = substitution_variables or substitutions(catalog_name)
 
     spark_sql_migrations_configuration = SparkSqlMigrationsConfiguration(
         migration_schema_name=InternalDatabaseDefinition.INTERNAL_DATABASE,
