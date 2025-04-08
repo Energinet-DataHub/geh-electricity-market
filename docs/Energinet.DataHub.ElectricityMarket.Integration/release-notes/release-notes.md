@@ -1,12 +1,16 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.4.0
+
+- Revert to old values for Production, Consumption and Exchange.
+
 ## Version 4.3.6
 
-- Added two new Delegation process types
+- Added two new Delegation process types.
 
 ## Version 4.3.5
 
-- Added missing MeteringPointTypes
+- Added missing MeteringPointTypes.
 
 ## Version 4.3.4
 
