@@ -42,4 +42,5 @@ public sealed record MeteringPointMetadata(
     string? ExchangeToGridAreaCode,
     string? PowerPlantGsrn,
     SettlementMethod? SettlementMethod,
-    InstallationAddress InstallationAddress);
+    InstallationAddress InstallationAddress,
+    string TransactionType);
