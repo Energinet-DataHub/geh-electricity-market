@@ -65,6 +65,7 @@ public static class TestPreparationEntities
         ValidTo = new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero),
         CreatedAt = SystemClock.Instance.GetCurrentInstant().ToDateTimeOffset(),
         WebAccessCode = "test1",
+        TransactionType = "tType",
     };
 
     public static T Patch<T>(this T entity, Action<T> action)
