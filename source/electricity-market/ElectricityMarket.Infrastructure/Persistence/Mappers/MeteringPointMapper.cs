@@ -28,7 +28,7 @@ internal static class MeteringPointMapper
             from.Id,
             from.Version,
             new MeteringPointIdentification(from.Identification),
-            from.MeteringPointPeriods.Select(MapFromEntity).ToList(),
+            from.MeteringPointPeriods.Where(mpp => mpp.RetiredBy == null).Select(MapFromEntity).ToList(),
             from.CommercialRelations.Where(cr => cr.EndDate > cr.StartDate).Select(MapFromEntity).ToList());
     }
 
@@ -88,8 +88,8 @@ internal static class MeteringPointMapper
             from.Id,
             from.EnergySupplier,
             new Interval(from.StartDate.ToInstant(), from.EndDate.ToInstant()),
-            from.EnergySupplyPeriods.Select(MapFromEntity).ToList(),
-            from.ElectricalHeatingPeriods.Select(MapFromEntity).ToList());
+            from.EnergySupplyPeriods.Where(esp => esp.RetiredBy == null).Select(MapFromEntity).ToList(),
+            from.ElectricalHeatingPeriods.Where(ehp => ehp.RetiredBy == null).Select(MapFromEntity).ToList());
     }
 
     private static ElectricalHeatingPeriod MapFromEntity(ElectricalHeatingPeriodEntity from)
