@@ -34,4 +34,6 @@ public sealed class EnergySupplyPeriodEntity
     public long BusinessTransactionDosId { get; set; }
 
     public ICollection<ContactEntity> Contacts { get; init; } = [];
+
+    public string TransactionType { get; set; } = null!;
 }

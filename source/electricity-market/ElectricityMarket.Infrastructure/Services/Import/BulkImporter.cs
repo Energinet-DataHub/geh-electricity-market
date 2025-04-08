@@ -200,13 +200,16 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
                 energySupplyPeriodEntity.CommercialRelationId = commercialRelationEntity.Id;
             }
 
+            if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 1000) + 1000 || energySupplyPeriodPrimaryKey <= 0)
+                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, EnergySupplyPeriod.");
+        }
+
+        foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
+        {
             foreach (var energySupplyPeriodEntity in commercialRelationEntity.EnergySupplyPeriods)
             {
                 energySupplyPeriodEntity.RetiredById = energySupplyPeriodEntity.RetiredBy?.Id;
             }
-
-            if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 1000) + 1000 || energySupplyPeriodPrimaryKey <= 0)
-                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, EnergySupplyPeriod.");
         }
 
         // Contact

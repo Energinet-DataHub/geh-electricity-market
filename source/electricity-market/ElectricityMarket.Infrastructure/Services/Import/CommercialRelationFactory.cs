@@ -66,6 +66,7 @@ public static class CommercialRelationFactory
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
             WebAccessCode = importedTransaction.web_access_code.TrimEnd(),
             EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd(),
+            TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
 
         if (importedTransaction.first_consumer_party_name != null)
@@ -168,6 +169,7 @@ public static class CommercialRelationFactory
             BusinessTransactionDosId = energySupplyPeriodEntity.BusinessTransactionDosId,
             WebAccessCode = energySupplyPeriodEntity.WebAccessCode,
             EnergySupplier = energySupplyPeriodEntity.EnergySupplier,
+            TransactionType = energySupplyPeriodEntity.TransactionType,
         };
 
         foreach (var contact in energySupplyPeriodEntity.Contacts)

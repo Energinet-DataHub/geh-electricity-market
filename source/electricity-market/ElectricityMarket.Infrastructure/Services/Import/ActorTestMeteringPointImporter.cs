@@ -293,6 +293,7 @@ public sealed class ActorTestMeteringPointImporter : IMeteringPointImporter
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
             WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? string.Empty, // TODO: This is probably wrong.
             EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? "TODO: What?", // TODO: Fallback is sus.
+            TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
 
         // TODO: This is not verified.
@@ -406,6 +407,7 @@ public sealed class ActorTestMeteringPointImporter : IMeteringPointImporter
             BusinessTransactionDosId = overlappingEnergySupplyPeriod.BusinessTransactionDosId,
             WebAccessCode = overlappingEnergySupplyPeriod.WebAccessCode,
             EnergySupplier = overlappingEnergySupplyPeriod.EnergySupplier,
+            TransactionType = overlappingEnergySupplyPeriod.TransactionType,
         };
 
         activeCommercialRelation.EnergySupplyPeriods.Add(closedOverlappingEnergySupplyPeriod);
