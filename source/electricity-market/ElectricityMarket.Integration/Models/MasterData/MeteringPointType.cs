@@ -17,6 +17,21 @@ namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 public enum MeteringPointType
 {
     /// <summary>
+    /// Code: E17.
+    /// </summary>
+    Consumption,
+
+    /// <summary>
+    /// Code: E18.
+    /// </summary>
+    Production,
+
+    /// <summary>
+    /// Code: E20.
+    /// </summary>
+    Exchange,
+
+    /// <summary>
     /// Code: D01.
     /// </summary>
     VEProduction,
@@ -145,19 +160,4 @@ public enum MeteringPointType
     /// Code: D99.
     /// </summary>
     InternalUse,
-
-    /// <summary>
-    /// Code: E17.
-    /// </summary>
-    Consumption,
-
-    /// <summary>
-    /// Code: E18.
-    /// </summary>
-    Production,
-
-    /// <summary>
-    /// Code: E20.
-    /// </summary>
-    Exchange,
 }
