@@ -47,11 +47,13 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
 
         var query =
             from mp in _electricityMarketDatabaseContext.MeteringPoints
+            from cr in mp.CommercialRelations
             join mpp in _electricityMarketDatabaseContext.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
             where mp.Identification == meteringPointIdentification &&
                   mpp.ValidFrom <= endDate &&
                   mpp.ValidTo > startDate &&
-                  mpp.RetiredById == null
+                  mpp.RetiredById == null &&
+                  cr.MeteringPointId == mp.Id
             join gridArea in gridAreaOwnerQuery on mpp.GridAreaCode equals gridArea.Code
             join exchangeFromGridArea in gridAreaOwnerQuery on mpp.ExchangeFromGridArea equals exchangeFromGridArea.Code into exchangeFrom
             from exchangeFromGridArea in exchangeFrom.DefaultIfEmpty()
@@ -61,8 +63,8 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             select new MeteringPointMasterData
             {
                 Identification = new MeteringPointIdentification(mp.Identification),
-                ValidFrom = mpp.ValidFrom.ToInstant(),
-                ValidTo = mpp.ValidTo.ToInstant(),
+                ValidFrom = cr.StartDate.ToInstant(),
+                ValidTo = cr.EndDate.ToInstant(),
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
                 GridAccessProvider = string.IsNullOrWhiteSpace(mpp.OwnedBy) ? gridArea.ActorNumber : mpp.OwnedBy!,
 
@@ -84,16 +86,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                 ParentIdentification = mpp.ParentIdentification != null
                     ? new MeteringPointIdentification(mpp.ParentIdentification!)
                     : null,
-                EnergySuppliers = mp.CommercialRelations
-                    .Where(cr => cr.StartDate <= endDate && cr.EndDate > startDate && cr.StartDate < cr.EndDate)
-                    .Select(cr => new MeteringPointEnergySupplier
-                    {
-                        Identification = new MeteringPointIdentification(mp.Identification),
-                        EnergySupplier = cr.EnergySupplier,
-                        StartDate = cr.StartDate.ToInstant(),
-                        EndDate = cr.EndDate.ToInstant(),
-                    })
-                    .ToArray(),
+                EnergySupplier = cr.EnergySupplier,
             };
 
         return query.AsAsyncEnumerable();
