@@ -118,7 +118,7 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
                             transaction,
                             batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods.SelectMany(esp => esp.Contacts))),
                             "Contact",
-                            ["Id", "EnergySupplyPeriodId", "RelationType", "DisponentName", "Cpr", "Cvr", "ContactAddressId", "ContactName", "Email", "Phone", "Mobile", "IsProtectedName"])
+                            ["Id", "EnergySupplyPeriodId", "RelationType", "DisponentName", "Cpr", "Cvr", "ContactAddressId", "ContactName", "Email", "Phone", "Mobile", "IsProtectedName", "TransactionType"])
                         .ConfigureAwait(false);
                 }
 
