@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Drawing;
-using System.Net.NetworkInformation;
-using System.Numerics;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using NodaTime;
@@ -52,9 +49,11 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// - the period does not end before 2021-01-01<br/>
     /// - the electrical heating is or has been registered for the period.
     /// </summary>
-    public IEnumerable<ElectricalHeatingParentDto> GetParentElectricalHeating(IEnumerable<MeteringPoint> meteringPoints)
+    public async Task<IEnumerable<ElectricalHeatingParentDto>> GetParentElectricalHeatingAsync(IAsyncEnumerable<MeteringPoint> meteringPoints)
     {
-        var meteringPointsWithElectricalHeating = meteringPoints.Where(mp => mp.CommercialRelationTimeline.Any(cr => cr.ElectricalHeatingPeriods.Any()));
+        var meteringPointsWithElectricalHeating = await meteringPoints
+            .Where(mp => mp.CommercialRelationTimeline.Any(cr => cr.ElectricalHeatingPeriods.Any()))
+            .ToListAsync().ConfigureAwait(false);
 
         var parentMeteringPointPeriods = meteringPointsWithElectricalHeating
             .SelectMany(mp => mp.MetadataTimeline.Where(
@@ -77,9 +76,10 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// - the child metering point physical status is connected or disconnected.
     /// - the period does not end before 2021-01-01.
     /// </summary>
-    public IEnumerable<ElectricalHeatingChildDto> GetChildElectricalHeating(IEnumerable<MeteringPoint> allMeteringPoints, IEnumerable<string> parentMeteringPointIds)
+    public async Task<IEnumerable<ElectricalHeatingChildDto>> GetChildElectricalHeatingAsync(IAsyncEnumerable<MeteringPoint> allMeteringPoints, IEnumerable<string> parentMeteringPointIds)
     {
-        var childMeteringPoints = allMeteringPoints.Where(mp => parentMeteringPointIds.Contains(mp.Identification.Value));
+        var childMeteringPoints = await allMeteringPoints.Where(mp => parentMeteringPointIds.Contains(mp.Identification.Value))
+            .ToListAsync().ConfigureAwait(false);
         var childMeteringPointPeriods = childMeteringPoints
             .SelectMany(cmp => cmp.MetadataTimeline.Where(
                 mpm => _relevantMeteringPointTypes.Contains(mpm.Type) // the metering point is of following types
