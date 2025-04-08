@@ -137,7 +137,8 @@ CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
     [CreatedAt]                datetimeoffset NOT NULL,
     [WebAccessCode]            varchar(64) NOT NULL,
     [EnergySupplier]           varchar(16) NOT NULL,
-    [BusinessTransactionDosId] bigint NOT NULL
+    [BusinessTransactionDosId] bigint NOT NULL,
+    [TransactionType]          char(10) NOT NULL,
 
     CONSTRAINT PK_EnergySupplyPeriod PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
