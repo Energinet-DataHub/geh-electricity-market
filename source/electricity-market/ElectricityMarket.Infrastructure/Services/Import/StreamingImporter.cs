@@ -39,9 +39,10 @@ public sealed class StreamingImporter : IStreamingImporter
         ArgumentNullException.ThrowIfNull(importedTransactionEntity);
 
         var meteringPointIdentification = importedTransactionEntity.metering_point_id.ToString(CultureInfo.InvariantCulture);
+        var meteringPointParentIdentification = importedTransactionEntity.parent_metering_point_id?.ToString(CultureInfo.InvariantCulture);
 
         var isQuarantined = await _databaseContext.QuarantinedMeteringPointEntities
-            .AnyAsync(qmp => qmp.Identification == meteringPointIdentification)
+            .AnyAsync(qmp => qmp.Identification == meteringPointIdentification || qmp.Identification == meteringPointParentIdentification)
             .ConfigureAwait(false);
 
         if (isQuarantined)

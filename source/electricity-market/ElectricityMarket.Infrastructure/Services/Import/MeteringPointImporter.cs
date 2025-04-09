@@ -29,7 +29,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private static readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "DATAMIG", "LNKCHLDMP", "MANCOR", "MSTDATSBM", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "HTXCOR" };
 
-    private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS" };
+    private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BLKCHGBRP" };
 
     public Task<(bool Imported, string Message)> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
     {
@@ -228,7 +228,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
                 default:
                     {
-                        var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+                        var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
                         HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
                         return true;
                     }
