@@ -37,10 +37,6 @@ public static class CommercialRelationFactory
             ClientId = Guid.NewGuid(),
         };
 
-        var energySupplyPeriodEntity = CreateEnergySupplyPeriodEntity(importedTransaction);
-
-        commercialRelation.EnergySupplyPeriods.Add(energySupplyPeriodEntity);
-
         return commercialRelation;
     }
 
