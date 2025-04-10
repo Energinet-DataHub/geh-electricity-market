@@ -87,7 +87,6 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     CONSTRAINT PK_MeteringPointPeriod PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_MeteringPointPeriod_MeteringPointPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[MeteringPointPeriod]([ID]),
     CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID]),
-    CONSTRAINT FK_MeteringPointPeriod_ParentIdentification FOREIGN KEY (ParentIdentification) REFERENCES [electricitymarket].[MeteringPoint]([Identification]),
     CONSTRAINT FK_MeteringPointPeriod_InstallationAddress FOREIGN KEY (InstallationAddressId) REFERENCES [electricitymarket].[InstallationAddress]([ID]),
 )
 
