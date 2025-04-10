@@ -1,4 +1,4 @@
-CREATE TABLE {catalog_name}.electricity_market_measurements_input.electrical_heating_consumption_metering_point_periods (
+CREATE TABLE {catalog_name}.electricity_market_internal.electrical_heating_consumption_metering_point_periods (
     metering_point_id STRING NOT NULL COMMENT 'GSRN Number',
     period_from_date TIMESTAMP NOT NULL COMMENT 'UTC time. The period start date.',
     period_to_date TIMESTAMP COMMENT 'UTC time. The period end date.',

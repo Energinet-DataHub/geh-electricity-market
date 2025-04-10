@@ -5,4 +5,4 @@ AS SELECT (
     resolution,
     period_from_date,
     period_to_date
-) FROM {catalog_name}.electricity_market_measurements_input.missing_measurements_log_metering_point_periods
+) FROM {catalog_name}.electricity_market_internal.missing_measurements_log_metering_point_periods

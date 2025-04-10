@@ -6,4 +6,4 @@ AS SELECT (
     period_from_date,
     period_to_date,
     move_in
-) FROM {catalog_name}.electricity_market_measurements_input.net_consumption_group_6_consumption_metering_point_periods
+) FROM {catalog_name}.electricity_market_internal.net_consumption_group_6_consumption_metering_point_periods
