@@ -32,7 +32,7 @@ public sealed class InitialImportOrchestrator
 
         var cutoff = await orchestrationContext.CallActivityAsync<long>(nameof(FindCutoffActivity));
 
-        await ImportGoldModelAsync(orchestrationContext, cutoff);
+        // await ImportGoldModelAsync(orchestrationContext, cutoff);
         await ImportRelationalModelAsync(orchestrationContext);
 
         await orchestrationContext.CallActivityAsync(nameof(SwitchToStreamingActivity), new SwitchToStreamingActivityInput
@@ -73,6 +73,8 @@ public sealed class InitialImportOrchestrator
             await Task.WhenAll(tasks);
         }
 
+        await orchestrationContext.CallActivityAsync(nameof(CreateClusteredIndexActivity), TaskOptions.FromRetryHandler(RetryHandler));
+
         async Task<CutoffResponse> CreateJobAsync(int offset, CutoffResponse? previousJob)
         {
             var jobTask = orchestrationContext.CallActivityAsync<CutoffResponse>(
@@ -105,8 +107,6 @@ public sealed class InitialImportOrchestrator
 
     private static async Task ImportRelationalModelAsync(TaskOrchestrationContext orchestrationContext)
     {
-        await orchestrationContext.CallActivityAsync(nameof(CreateClusteredIndexActivity), TaskOptions.FromRetryHandler(RetryHandler));
-
         var numberOfMeteringPoints = await orchestrationContext.CallActivityAsync<int>(nameof(FindNumberOfUniqueMeteringPointsActivity));
 
         var batchSize = 100_000;

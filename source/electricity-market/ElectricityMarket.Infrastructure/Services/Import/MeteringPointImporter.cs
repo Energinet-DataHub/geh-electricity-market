@@ -44,6 +44,9 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             foreach (var importedTransaction in importedTransactions)
             {
+                if (importedTransaction.valid_to_date < _importCutoff)
+                    continue;
+
                 if (string.IsNullOrWhiteSpace(meteringPoint.Identification))
                 {
                     meteringPoint.Identification = importedTransaction.metering_point_id.ToString(CultureInfo.InvariantCulture);
@@ -332,10 +335,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private static void HandleEspStuff(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint, CommercialRelationEntity commercialRelationEntity)
     {
-        var activeEsp = AllSavedValidCrs(meteringPoint)
-            .SelectMany(x => x.EnergySupplyPeriods)
-            .OrderBy(x => x.ValidFrom)
-            .LastOrDefault(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy == null);
+        var (activeCr, activeEsp) = AllSavedValidCrs(meteringPoint)
+            .SelectMany(cr => cr.EnergySupplyPeriods.Select(esp => (cr, esp)))
+            .OrderBy(group => group.esp.ValidFrom)
+            .LastOrDefault(group => group.esp.ValidFrom <= importedTransaction.valid_from_date && group.esp.RetiredBy == null);
 
         var changeEsp = CommercialRelationFactory.CreateEnergySupplyPeriodEntity(importedTransaction);
         commercialRelationEntity.EnergySupplyPeriods.Add(changeEsp);
@@ -369,6 +372,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         activeEsp.RetiredBy = retiredBy;
         activeEsp.RetiredAt = DateTimeOffset.UtcNow;
+        activeCr.EnergySupplyPeriods.Add(retiredBy);
 
         if (activeEsp.ValidTo == DateTimeOffset.MaxValue)
         {
