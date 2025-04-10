@@ -40,6 +40,8 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         try
         {
+            var hasAnyTransactions = false;
+
             foreach (var importedTransaction in importedTransactions)
             {
                 if (importedTransaction.valid_to_date < _importCutoff)
@@ -50,11 +52,23 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                     meteringPoint.Identification = importedTransaction.metering_point_id.ToString(CultureInfo.InvariantCulture);
                 }
 
+                if (importedTransaction.valid_to_date < _importCutoff)
+                    continue;
+
                 var result = TryImportTransaction(importedTransaction);
-                if (!result.Imported)
+                if (result.Imported)
+                {
+                    hasAnyTransactions = true;
+                }
+                else
                 {
                     return Task.FromResult(result);
                 }
+            }
+
+            if (!hasAnyTransactions)
+            {
+                return Task.FromResult((false, "All transactions discarded for MP."));
             }
         }
 #pragma warning disable CA1031
@@ -190,13 +204,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
                 case "MOVEOUTES":
                     {
-                        var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
-                        commercialRelationEntity.ClientId = null;
-
-                        TryCloseActiveCr(importedTransaction, meteringPoint);
-                        HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
-
-                        meteringPoint.CommercialRelations.Add(commercialRelationEntity);
+                        HandleMoveOut(importedTransaction, meteringPoint);
                         return true;
                     }
 
@@ -244,7 +252,14 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         {
             if (!string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
             {
-                HandleMoveIn(importedTransaction, meteringPoint);
+                if (transactionType is "MOVEOUTES")
+                {
+                    HandleMoveOut(importedTransaction, meteringPoint);
+                }
+                else
+                {
+                    HandleMoveIn(importedTransaction, meteringPoint);
+                }
             }
 
             return true;
@@ -259,6 +274,17 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         return meteringPoint.CommercialRelations
             .Where(x => x.StartDate < x.EndDate)
             .OrderBy(x => x.StartDate);
+    }
+
+    private static void HandleMoveOut(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
+    {
+        var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
+        commercialRelationEntity.ClientId = null;
+
+        TryCloseActiveCr(importedTransaction, meteringPoint);
+        HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
+
+        meteringPoint.CommercialRelations.Add(commercialRelationEntity);
     }
 
     private static void HandleMoveIn(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
