@@ -12,10 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public enum SyncJobName
+namespace Energinet.DataHub.ElectricityMarket.Application.Services;
+
+public interface IWholesaleMeteringPointService
 {
-    ElectricalHeating,
-    WholesaleMeteringPoint
+    Task<IEnumerable<WholesaleMeteringPointDto>> GetParentWholesaleMeteringPointsAsync(IAsyncEnumerable<MeteringPoint> meteringPoints);
+    Task<IEnumerable<WholesaleMeteringPointDto>> GetChildWholesaleMeteringPointsAsync(
+        IAsyncEnumerable<MeteringPoint> meteringPoints,
+        IEnumerable<string> parentMeteringPointIds);
 }

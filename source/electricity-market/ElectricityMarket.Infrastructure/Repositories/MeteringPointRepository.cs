@@ -133,10 +133,12 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return allRelated.Select(MeteringPointMapper.MapFromEntity);
     }
 
-    public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion)
+    public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
         var entities = _electricityMarketDatabaseContext.MeteringPoints
             .Where(x => x.Version >= lastSyncedVersion)
+            .OrderBy(x => x.Version)
+            .Take(batchSize)
             .AsAsyncEnumerable();
 
         await foreach (var entity in entities)

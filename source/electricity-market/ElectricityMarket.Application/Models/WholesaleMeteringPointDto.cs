@@ -12,10 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
-
-public enum SyncJobName
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
-    ElectricalHeating,
-    WholesaleMeteringPoint
+    public sealed record WholesaleMeteringPointDto(
+        string MeteringPointId,
+        string Type,
+        string? CalculationType,
+        string? SettlementMethod,
+        string GridAreaCode,
+        string Resolution,
+        string? FromGridAreaCode,
+        string? ToGridAreaCode,
+        string? Identification,
+        string? EnergySupplier,
+        string? BalanceResponsiblePartyId,
+        DateTimeOffset FromDate,
+        DateTimeOffset? ToDate);
 }
