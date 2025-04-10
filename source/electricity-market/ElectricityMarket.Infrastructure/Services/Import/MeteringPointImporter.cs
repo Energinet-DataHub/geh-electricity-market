@@ -44,9 +44,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             foreach (var importedTransaction in importedTransactions)
             {
-                if (importedTransaction.valid_to_date < _importCutoff)
-                    continue;
-
                 if (string.IsNullOrWhiteSpace(meteringPoint.Identification))
                 {
                     meteringPoint.Identification = importedTransaction.metering_point_id.ToString(CultureInfo.InvariantCulture);
