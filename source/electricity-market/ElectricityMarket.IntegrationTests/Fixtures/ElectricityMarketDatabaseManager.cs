@@ -45,6 +45,7 @@ public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<Electri
     /// </summary>
     protected override async Task<bool> CreateDatabaseSchemaAsync(ElectricityMarketDatabaseContext context)
     {
+        // TODO (MWO): This is probably not the way, but the below does not work locally (for me)
         return await context.Database.EnsureCreatedAsync();
 
         var upgradeEngine =
