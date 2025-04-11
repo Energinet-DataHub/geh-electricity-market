@@ -47,91 +47,127 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             join gridArea in _electricityMarketDatabaseContext.GridAreas on ownedGridArea.GridAreaId equals gridArea.Id
             select new { gridArea.Code, actor.ActorNumber };
 
-        var baz = (from mp in _electricityMarketDatabaseContext.MeteringPoints
-            from cr in mp.CommercialRelations
+        var meteringPointQuery =
+            from mp in _electricityMarketDatabaseContext.MeteringPoints
             where mp.Identification == meteringPointIdentification
-                  && cr.StartDate <= endDate
+            select mp;
+
+        var commercialRelationQuery =
+            from cr in meteringPointQuery.Single().CommercialRelations
+            where cr.StartDate <= endDate
                   && cr.EndDate > startDate
                   && cr.StartDate < cr.EndDate
-            select new { cr.StartDate, cr.EndDate }).ToList();
+            select cr;
 
-        var foo =
-            from mp in _electricityMarketDatabaseContext.MeteringPoints
-            from cr in mp.CommercialRelations
-            join mpp in _electricityMarketDatabaseContext.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
-            where mp.Identification == meteringPointIdentification
+        var meteringPointPeriodQuery =
+            from mpp in _electricityMarketDatabaseContext.MeteringPointPeriods
+            where mpp.MeteringPointId == meteringPointQuery.Single().Id
                   && mpp.ValidFrom <= endDate
                   && mpp.ValidTo > startDate
                   && mpp.RetiredById == null
-                  && cr.StartDate <= endDate
-                  && cr.EndDate > startDate
-                  && cr.StartDate < cr.EndDate
-            select new
-            {
-                mpp.ValidFrom,
-                mpp.ValidTo,
-                cr.StartDate,
-                cr.EndDate,
-                mp,
-                mpp,
-                cr,
-            };
+            select mpp;
 
-        IReadOnlyCollection<Foobar> list = foo.ToList()
-            .SelectMany(
-                r =>
+        var mppCrGroups =
+            meteringPointPeriodQuery.ToList() // TODO (MWO): Would be nice to avoid this ToList() call
+                .Select(
+                    mpp => new
                 {
-                    if (r.ValidTo <= r.StartDate)
-                    {
-                        return (IReadOnlyCollection<Foobar>)[new Foobar(r.ValidFrom, r.ValidTo, r.mp, r.mpp, null)];
-                    }
+                    MPP = mpp,
+                    CRS = commercialRelationQuery.Where(
+                        cr => cr.StartDate <= mpp.ValidTo && cr.EndDate > mpp.ValidFrom),
+                });
 
-                    if (r.EndDate <= r.ValidFrom)
+        var mppCrPeriods =
+            mppCrGroups.ToList() // TODO (MWO): Would be nice to avoid this ToList() call
+                .SelectMany(
+                    grp => grp.CRS.SelectMany(
+                        cr =>
                     {
-                        return [new Foobar(r.ValidFrom, r.ValidTo, r.mp, r.mpp, null)];
-                    }
+                        if (grp.MPP.ValidTo <= cr.StartDate)
+                        {
+                            return new List<Foobar>
+                            {
+                                new Foobar(
+                                    grp.MPP.ValidFrom,
+                                    grp.MPP.ValidTo,
+                                    meteringPointQuery.Single(),
+                                    grp.MPP,
+                                    null)
+                            };
+                        }
 
-                    if (r.ValidFrom >= r.StartDate && r.ValidTo <= r.EndDate)
-                    {
-                        return [new Foobar(r.ValidFrom, r.ValidTo, r.mp, r.mpp, r.cr)];
-                    }
+                        if (cr.EndDate <= grp.MPP.ValidFrom)
+                        {
+                            return new List<Foobar>
+                            {
+                                new Foobar(
+                                    grp.MPP.ValidFrom,
+                                    grp.MPP.ValidTo,
+                                    meteringPointQuery.Single(),
+                                    grp.MPP,
+                                    null)
+                            };
+                        }
 
-                    if (r.StartDate >= r.ValidFrom && r.EndDate <= r.ValidTo)
-                    {
-                        return
-                        [
-                            new Foobar(r.ValidFrom, r.StartDate, r.mp, r.mpp, null),
-                            new Foobar(r.StartDate, r.EndDate, r.mp, r.mpp, r.cr),
-                            new Foobar(r.EndDate, r.ValidTo, r.mp, r.mpp, null),
-                        ];
-                    }
+                        if (grp.MPP.ValidFrom >= cr.StartDate && grp.MPP.ValidTo <= cr.EndDate)
+                        {
+                            return new List<Foobar>
+                            {
+                                new Foobar(
+                                    grp.MPP.ValidFrom,
+                                    grp.MPP.ValidTo,
+                                    meteringPointQuery.Single(),
+                                    grp.MPP,
+                                    cr)
+                            };
+                        }
 
-                    if (r.StartDate <= r.ValidFrom)
-                    {
-                        return
-                        [
-                            new Foobar(r.ValidFrom, r.EndDate, r.mp, r.mpp, r.cr),
-                            new Foobar(r.EndDate, r.ValidTo, r.mp, r.mpp, null),
-                        ];
-                    }
+                        if (cr.StartDate >= grp.MPP.ValidFrom && cr.EndDate <= grp.MPP.ValidTo)
+                        {
+                            return new List<Foobar>
+                            {
+                                new Foobar(
+                                    grp.MPP.ValidFrom,
+                                    cr.StartDate,
+                                    meteringPointQuery.Single(),
+                                    grp.MPP,
+                                    null),
+                                new Foobar(cr.StartDate, cr.EndDate, meteringPointQuery.Single(), grp.MPP, cr),
+                                new Foobar(cr.EndDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, null),
+                            };
+                        }
 
-                    if (r.StartDate >= r.ValidFrom)
-                    {
-                        return
-                        [
-                            new Foobar(r.ValidFrom, r.StartDate, r.mp, r.mpp, null),
-                            new Foobar(r.StartDate, r.ValidTo, r.mp, r.mpp, r.cr),
-                        ];
-                    }
+                        if (cr.StartDate <= grp.MPP.ValidFrom)
+                        {
+                            return new List<Foobar>
+                            {
+                                new Foobar(grp.MPP.ValidFrom, cr.EndDate, meteringPointQuery.Single(), grp.MPP, cr),
+                                new Foobar(cr.EndDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, null),
+                            };
+                        }
 
-                    throw new InvalidOperationException("Unexpected date range");
-                })
-            .ToList();
+                        if (cr.StartDate >= grp.MPP.ValidFrom)
+                        {
+                            return new List<Foobar>
+                            {
+                                new Foobar(
+                                    grp.MPP.ValidFrom,
+                                    cr.StartDate,
+                                    meteringPointQuery.Single(),
+                                    grp.MPP,
+                                    null),
+                                new Foobar(cr.StartDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, cr),
+                            };
+                        }
+
+                        throw new InvalidOperationException("Unexpected date range");
+                    }));
 
         var query =
-            from l in list
+            from l in mppCrPeriods
             let mp = l.MP
             let mpp = l.MPP
+            let cr = l.CR
             join gridArea in gridAreaOwnerQuery on mpp.GridAreaCode equals gridArea.Code
             join exchangeFromGridArea in gridAreaOwnerQuery on mpp.ExchangeFromGridArea equals exchangeFromGridArea.Code into exchangeFrom
             from exchangeFromGridArea in exchangeFrom.DefaultIfEmpty()
@@ -165,7 +201,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                 ParentIdentification = mpp.ParentIdentification != null
                     ? new MeteringPointIdentification(mpp.ParentIdentification!)
                     : null,
-                EnergySupplier = l.CR?.EnergySupplier,
+                EnergySupplier = cr?.EnergySupplier,
             };
 
         return query.ToAsyncEnumerable();
