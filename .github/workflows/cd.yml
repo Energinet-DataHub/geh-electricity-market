@@ -35,7 +35,7 @@ jobs:
     uses: Energinet-DataHub/.github/.github/workflows/python-uv-cd.yml@v14
     with:
       packages_directory: source
-      subsystem_name: Electricity-Market
+      subsystem_name: electricity-market
       notification_email: 18ac1620.energinet.onmicrosoft.com@emea.teams.ms
       sender_email: ${{ vars.email_internal_sender }}
       postfix_latest: true
