@@ -29,8 +29,8 @@ def test__when_running_migrate__then_log_is_produced(spark: SparkSession, monkey
     for message in expected_log_messages:
         query = f"""
             AppTraces
-            | where Properties.Subsystem == "measurements"
-            | where AppRoleName == "dbr-calculated-measurements"
+            | where Properties.Subsystem == "electricity-market"
+            | where AppRoleName == "dbr-electricity-market"
             | where Message startswith_cs "{message}"
             | where TimeGenerated > ago({timeout_minutes}m)
         """
