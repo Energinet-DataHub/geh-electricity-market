@@ -60,7 +60,8 @@ internal static class MeteringPointMapper
             from.ExchangeToGridArea,
             from.PowerPlantGsrn,
             MeteringPointEnumMapper.MapOptionalEntity(MeteringPointEnumMapper.SettlementMethods, from.SettlementMethod),
-            MapFromEntity(from.InstallationAddress));
+            MapFromEntity(from.InstallationAddress),
+            from.TransactionType);
     }
 
     private static InstallationAddress MapFromEntity(InstallationAddressEntity from)

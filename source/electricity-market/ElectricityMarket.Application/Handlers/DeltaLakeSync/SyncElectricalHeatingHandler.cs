@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
+using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
@@ -23,20 +24,23 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
     private readonly ISyncJobsRepository _syncJobsRepository;
+    private readonly IElectricalHeatingPeriodizationService _electricalHeatingPeriodizationService;
 
-    public SyncElectricalHeatingHandler(IMeteringPointRepository meteringPointRepository, ISyncJobsRepository syncJobsRepository)
+    public SyncElectricalHeatingHandler(IMeteringPointRepository meteringPointRepository, ISyncJobsRepository syncJobsRepository, IElectricalHeatingPeriodizationService electricalHeatingPeriodizationService)
     {
         _meteringPointRepository = meteringPointRepository;
         _syncJobsRepository = syncJobsRepository;
+        _electricalHeatingPeriodizationService = electricalHeatingPeriodizationService;
     }
 
     public async Task Handle(SyncElectricalHeatingCommand request, CancellationToken cancellationToken)
     {
         var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.ElectricalHeating).ConfigureAwait(false);
         var meteringPointsToSync = _meteringPointRepository
-            .GetMeteringPointsToSyncAsync(currentSyncJob.Version)
-            .ConfigureAwait(false);
+            .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
+        var parentMeteringPoints = await _electricalHeatingPeriodizationService.GetParentElectricalHeatingAsync(meteringPointsToSync).ConfigureAwait(false);
+        var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(meteringPointsToSync, parentMeteringPoints.Select(p => p.MeteringPointId)).ConfigureAwait(false);
         DateTimeOffset maxVersion = currentSyncJob.Version;
         await foreach (var meteringPoint in meteringPointsToSync)
         {
