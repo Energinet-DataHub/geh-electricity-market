@@ -162,6 +162,7 @@ CREATE TABLE [electricitymarket].[ContactAddress]
     [Floor]                      nvarchar(64) NULL,
     [Room]                       nvarchar(64) NULL,
     [PostCode]                   nvarchar(64) NULL,
+    [PostBox]                    nvarchar(64) NULL,
     [MunicipalityCode]           nvarchar(64) NULL,
 
     CONSTRAINT PK_ContactAddress PRIMARY KEY CLUSTERED (Id),

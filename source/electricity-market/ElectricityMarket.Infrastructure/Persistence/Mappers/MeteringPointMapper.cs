@@ -164,6 +164,7 @@ internal static class MeteringPointMapper
             from.Floor,
             from.Room,
             from.PostCode,
+            from.PostBox,
             from.MunicipalityCode);
     }
 }
