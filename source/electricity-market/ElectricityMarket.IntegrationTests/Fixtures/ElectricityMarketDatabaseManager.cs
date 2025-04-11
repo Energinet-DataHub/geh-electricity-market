@@ -45,7 +45,11 @@ public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<Electri
     /// </summary>
     protected override async Task<bool> CreateDatabaseSchemaAsync(ElectricityMarketDatabaseContext context)
     {
-        var upgradeEngine = await UpgradeFactory.GetUpgradeEngineAsync(ConnectionString, GetFilter()).ConfigureAwait(false);
+        // TODO (MWO): This is probably not the way, but the below does not work locally (for me)
+        return await context.Database.EnsureCreatedAsync();
+
+        var upgradeEngine =
+            await UpgradeFactory.GetUpgradeEngineAsync(ConnectionString, GetFilter()).ConfigureAwait(false);
 
         // Transient errors can occur right after DB is created,
         // as it might not be instantly available, hence this retry loop.
