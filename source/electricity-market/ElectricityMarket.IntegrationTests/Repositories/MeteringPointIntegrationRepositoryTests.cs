@@ -182,6 +182,97 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             ]);
     }
 
+    [Fact]
+    public async Task
+        Given_ChangesToMasterData_When_GetMeteringPointMasterDataChangesAsync_Then_NormalisedMasterDataReturned()
+    {
+        var electricityMarketDatabaseContext = _fixture.DatabaseManager.CreateDbContext();
+        var sut = new MeteringPointIntegrationRepository(electricityMarketDatabaseContext);
+
+        await SetupMeteringPoint578044607691001804(electricityMarketDatabaseContext);
+
+        var result = await sut.GetMeteringPointMasterDataChangesAsync(
+                "578044607691001804",
+                new DateTimeOffset(2024, 12, 31, 23, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2025, 5, 31, 22, 0, 0, TimeSpan.Zero))
+            .ToListAsync();
+
+        result.OrderBy(mpmd => mpmd.ValidFrom)
+            .Should()
+            .HaveCount(4)
+            .And.BeEquivalentTo(
+            [
+                new MeteringPointMasterData
+                {
+                    ConnectionState = ConnectionState.New,
+                    EnergySupplier = null,
+                    GridAccessProvider = "8500000000502",
+                    GridAreaCode = new GridAreaCode("804"),
+                    Identification = new MeteringPointIdentification("578044607691001804"),
+                    NeighborGridAreaOwners = [],
+                    ParentIdentification = null,
+                    ProductId = ProductId.EnergyActive,
+                    Resolution = new Resolution("PT1H"),
+                    SubType = MeteringPointSubType.Physical,
+                    Type = MeteringPointType.Consumption,
+                    Unit = MeasureUnit.kWh,
+                    ValidFrom = new DateTimeOffset(2025, 1, 9, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
+                    ValidTo = new DateTimeOffset(2025, 1, 12, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
+                },
+                new MeteringPointMasterData
+                {
+                    ConnectionState = ConnectionState.New,
+                    EnergySupplier = null,
+                    GridAccessProvider = "8500000000502",
+                    GridAreaCode = new GridAreaCode("804"),
+                    Identification = new MeteringPointIdentification("578044607691001804"),
+                    NeighborGridAreaOwners = [],
+                    ParentIdentification = null,
+                    ProductId = ProductId.EnergyActive,
+                    Resolution = new Resolution("PT1H"),
+                    SubType = MeteringPointSubType.Physical,
+                    Type = MeteringPointType.Consumption,
+                    Unit = MeasureUnit.kWh,
+                    ValidFrom = new DateTimeOffset(2025, 1, 12, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
+                    ValidTo = new DateTimeOffset(2025, 1, 13, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
+                },
+                new MeteringPointMasterData
+                {
+                    ConnectionState = ConnectionState.New,
+                    EnergySupplier = "8100000000115",
+                    GridAccessProvider = "8500000000502",
+                    GridAreaCode = new GridAreaCode("804"),
+                    Identification = new MeteringPointIdentification("578044607691001804"),
+                    NeighborGridAreaOwners = [],
+                    ParentIdentification = null,
+                    ProductId = ProductId.EnergyActive,
+                    Resolution = new Resolution("PT1H"),
+                    SubType = MeteringPointSubType.Physical,
+                    Type = MeteringPointType.Consumption,
+                    Unit = MeasureUnit.kWh,
+                    ValidFrom = new DateTimeOffset(2025, 1, 13, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
+                    ValidTo = new DateTimeOffset(2025, 2, 4, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
+                },
+                new MeteringPointMasterData
+                {
+                    ConnectionState = ConnectionState.Connected,
+                    EnergySupplier = "8100000000115",
+                    GridAccessProvider = "8500000000502",
+                    GridAreaCode = new GridAreaCode("804"),
+                    Identification = new MeteringPointIdentification("578044607691001804"),
+                    NeighborGridAreaOwners = [],
+                    ParentIdentification = null,
+                    ProductId = ProductId.EnergyActive,
+                    Resolution = new Resolution("PT1H"),
+                    SubType = MeteringPointSubType.Physical,
+                    Type = MeteringPointType.Consumption,
+                    Unit = MeasureUnit.kWh,
+                    ValidFrom = new DateTimeOffset(2025, 2, 4, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
+                    ValidTo = DateTimeOffset.MaxValue.ToInstant(),
+                },
+            ]);
+    }
+
     public Task InitializeAsync() => _fixture.InitializeAsync();
 
     public Task DisposeAsync() => _fixture.DisposeAsync();
@@ -525,6 +616,329 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         InstallationAddressId = 1,
                         MeteringPointStateId = 188242634,
                         BusinessTransactionDosId = 194336484,
+                        TransactionType = "CONNECTMP",
+                    },
+                },
+            });
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SetupMeteringPoint578044607691001804(ElectricityMarketDatabaseContext context)
+    {
+        await context.Actors.AddAsync(
+            new ActorEntity
+            {
+                OrganizationId = Guid.NewGuid(),
+                ActorId = Guid.Parse("3ba615a1-6bfe-4952-a994-08dc3d253234"),
+                ActorNumber = "8500000000502",
+                Status = ActorStatus.Active,
+                Name = "Test Actor",
+                IsFas = false,
+                MarketRole = new MarketRoleEntity
+                {
+                    ActorId = Guid.Parse("3ba615a1-6bfe-4952-a994-08dc3d253234"),
+                    Function = EicFunction.GridAccessProvider,
+                    GridAreas =
+                    {
+                        new MarketRoleGridAreaEntity
+                        {
+                            GridAreaId = Guid.Parse("68029af4-617f-4815-bbe5-ecc7510af51f"),
+                            MarketRoleId = Guid.Parse("c22160ec-29a0-4c7f-c1d9-08dcdba22339"),
+                            MeteringPointTypes =
+                            {
+                                new MeteringPointTypeEntity
+                                {
+                                    MarketRoleGridAreaId =
+                                        Guid.Parse("68029af4-617f-4815-bbe5-ecc7510af51f"),
+                                    MeteringTypeId = 14,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+        await context.GridAreas.AddAsync(
+            new GridAreaEntity
+            {
+                Id = Guid.Parse("68029af4-617f-4815-bbe5-ecc7510af51f"),
+                Code = "804",
+                Name = "Test Grid Area",
+                PriceAreaCode = PriceAreaCode.Dk1,
+                ValidFrom = new DateTimeOffset(2014, 9, 30, 22, 0, 0, 0, TimeSpan.Zero),
+                FullFlexDate = new DateTimeOffset(2019, 12, 31, 23, 0, 0, 0, TimeSpan.Zero),
+            });
+
+        await context.InstallationAddresses.AddRangeAsync(
+            new InstallationAddressEntity
+            {
+                //Id = 41295070000,
+                StreetCode = "5695",
+                StreetName = "Test Road",
+                BuildingNumber = "42",
+                CityName = "Test City",
+                WashInstructions = "Washable",
+                CountryCode = "DK",
+                PostCode = "9999",
+                MunicipalityCode = "1024",
+            },
+            new InstallationAddressEntity
+            {
+                //Id = 41295070001,
+                StreetCode = "5695",
+                StreetName = "Test Road",
+                BuildingNumber = "42",
+                CityName = "Test City",
+                WashInstructions = "Washable",
+                CountryCode = "DK",
+                PostCode = "9999",
+                MunicipalityCode = "1024",
+            },
+            new InstallationAddressEntity
+            {
+                //Id = 41295070002,
+                StreetCode = "5695",
+                StreetName = "Test Road",
+                BuildingNumber = "42",
+                CityName = "Test City",
+                WashInstructions = "Washable",
+                CountryCode = "DK",
+                PostCode = "9999",
+                MunicipalityCode = "1024",
+                CitySubdivisionName = "Test City Subdivision",
+            },
+            new InstallationAddressEntity
+            {
+                //Id = 41295070003,
+                StreetCode = "5695",
+                StreetName = "Test Road",
+                BuildingNumber = "42",
+                CityName = "Test City",
+                WashInstructions = "Washable",
+                CountryCode = "DK",
+                PostCode = "9999",
+                MunicipalityCode = "1024",
+                CitySubdivisionName = "Test City Subdivision",
+            },
+            new InstallationAddressEntity
+            {
+                //Id = 41295070004,
+                StreetCode = "5695",
+                StreetName = "Test Road",
+                BuildingNumber = "42",
+                CityName = "Test City",
+                WashInstructions = "Washable",
+                CountryCode = "DK",
+                PostCode = "9999",
+                MunicipalityCode = "1024",
+                CitySubdivisionName = "Test City Subdivision",
+            });
+
+        await context.MeteringPoints.AddAsync(
+            new MeteringPointEntity
+            {
+                Identification = "578044607691001804",
+                //Id = 4129507,
+                Version = new DateTimeOffset(2025, 4, 8, 11, 53, 25, 0, TimeSpan.Zero),
+                CommercialRelations =
+                {
+                    new CommercialRelationEntity
+                    {
+                        //Id = 4129507000,
+                        MeteringPointId = 4129507,
+                        EnergySupplier = "8100000000108",
+                        StartDate = new DateTimeOffset(2025, 1, 16, 23, 0, 0, 0, TimeSpan.Zero),
+                        EndDate = new DateTimeOffset(2025, 1, 16, 23, 0, 0, 0, TimeSpan.Zero),
+                        ModifiedAt = new DateTimeOffset(2025, 2, 6, 11, 17, 35, 137, TimeSpan.Zero),
+                        ClientId = Guid.NewGuid(),
+                        ElectricalHeatingPeriods = [],
+                        EnergySupplyPeriods =
+                        [
+                            new EnergySupplyPeriodEntity
+                            {
+                                //Id = 4129507000000,
+                                CommercialRelationId = 4129507000,
+                                ValidFrom = new DateTimeOffset(2025, 1, 16, 23, 0, 0, 0, TimeSpan.Zero),
+                                ValidTo = DateTimeOffset.MaxValue,
+                                CreatedAt = new DateTimeOffset(2025, 2, 6, 11, 17, 35, 137, TimeSpan.Zero),
+                                WebAccessCode = "webAccessCode",
+                                EnergySupplier = "8100000000108",
+                                BusinessTransactionDosId = 339745803,
+                                TransactionType = "MOVEINES",
+                            },
+                            new EnergySupplyPeriodEntity
+                            {
+                                //Id = 4129507000001,
+                                CommercialRelationId = 4129507000,
+                                ValidFrom = new DateTimeOffset(2025, 1, 16, 23, 0, 0, 0, TimeSpan.Zero),
+                                ValidTo = DateTimeOffset.MaxValue,
+                                CreatedAt = new DateTimeOffset(2025, 2, 6, 11, 17, 35, 137, TimeSpan.Zero),
+                                WebAccessCode = "webAccessCode",
+                                EnergySupplier = "8100000000108",
+                                BusinessTransactionDosId = 339745803,
+                                TransactionType = "MOVEINES",
+                            },
+                        ],
+                    },
+                    new CommercialRelationEntity
+                    {
+                        //Id = 4129507001,
+                        MeteringPointId = 4129507,
+                        EnergySupplier = "8100000000115",
+                        StartDate = new DateTimeOffset(2025, 1, 13, 23, 0, 0, 0, TimeSpan.Zero),
+                        EndDate = DateTimeOffset.MaxValue,
+                        ModifiedAt = new DateTimeOffset(2025, 1, 16, 23, 10, 39, 82, TimeSpan.Zero),
+                        ClientId = Guid.NewGuid(),
+                        ElectricalHeatingPeriods = [],
+                        EnergySupplyPeriods =
+                        [
+                            new EnergySupplyPeriodEntity
+                            {
+                                //Id = 4129507001000,
+                                CommercialRelationId = 4129507001,
+                                ValidFrom = new DateTimeOffset(2025, 1, 13, 23, 0, 0, 0, TimeSpan.Zero),
+                                ValidTo = DateTimeOffset.MaxValue,
+                                CreatedAt = new DateTimeOffset(2025, 1, 16, 23, 10, 39, 82, TimeSpan.Zero),
+                                WebAccessCode = "webAccessCode",
+                                EnergySupplier = "8100000000115",
+                                BusinessTransactionDosId = 339746897,
+                                TransactionType = "MOVEINES",
+                            },
+                            new EnergySupplyPeriodEntity
+                            {
+                                //Id = 4129507001001,
+                                CommercialRelationId = 4129507001,
+                                ValidFrom = new DateTimeOffset(2025, 1, 13, 23, 0, 0, 0, TimeSpan.Zero),
+                                ValidTo = DateTimeOffset.MaxValue,
+                                CreatedAt = new DateTimeOffset(2025, 1, 16, 23, 10, 39, 82, TimeSpan.Zero),
+                                WebAccessCode = "webAccessCode",
+                                EnergySupplier = "8100000000115",
+                                BusinessTransactionDosId = 339746897,
+                                TransactionType = "MOVEINES",
+                            },
+                        ],
+                    },
+                },
+                MeteringPointPeriods =
+                {
+                    new MeteringPointPeriodEntity
+                    {
+                        //Id = 41295070000,
+                        MeteringPointId = 4129507,
+                        ValidFrom = new DateTimeOffset(2025, 1, 9, 23, 0, 0, 0, TimeSpan.Zero),
+                        ValidTo = DateTimeOffset.MaxValue,
+                        RetiredAt = new DateTimeOffset(2025, 4, 8, 11, 53, 25, 0, TimeSpan.Zero),
+                        RetiredById = 2,
+                        CreatedAt = new DateTimeOffset(2015, 1, 13, 8, 26, 46, 235, TimeSpan.Zero),
+                        Type = "Consumption",
+                        SubType = "Physical",
+                        ConnectionState = "New",
+                        Resolution = "PT1H",
+                        GridAreaCode = "804",
+                        DisconnectionType = "RemoteDisconnection",
+                        Product = "EnergyActive",
+                        MeasureUnit = "kWh",
+                        MeterNumber = "123456",
+                        SettlementGroup = 0,
+                        SettlementMethod = "FlexSettled",
+                        InstallationAddressId = 1,
+                        MeteringPointStateId = 224108939,
+                        BusinessTransactionDosId = 339745638,
+                        TransactionType = "CREATEMP",
+                    },
+                    new MeteringPointPeriodEntity
+                    {
+                        //Id = 41295070001,
+                        MeteringPointId = 4129507,
+                        ValidFrom = new DateTimeOffset(2025, 1, 9, 23, 0, 0, 0, TimeSpan.Zero),
+                        ValidTo = new DateTimeOffset(2025, 1, 12, 23, 0, 0, 0, TimeSpan.Zero),
+                        CreatedAt = new DateTimeOffset(2015, 1, 13, 8, 26, 46, 235, TimeSpan.Zero),
+                        Type = "Consumption",
+                        SubType = "Physical",
+                        ConnectionState = "New",
+                        Resolution = "PT1H",
+                        GridAreaCode = "804",
+                        DisconnectionType = "RemoteDisconnection",
+                        Product = "EnergyActive",
+                        MeasureUnit = "kWh",
+                        MeterNumber = "123456",
+                        SettlementGroup = 0,
+                        SettlementMethod = "FlexSettled",
+                        InstallationAddressId = 2,
+                        MeteringPointStateId = 224108939,
+                        BusinessTransactionDosId = 339745638,
+                        TransactionType = "CREATEMP",
+                    },
+                    new MeteringPointPeriodEntity
+                    {
+                        //Id = 41295070002,
+                        MeteringPointId = 4129507,
+                        ValidFrom = new DateTimeOffset(2025, 1, 12, 23, 0, 0, 0, TimeSpan.Zero),
+                        ValidTo = DateTimeOffset.MaxValue,
+                        RetiredAt = new DateTimeOffset(2025, 4, 8, 11, 53, 25, 0, TimeSpan.Zero),
+                        RetiredById = 4,
+                        CreatedAt = new DateTimeOffset(2015, 1, 14, 12, 45, 38, 30, TimeSpan.Zero),
+                        Type = "Consumption",
+                        SubType = "Physical",
+                        ConnectionState = "New",
+                        Resolution = "PT1H",
+                        GridAreaCode = "804",
+                        DisconnectionType = "RemoteDisconnection",
+                        Product = "EnergyActive",
+                        MeasureUnit = "kWh",
+                        MeterNumber = "123456",
+                        SettlementGroup = 0,
+                        SettlementMethod = "FlexSettled",
+                        InstallationAddressId = 3,
+                        MeteringPointStateId = 224109748,
+                        BusinessTransactionDosId = 339745655,
+                        TransactionType = "MSTDATSBM",
+                    },
+                    new MeteringPointPeriodEntity
+                    {
+                        //Id = 41295070003,
+                        MeteringPointId = 4129507,
+                        ValidFrom = new DateTimeOffset(2025, 1, 12, 23, 0, 0, 0, TimeSpan.Zero),
+                        ValidTo = new DateTimeOffset(2025, 2, 4, 23, 0, 0, 0, TimeSpan.Zero),
+                        CreatedAt = new DateTimeOffset(2015, 1, 14, 12, 45, 38, 30, TimeSpan.Zero),
+                        Type = "Consumption",
+                        SubType = "Physical",
+                        ConnectionState = "New",
+                        Resolution = "PT1H",
+                        GridAreaCode = "804",
+                        DisconnectionType = "RemoteDisconnection",
+                        Product = "EnergyActive",
+                        MeasureUnit = "kWh",
+                        MeterNumber = "123456",
+                        SettlementGroup = 0,
+                        SettlementMethod = "FlexSettled",
+                        InstallationAddressId = 4,
+                        MeteringPointStateId = 224109748,
+                        BusinessTransactionDosId = 339745655,
+                        TransactionType = "MSTDATSBM",
+                    },
+                    new MeteringPointPeriodEntity
+                    {
+                        //Id = 41295070004,
+                        MeteringPointId = 4129507,
+                        ValidFrom = new DateTimeOffset(2025, 2, 4, 23, 0, 0, 0, TimeSpan.Zero),
+                        ValidTo = DateTimeOffset.MaxValue,
+                        CreatedAt = new DateTimeOffset(2015, 2, 6, 11, 17, 35, 137, TimeSpan.Zero),
+                        Type = "Consumption",
+                        SubType = "Physical",
+                        ConnectionState = "Connected",
+                        Resolution = "PT1H",
+                        GridAreaCode = "804",
+                        DisconnectionType = "RemoteDisconnection",
+                        Product = "EnergyActive",
+                        MeasureUnit = "kWh",
+                        MeterNumber = "123456",
+                        SettlementGroup = 0,
+                        SettlementMethod = "FlexSettled",
+                        InstallationAddressId = 5,
+                        MeteringPointStateId = 224122602,
+                        BusinessTransactionDosId = 339798525,
                         TransactionType = "CONNECTMP",
                     },
                 },

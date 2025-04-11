@@ -18,8 +18,10 @@ using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
@@ -45,15 +47,91 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             join gridArea in _electricityMarketDatabaseContext.GridAreas on ownedGridArea.GridAreaId equals gridArea.Id
             select new { gridArea.Code, actor.ActorNumber };
 
-        var query =
+        var baz = (from mp in _electricityMarketDatabaseContext.MeteringPoints
+            from cr in mp.CommercialRelations
+            where mp.Identification == meteringPointIdentification
+                  && cr.StartDate <= endDate
+                  && cr.EndDate > startDate
+                  && cr.StartDate < cr.EndDate
+            select new { cr.StartDate, cr.EndDate }).ToList();
+
+        var foo =
             from mp in _electricityMarketDatabaseContext.MeteringPoints
             from cr in mp.CommercialRelations
             join mpp in _electricityMarketDatabaseContext.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
-            where mp.Identification == meteringPointIdentification &&
-                  mpp.ValidFrom <= endDate &&
-                  mpp.ValidTo > startDate &&
-                  mpp.RetiredById == null &&
-                  cr.MeteringPointId == mp.Id
+            where mp.Identification == meteringPointIdentification
+                  && mpp.ValidFrom <= endDate
+                  && mpp.ValidTo > startDate
+                  && mpp.RetiredById == null
+                  && cr.StartDate <= endDate
+                  && cr.EndDate > startDate
+                  && cr.StartDate < cr.EndDate
+            select new
+            {
+                mpp.ValidFrom,
+                mpp.ValidTo,
+                cr.StartDate,
+                cr.EndDate,
+                mp,
+                mpp,
+                cr,
+            };
+
+        IReadOnlyCollection<Foobar> list = foo.ToList()
+            .SelectMany(
+                r =>
+                {
+                    if (r.ValidTo <= r.StartDate)
+                    {
+                        return (IReadOnlyCollection<Foobar>)[new Foobar(r.ValidFrom, r.ValidTo, r.mp, r.mpp, null)];
+                    }
+
+                    if (r.EndDate <= r.ValidFrom)
+                    {
+                        return [new Foobar(r.ValidFrom, r.ValidTo, r.mp, r.mpp, null)];
+                    }
+
+                    if (r.ValidFrom >= r.StartDate && r.ValidTo <= r.EndDate)
+                    {
+                        return [new Foobar(r.ValidFrom, r.ValidTo, r.mp, r.mpp, r.cr)];
+                    }
+
+                    if (r.StartDate >= r.ValidFrom && r.EndDate <= r.ValidTo)
+                    {
+                        return
+                        [
+                            new Foobar(r.ValidFrom, r.StartDate, r.mp, r.mpp, null),
+                            new Foobar(r.StartDate, r.EndDate, r.mp, r.mpp, r.cr),
+                            new Foobar(r.EndDate, r.ValidTo, r.mp, r.mpp, null),
+                        ];
+                    }
+
+                    if (r.StartDate <= r.ValidFrom)
+                    {
+                        return
+                        [
+                            new Foobar(r.ValidFrom, r.EndDate, r.mp, r.mpp, r.cr),
+                            new Foobar(r.EndDate, r.ValidTo, r.mp, r.mpp, null),
+                        ];
+                    }
+
+                    if (r.StartDate >= r.ValidFrom)
+                    {
+                        return
+                        [
+                            new Foobar(r.ValidFrom, r.StartDate, r.mp, r.mpp, null),
+                            new Foobar(r.StartDate, r.ValidTo, r.mp, r.mpp, r.cr),
+                        ];
+                    }
+
+                    throw new InvalidOperationException("Unexpected date range");
+                })
+            .ToList();
+
+        var query =
+            from l in list
+            let mp = l.MP
+            let mpp = l.MPP
             join gridArea in gridAreaOwnerQuery on mpp.GridAreaCode equals gridArea.Code
             join exchangeFromGridArea in gridAreaOwnerQuery on mpp.ExchangeFromGridArea equals exchangeFromGridArea.Code into exchangeFrom
             from exchangeFromGridArea in exchangeFrom.DefaultIfEmpty()
@@ -63,17 +141,18 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             select new MeteringPointMasterData
             {
                 Identification = new MeteringPointIdentification(mp.Identification),
-                ValidFrom = cr.StartDate.ToInstant(),
-                ValidTo = cr.EndDate.ToInstant(),
+                ValidFrom = l.PStart.ToInstant(),
+                ValidTo = l.PEnd.ToInstant(),
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
                 GridAccessProvider = string.IsNullOrWhiteSpace(mpp.OwnedBy) ? gridArea.ActorNumber : mpp.OwnedBy!,
 
                 // This ugliness is needed for EF Core to translate the left join into a working query.
-                NeighborGridAreaOwners = exchangeFromGridArea.ActorNumber != null && exchangeToGridArea.ActorNumber != null
+                NeighborGridAreaOwners =
+                    exchangeFromGridArea?.ActorNumber != null && exchangeToGridArea?.ActorNumber != null
                     ? new List<string> { exchangeFromGridArea.ActorNumber, exchangeToGridArea.ActorNumber }
-                    : exchangeFromGridArea.ActorNumber != null && exchangeToGridArea.ActorNumber == null
+                    : exchangeFromGridArea?.ActorNumber != null && exchangeToGridArea?.ActorNumber == null
                         ? new List<string> { exchangeFromGridArea.ActorNumber }
-                        : exchangeFromGridArea.ActorNumber == null && exchangeToGridArea.ActorNumber != null
+                        : exchangeFromGridArea?.ActorNumber == null && exchangeToGridArea?.ActorNumber != null
                             ? new List<string> { exchangeToGridArea.ActorNumber }
                             : new List<string>(),
 
@@ -86,9 +165,16 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                 ParentIdentification = mpp.ParentIdentification != null
                     ? new MeteringPointIdentification(mpp.ParentIdentification!)
                     : null,
-                EnergySupplier = cr.EnergySupplier,
+                EnergySupplier = l.CR?.EnergySupplier,
             };
 
-        return query.AsAsyncEnumerable();
+        return query.ToAsyncEnumerable();
     }
+
+    private sealed record Foobar(
+        DateTimeOffset PStart,
+        DateTimeOffset PEnd,
+        MeteringPointEntity MP,
+        MeteringPointPeriodEntity MPP,
+        CommercialRelationEntity? CR);
 }
