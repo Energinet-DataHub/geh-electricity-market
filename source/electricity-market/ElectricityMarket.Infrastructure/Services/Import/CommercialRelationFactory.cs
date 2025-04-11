@@ -37,10 +37,6 @@ public static class CommercialRelationFactory
             ClientId = Guid.NewGuid(),
         };
 
-        var energySupplyPeriodEntity = CreateEnergySupplyPeriodEntity(importedTransaction);
-
-        commercialRelation.EnergySupplyPeriods.Add(energySupplyPeriodEntity);
-
         return commercialRelation;
     }
 
@@ -53,18 +49,13 @@ public static class CommercialRelationFactory
             throw new ArgumentException($"{nameof(importedTransaction.balance_supplier_id)} is required", nameof(importedTransaction));
         }
 
-        if (string.IsNullOrWhiteSpace(importedTransaction.web_access_code))
-        {
-            throw new ArgumentException($"{nameof(importedTransaction.web_access_code)} is required", nameof(importedTransaction));
-        }
-
         var energySupplyPeriodEntity = new EnergySupplyPeriodEntity
         {
             ValidFrom = importedTransaction.valid_from_date,
             ValidTo = DateTimeOffset.MaxValue,
             CreatedAt = importedTransaction.dh2_created,
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
-            WebAccessCode = importedTransaction.web_access_code.TrimEnd(),
+            WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? "<NotSet>",
             EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd(),
             TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
