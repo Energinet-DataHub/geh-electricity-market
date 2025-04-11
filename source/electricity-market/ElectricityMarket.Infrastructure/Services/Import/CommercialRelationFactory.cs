@@ -92,6 +92,7 @@ public static class CommercialRelationFactory
                 Floor = importedTransaction.contact_1_floor_id?.TrimEnd(),
                 Room = importedTransaction.contact_1_room_id?.TrimEnd(),
                 PostCode = importedTransaction.contact_1_postcode?.TrimEnd() ?? string.Empty,
+                PostBox = importedTransaction.contact_1_post_box?.TrimEnd(),
                 MunicipalityCode = importedTransaction.contact_1_municipality_code?.TrimEnd(),
             };
 
@@ -124,6 +125,7 @@ public static class CommercialRelationFactory
                     Floor = importedTransaction.contact_4_floor_id?.TrimEnd(),
                     Room = importedTransaction.contact_4_room_id?.TrimEnd(),
                     PostCode = importedTransaction.contact_4_postcode?.TrimEnd() ?? string.Empty,
+                    PostBox = importedTransaction.contact_4_post_box?.TrimEnd(),
                     MunicipalityCode = importedTransaction.contact_4_municipality_code?.TrimEnd(),
                 },
             };
@@ -194,6 +196,7 @@ public static class CommercialRelationFactory
                     Floor = contact.ContactAddress.Floor,
                     Room = contact.ContactAddress.Room,
                     PostCode = contact.ContactAddress.PostCode,
+                    PostBox = contact.ContactAddress.PostBox,
                     MunicipalityCode = contact.ContactAddress.MunicipalityCode,
                 };
             }

@@ -31,5 +31,6 @@ public sealed class ContactAddressEntity
     public string? Floor { get; set; }
     public string? Room { get; set; }
     public string? PostCode { get; set; }
+    public string? PostBox { get; set; }
     public string? MunicipalityCode { get; set; }
 }
