@@ -22,4 +22,10 @@ public interface IMeteringPointIntegrationRepository
         string meteringPointIdentification,
         DateTimeOffset startDate,
         DateTimeOffset endDate);
+
+    IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesTake2Async(
+        string meteringPointIdentification,
+        DateTimeOffset startDate,
+        DateTimeOffset endDate);
+
 }

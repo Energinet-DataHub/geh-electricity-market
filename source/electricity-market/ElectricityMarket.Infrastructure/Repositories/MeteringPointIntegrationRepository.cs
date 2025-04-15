@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
@@ -23,6 +24,10 @@ using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using NodaTime.Extensions;
+using ConnectionState = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.ConnectionState;
+using MeteringPointIdentification = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointIdentification;
+using MeteringPointSubType = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointSubType;
+using MeteringPointType = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointType;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
@@ -34,6 +39,88 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
     {
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }
+
+    public async IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesTake2Async(
+            string meteringPointIdentification,
+            DateTimeOffset startDate,
+            DateTimeOffset endDate)
+        {
+            var meteringPoint = await _electricityMarketDatabaseContext.MeteringPoints
+                .FirstOrDefaultAsync(mp => mp.Identification == meteringPointIdentification).ConfigureAwait(false);
+
+            if (meteringPoint == null)
+            {
+                yield break;
+            }
+
+            var gridAreaOwnerQuery =
+                from actor in _electricityMarketDatabaseContext.Actors
+                where actor.MarketRole.Function == EicFunction.GridAccessProvider
+                from ownedGridArea in actor.MarketRole.GridAreas
+                join gridArea in _electricityMarketDatabaseContext.GridAreas on ownedGridArea.GridAreaId equals gridArea.Id
+                select new { gridArea.Code, actor.ActorNumber };
+
+            var commercialRelations = meteringPoint.CommercialRelations
+                .Where(cr => cr.StartDate <= endDate && cr.EndDate > startDate && cr.StartDate < cr.EndDate);
+
+            var meteringPointPeriods = _electricityMarketDatabaseContext.MeteringPointPeriods
+                .Where(mpp => mpp.MeteringPointId == meteringPoint.Id &&
+                              mpp.ValidFrom <= endDate &&
+                              mpp.ValidTo > startDate &&
+                              mpp.RetiredById == null);
+
+            var mppList = await meteringPointPeriods.ToListAsync().ConfigureAwait(false);
+
+            foreach (var mpp in mppList)
+            {
+                var overlappingCRs = commercialRelations
+                    .Where(cr => cr.StartDate <= mpp.ValidTo && cr.EndDate > mpp.ValidFrom)
+                    .ToList();
+
+                var foobarPeriods = GenerateFoobarPeriods(meteringPoint, mpp, overlappingCRs);
+
+                foreach (var period in foobarPeriods)
+                {
+                    var gridAreaOwner = await gridAreaOwnerQuery
+                        .FirstOrDefaultAsync(g => g.Code == mpp.GridAreaCode).ConfigureAwait(false);
+
+                    var exchangeFromOwner = string.IsNullOrWhiteSpace(mpp.ExchangeFromGridArea)
+                        ? null
+                        : await gridAreaOwnerQuery.FirstOrDefaultAsync(g => g.Code == mpp.ExchangeFromGridArea).ConfigureAwait(false);
+
+                    var exchangeToOwner = string.IsNullOrWhiteSpace(mpp.ExchangeToGridArea)
+                        ? null
+                        : await gridAreaOwnerQuery.FirstOrDefaultAsync(g => g.Code == mpp.ExchangeToGridArea).ConfigureAwait(false);
+
+                    var neighbors = new List<string>();
+                    if (exchangeFromOwner?.ActorNumber != null) neighbors.Add(exchangeFromOwner.ActorNumber);
+                    if (exchangeToOwner?.ActorNumber != null) neighbors.Add(exchangeToOwner.ActorNumber);
+
+                    yield return new MeteringPointMasterData
+                    {
+                        Identification = new MeteringPointIdentification(meteringPoint.Identification),
+                        ValidFrom = period.PStart.ToInstant(),
+                        ValidTo = period.PEnd.ToInstant(),
+                        GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
+                        GridAccessProvider = string.IsNullOrWhiteSpace(mpp.OwnedBy)
+                            ? gridAreaOwner?.ActorNumber!
+                            : mpp.OwnedBy!,
+
+                        NeighborGridAreaOwners = neighbors,
+                        ConnectionState = Enum.Parse<ConnectionState>(mpp.ConnectionState),
+                        Type = Enum.Parse<MeteringPointType>(mpp.Type),
+                        SubType = Enum.Parse<MeteringPointSubType>(mpp.SubType),
+                        Resolution = new Resolution(mpp.Resolution),
+                        Unit = Enum.Parse<MeasureUnit>(mpp.MeasureUnit),
+                        ProductId = Enum.Parse<ProductId>(mpp.Product),
+                        ParentIdentification = mpp.ParentIdentification != null
+                            ? new MeteringPointIdentification(mpp.ParentIdentification)
+                            : null,
+                        EnergySupplier = period.CR?.EnergySupplier
+                    };
+                }
+            }
+        }
 
     public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
         string meteringPointIdentification,
@@ -205,6 +292,50 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             };
 
         return query.ToAsyncEnumerable();
+    }
+
+    private static DateTimeOffset Max(DateTimeOffset a, DateTimeOffset b) => a > b ? a : b;
+    private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b) => a < b ? a : b;
+
+    private static IEnumerable<Foobar> GenerateFoobarPeriods(
+        MeteringPointEntity mp,
+        MeteringPointPeriodEntity mpp,
+        List<CommercialRelationEntity> commercialRelations)
+    {
+        // If none: return the entire MeteringPointPeriod as a single Foobar with null for the CommercialRelation.
+        if (commercialRelations.Count == 0)
+        {
+            //Only yield if the period has a valid duration (ValidFrom < ValidTo) to avoid zero-length output.
+            if (mpp.ValidFrom < mpp.ValidTo)
+                yield return new Foobar(mpp.ValidFrom, mpp.ValidTo, mp, mpp, null);
+            yield break;
+        }
+
+        foreach (var cr in commercialRelations)
+        {
+            var start = Max(mpp.ValidFrom, cr.StartDate);
+            var end = Min(mpp.ValidTo, cr.EndDate);
+
+            // If the commercial relation starts after the beginning of the period, we return a Foobar for the "pre-CR" subperiod.
+            if (cr.StartDate > mpp.ValidFrom && mpp.ValidFrom < cr.StartDate)
+            {
+                yield return new Foobar(mpp.ValidFrom, cr.StartDate, mp, mpp, null);
+            }
+
+            //Add the actual overlap between the MeteringPointPeriod and CommercialRelation.
+            //Only emit this Foobar if the overlap has a valid length (avoids zero-duration entries when dates touch but don’t overlap).
+            if (start < end)
+            {
+                yield return new Foobar(start, end, mp, mpp, cr);
+            }
+
+            //Check if there's a gap after the commercial relation ends.
+            //If so, emit a Foobar for the "post-CR" subperiod (again, only if it has a valid duration).
+            if (cr.EndDate < mpp.ValidTo && cr.EndDate < mpp.ValidTo)
+            {
+                yield return new Foobar(cr.EndDate, mpp.ValidTo, mp, mpp, null);
+            }
+        }
     }
 
     private sealed record Foobar(

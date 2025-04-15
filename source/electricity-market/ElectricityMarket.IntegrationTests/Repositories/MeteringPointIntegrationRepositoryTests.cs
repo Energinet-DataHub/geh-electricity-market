@@ -44,7 +44,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         var electricityMarketDatabaseContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointIntegrationRepository(electricityMarketDatabaseContext);
 
-        var result = await sut.GetMeteringPointMasterDataChangesAsync(
+        var result = await sut.GetMeteringPointMasterDataChangesTake2Async(
                 "570715000001552082",
                 new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero),
                 new DateTimeOffset(2023, 10, 2, 0, 0, 0, TimeSpan.Zero))
@@ -62,7 +62,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
 
         await SetupMeteringPoint570715000001552082(electricityMarketDatabaseContext);
 
-        var result = await sut.GetMeteringPointMasterDataChangesAsync(
+        var result = await sut.GetMeteringPointMasterDataChangesTake2Async(
                 "570715000001552082",
                 new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero),
                 new DateTimeOffset(2023, 10, 2, 0, 0, 0, TimeSpan.Zero))
@@ -100,11 +100,11 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
 
         await SetupMeteringPoint571313180400090019(electricityMarketDatabaseContext);
 
-        var result = await sut.GetMeteringPointMasterDataChangesAsync(
+        var result = await sut.GetMeteringPointMasterDataChangesTake2Async(
                 "571313180400090019",
                 new DateTimeOffset(2019, 7, 1, 22, 0, 0, TimeSpan.Zero),
                 new DateTimeOffset(2021, 1, 1, 23, 0, 0, TimeSpan.Zero))
-            .ToListAsync();
+            .Where(x => x.EnergySupplier != null).ToListAsync();
 
         result.OrderBy(mpmd => mpmd.ValidFrom)
             .Should()
@@ -191,7 +191,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
 
         await SetupMeteringPoint578044607691001804(electricityMarketDatabaseContext);
 
-        var result = await sut.GetMeteringPointMasterDataChangesAsync(
+        var result = await sut.GetMeteringPointMasterDataChangesTake2Async(
                 "578044607691001804",
                 new DateTimeOffset(2024, 12, 31, 23, 0, 0, TimeSpan.Zero),
                 new DateTimeOffset(2025, 5, 31, 22, 0, 0, TimeSpan.Zero))
@@ -282,11 +282,11 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
 
         await SetupMeteringPoint571313180400031999(electricityMarketDatabaseContext);
 
-        var result = await sut.GetMeteringPointMasterDataChangesAsync(
+        var result = await sut.GetMeteringPointMasterDataChangesTake2Async(
                 "571313180400031999",
                 new DateTimeOffset(2010, 12, 31, 23, 0, 0, TimeSpan.Zero),
                 new DateTimeOffset(2025, 12, 31, 23, 0, 0, TimeSpan.Zero))
-            .ToListAsync();
+            .Where(x => x.EnergySupplier != null).ToListAsync();
 
         result.OrderBy(mpmd => mpmd.ValidFrom)
             .Should()
