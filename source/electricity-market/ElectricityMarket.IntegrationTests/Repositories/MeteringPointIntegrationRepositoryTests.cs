@@ -1093,6 +1093,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             new MeteringPointEntity
             {
                 Identification = "570715000001552082",
+
                 // Id = 51643,
                 Version = new DateTimeOffset(2025, 4, 7, 8, 18, 3, 0, TimeSpan.Zero),
                 CommercialRelations =
