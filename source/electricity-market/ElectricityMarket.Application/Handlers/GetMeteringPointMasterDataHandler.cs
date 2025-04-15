@@ -31,7 +31,7 @@ public sealed class GetMeteringPointMasterDataHandler : IRequestHandler<GetMeter
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var result = await _meteringPointIntegrationRepository.GetMeteringPointMasterDataChangesAsync(
+        var result = await _meteringPointIntegrationRepository.GetMeteringPointMasterDataChangesTake2Async(
             request.Request.MeteringPointIdentification,
             request.Request.StartDate,
             request.Request.EndDate)
