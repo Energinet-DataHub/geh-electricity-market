@@ -27,5 +27,4 @@ public interface IMeteringPointIntegrationRepository
         string meteringPointIdentification,
         DateTimeOffset startDate,
         DateTimeOffset endDate);
-
 }
