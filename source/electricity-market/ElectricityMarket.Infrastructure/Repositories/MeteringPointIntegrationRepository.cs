@@ -67,7 +67,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                               mpp.ValidTo > startDate &&
                               mpp.RetiredById == null);
 
-            var mppList = await meteringPointPeriods.ToListAsync().ConfigureAwait(false);
+            var mppList = await meteringPointPeriods.OrderBy(x => x.ValidFrom).ToListAsync().ConfigureAwait(false);
 
             foreach (var mpp in mppList)
             {
@@ -75,7 +75,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                     .Where(cr => cr.StartDate <= mpp.ValidTo && cr.EndDate > mpp.ValidFrom)
                     .ToList();
 
-                var foobarPeriods = GenerateFoobarPeriods(meteringPoint, mpp, overlappingCRs);
+                var foobarPeriods = GenerateFoobarPeriods2(meteringPoint, mpp, overlappingCRs);
 
                 foreach (var period in foobarPeriods)
                 {
@@ -309,6 +309,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             yield break;
         }
 
+        //---1111-----2222---
         foreach (var cr in commercialRelations)
         {
             var start = Max(mpp.ValidFrom, cr.StartDate);
@@ -329,11 +330,51 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
 
             // Check if there's a gap after the commercial relation ends.
             // If so, emit a Foobar for the "post-CR" subperiod (again, only if it has a valid duration).
-            if (cr.EndDate < mpp.ValidTo && cr.EndDate < mpp.ValidTo)
+            if (cr.EndDate < mpp.ValidTo)
             {
                 yield return new Foobar(cr.EndDate, mpp.ValidTo, mp, mpp, null);
             }
         }
+    }
+
+    private static IEnumerable<Foobar> GenerateFoobarPeriods2(
+        MeteringPointEntity mp,
+        MeteringPointPeriodEntity mpp,
+        List<CommercialRelationEntity> commercialRelations)
+    {
+        /*
+    var now = mpp.ValidFrom;
+    foreach(var commercialRelation) {
+    var esStart = energysupplier.Start;
+    if (esStart > now)
+         AddPeriodWithoutEs(now -> esStart);
+        AddPeriod(esStart -> esEnd);
+        now = esEnd;
+    }
+
+        if (now < mpp.ValidTo)
+    AddPeriodWithoutEs(now, mpp.ValidTo);
+    ----11111------22222(->)
+         */
+
+        var now = mpp.ValidFrom;
+
+        foreach (var cre in commercialRelations.OrderBy(x => x.StartDate))
+        {
+            var creStart = Max(cre.StartDate, mpp.ValidFrom);
+            var creEnd = Min(cre.EndDate, mpp.ValidTo);
+            if (creStart > now)
+            {
+                yield return new Foobar(now, creStart, mp, mpp, null);
+            }
+
+            yield return new Foobar(creStart, creEnd, mp, mpp, cre);
+            now = creEnd;
+
+        }
+
+        if (now < mpp.ValidTo)
+            yield return new Foobar(now, mpp.ValidTo, mp, mpp, null);
     }
 
     private sealed record Foobar(

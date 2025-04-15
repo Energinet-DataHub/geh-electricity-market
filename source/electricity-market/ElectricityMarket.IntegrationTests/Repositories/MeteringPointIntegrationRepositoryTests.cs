@@ -104,7 +104,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                 "571313180400090019",
                 new DateTimeOffset(2019, 7, 1, 22, 0, 0, TimeSpan.Zero),
                 new DateTimeOffset(2021, 1, 1, 23, 0, 0, TimeSpan.Zero))
-            .Where(x => x.EnergySupplier != null).ToListAsync();
+            .ToListAsync();
 
         result.OrderBy(mpmd => mpmd.ValidFrom)
             .Should()
@@ -286,7 +286,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                 "571313180400031999",
                 new DateTimeOffset(2010, 12, 31, 23, 0, 0, TimeSpan.Zero),
                 new DateTimeOffset(2025, 12, 31, 23, 0, 0, TimeSpan.Zero))
-            .Where(x => x.EnergySupplier != null).ToListAsync();
+            .ToListAsync();
 
         result.OrderBy(mpmd => mpmd.ValidFrom)
             .Should()
