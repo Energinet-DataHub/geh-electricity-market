@@ -305,7 +305,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
         // If none: return the entire MeteringPointPeriod as a single Foobar with null for the CommercialRelation.
         if (commercialRelations.Count == 0)
         {
-            //Only yield if the period has a valid duration (ValidFrom < ValidTo) to avoid zero-length output.
+            // Only yield if the period has a valid duration (ValidFrom < ValidTo) to avoid zero-length output.
             if (mpp.ValidFrom < mpp.ValidTo)
                 yield return new Foobar(mpp.ValidFrom, mpp.ValidTo, mp, mpp, null);
             yield break;
