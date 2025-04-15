@@ -434,7 +434,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.InstallationAddresses.AddRangeAsync(
             new InstallationAddressEntity
             {
-                //Id = 37878540000,
+                // Id = 37878540000,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -446,7 +446,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             },
             new InstallationAddressEntity
             {
-                //Id = 37878540001,
+                // Id = 37878540001,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -458,7 +458,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             },
             new InstallationAddressEntity
             {
-                //Id = 37878540002,
+                // Id = 37878540002,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -470,7 +470,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             },
             new InstallationAddressEntity
             {
-                //Id = 37878540003,
+                // Id = 37878540003,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -482,7 +482,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             },
             new InstallationAddressEntity
             {
-                //Id = 37878540004,
+                // Id = 37878540004,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -494,7 +494,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             },
             new InstallationAddressEntity
             {
-                //Id = 37878540005,
+                // Id = 37878540005,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -509,13 +509,13 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             new MeteringPointEntity
             {
                 Identification = "571313180400031999",
-                //Id = 3787854,
+                // Id = 3787854,
                 Version = new DateTimeOffset(2025, 4, 9, 12, 54, 29, 0, TimeSpan.Zero),
                 CommercialRelations =
                 {
                     new CommercialRelationEntity
                     {
-                        //Id = 3787854000,
+                        // Id = 3787854000,
                         MeteringPointId = 3787854,
                         EnergySupplier = "5790002473517",
                         StartDate = new DateTimeOffset(2018, 11, 15, 23, 0, 0, 0, TimeSpan.Zero),
@@ -527,7 +527,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3787854000000,
+                                // Id = 3787854000000,
                                 CommercialRelationId = 3787854000,
                                 ValidFrom = new DateTimeOffset(2018, 11, 15, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -541,7 +541,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new CommercialRelationEntity
                     {
-                        //Id = 3787854001,
+                        // Id = 3787854001,
                         MeteringPointId = 3787854,
                         EnergySupplier = "5790001687137",
                         StartDate = new DateTimeOffset(2021, 10, 11, 22, 0, 0, 0, TimeSpan.Zero),
@@ -553,7 +553,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3787854001000,
+                                // Id = 3787854001000,
                                 CommercialRelationId = 3787854001,
                                 ValidFrom = new DateTimeOffset(2021, 10, 11, 22, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -567,7 +567,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new CommercialRelationEntity
                     {
-                        //Id = 3787854002,
+                        // Id = 3787854002,
                         MeteringPointId = 3787854,
                         EnergySupplier = "5790001687137",
                         StartDate = new DateTimeOffset(2021, 12, 8, 23, 0, 0, 0, TimeSpan.Zero),
@@ -579,7 +579,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3787854002000,
+                                // Id = 3787854002000,
                                 CommercialRelationId = 3787854002,
                                 ValidFrom = new DateTimeOffset(2021, 12, 8, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -593,7 +593,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new CommercialRelationEntity
                     {
-                        //Id = 3787854003,
+                        // Id = 3787854003,
                         MeteringPointId = 3787854,
                         EnergySupplier = "5790001103095",
                         StartDate = new DateTimeOffset(2023, 8, 28, 22, 0, 0, 0, TimeSpan.Zero),
@@ -605,7 +605,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3787854003000,
+                                // Id = 3787854003000,
                                 CommercialRelationId = 3787854003,
                                 ValidFrom = new DateTimeOffset(2023, 8, 28, 22, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -617,7 +617,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                             },
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3787854003002,
+                                // Id = 3787854003002,
                                 CommercialRelationId = 3787854003,
                                 ValidFrom = new DateTimeOffset(2023, 9, 14, 22, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -634,7 +634,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                 {
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 37878540000,
+                        // Id = 37878540000,
                         MeteringPointId = 3787854,
                         ValidFrom = new DateTimeOffset(2018, 11, 15, 23, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
@@ -662,7 +662,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 37878540001,
+                        // Id = 37878540001,
                         MeteringPointId = 3787854,
                         ValidFrom = new DateTimeOffset(2018, 11, 15, 23, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = new DateTimeOffset(2021, 9, 19, 22, 0, 0, 0, TimeSpan.Zero),
@@ -688,7 +688,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 37878540002,
+                        // Id = 37878540002,
                         MeteringPointId = 3787854,
                         ValidFrom = new DateTimeOffset(2021, 9, 19, 22, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
@@ -718,7 +718,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 37878540003,
+                        // Id = 37878540003,
                         MeteringPointId = 3787854,
                         ValidFrom = new DateTimeOffset(2021, 9, 19, 22, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
@@ -748,7 +748,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 37878540004,
+                        // Id = 37878540004,
                         MeteringPointId = 3787854,
                         ValidFrom = new DateTimeOffset(2021, 9, 19, 22, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = new DateTimeOffset(2023, 8, 28, 22, 0, 0, 0, TimeSpan.Zero),
@@ -776,7 +776,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 37878540005,
+                        // Id = 37878540005,
                         MeteringPointId = 3787854,
                         ValidFrom = new DateTimeOffset(2023, 8, 28, 22, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
@@ -857,7 +857,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.InstallationAddresses.AddAsync(
             new InstallationAddressEntity
             {
-                //Id = 37906250000,
+                // Id = 37906250000,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -872,13 +872,13 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             new MeteringPointEntity
             {
                 Identification = "571313180400090019",
-                //Id = 3790625,
+                // Id = 3790625,
                 Version = new DateTimeOffset(2025, 4, 7, 8, 38, 13, 0, TimeSpan.Zero),
                 CommercialRelations =
                 {
                     new CommercialRelationEntity
                     {
-                        //Id = 3790625000,
+                        // Id = 3790625000,
                         MeteringPointId = 3790625,
                         EnergySupplier = "5790002420696",
                         StartDate = new DateTimeOffset(2019, 8, 12, 22, 0, 0, 0, TimeSpan.Zero),
@@ -890,7 +890,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3790625000000,
+                                // Id = 3790625000000,
                                 CommercialRelationId = 3790625000,
                                 ValidFrom = new DateTimeOffset(2019, 8, 12, 22, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -904,7 +904,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new CommercialRelationEntity
                     {
-                        //Id = 3790625001,
+                        // Id = 3790625001,
                         MeteringPointId = 3790625,
                         EnergySupplier = "5790002424762",
                         StartDate = new DateTimeOffset(2020, 2, 17, 23, 0, 0, 0, TimeSpan.Zero),
@@ -916,7 +916,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3790625001000,
+                                // Id = 3790625001000,
                                 CommercialRelationId = 3790625000,
                                 ValidFrom = new DateTimeOffset(2020, 2, 17, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -930,7 +930,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new CommercialRelationEntity
                     {
-                        //Id = 3790625002,
+                        // Id = 3790625002,
                         MeteringPointId = 3790625,
                         EnergySupplier = "5790001687137",
                         StartDate = new DateTimeOffset(2020, 2, 29, 23, 0, 0, 0, TimeSpan.Zero),
@@ -942,7 +942,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3790625002000,
+                                // Id = 3790625002000,
                                 CommercialRelationId = 3790625000,
                                 ValidFrom = new DateTimeOffset(2020, 2, 29, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -956,7 +956,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new CommercialRelationEntity
                     {
-                        //Id = 3790625003,
+                        // Id = 3790625003,
                         MeteringPointId = 3790625,
                         EnergySupplier = "5790002420696",
                         StartDate = new DateTimeOffset(2020, 12, 8, 23, 0, 0, 0, TimeSpan.Zero),
@@ -968,7 +968,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3790625003000,
+                                // Id = 3790625003000,
                                 CommercialRelationId = 3790625003,
                                 ValidFrom = new DateTimeOffset(2020, 12, 8, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -980,7 +980,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                             },
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 3790625003001,
+                                // Id = 3790625003001,
                                 CommercialRelationId = 3790625003,
                                 ValidFrom = new DateTimeOffset(2020, 12, 8, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -997,7 +997,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                 {
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 37906250000,
+                        // Id = 37906250000,
                         MeteringPointId = 3790625,
                         ValidFrom = new DateTimeOffset(2019, 8, 12, 22, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
@@ -1076,7 +1076,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.InstallationAddresses.AddAsync(
             new InstallationAddressEntity
             {
-                //Id = 516430002,
+                // Id = 516430002,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -1091,13 +1091,13 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             new MeteringPointEntity
             {
                 Identification = "570715000001552082",
-                //Id = 51643,
+                // Id = 51643,
                 Version = new DateTimeOffset(2025, 4, 7, 8, 18, 3, 0, TimeSpan.Zero),
                 CommercialRelations =
                 {
                     new CommercialRelationEntity
                     {
-                        //Id = 51643000,
+                        // Id = 51643000,
                         MeteringPointId = 51643,
                         EnergySupplier = "5790000701964",
                         StartDate = new DateTimeOffset(2017, 1, 19, 23, 0, 0, 0, TimeSpan.Zero),
@@ -1109,7 +1109,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 51643000000,
+                                // Id = 51643000000,
                                 CommercialRelationId = 51643000,
                                 ValidFrom = new DateTimeOffset(2017, 1, 19, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -1126,7 +1126,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                 {
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 516430000,
+                        // Id = 516430000,
                         MeteringPointId = 51643,
                         ValidFrom = new DateTimeOffset(2017, 1, 19, 23, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
@@ -1204,7 +1204,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.InstallationAddresses.AddRangeAsync(
             new InstallationAddressEntity
             {
-                //Id = 41295070000,
+                // Id = 41295070000,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -1216,7 +1216,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             },
             new InstallationAddressEntity
             {
-                //Id = 41295070001,
+                // Id = 41295070001,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -1228,20 +1228,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             },
             new InstallationAddressEntity
             {
-                //Id = 41295070002,
-                StreetCode = "5695",
-                StreetName = "Test Road",
-                BuildingNumber = "42",
-                CityName = "Test City",
-                WashInstructions = "Washable",
-                CountryCode = "DK",
-                PostCode = "9999",
-                MunicipalityCode = "1024",
-                CitySubdivisionName = "Test City Subdivision",
-            },
-            new InstallationAddressEntity
-            {
-                //Id = 41295070003,
+                // Id = 41295070002,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -1254,7 +1241,20 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             },
             new InstallationAddressEntity
             {
-                //Id = 41295070004,
+                // Id = 41295070003,
+                StreetCode = "5695",
+                StreetName = "Test Road",
+                BuildingNumber = "42",
+                CityName = "Test City",
+                WashInstructions = "Washable",
+                CountryCode = "DK",
+                PostCode = "9999",
+                MunicipalityCode = "1024",
+                CitySubdivisionName = "Test City Subdivision",
+            },
+            new InstallationAddressEntity
+            {
+                // Id = 41295070004,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -1270,13 +1270,13 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             new MeteringPointEntity
             {
                 Identification = "578044607691001804",
-                //Id = 4129507,
+                // Id = 4129507,
                 Version = new DateTimeOffset(2025, 4, 8, 11, 53, 25, 0, TimeSpan.Zero),
                 CommercialRelations =
                 {
                     new CommercialRelationEntity
                     {
-                        //Id = 4129507000,
+                        // Id = 4129507000,
                         MeteringPointId = 4129507,
                         EnergySupplier = "8100000000108",
                         StartDate = new DateTimeOffset(2025, 1, 16, 23, 0, 0, 0, TimeSpan.Zero),
@@ -1288,7 +1288,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 4129507000000,
+                                // Id = 4129507000000,
                                 CommercialRelationId = 4129507000,
                                 ValidFrom = new DateTimeOffset(2025, 1, 16, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -1300,7 +1300,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                             },
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 4129507000001,
+                                // Id = 4129507000001,
                                 CommercialRelationId = 4129507000,
                                 ValidFrom = new DateTimeOffset(2025, 1, 16, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -1314,7 +1314,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new CommercialRelationEntity
                     {
-                        //Id = 4129507001,
+                        // Id = 4129507001,
                         MeteringPointId = 4129507,
                         EnergySupplier = "8100000000115",
                         StartDate = new DateTimeOffset(2025, 1, 13, 23, 0, 0, 0, TimeSpan.Zero),
@@ -1326,7 +1326,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         [
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 4129507001000,
+                                // Id = 4129507001000,
                                 CommercialRelationId = 4129507001,
                                 ValidFrom = new DateTimeOffset(2025, 1, 13, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -1338,7 +1338,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                             },
                             new EnergySupplyPeriodEntity
                             {
-                                //Id = 4129507001001,
+                                // Id = 4129507001001,
                                 CommercialRelationId = 4129507001,
                                 ValidFrom = new DateTimeOffset(2025, 1, 13, 23, 0, 0, 0, TimeSpan.Zero),
                                 ValidTo = DateTimeOffset.MaxValue,
@@ -1355,7 +1355,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                 {
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 41295070000,
+                        // Id = 41295070000,
                         MeteringPointId = 4129507,
                         ValidFrom = new DateTimeOffset(2025, 1, 9, 23, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
@@ -1380,7 +1380,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 41295070001,
+                        // Id = 41295070001,
                         MeteringPointId = 4129507,
                         ValidFrom = new DateTimeOffset(2025, 1, 9, 23, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = new DateTimeOffset(2025, 1, 12, 23, 0, 0, 0, TimeSpan.Zero),
@@ -1403,7 +1403,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 41295070002,
+                        // Id = 41295070002,
                         MeteringPointId = 4129507,
                         ValidFrom = new DateTimeOffset(2025, 1, 12, 23, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
@@ -1428,7 +1428,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 41295070003,
+                        // Id = 41295070003,
                         MeteringPointId = 4129507,
                         ValidFrom = new DateTimeOffset(2025, 1, 12, 23, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = new DateTimeOffset(2025, 2, 4, 23, 0, 0, 0, TimeSpan.Zero),
@@ -1451,7 +1451,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     },
                     new MeteringPointPeriodEntity
                     {
-                        //Id = 41295070004,
+                        // Id = 41295070004,
                         MeteringPointId = 4129507,
                         ValidFrom = new DateTimeOffset(2025, 2, 4, 23, 0, 0, 0, TimeSpan.Zero),
                         ValidTo = DateTimeOffset.MaxValue,
