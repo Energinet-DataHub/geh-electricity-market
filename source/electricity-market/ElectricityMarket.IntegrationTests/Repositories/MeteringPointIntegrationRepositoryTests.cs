@@ -509,6 +509,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             new MeteringPointEntity
             {
                 Identification = "571313180400031999",
+
                 // Id = 3787854,
                 Version = new DateTimeOffset(2025, 4, 9, 12, 54, 29, 0, TimeSpan.Zero),
                 CommercialRelations =
@@ -872,6 +873,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             new MeteringPointEntity
             {
                 Identification = "571313180400090019",
+
                 // Id = 3790625,
                 Version = new DateTimeOffset(2025, 4, 7, 8, 38, 13, 0, TimeSpan.Zero),
                 CommercialRelations =
@@ -1270,6 +1272,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
             new MeteringPointEntity
             {
                 Identification = "578044607691001804",
+
                 // Id = 4129507,
                 Version = new DateTimeOffset(2025, 4, 8, 11, 53, 25, 0, TimeSpan.Zero),
                 CommercialRelations =
