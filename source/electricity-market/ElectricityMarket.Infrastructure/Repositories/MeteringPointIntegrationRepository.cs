@@ -322,15 +322,15 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                 yield return new Foobar(mpp.ValidFrom, cr.StartDate, mp, mpp, null);
             }
 
-            //Add the actual overlap between the MeteringPointPeriod and CommercialRelation.
-            //Only emit this Foobar if the overlap has a valid length (avoids zero-duration entries when dates touch but don’t overlap).
+            // Add the actual overlap between the MeteringPointPeriod and CommercialRelation.
+            // Only emit this Foobar if the overlap has a valid length (avoids zero-duration entries when dates touch but don’t overlap).
             if (start < end)
             {
                 yield return new Foobar(start, end, mp, mpp, cr);
             }
 
-            //Check if there's a gap after the commercial relation ends.
-            //If so, emit a Foobar for the "post-CR" subperiod (again, only if it has a valid duration).
+            // Check if there's a gap after the commercial relation ends.
+            // If so, emit a Foobar for the "post-CR" subperiod (again, only if it has a valid duration).
             if (cr.EndDate < mpp.ValidTo && cr.EndDate < mpp.ValidTo)
             {
                 yield return new Foobar(cr.EndDate, mpp.ValidTo, mp, mpp, null);
