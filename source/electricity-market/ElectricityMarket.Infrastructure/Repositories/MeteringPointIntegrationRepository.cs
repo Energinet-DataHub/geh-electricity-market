@@ -34,11 +34,11 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }
 
-public async IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
+    public async IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
     string meteringPointIdentification,
     DateTimeOffset startDate,
     DateTimeOffset endDate)
-{
+    {
     var meteringPoint = await _electricityMarketDatabaseContext.MeteringPoints
         .FirstOrDefaultAsync(mp => mp.Identification == meteringPointIdentification)
         .ConfigureAwait(false);
@@ -120,7 +120,7 @@ public async IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDat
             };
         }
     }
-}
+    }
 
     private static DateTimeOffset Max(DateTimeOffset a, DateTimeOffset b) => a > b ? a : b;
     private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b) => a < b ? a : b;
