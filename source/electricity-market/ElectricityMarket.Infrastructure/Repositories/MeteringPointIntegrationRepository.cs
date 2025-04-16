@@ -129,7 +129,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
     {
         var now = mpp.ValidFrom;
 
-        foreach (var cre in commercialRelations.OrderBy(x => x.StartDate))
+        foreach (var cre in commercialRelations)
         {
             var creStart = Max(cre.StartDate, mpp.ValidFrom);
             var creEnd = Min(cre.EndDate, mpp.ValidTo);
@@ -139,7 +139,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             }
 
             // Avoid zero-length periods
-            if (cre.StartDate != creEnd)
+            if (creStart != creEnd)
             {
                 yield return new MeteringPointDataPeriod(creStart, creEnd, mp, mpp, cre);
             }

@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.FunctionApp.TestCommon.Database;
-using Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,12 +44,5 @@ public class ElectricityMarketContextDatabaseManager : SqlServerDatabaseManager<
     protected override async Task<bool> CreateDatabaseSchemaAsync(ElectricityMarketDatabaseContext context)
     {
       return await context.Database.EnsureCreatedAsync();
-    }
-
-    private static Func<string, bool> GetFilter()
-    {
-        return file =>
-            file.EndsWith(".sql", StringComparison.OrdinalIgnoreCase) &&
-            file.Contains(".Scripts.LocalDB.", StringComparison.OrdinalIgnoreCase);
     }
 }
