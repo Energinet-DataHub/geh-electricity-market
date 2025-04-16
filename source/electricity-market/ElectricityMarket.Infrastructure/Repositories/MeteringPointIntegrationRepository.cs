@@ -22,10 +22,6 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Microsoft.EntityFrameworkCore;
 using NodaTime.Extensions;
-using ConnectionState = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.ConnectionState;
-using MeteringPointIdentification = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointIdentification;
-using MeteringPointSubType = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointSubType;
-using MeteringPointType = Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData.MeteringPointType;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
@@ -113,7 +109,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                         ParentIdentification = mpp.ParentIdentification != null
                             ? new MeteringPointIdentification(mpp.ParentIdentification)
                             : null,
-                        EnergySupplier = period.CR?.EnergySupplier
+                        EnergySupplier = period.Cr?.EnergySupplier
                     };
                 }
             }
@@ -154,7 +150,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
     private sealed record MeteringPointDataPeriod(
         DateTimeOffset PStart,
         DateTimeOffset PEnd,
-        MeteringPointEntity MP,
-        MeteringPointPeriodEntity MPP,
-        CommercialRelationEntity? CR);
+        MeteringPointEntity Mp,
+        MeteringPointPeriodEntity Mpp,
+        CommercialRelationEntity? Cr);
 }
