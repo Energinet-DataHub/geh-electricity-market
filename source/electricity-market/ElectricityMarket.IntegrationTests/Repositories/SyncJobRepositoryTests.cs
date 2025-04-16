@@ -27,9 +27,9 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories;
 [IntegrationTest]
 public class SyncJobRepositoryTests : IAsyncLifetime
 {
-    private readonly ElectricityMarketDatabaseFixture _fixture;
+    private readonly ElectricityMarketDbUpDatabaseFixture _fixture;
 
-    public SyncJobRepositoryTests(ElectricityMarketDatabaseFixture fixture)
+    public SyncJobRepositoryTests(ElectricityMarketDbUpDatabaseFixture fixture)
     {
         _fixture = fixture;
     }
@@ -38,7 +38,7 @@ public class SyncJobRepositoryTests : IAsyncLifetime
     public async Task GetJob_WithNoData_ReturnsNotNull()
     {
         // Arrange
-        var repository = new SyncJobRepository(_fixture.DatabaseManager.CreateDbContext());
+        var repository = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
 
         // Act
         var job = await repository.GetByNameAsync(SyncJobName.ElectricalHeating);
@@ -51,7 +51,7 @@ public class SyncJobRepositoryTests : IAsyncLifetime
     public async Task AddJob_ReturnsSuccess()
     {
         // Arrange
-        var repository = new SyncJobRepository(_fixture.DatabaseManager.CreateDbContext());
+        var repository = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
         var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow);
 
         // Act
@@ -65,8 +65,8 @@ public class SyncJobRepositoryTests : IAsyncLifetime
     public async Task AddJob_CanRetrieve_ReturnCorrect()
     {
         // Arrange
-        var repository = new SyncJobRepository(_fixture.DatabaseManager.CreateDbContext());
-        var repository2 = new SyncJobRepository(_fixture.DatabaseManager.CreateDbContext());
+        var repository = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
+        var repository2 = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
         var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow);
 
         // Act
@@ -84,9 +84,9 @@ public class SyncJobRepositoryTests : IAsyncLifetime
     public async Task UpdateJob_CanRetrieve_ReturnCorrect()
     {
         // Arrange
-        var repository = new SyncJobRepository(_fixture.DatabaseManager.CreateDbContext());
-        var repository2 = new SyncJobRepository(_fixture.DatabaseManager.CreateDbContext());
-        var repository3 = new SyncJobRepository(_fixture.DatabaseManager.CreateDbContext());
+        var repository = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
+        var repository2 = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
+        var repository3 = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
         var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow);
 
         // Act
@@ -106,7 +106,7 @@ public class SyncJobRepositoryTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        var context = _fixture.DatabaseManager.CreateDbContext();
+        var context = _fixture.DbUpDatabaseManager.CreateDbContext();
         await context.SyncJobs.ExecuteDeleteAsync();
     }
 
