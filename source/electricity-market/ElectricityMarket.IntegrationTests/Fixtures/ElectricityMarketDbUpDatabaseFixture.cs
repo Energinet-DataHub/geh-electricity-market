@@ -17,17 +17,17 @@ using Xunit;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 
-public sealed class ElectricityMarketDatabaseFixture : IAsyncLifetime
+public sealed class ElectricityMarketDbUpDatabaseFixture : IAsyncLifetime
 {
-    public ElectricityMarketDatabaseManager DatabaseManager { get; } = new();
+    public ElectricityMarketDbUpDatabaseManager DbUpDatabaseManager { get; } = new();
 
     public Task InitializeAsync()
     {
-        return DatabaseManager.CreateDatabaseAsync();
+        return DbUpDatabaseManager.CreateDatabaseAsync();
     }
 
     public Task DisposeAsync()
     {
-        return DatabaseManager.DeleteDatabaseAsync();
+        return DbUpDatabaseManager.DeleteDatabaseAsync();
     }
 }

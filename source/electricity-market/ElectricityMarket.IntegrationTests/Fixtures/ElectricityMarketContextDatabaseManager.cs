@@ -21,9 +21,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 
-public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<ElectricityMarketDatabaseContext>
+public class ElectricityMarketContextDatabaseManager : SqlServerDatabaseManager<ElectricityMarketDatabaseContext>
 {
-    public ElectricityMarketDatabaseManager()
+    public ElectricityMarketContextDatabaseManager()
         : base("ElectricityMarket")
     {
     }
@@ -41,31 +41,11 @@ public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<Electri
     }
 
     /// <summary>
-    /// Creates the database schema using DbUp instead of a database context.
+    /// Creates the database schema using database context.
     /// </summary>
     protected override async Task<bool> CreateDatabaseSchemaAsync(ElectricityMarketDatabaseContext context)
     {
-        var upgradeEngine = await UpgradeFactory.GetUpgradeEngineAsync(ConnectionString, GetFilter()).ConfigureAwait(false);
-
-        // Transient errors can occur right after DB is created,
-        // as it might not be instantly available, hence this retry loop.
-        // This is especially an issue when running against an Azure SQL DB.
-        var tryCount = 0;
-        do
-        {
-            ++tryCount;
-
-            var result = upgradeEngine.PerformUpgrade();
-
-            if (result.Successful)
-                return true;
-
-            if (tryCount > 10)
-                throw new InvalidOperationException("Database migration failed", result.Error);
-
-            await Task.Delay(256 * tryCount).ConfigureAwait(false);
-        }
-        while (true);
+      return await context.Database.EnsureCreatedAsync();
     }
 
     private static Func<string, bool> GetFilter()

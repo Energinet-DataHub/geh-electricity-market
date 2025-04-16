@@ -68,7 +68,7 @@ public class ScenarioTests
         await fixture.InitializeAsync();
 
         using var scope = fixture.ServiceProvider.CreateScope();
-        await using var context = fixture.DatabaseManager.CreateDbContext();
+        await using var context = fixture.DbUpDatabaseManager.CreateDbContext();
 
         await using var csvStream = assembly.GetManifestResourceStream(path);
         using var streamReader = new StreamReader(csvStream!);
