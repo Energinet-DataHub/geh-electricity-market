@@ -45,8 +45,7 @@ public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<Electri
     /// </summary>
     protected override async Task<bool> CreateDatabaseSchemaAsync(ElectricityMarketDatabaseContext context)
     {
-        var upgradeEngine =
-            await UpgradeFactory.GetUpgradeEngineAsync(ConnectionString, GetFilter()).ConfigureAwait(false);
+        var upgradeEngine = await UpgradeFactory.GetUpgradeEngineAsync(ConnectionString, GetFilter()).ConfigureAwait(false);
 
         // Transient errors can occur right after DB is created,
         // as it might not be instantly available, hence this retry loop.
@@ -59,9 +58,7 @@ public class ElectricityMarketDatabaseManager : SqlServerDatabaseManager<Electri
             var result = upgradeEngine.PerformUpgrade();
 
             if (result.Successful)
-            {
                 return true;
-            }
 
             if (tryCount > 10)
                 throw new InvalidOperationException("Database migration failed", result.Error);
