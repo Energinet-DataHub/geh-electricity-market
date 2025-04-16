@@ -317,7 +317,6 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             }
 
             now = creEnd;
-
         }
 
         if (now < mpp.ValidTo)
