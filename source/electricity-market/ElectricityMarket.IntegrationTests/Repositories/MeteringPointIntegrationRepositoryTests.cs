@@ -29,11 +29,11 @@ using Xunit;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories;
 
-public class MeteringPointIntegrationRepositoryTests : IClassFixture<ElectricityMarketDatabaseFixture>, IAsyncLifetime
+public class MeteringPointIntegrationRepositoryTests : IClassFixture<ElectricityMarketDatabaseEfFixture>, IAsyncLifetime
 {
-    private readonly ElectricityMarketDatabaseFixture _fixture;
+    private readonly ElectricityMarketDatabaseEfFixture _fixture;
 
-    public MeteringPointIntegrationRepositoryTests(ElectricityMarketDatabaseFixture fixture)
+    public MeteringPointIntegrationRepositoryTests(ElectricityMarketDatabaseEfFixture fixture)
     {
         _fixture = fixture;
     }
