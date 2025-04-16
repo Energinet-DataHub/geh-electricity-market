@@ -59,7 +59,7 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                 select new { gridArea.Code, actor.ActorNumber };
 
             var commercialRelations = meteringPoint.CommercialRelations
-                .Where(cr => cr.StartDate <= endDate && cr.EndDate > startDate && cr.StartDate < cr.EndDate);
+                .Where(cr => cr.StartDate <= endDate && cr.EndDate > startDate && cr.StartDate < cr.EndDate).ToList();
 
             var meteringPointPeriods = _electricityMarketDatabaseContext.MeteringPointPeriods
                 .Where(mpp => mpp.MeteringPointId == meteringPoint.Id &&
@@ -72,10 +72,9 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             foreach (var mpp in mppList)
             {
                 var overlappingCRs = commercialRelations
-                    .Where(cr => cr.StartDate <= mpp.ValidTo && cr.EndDate > mpp.ValidFrom)
-                    .ToList();
+                    .Where(cr => cr.StartDate <= mpp.ValidTo && cr.EndDate > mpp.ValidFrom).ToList();
 
-                var foobarPeriods = GenerateFoobarPeriods2(meteringPoint, mpp, overlappingCRs);
+                var foobarPeriods = GenerateMeteringPointDataPeriodSets(meteringPoint, mpp, overlappingCRs);
 
                 foreach (var period in foobarPeriods)
                 {
@@ -170,9 +169,9 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                     {
                         if (grp.MPP.ValidTo <= cr.StartDate)
                         {
-                            return new List<Foobar>
+                            return new List<MeteringPointDataPeriod>
                             {
-                                new Foobar(
+                                new MeteringPointDataPeriod(
                                     grp.MPP.ValidFrom,
                                     grp.MPP.ValidTo,
                                     meteringPointQuery.Single(),
@@ -183,9 +182,9 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
 
                         if (cr.EndDate <= grp.MPP.ValidFrom)
                         {
-                            return new List<Foobar>
+                            return new List<MeteringPointDataPeriod>
                             {
-                                new Foobar(
+                                new MeteringPointDataPeriod(
                                     grp.MPP.ValidFrom,
                                     grp.MPP.ValidTo,
                                     meteringPointQuery.Single(),
@@ -196,9 +195,9 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
 
                         if (grp.MPP.ValidFrom >= cr.StartDate && grp.MPP.ValidTo <= cr.EndDate)
                         {
-                            return new List<Foobar>
+                            return new List<MeteringPointDataPeriod>
                             {
-                                new Foobar(
+                                new MeteringPointDataPeriod(
                                     grp.MPP.ValidFrom,
                                     grp.MPP.ValidTo,
                                     meteringPointQuery.Single(),
@@ -209,39 +208,39 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
 
                         if (cr.StartDate >= grp.MPP.ValidFrom && cr.EndDate <= grp.MPP.ValidTo)
                         {
-                            return new List<Foobar>
+                            return new List<MeteringPointDataPeriod>
                             {
-                                new Foobar(
+                                new MeteringPointDataPeriod(
                                     grp.MPP.ValidFrom,
                                     cr.StartDate,
                                     meteringPointQuery.Single(),
                                     grp.MPP,
                                     null),
-                                new Foobar(cr.StartDate, cr.EndDate, meteringPointQuery.Single(), grp.MPP, cr),
-                                new Foobar(cr.EndDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, null),
+                                new MeteringPointDataPeriod(cr.StartDate, cr.EndDate, meteringPointQuery.Single(), grp.MPP, cr),
+                                new MeteringPointDataPeriod(cr.EndDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, null),
                             };
                         }
 
                         if (cr.StartDate <= grp.MPP.ValidFrom)
                         {
-                            return new List<Foobar>
+                            return new List<MeteringPointDataPeriod>
                             {
-                                new Foobar(grp.MPP.ValidFrom, cr.EndDate, meteringPointQuery.Single(), grp.MPP, cr),
-                                new Foobar(cr.EndDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, null),
+                                new MeteringPointDataPeriod(grp.MPP.ValidFrom, cr.EndDate, meteringPointQuery.Single(), grp.MPP, cr),
+                                new MeteringPointDataPeriod(cr.EndDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, null),
                             };
                         }
 
                         if (cr.StartDate >= grp.MPP.ValidFrom)
                         {
-                            return new List<Foobar>
+                            return new List<MeteringPointDataPeriod>
                             {
-                                new Foobar(
+                                new MeteringPointDataPeriod(
                                     grp.MPP.ValidFrom,
                                     cr.StartDate,
                                     meteringPointQuery.Single(),
                                     grp.MPP,
                                     null),
-                                new Foobar(cr.StartDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, cr),
+                                new MeteringPointDataPeriod(cr.StartDate, grp.MPP.ValidTo, meteringPointQuery.Single(), grp.MPP, cr),
                             };
                         }
 
@@ -295,68 +294,11 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
     private static DateTimeOffset Max(DateTimeOffset a, DateTimeOffset b) => a > b ? a : b;
     private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b) => a < b ? a : b;
 
-    private static IEnumerable<Foobar> GenerateFoobarPeriods(
+    private static IEnumerable<MeteringPointDataPeriod> GenerateMeteringPointDataPeriodSets(
         MeteringPointEntity mp,
         MeteringPointPeriodEntity mpp,
         List<CommercialRelationEntity> commercialRelations)
     {
-        // If none: return the entire MeteringPointPeriod as a single Foobar with null for the CommercialRelation.
-        if (commercialRelations.Count == 0)
-        {
-            // Only yield if the period has a valid duration (ValidFrom < ValidTo) to avoid zero-length output.
-            if (mpp.ValidFrom < mpp.ValidTo)
-                yield return new Foobar(mpp.ValidFrom, mpp.ValidTo, mp, mpp, null);
-            yield break;
-        }
-
-        //---1111-----2222---
-        foreach (var cr in commercialRelations)
-        {
-            var start = Max(mpp.ValidFrom, cr.StartDate);
-            var end = Min(mpp.ValidTo, cr.EndDate);
-
-            // If the commercial relation starts after the beginning of the period, we return a Foobar for the "pre-CR" subperiod.
-            if (cr.StartDate > mpp.ValidFrom && mpp.ValidFrom < cr.StartDate)
-            {
-                yield return new Foobar(mpp.ValidFrom, cr.StartDate, mp, mpp, null);
-            }
-
-            // Add the actual overlap between the MeteringPointPeriod and CommercialRelation.
-            // Only emit this Foobar if the overlap has a valid length (avoids zero-duration entries when dates touch but don’t overlap).
-            if (start < end)
-            {
-                yield return new Foobar(start, end, mp, mpp, cr);
-            }
-
-            // Check if there's a gap after the commercial relation ends.
-            // If so, emit a Foobar for the "post-CR" subperiod (again, only if it has a valid duration).
-            if (cr.EndDate < mpp.ValidTo)
-            {
-                yield return new Foobar(cr.EndDate, mpp.ValidTo, mp, mpp, null);
-            }
-        }
-    }
-
-    private static IEnumerable<Foobar> GenerateFoobarPeriods2(
-        MeteringPointEntity mp,
-        MeteringPointPeriodEntity mpp,
-        List<CommercialRelationEntity> commercialRelations)
-    {
-        /*
-    var now = mpp.ValidFrom;
-    foreach(var commercialRelation) {
-    var esStart = energysupplier.Start;
-    if (esStart > now)
-         AddPeriodWithoutEs(now -> esStart);
-        AddPeriod(esStart -> esEnd);
-        now = esEnd;
-    }
-
-        if (now < mpp.ValidTo)
-    AddPeriodWithoutEs(now, mpp.ValidTo);
-    ----11111------22222(->)
-         */
-
         var now = mpp.ValidFrom;
 
         foreach (var cre in commercialRelations.OrderBy(x => x.StartDate))
@@ -365,19 +307,24 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
             var creEnd = Min(cre.EndDate, mpp.ValidTo);
             if (creStart > now)
             {
-                yield return new Foobar(now, creStart, mp, mpp, null);
+                yield return new MeteringPointDataPeriod(now, creStart, mp, mpp, null);
             }
 
-            yield return new Foobar(creStart, creEnd, mp, mpp, cre);
+            // Avoid zero-length periods
+            if (cre.StartDate != creEnd)
+            {
+                yield return new MeteringPointDataPeriod(creStart, creEnd, mp, mpp, cre);
+            }
+
             now = creEnd;
 
         }
 
         if (now < mpp.ValidTo)
-            yield return new Foobar(now, mpp.ValidTo, mp, mpp, null);
+            yield return new MeteringPointDataPeriod(now, mpp.ValidTo, mp, mpp, null);
     }
 
-    private sealed record Foobar(
+    private sealed record MeteringPointDataPeriod(
         DateTimeOffset PStart,
         DateTimeOffset PEnd,
         MeteringPointEntity MP,
