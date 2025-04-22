@@ -150,7 +150,7 @@ internal static class MeteringPointMapper
             customerContact.Address?.CountryCode,
             customerContact.Address?.Floor,
             customerContact.Address?.Room,
-            customerContact.Address?.PostCode,
+            customerContact.Address?.PostBox,
             customerContact.Address?.MunicipalityCode);
     }
 }

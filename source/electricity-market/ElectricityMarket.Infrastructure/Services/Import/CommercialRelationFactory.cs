@@ -44,11 +44,6 @@ public static class CommercialRelationFactory
     {
         ArgumentNullException.ThrowIfNull(importedTransaction);
 
-        if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-        {
-            throw new ArgumentException($"{nameof(importedTransaction.balance_supplier_id)} is required", nameof(importedTransaction));
-        }
-
         var energySupplyPeriodEntity = new EnergySupplyPeriodEntity
         {
             ValidFrom = importedTransaction.valid_from_date,
@@ -56,7 +51,7 @@ public static class CommercialRelationFactory
             CreatedAt = importedTransaction.dh2_created,
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
             WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? "<NotSet>",
-            EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd(),
+            EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? "<NotSet>",
             TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
 
@@ -92,6 +87,7 @@ public static class CommercialRelationFactory
                 Floor = importedTransaction.contact_1_floor_id?.TrimEnd(),
                 Room = importedTransaction.contact_1_room_id?.TrimEnd(),
                 PostCode = importedTransaction.contact_1_postcode?.TrimEnd() ?? string.Empty,
+                PostBox = importedTransaction.contact_1_post_box?.TrimEnd(),
                 MunicipalityCode = importedTransaction.contact_1_municipality_code?.TrimEnd(),
             };
 
@@ -124,6 +120,7 @@ public static class CommercialRelationFactory
                     Floor = importedTransaction.contact_4_floor_id?.TrimEnd(),
                     Room = importedTransaction.contact_4_room_id?.TrimEnd(),
                     PostCode = importedTransaction.contact_4_postcode?.TrimEnd() ?? string.Empty,
+                    PostBox = importedTransaction.contact_4_post_box?.TrimEnd(),
                     MunicipalityCode = importedTransaction.contact_4_municipality_code?.TrimEnd(),
                 },
             };
@@ -194,6 +191,7 @@ public static class CommercialRelationFactory
                     Floor = contact.ContactAddress.Floor,
                     Room = contact.ContactAddress.Room,
                     PostCode = contact.ContactAddress.PostCode,
+                    PostBox = contact.ContactAddress.PostBox,
                     MunicipalityCode = contact.ContactAddress.MunicipalityCode,
                 };
             }
