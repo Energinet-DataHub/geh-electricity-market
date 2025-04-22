@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.5.0
+
+- `MeteringPointMasterData` is now exposed in a flatten'ed state that only exposed one `EnergySupplier` (optinal)
+
 ## Version 4.4.0
 
 - Revert to old values for Production, Consumption and Exchange.

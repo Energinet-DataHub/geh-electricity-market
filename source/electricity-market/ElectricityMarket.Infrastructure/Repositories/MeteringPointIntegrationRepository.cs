@@ -18,6 +18,7 @@ using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Microsoft.EntityFrameworkCore;
 using NodaTime.Extensions;
@@ -33,48 +34,79 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }
 
-    public IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
-        string meteringPointIdentification,
-        DateTimeOffset startDate,
-        DateTimeOffset endDate)
+    public async IAsyncEnumerable<MeteringPointMasterData> GetMeteringPointMasterDataChangesAsync(
+    string meteringPointIdentification,
+    DateTimeOffset startDate,
+    DateTimeOffset endDate)
     {
-        var gridAreaOwnerQuery =
-            from actor in _electricityMarketDatabaseContext.Actors
-            where actor.MarketRole.Function == EicFunction.GridAccessProvider
-            from ownedGridArea in actor.MarketRole.GridAreas
-            join gridArea in _electricityMarketDatabaseContext.GridAreas on ownedGridArea.GridAreaId equals gridArea.Id
-            select new { gridArea.Code, actor.ActorNumber };
+    var meteringPoint = await _electricityMarketDatabaseContext.MeteringPoints
+        .FirstOrDefaultAsync(mp => mp.Identification == meteringPointIdentification)
+        .ConfigureAwait(false);
 
-        var query =
-            from mp in _electricityMarketDatabaseContext.MeteringPoints
-            join mpp in _electricityMarketDatabaseContext.MeteringPointPeriods on mp.Id equals mpp.MeteringPointId
-            where mp.Identification == meteringPointIdentification &&
-                  mpp.ValidFrom <= endDate &&
-                  mpp.ValidTo > startDate &&
-                  mpp.RetiredById == null
-            join gridArea in gridAreaOwnerQuery on mpp.GridAreaCode equals gridArea.Code
-            join exchangeFromGridArea in gridAreaOwnerQuery on mpp.ExchangeFromGridArea equals exchangeFromGridArea.Code into exchangeFrom
-            from exchangeFromGridArea in exchangeFrom.DefaultIfEmpty()
-            join exchangeToGridArea in gridAreaOwnerQuery on mpp.ExchangeToGridArea equals exchangeToGridArea.Code into exchangeTo
-            from exchangeToGridArea in exchangeTo.DefaultIfEmpty()
-            orderby mpp.ValidFrom
-            select new MeteringPointMasterData
+    if (meteringPoint == null)
+    {
+        yield break;
+    }
+
+    var gridAreaOwnerDictionary = await (
+        from actor in _electricityMarketDatabaseContext.Actors
+        where actor.MarketRole.Function == EicFunction.GridAccessProvider
+        from ownedGridArea in actor.MarketRole.GridAreas
+        join gridArea in _electricityMarketDatabaseContext.GridAreas on ownedGridArea.GridAreaId equals gridArea.Id
+        select new { gridArea.Code, actor.ActorNumber })
+    .ToDictionaryAsync(g => g.Code, g => g.ActorNumber)
+    .ConfigureAwait(false);
+
+    var commercialRelations = meteringPoint.CommercialRelations
+        .Where(cr => cr.StartDate <= endDate && cr.EndDate > startDate && cr.StartDate < cr.EndDate)
+        .ToList();
+
+    var mppList = await _electricityMarketDatabaseContext.MeteringPointPeriods
+        .Where(mpp =>
+            mpp.MeteringPointId == meteringPoint.Id &&
+            mpp.ValidFrom <= endDate &&
+            mpp.ValidTo > startDate &&
+            mpp.RetiredById == null)
+        .OrderBy(x => x.ValidFrom)
+        .ToListAsync()
+        .ConfigureAwait(false);
+
+    foreach (var mpp in mppList)
+    {
+        var overlappingCRs = commercialRelations
+            .Where(cr => cr.StartDate <= mpp.ValidTo && cr.EndDate > mpp.ValidFrom)
+            .ToList();
+
+        var periods = GenerateMeteringPointDataPeriodSets(meteringPoint, mpp, overlappingCRs);
+
+        foreach (var period in periods)
+        {
+            gridAreaOwnerDictionary.TryGetValue(mpp.GridAreaCode, out var gridAccessProviderActorNumber);
+
+            var neighbors = new List<string>();
+            if (!string.IsNullOrWhiteSpace(mpp.ExchangeFromGridArea) &&
+                gridAreaOwnerDictionary.TryGetValue(mpp.ExchangeFromGridArea, out var fromOwner))
             {
-                Identification = new MeteringPointIdentification(mp.Identification),
-                ValidFrom = mpp.ValidFrom.ToInstant(),
-                ValidTo = mpp.ValidTo.ToInstant(),
+                neighbors.Add(fromOwner);
+            }
+
+            if (!string.IsNullOrWhiteSpace(mpp.ExchangeToGridArea) &&
+                gridAreaOwnerDictionary.TryGetValue(mpp.ExchangeToGridArea, out var toOwner))
+            {
+                neighbors.Add(toOwner);
+            }
+
+            yield return new MeteringPointMasterData
+            {
+                Identification = new MeteringPointIdentification(meteringPoint.Identification),
+                ValidFrom = period.PStart.ToInstant(),
+                ValidTo = period.PEnd.ToInstant(),
                 GridAreaCode = new GridAreaCode(mpp.GridAreaCode),
-                GridAccessProvider = string.IsNullOrWhiteSpace(mpp.OwnedBy) ? gridArea.ActorNumber : mpp.OwnedBy!,
+                GridAccessProvider = string.IsNullOrWhiteSpace(mpp.OwnedBy)
+                    ? gridAccessProviderActorNumber!
+                    : mpp.OwnedBy!,
 
-                // This ugliness is needed for EF Core to translate the left join into a working query.
-                NeighborGridAreaOwners = exchangeFromGridArea.ActorNumber != null && exchangeToGridArea.ActorNumber != null
-                    ? new List<string> { exchangeFromGridArea.ActorNumber, exchangeToGridArea.ActorNumber }
-                    : exchangeFromGridArea.ActorNumber != null && exchangeToGridArea.ActorNumber == null
-                        ? new List<string> { exchangeFromGridArea.ActorNumber }
-                        : exchangeFromGridArea.ActorNumber == null && exchangeToGridArea.ActorNumber != null
-                            ? new List<string> { exchangeToGridArea.ActorNumber }
-                            : new List<string>(),
-
+                NeighborGridAreaOwners = neighbors,
                 ConnectionState = Enum.Parse<ConnectionState>(mpp.ConnectionState),
                 Type = Enum.Parse<MeteringPointType>(mpp.Type),
                 SubType = Enum.Parse<MeteringPointSubType>(mpp.SubType),
@@ -82,20 +114,50 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
                 Unit = Enum.Parse<MeasureUnit>(mpp.MeasureUnit),
                 ProductId = Enum.Parse<ProductId>(mpp.Product),
                 ParentIdentification = mpp.ParentIdentification != null
-                    ? new MeteringPointIdentification(mpp.ParentIdentification!)
+                    ? new MeteringPointIdentification(mpp.ParentIdentification)
                     : null,
-                EnergySuppliers = mp.CommercialRelations
-                    .Where(cr => cr.StartDate <= endDate && cr.EndDate > startDate && cr.StartDate < cr.EndDate)
-                    .Select(cr => new MeteringPointEnergySupplier
-                    {
-                        Identification = new MeteringPointIdentification(mp.Identification),
-                        EnergySupplier = cr.EnergySupplier,
-                        StartDate = cr.StartDate.ToInstant(),
-                        EndDate = cr.EndDate.ToInstant(),
-                    })
-                    .ToArray(),
+                EnergySupplier = period.Cr?.EnergySupplier
             };
-
-        return query.AsAsyncEnumerable();
+        }
     }
+    }
+
+    private static DateTimeOffset Max(DateTimeOffset a, DateTimeOffset b) => a > b ? a : b;
+    private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b) => a < b ? a : b;
+
+    private static IEnumerable<MeteringPointDataPeriod> GenerateMeteringPointDataPeriodSets(
+        MeteringPointEntity mp,
+        MeteringPointPeriodEntity mpp,
+        List<CommercialRelationEntity> commercialRelations)
+    {
+        var now = mpp.ValidFrom;
+
+        foreach (var cre in commercialRelations)
+        {
+            var creStart = Max(cre.StartDate, mpp.ValidFrom);
+            var creEnd = Min(cre.EndDate, mpp.ValidTo);
+            if (creStart > now)
+            {
+                yield return new MeteringPointDataPeriod(now, creStart, mp, mpp, null);
+            }
+
+            // Avoid zero-length periods
+            if (creStart != creEnd)
+            {
+                yield return new MeteringPointDataPeriod(creStart, creEnd, mp, mpp, cre);
+            }
+
+            now = creEnd;
+        }
+
+        if (now < mpp.ValidTo)
+            yield return new MeteringPointDataPeriod(now, mpp.ValidTo, mp, mpp, null);
+    }
+
+    private sealed record MeteringPointDataPeriod(
+        DateTimeOffset PStart,
+        DateTimeOffset PEnd,
+        MeteringPointEntity Mp,
+        MeteringPointPeriodEntity Mpp,
+        CommercialRelationEntity? Cr);
 }
