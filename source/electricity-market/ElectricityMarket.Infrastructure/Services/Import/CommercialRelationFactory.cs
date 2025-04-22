@@ -44,11 +44,6 @@ public static class CommercialRelationFactory
     {
         ArgumentNullException.ThrowIfNull(importedTransaction);
 
-        if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
-        {
-            throw new ArgumentException($"{nameof(importedTransaction.balance_supplier_id)} is required", nameof(importedTransaction));
-        }
-
         var energySupplyPeriodEntity = new EnergySupplyPeriodEntity
         {
             ValidFrom = importedTransaction.valid_from_date,
@@ -56,7 +51,7 @@ public static class CommercialRelationFactory
             CreatedAt = importedTransaction.dh2_created,
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
             WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? "<NotSet>",
-            EnergySupplier = importedTransaction.balance_supplier_id.TrimEnd(),
+            EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? "<NotSet>",
             TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
 

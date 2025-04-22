@@ -207,7 +207,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
                 case "ENDSUPPLY":
                     {
-                        var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+                        var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
                         commercialRelationEntity.EndDate = importedTransaction.valid_from_date;
 
                         TryCloseActiveCr(importedTransaction, meteringPoint);
