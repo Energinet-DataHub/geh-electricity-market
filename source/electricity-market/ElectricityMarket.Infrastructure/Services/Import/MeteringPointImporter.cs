@@ -247,16 +247,13 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (transactionType is not ("ENDSUPPLY" or "INCMOVEOUT" or "INCMOVEIN" or "INCMOVEMAN"))
         {
-            if (!string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
+            if (transactionType is "MOVEOUTES")
             {
-                if (transactionType is "MOVEOUTES")
-                {
-                    HandleMoveOut(importedTransaction, meteringPoint);
-                }
-                else
-                {
-                    HandleMoveIn(importedTransaction, meteringPoint);
-                }
+                HandleMoveOut(importedTransaction, meteringPoint);
+            }
+            else
+            {
+                HandleMoveIn(importedTransaction, meteringPoint);
             }
 
             return true;
@@ -288,27 +285,39 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
     {
         var commercialRelation = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
 
-        var futures = AllSavedValidCrs(meteringPoint)
-            .Where(x => x.StartDate >= importedTransaction.valid_from_date)
-            .ToList();
+        var activeCr = AllSavedValidCrs(meteringPoint)
+            .FirstOrDefault(x => x.StartDate < importedTransaction.valid_from_date && x.EndDate >= importedTransaction.valid_from_date);
 
-        if (futures.Count > 0)
+        if (activeCr != null)
         {
-            var indexOfOverlapping = AllSavedValidCrs(meteringPoint)
-                .ToList()
-                .IndexOf(futures[0]);
+            var futures = AllSavedValidCrs(meteringPoint)
+                .Where(x => x.StartDate > importedTransaction.valid_from_date && activeCr.ClientId == x.ClientId)
+                .ToList();
 
-            var futureEnergySupplierChanges = indexOfOverlapping > 0
-                ? AllSavedValidCrs(meteringPoint).Where((_, i) => i >= indexOfOverlapping - 1).ToList()
-                : futures;
-
-            var clientIdOfFirstFuture = futureEnergySupplierChanges.First().ClientId;
-
-            var toBeInvalidated = futureEnergySupplierChanges.TakeWhile(x => x.ClientId == clientIdOfFirstFuture);
-
-            foreach (var entity in toBeInvalidated)
+            foreach (var entity in futures)
             {
                 entity.EndDate = entity.StartDate;
+            }
+
+            if (futures.Count != 0)
+            {
+                var commercialRelationEntities = AllSavedValidCrs(meteringPoint).ToList();
+                var nextFuture = commercialRelationEntities.IndexOf(futures.Last()) + 1;
+                if (nextFuture < commercialRelationEntities.Count - 1)
+                {
+                    commercialRelation.EndDate = commercialRelationEntities[nextFuture].StartDate;
+                }
+            }
+        }
+        else
+        {
+            var nextFutureCr = AllSavedValidCrs(meteringPoint)
+                .Where(x => x.StartDate > importedTransaction.valid_from_date)
+                .MinBy(x => x.StartDate);
+
+            if (nextFutureCr != null)
+            {
+                commercialRelation.EndDate = nextFutureCr.StartDate;
             }
         }
 
