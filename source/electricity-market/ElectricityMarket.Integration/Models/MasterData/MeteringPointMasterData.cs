@@ -45,5 +45,5 @@ public sealed class MeteringPointMasterData
 
     public MeteringPointIdentification? ParentIdentification { get; init; }
 
-    public IReadOnlyCollection<MeteringPointEnergySupplier> EnergySuppliers { get; init; } = [];
+    public string? EnergySupplier { get; init; }
 }

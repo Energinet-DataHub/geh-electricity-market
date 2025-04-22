@@ -24,16 +24,16 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 
 public sealed class ScenarioTestFixture : IAsyncLifetime
 {
-    private readonly ElectricityMarketDatabaseFixture _databaseFixture = new();
+    private readonly ElectricityMarketDbUpDatabaseFixture _dbUpDatabaseFixture = new();
     private ServiceProvider? _serviceProvider;
 
     public IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized. Ensure InitializeAsync has been called.");
-    public ElectricityMarketDatabaseManager DatabaseManager => _databaseFixture.DatabaseManager;
+    public ElectricityMarketDbUpDatabaseManager DbUpDatabaseManager => _dbUpDatabaseFixture.DbUpDatabaseManager;
 
     public async Task InitializeAsync()
     {
         // Build service collection and register dependencies
-        await _databaseFixture.InitializeAsync();
+        await _dbUpDatabaseFixture.InitializeAsync();
         var configuration = BuildConfiguration();
         var services = new ServiceCollection();
 
@@ -41,7 +41,7 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
         services.AddOptions();
         services.Configure<DatabaseOptions>(options =>
         {
-            options.ConnectionString = DatabaseManager.ConnectionString;
+            options.ConnectionString = DbUpDatabaseManager.ConnectionString;
         });
         services.AddSingleton(configuration);
 
@@ -59,7 +59,7 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
             disposable.Dispose();
         }
 
-        await _databaseFixture.DisposeAsync();
+        await _dbUpDatabaseFixture.DisposeAsync();
     }
 
     private IConfiguration BuildConfiguration()
@@ -68,7 +68,7 @@ public sealed class ScenarioTestFixture : IAsyncLifetime
             .AddInMemoryCollection([
                 new KeyValuePair<string, string?>(
                     $"{nameof(DatabaseOptions)}:{nameof(DatabaseOptions.ConnectionString)}",
-                    DatabaseManager.ConnectionString),
+                    DbUpDatabaseManager.ConnectionString),
             ])
             .AddEnvironmentVariables()
             .Build();

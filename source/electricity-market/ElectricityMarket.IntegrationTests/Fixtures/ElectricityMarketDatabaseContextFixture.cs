@@ -17,9 +17,9 @@ using Xunit;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 
-public sealed class ElectricityMarketDatabaseFixture : IAsyncLifetime
+public sealed class ElectricityMarketDatabaseContextFixture : IAsyncLifetime
 {
-    public ElectricityMarketDatabaseManager DatabaseManager { get; } = new();
+    public ElectricityMarketContextDatabaseManager DatabaseManager { get; } = new();
 
     public Task InitializeAsync()
     {

@@ -27,4 +27,5 @@ public sealed record CustomerContactAddress(
     string? Floor,
     string? Room,
     string? PostCode,
+    string? PostBox,
     string? MunicipalityCode);
