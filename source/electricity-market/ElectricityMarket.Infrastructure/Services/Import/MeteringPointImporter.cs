@@ -286,7 +286,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         var commercialRelation = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
 
         var activeCr = AllSavedValidCrs(meteringPoint)
-            .FirstOrDefault(x => x.StartDate < importedTransaction.valid_from_date && x.EndDate >= importedTransaction.valid_from_date);
+            .FirstOrDefault(x => x.StartDate <= importedTransaction.valid_from_date && x.EndDate > importedTransaction.valid_from_date);
 
         if (activeCr != null)
         {
@@ -331,7 +331,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
     private static void TryCloseActiveCr(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
         var activeCr = AllSavedValidCrs(meteringPoint)
-            .FirstOrDefault(x => x.StartDate < importedTransaction.valid_from_date && x.EndDate >= importedTransaction.valid_from_date);
+            .FirstOrDefault(x => x.StartDate <= importedTransaction.valid_from_date && x.EndDate > importedTransaction.valid_from_date);
 
         if (activeCr != null)
         {
