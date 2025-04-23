@@ -50,8 +50,8 @@ public static class CommercialRelationFactory
             ValidTo = DateTimeOffset.MaxValue,
             CreatedAt = importedTransaction.dh2_created,
             BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
-            WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? "<NotSet>",
-            EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? "<NotSet>",
+            WebAccessCode = importedTransaction.web_access_code?.TrimEnd() ?? string.Empty,
+            EnergySupplier = importedTransaction.balance_supplier_id?.TrimEnd() ?? string.Empty,
             TransactionType = importedTransaction.transaction_type.TrimEnd(),
         };
 
