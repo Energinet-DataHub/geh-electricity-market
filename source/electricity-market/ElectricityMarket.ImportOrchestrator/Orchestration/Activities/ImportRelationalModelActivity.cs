@@ -19,7 +19,7 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class ImportRelationalModelActivity
 {
-    public const string ActivityName = "ImportRelationalModelActivityV2";
+    public const string ActivityName = "ImportRelationalModelActivityV3";
 
     private readonly IBulkImporter _bulkImporter;
 
