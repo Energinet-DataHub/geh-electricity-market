@@ -5,4 +5,6 @@ CREATE TABLE {catalog_name}.electricity_market_internal.net_consumption_group_6_
     period_from_date TIMESTAMP NOT NULL COMMENT 'UTC time. The period start date.',
     period_to_date TIMESTAMP COMMENT 'UTC time. The period end date.',
     move_in BOOLEAN COMMENT 'New customer moves in (true) all other changes (false)'
-)  -- TODO: What to cluster by? --> Bjarke, JMK, Jonas
+)
+USING DELTA
+-- TODO: What to cluster by? --> Bjarke, JMK, Jonas
