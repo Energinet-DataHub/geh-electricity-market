@@ -70,8 +70,9 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                             cr.Period.Start < mpm.Valid.End &&
                             mpm.Valid.Start < cr.Period.End &&
                             !string.IsNullOrEmpty(cr.EnergySupplier));
+
                     if (relation is null)
-                        continue; // no supplier => skip
+                        continue; // no commercial relation i.e. no supplier => skip
 
                     var energySupplierId = relation.EnergySupplier;
 
@@ -88,7 +89,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                     candidates.Add(new WholesaleMeteringPointDto(
                         MeteringPointId: mp.Identification.Value,
                         Type: mpm.Type.ToString(),
-                        CalculationType: null,
+                        CalculationType: null, // TODO: Where does this come from?
                         SettlementMethod: mpm.SettlementMethod?.ToString(),
                         GridAreaCode: mpm.GridAreaCode,
                         Resolution: mpm.Resolution,
@@ -102,6 +103,13 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                 }
             }
 
+            // Prevent gaps or overlaps between metering points
+            //
+            // 1. Group by metering point.
+            // 2. Drop zero-length intervals.
+            // 3. Sort by start date.
+            // 4. Always keep the first period.
+            // 5. Only include periods whose start exactly matches the previous period’s end.
             var result = new List<WholesaleMeteringPointDto>();
 
             foreach (var group in candidates
