@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics.CodeAnalysis;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services
 {
@@ -24,93 +24,73 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
         IMeteringPointRepository meteringPointRepository,
         IBalanceResponsibleRepository balanceResponsibleRepository) : IWholesaleMeteringPointService
     {
+        private static readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
+        private static readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.Consumption, MeteringPointType.Production];
+
         private readonly IMeteringPointRepository _meteringPointRepository = meteringPointRepository;
         private readonly IBalanceResponsibleRepository _balanceResponsibleRepository = balanceResponsibleRepository;
-
-        private readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
-        private readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.Consumption, MeteringPointType.Production];
 
         public async Task<IEnumerable<WholesaleMeteringPointDto>> GetWholesaleMeteringPointsAsync(IAsyncEnumerable<MeteringPoint> meteringPoints)
         {
             ArgumentNullException.ThrowIfNull(meteringPoints);
 
-            var candidates = new List<WholesaleMeteringPointDto>();
-            var parentCache = new Dictionary<string, MeteringPoint?>();
-            var balanceResponsiblePartyCache = new Dictionary<string, string>();
+            var candidates = await BuildCandidatesAsync(meteringPoints).ConfigureAwait(false);
+            return FilterAndMergeCandidates(candidates);
+        }
 
-            await foreach (var mp in meteringPoints)
-            {
-                foreach (var mpm in mp.MetadataTimeline
-                    .Where(m =>
-                        _relevantConnectionStates.Contains(m.ConnectionState) &&
-                        _relevantMeteringPointTypes.Contains(m.Type)))
-                {
-                    var lookupPoint = mp;
-                    if (mpm.Parent is not null)
-                    {
-                        if (!parentCache.TryGetValue(mpm.Parent.Value, out var parentMp))
-                        {
-                            parentMp = await _meteringPointRepository.GetMeteringPointByIdAsync(mpm.Parent).ConfigureAwait(false);
-                            parentCache[mpm.Parent.Value] = parentMp;
-                        }
+        private static bool IsRelevantConnectionAndType(MeteringPointMetadata meteringPointMetaData) =>
+            _relevantConnectionStates.Contains(meteringPointMetaData.ConnectionState) &&
+            _relevantMeteringPointTypes.Contains(meteringPointMetaData.Type);
 
-                        if (parentMp is null)
-                            continue; // parent not found => skip
-                        lookupPoint = parentMp;
-                    }
+        private static WholesaleMeteringPointDto CreateDto(
+            MeteringPoint meteringPoint,
+            MeteringPointMetadata meteringPointMetadata,
+            string energySupplierId,
+            string? balanceResponsiblePartyId)
+        {
+            return new WholesaleMeteringPointDto(
+                MeteringPointId: meteringPoint.Identification.Value,
+                Type: meteringPointMetadata.Type.ToString(),
+                CalculationType: null,
+                SettlementMethod: meteringPointMetadata.SettlementMethod?.ToString(),
+                GridAreaCode: meteringPointMetadata.GridAreaCode,
+                Resolution: meteringPointMetadata.Resolution,
+                FromGridAreaCode: meteringPointMetadata.ExchangeFromGridAreaCode,
+                ToGridAreaCode: meteringPointMetadata.ExchangeToGridAreaCode,
+                Identification: meteringPointMetadata.Parent is null ? meteringPoint.Identification.Value : null,
+                EnergySupplier: energySupplierId,
+                BalanceResponsiblePartyId: balanceResponsiblePartyId,
+                FromDate: meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
+                ToDate: meteringPointMetadata.Valid.End.ToDateTimeOffset());
+        }
 
-                    var relation = lookupPoint.CommercialRelationTimeline
-                        .FirstOrDefault(cr =>
-                            cr.Period.Start < mpm.Valid.End &&
-                            mpm.Valid.Start < cr.Period.End &&
-                            !string.IsNullOrEmpty(cr.EnergySupplier));
+        private static bool TryFindCurrentRelation(
+            MeteringPoint lookupPoint,
+            MeteringPointMetadata mpm,
+            [NotNullWhen(true)] out CommercialRelation? relation)
+        {
+            relation = lookupPoint.CommercialRelationTimeline
+                .FirstOrDefault(cr =>
+                    cr.Period.Start < mpm.Valid.End &&
+                    mpm.Valid.Start < cr.Period.End &&
+                    !string.IsNullOrEmpty(cr.EnergySupplier));
 
-                    if (relation is null)
-                        continue; // no commercial relation i.e. no supplier => skip
+            return relation is not null;
+        }
 
-                    var energySupplierId = relation.EnergySupplier;
-
-                    if (!balanceResponsiblePartyCache.TryGetValue(energySupplierId, out var balanceResponsiblePartyId))
-                    {
-                        balanceResponsiblePartyId = await _balanceResponsibleRepository
-                            .GetBalanceResponsiblePartyIdByEnergySupplierAsync(energySupplierId)
-                            .ConfigureAwait(false);
-
-                        if (balanceResponsiblePartyId is not null)
-                            balanceResponsiblePartyCache[energySupplierId] = balanceResponsiblePartyId;
-                    }
-
-                    candidates.Add(new WholesaleMeteringPointDto(
-                        MeteringPointId: mp.Identification.Value,
-                        Type: mpm.Type.ToString(),
-                        CalculationType: null, // TODO: Where does this come from?
-                        SettlementMethod: mpm.SettlementMethod?.ToString(),
-                        GridAreaCode: mpm.GridAreaCode,
-                        Resolution: mpm.Resolution,
-                        FromGridAreaCode: mpm.ExchangeFromGridAreaCode,
-                        ToGridAreaCode: mpm.ExchangeToGridAreaCode,
-                        Identification: mpm.Parent is null ? mp.Identification.Value : null,
-                        EnergySupplier: energySupplierId,
-                        BalanceResponsiblePartyId: balanceResponsiblePartyId,
-                        FromDate: mpm.Valid.Start.ToDateTimeOffset(),
-                        ToDate: mpm.Valid.End.ToDateTimeOffset()));
-                }
-            }
-
-            // Prevent gaps or overlaps between metering points
-            //
-            // 1. Group by metering point.
-            // 2. Drop zero-length intervals.
-            // 3. Sort by start date.
-            // 4. Always keep the first period.
-            // 5. Only include periods whose start exactly matches the previous period’s end.
+        private static List<WholesaleMeteringPointDto> FilterAndMergeCandidates(
+            List<WholesaleMeteringPointDto> candidates)
+        {
             var result = new List<WholesaleMeteringPointDto>();
 
             foreach (var group in candidates
                 .Where(d => d.FromDate < d.ToDate)
                 .GroupBy(d => d.MeteringPointId))
             {
-                var sorted = group.OrderBy(d => d.FromDate).ToList();
+                var sorted = group
+                    .OrderBy(d => d.FromDate)
+                    .ToList();
+
                 if (sorted.Count == 0)
                     continue;
 
@@ -124,6 +104,74 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             }
 
             return result;
+        }
+
+        private async Task<List<WholesaleMeteringPointDto>> BuildCandidatesAsync(
+            IAsyncEnumerable<MeteringPoint> meteringPoints)
+        {
+            var candidates = new List<WholesaleMeteringPointDto>();
+            var parentCache = new Dictionary<string, MeteringPoint?>();
+            var balanceResponsiblePartyCache = new Dictionary<string, string>();
+
+            await foreach (var mp in meteringPoints)
+            {
+                foreach (var mpm in mp.MetadataTimeline.Where(IsRelevantConnectionAndType))
+                {
+                    var lookupPoint = await ResolveLookupPointAsync(mpm.Parent, mp, parentCache).ConfigureAwait(false);
+
+                    if (lookupPoint is null)
+                        continue;
+
+                    if (!TryFindCurrentRelation(lookupPoint, mpm, out var relation))
+                        continue;
+
+                    var energySupplierId = relation.EnergySupplier;
+                    var balanceResponsiblePartyId = await ResolveBalanceResponsiblePartyAsync(
+                                               energySupplierId,
+                                               balanceResponsiblePartyCache)
+                                               .ConfigureAwait(false);
+
+                    candidates.Add(CreateDto(mp, mpm, energySupplierId, balanceResponsiblePartyId));
+                }
+            }
+
+            return candidates;
+        }
+
+        private async Task<MeteringPoint?> ResolveLookupPointAsync(
+            MeteringPointIdentification? parentId,
+            MeteringPoint self,
+            Dictionary<string, MeteringPoint?> parentCache)
+        {
+            if (parentId is null)
+                return self;
+
+            var key = parentId.Value;
+            if (!parentCache.TryGetValue(key, out var parentMp))
+            {
+                parentMp = await _meteringPointRepository
+                    .GetMeteringPointByIdAsync(parentId)
+                    .ConfigureAwait(false);
+                parentCache[key] = parentMp;
+            }
+
+            return parentMp;
+        }
+
+        private async Task<string?> ResolveBalanceResponsiblePartyAsync(
+            string energySupplierId,
+            Dictionary<string, string> cache)
+        {
+            if (!cache.TryGetValue(energySupplierId, out var brpId))
+            {
+                brpId = await _balanceResponsibleRepository
+                    .GetBalanceResponsiblePartyIdByEnergySupplierAsync(energySupplierId)
+                    .ConfigureAwait(false);
+                if (brpId is not null)
+                    cache[energySupplierId] = brpId;
+            }
+
+            return brpId;
         }
     }
 }
