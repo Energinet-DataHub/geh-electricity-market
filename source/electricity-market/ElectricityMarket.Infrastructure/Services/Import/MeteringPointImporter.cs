@@ -80,7 +80,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         (bool Imported, string Message) TryImportTransaction(ImportedTransactionEntity importedTransaction)
         {
             var transactionType = importedTransaction.transaction_type.TrimEnd();
-            var dossierStatus = importedTransaction.transaction_type.TrimEnd();
+            var dossierStatus = importedTransaction.dossier_status?.TrimEnd();
             var type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp);
 
             if ((_changeTransactions.Contains(transactionType) || meteringPoint.MeteringPointPeriods.Count == 0) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var addMeteringPointPeriodError))
@@ -255,12 +255,9 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             {
                 HandleMoveIn(importedTransaction, meteringPoint);
             }
-
-            return true;
         }
 
-        errorMessage = $"Unhandled transaction type {transactionType}";
-        return false;
+        return true;
     }
 
     private static IEnumerable<CommercialRelationEntity> AllSavedValidCrs(MeteringPointEntity meteringPoint)
