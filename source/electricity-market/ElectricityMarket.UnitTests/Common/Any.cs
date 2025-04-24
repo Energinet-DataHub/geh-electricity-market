@@ -15,11 +15,10 @@
 using System;
 using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
-namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
+namespace Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 
-public static class Some
+public static class Any
 {
     public static string IntString(int charCount)
     {
@@ -36,15 +35,8 @@ public static class Some
         return new MeteringPointIdentification(IntString(18));
     }
 
-    public static InstallationAddressEntity InstallationAddressEntity()
+    public static InstallationAddress InstallationAddress()
     {
-        return new InstallationAddressEntity()
-        {
-            StreetName = "123 Main Street",
-            BuildingNumber = IntString(3),
-            CityName = "New York",
-            CountryCode = "US",
-            PostCode = IntString(5),
-        };
+        return new InstallationAddress(1, "667", "Devils lane", string.Empty, "Bottom", string.Empty, null, WashInstructions.NotWashable, "US", null, null, "6670", null, null);
     }
 }

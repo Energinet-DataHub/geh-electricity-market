@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+using Energinet.DataHub.ElectricityMarket.Application.Common;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed record CommercialRelation(
-    long Id,
-    string EnergySupplier,
-    Interval Period,
-    Guid? ClientId,
-    IReadOnlyList<EnergySupplyPeriod> EnergySupplyPeriodTimeline,
-    IReadOnlyList<ElectricalHeatingPeriod> ElectricalHeatingPeriods);
+public sealed record CapacitySettlementPeriodDto(
+    [property: DeltaLakeKey] long MeteringPointId,
+    DateTimeOffset PeriodFromDate,
+    DateTimeOffset? PeriodToDate,
+    [property: DeltaLakeKey] string ChildMeteringPointId,
+    DateTimeOffset ChildPeriodFromDate,
+    DateTimeOffset? ChildPeriodToDate) : ICapacitySettlementResult;
