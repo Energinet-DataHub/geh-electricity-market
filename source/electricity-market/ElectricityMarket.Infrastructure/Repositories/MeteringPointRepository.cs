@@ -24,20 +24,25 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
 public sealed class MeteringPointRepository : IMeteringPointRepository
 {
+    private readonly IDbContextFactory<ElectricityMarketDatabaseContext> _electricityMarketFactory;
+
     private readonly MarketParticipantDatabaseContext _marketParticipantDatabaseContext;
     private readonly ElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly IRelationalModelPrinter _relationalModelPrinter;
 
     public MeteringPointRepository(
+        IDbContextFactory<ElectricityMarketDatabaseContext> electricityMarketFactory,
         MarketParticipantDatabaseContext marketParticipantDatabaseContext,
         ElectricityMarketDatabaseContext electricityMarketDatabaseContext,
         IRelationalModelPrinter relationalModelPrinter)
     {
+        _electricityMarketFactory = electricityMarketFactory;
         _marketParticipantDatabaseContext = marketParticipantDatabaseContext;
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
         _relationalModelPrinter = relationalModelPrinter;
@@ -145,5 +150,17 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         {
             yield return MeteringPointMapper.MapFromEntity(entity);
         }
+    }
+
+    public async Task<MeteringPoint?> GetMeteringPointByIdAsync(MeteringPointIdentification identification)
+    {
+        using var electricityMarketFactory =
+                await _electricityMarketFactory.CreateDbContextAsync().ConfigureAwait(false);
+
+        var entity = await electricityMarketFactory.MeteringPoints
+            .FirstOrDefaultAsync(x => x.Identification == identification.Value)
+            .ConfigureAwait(false);
+
+        return entity == null ? null : MeteringPointMapper.MapFromEntity(entity);
     }
 }

@@ -63,6 +63,7 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<IGridAreaRepository, GridAreaRepository>();
         services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();
         services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
+        services.AddScoped<IBalanceResponsibleRepository, BalanceResponsibleRepository>();
 
         // Services
         services.AddScoped<ICsvImporter, CsvImporter>();

@@ -40,19 +40,26 @@ public sealed class SyncWholesaleMeteringPointHandler : IRequestHandler<SyncWhol
     {
         var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.WholesaleMeteringPoint).ConfigureAwait(false);
         var meteringPointsToSync = _meteringPointRepository
-            .GetMeteringPointsToSyncAsync(currentSyncJob.Version)
-            .ConfigureAwait(false);
+            .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
-        var wholesaleMeteringPoints = _wholesaleMeteringPointService.GetWholeSaleMeteringPointsAsync(meteringPointsToSync).ConfigureAwait(false);
+        while (await meteringPointsToSync.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var maxVersion = await meteringPointsToSync.MaxAsync(mp => mp.Version, cancellationToken).ConfigureAwait(false);
 
-        DateTimeOffset maxVersion = currentSyncJob.Version;
+            await HandleBatchAsync(meteringPointsToSync, maxVersion, cancellationToken).ConfigureAwait(false);
+            currentSyncJob = currentSyncJob with { Version = maxVersion };
+            await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
+            meteringPointsToSync = _meteringPointRepository.GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+        }
+    }
+
+    private async Task HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync, DateTimeOffset maxVersion, CancellationToken cancellationToken)
+    {
+        var wholesaleMeteringPoints = await _wholesaleMeteringPointService.GetWholesaleMeteringPointsAsync(meteringPointsToSync).ConfigureAwait(false);
+
         await foreach (var meteringPoint in meteringPointsToSync)
         {
-            // TODO: Implement the sync logic to Databricks for electrical heating metering points
-            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
+            // TODO: Implement the sync logic to Databricks for wholesale metering points.
         }
-
-        currentSyncJob = currentSyncJob with { Version = maxVersion };
-        await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
     }
 }

@@ -11,13 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
-
-public interface IWholesaleMeteringPointService
+public interface IBalanceResponsibleRepository
 {
-    Task<IEnumerable<WholesaleMeteringPointDto>> GetWholesaleMeteringPointsAsync(IAsyncEnumerable<MeteringPoint> meteringPoints);
+    Task<string?> GetBalanceResponsiblePartyIdByEnergySupplierAsync(string energySupplierId);
 }

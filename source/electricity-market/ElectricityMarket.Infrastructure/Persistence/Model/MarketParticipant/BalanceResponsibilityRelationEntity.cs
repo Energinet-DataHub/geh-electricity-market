@@ -12,12 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using System;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
-
-public interface IWholesaleMeteringPointService
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant
 {
-    Task<IEnumerable<WholesaleMeteringPointDto>> GetWholesaleMeteringPointsAsync(IAsyncEnumerable<MeteringPoint> meteringPoints);
+    public sealed class BalanceResponsibilityRelationEntity
+    {
+        public Guid Id { get; set; }
+        public Guid EnergySupplierId { get; set; }
+        public Guid BalanceResponsiblePartyId { get; set; }
+        public Guid GridAreaId { get; set; }
+
+        public int MeteringPointType { get; set; }
+        public DateTimeOffset ValidFrom { get; set; }
+        public DateTimeOffset? ValidTo { get; set; }
+        public DateTimeOffset? ValidToAssignedAt { get; set; }
+    }
 }
