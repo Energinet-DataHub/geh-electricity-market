@@ -87,7 +87,6 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     CONSTRAINT PK_MeteringPointPeriod PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_MeteringPointPeriod_MeteringPointPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[MeteringPointPeriod]([ID]),
     CONSTRAINT FK_MeteringPointPeriod_MeteringPoint FOREIGN KEY (MeteringPointId) REFERENCES [electricitymarket].[MeteringPoint]([ID]),
-    CONSTRAINT FK_MeteringPointPeriod_ParentIdentification FOREIGN KEY (ParentIdentification) REFERENCES [electricitymarket].[MeteringPoint]([Identification]),
     CONSTRAINT FK_MeteringPointPeriod_InstallationAddress FOREIGN KEY (InstallationAddressId) REFERENCES [electricitymarket].[InstallationAddress]([ID]),
 )
 
@@ -137,7 +136,8 @@ CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
     [CreatedAt]                datetimeoffset NOT NULL,
     [WebAccessCode]            varchar(64) NOT NULL,
     [EnergySupplier]           varchar(16) NOT NULL,
-    [BusinessTransactionDosId] bigint NOT NULL
+    [BusinessTransactionDosId] bigint NOT NULL,
+    [TransactionType]          char(10) NOT NULL,
 
     CONSTRAINT PK_EnergySupplyPeriod PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_EnergySupplyPeriod_EnergySupplyPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
@@ -162,6 +162,7 @@ CREATE TABLE [electricitymarket].[ContactAddress]
     [Floor]                      nvarchar(64) NULL,
     [Room]                       nvarchar(64) NULL,
     [PostCode]                   nvarchar(64) NULL,
+    [PostBox]                    nvarchar(64) NULL,
     [MunicipalityCode]           nvarchar(64) NULL,
 
     CONSTRAINT PK_ContactAddress PRIMARY KEY CLUSTERED (Id),

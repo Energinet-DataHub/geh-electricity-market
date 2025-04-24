@@ -102,7 +102,7 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
                             transaction,
                             batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods)),
                             "EnergySupplyPeriod",
-                            ["Id", "CommercialRelationId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "WebAccessCode", "EnergySupplier", "BusinessTransactionDosId"])
+                            ["Id", "CommercialRelationId", "ValidFrom", "ValidTo", "RetiredById", "RetiredAt", "CreatedAt", "WebAccessCode", "EnergySupplier", "BusinessTransactionDosId", "TransactionType"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(
@@ -110,7 +110,7 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
                             transaction,
                             batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.EnergySupplyPeriods.SelectMany(esp => esp.Contacts))).Select(c => c.ContactAddress).Where(ca => ca != null),
                             "ContactAddress",
-                            ["Id", "IsProtectedAddress", "Attention", "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubdivisionName", "DarReference", "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode"])
+                            ["Id", "IsProtectedAddress", "Attention", "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubdivisionName", "DarReference", "CountryCode", "Floor", "Room", "PostCode", "PostBox", "MunicipalityCode"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(

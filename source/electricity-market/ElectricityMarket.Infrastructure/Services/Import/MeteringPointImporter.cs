@@ -29,7 +29,9 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private static readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "DATAMIG", "LNKCHLDMP", "MANCOR", "MSTDATSBM", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "HTXCOR" };
 
-    private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS" };
+    private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BLKCHGBRP" };
+
+    private static readonly DateTimeOffset _importCutoff = new(2016, 12, 31, 23, 0, 0, TimeSpan.Zero);
 
     public Task<(bool Imported, string Message)> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
     {
@@ -38,6 +40,8 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         try
         {
+            var hasAnyTransactions = false;
+
             foreach (var importedTransaction in importedTransactions)
             {
                 if (string.IsNullOrWhiteSpace(meteringPoint.Identification))
@@ -45,11 +49,23 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                     meteringPoint.Identification = importedTransaction.metering_point_id.ToString(CultureInfo.InvariantCulture);
                 }
 
+                if (importedTransaction.valid_to_date < _importCutoff)
+                    continue;
+
                 var result = TryImportTransaction(importedTransaction);
-                if (!result.Imported)
+                if (result.Imported)
+                {
+                    hasAnyTransactions = true;
+                }
+                else
                 {
                     return Task.FromResult(result);
                 }
+            }
+
+            if (!hasAnyTransactions)
+            {
+                return Task.FromResult((false, "All transactions discarded for MP."));
             }
         }
 #pragma warning disable CA1031
@@ -185,19 +201,13 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
                 case "MOVEOUTES":
                     {
-                        var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
-                        commercialRelationEntity.ClientId = null;
-
-                        TryCloseActiveCr(importedTransaction, meteringPoint);
-                        HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
-
-                        meteringPoint.CommercialRelations.Add(commercialRelationEntity);
+                        HandleMoveOut(importedTransaction, meteringPoint);
                         return true;
                     }
 
                 case "ENDSUPPLY":
                     {
-                        var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+                        var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
                         commercialRelationEntity.EndDate = importedTransaction.valid_from_date;
 
                         TryCloseActiveCr(importedTransaction, meteringPoint);
@@ -228,7 +238,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
                 default:
                     {
-                        var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+                        var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
                         HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
                         return true;
                     }
@@ -237,7 +247,11 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (transactionType is not ("ENDSUPPLY" or "INCMOVEOUT" or "INCMOVEIN" or "INCMOVEMAN"))
         {
-            if (!string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id))
+            if (transactionType is "MOVEOUTES")
+            {
+                HandleMoveOut(importedTransaction, meteringPoint);
+            }
+            else
             {
                 HandleMoveIn(importedTransaction, meteringPoint);
             }
@@ -256,31 +270,54 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             .OrderBy(x => x.StartDate);
     }
 
+    private static void HandleMoveOut(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
+    {
+        var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
+        commercialRelationEntity.ClientId = null;
+
+        TryCloseActiveCr(importedTransaction, meteringPoint);
+        HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
+
+        meteringPoint.CommercialRelations.Add(commercialRelationEntity);
+    }
+
     private static void HandleMoveIn(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
         var commercialRelation = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
 
-        var futures = AllSavedValidCrs(meteringPoint)
-            .Where(x => x.StartDate >= importedTransaction.valid_from_date)
-            .ToList();
+        var activeCr = AllSavedValidCrs(meteringPoint)
+            .FirstOrDefault(x => x.StartDate <= importedTransaction.valid_from_date && x.EndDate > importedTransaction.valid_from_date);
 
-        if (futures.Count > 0)
+        if (activeCr != null)
         {
-            var indexOfOverlapping = AllSavedValidCrs(meteringPoint)
-                .ToList()
-                .IndexOf(futures[0]);
+            var futures = AllSavedValidCrs(meteringPoint)
+                .Where(x => x.StartDate > importedTransaction.valid_from_date && activeCr.ClientId == x.ClientId)
+                .ToList();
 
-            var futureEnergySupplierChanges = indexOfOverlapping > 0
-                ? AllSavedValidCrs(meteringPoint).Where((_, i) => i >= indexOfOverlapping - 1).ToList()
-                : futures;
-
-            var clientIdOfFirstFuture = futureEnergySupplierChanges.First().ClientId;
-
-            var toBeInvalidated = futureEnergySupplierChanges.TakeWhile(x => x.ClientId == clientIdOfFirstFuture);
-
-            foreach (var entity in toBeInvalidated)
+            foreach (var entity in futures)
             {
                 entity.EndDate = entity.StartDate;
+            }
+
+            if (futures.Count != 0)
+            {
+                var commercialRelationEntities = AllSavedValidCrs(meteringPoint).ToList();
+                var nextFuture = commercialRelationEntities.IndexOf(futures.Last()) + 1;
+                if (nextFuture < commercialRelationEntities.Count - 1)
+                {
+                    commercialRelation.EndDate = commercialRelationEntities[nextFuture].StartDate;
+                }
+            }
+        }
+        else
+        {
+            var nextFutureCr = AllSavedValidCrs(meteringPoint)
+                .Where(x => x.StartDate > importedTransaction.valid_from_date)
+                .MinBy(x => x.StartDate);
+
+            if (nextFutureCr != null)
+            {
+                commercialRelation.EndDate = nextFutureCr.StartDate;
             }
         }
 
@@ -294,7 +331,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
     private static void TryCloseActiveCr(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
     {
         var activeCr = AllSavedValidCrs(meteringPoint)
-            .FirstOrDefault(x => x.StartDate < importedTransaction.valid_from_date && x.EndDate >= importedTransaction.valid_from_date);
+            .FirstOrDefault(x => x.StartDate <= importedTransaction.valid_from_date && x.EndDate > importedTransaction.valid_from_date);
 
         if (activeCr != null)
         {
@@ -304,10 +341,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private static void HandleEspStuff(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint, CommercialRelationEntity commercialRelationEntity)
     {
-        var activeEsp = AllSavedValidCrs(meteringPoint)
-            .SelectMany(x => x.EnergySupplyPeriods)
-            .OrderBy(x => x.ValidFrom)
-            .LastOrDefault(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy == null);
+        var (activeCr, activeEsp) = AllSavedValidCrs(meteringPoint)
+            .SelectMany(cr => cr.EnergySupplyPeriods.Select(esp => (cr, esp)))
+            .OrderBy(group => group.esp.ValidFrom)
+            .LastOrDefault(group => group.esp.ValidFrom <= importedTransaction.valid_from_date && group.esp.RetiredBy == null);
 
         var changeEsp = CommercialRelationFactory.CreateEnergySupplyPeriodEntity(importedTransaction);
         commercialRelationEntity.EnergySupplyPeriods.Add(changeEsp);
@@ -341,6 +378,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         activeEsp.RetiredBy = retiredBy;
         activeEsp.RetiredAt = DateTimeOffset.UtcNow;
+        activeCr.EnergySupplyPeriods.Add(retiredBy);
 
         if (activeEsp.ValidTo == DateTimeOffset.MaxValue)
         {

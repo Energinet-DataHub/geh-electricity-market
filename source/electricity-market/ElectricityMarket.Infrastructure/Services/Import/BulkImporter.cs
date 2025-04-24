@@ -180,19 +180,22 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
                 electricalHeatingPeriodEntity.CommercialRelationId = commercialRelationEntity.Id;
             }
 
+            if (electricalHeatingPrimaryKey >= (commercialRelationEntity.Id * 10000) + 10000 || electricalHeatingPrimaryKey <= 0)
+                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, ElectricalHeating.");
+        }
+
+        foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
+        {
             foreach (var electricalHeatingPeriodEntity in commercialRelationEntity.ElectricalHeatingPeriods)
             {
                 electricalHeatingPeriodEntity.RetiredById = electricalHeatingPeriodEntity.RetiredBy?.Id;
             }
-
-            if (electricalHeatingPrimaryKey >= (commercialRelationEntity.Id * 10000) + 10000 || electricalHeatingPrimaryKey <= 0)
-                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, ElectricalHeating.");
         }
 
         // EnergySupplyPeriod
         foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
         {
-            var energySupplyPeriodPrimaryKey = commercialRelationEntity.Id * 1000;
+            var energySupplyPeriodPrimaryKey = commercialRelationEntity.Id * 10000;
 
             foreach (var energySupplyPeriodEntity in commercialRelationEntity.EnergySupplyPeriods)
             {
@@ -200,13 +203,16 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
                 energySupplyPeriodEntity.CommercialRelationId = commercialRelationEntity.Id;
             }
 
+            if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 10000) + 10000 || energySupplyPeriodPrimaryKey <= 0)
+                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, EnergySupplyPeriod.");
+        }
+
+        foreach (var commercialRelationEntity in meteringPointEntity.CommercialRelations)
+        {
             foreach (var energySupplyPeriodEntity in commercialRelationEntity.EnergySupplyPeriods)
             {
                 energySupplyPeriodEntity.RetiredById = energySupplyPeriodEntity.RetiredBy?.Id;
             }
-
-            if (energySupplyPeriodPrimaryKey >= (commercialRelationEntity.Id * 1000) + 1000 || energySupplyPeriodPrimaryKey <= 0)
-                throw new InvalidOperationException($"Primary key overflow for {meteringPointEntity.Identification}, EnergySupplyPeriod.");
         }
 
         // Contact
@@ -257,7 +263,7 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
                 quarantineBatch = new List<QuarantinedMeteringPointEntity>(capacity);
             }
 
-            var meteringPoint = new MeteringPointEntity() { Version = DateTimeOffset.UtcNow };
+            var meteringPoint = new MeteringPointEntity { Version = DateTimeOffset.UtcNow };
 
             var (imported, message) = await _meteringPointImporter
                 .ImportAsync(meteringPoint, transactionsForOneMp)
