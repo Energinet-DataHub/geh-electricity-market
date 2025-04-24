@@ -21,7 +21,7 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 public static class TestCommercialRelationPreparationHelper
 {
     public static Task<CommercialRelationEntity> PrepareCommercialRelationAsync(
-        this ElectricityMarketDatabaseFixture fixture)
+        this ElectricityMarketDbUpDatabaseFixture fixture)
     {
         return PrepareCommercialRelationAsync(
             fixture,
@@ -31,12 +31,12 @@ public static class TestCommercialRelationPreparationHelper
     }
 
     public static async Task<CommercialRelationEntity> PrepareCommercialRelationAsync(
-        this ElectricityMarketDatabaseFixture fixture,
+        this ElectricityMarketDbUpDatabaseFixture fixture,
         MeteringPointEntity meteringPointEntity,
         CommercialRelationEntity commercialRelationEntity,
         EnergySupplyPeriodEntity energySupplyPeriodEntity)
     {
-        await using var context = fixture.DatabaseManager.CreateDbContext();
+        await using var context = fixture.DbUpDatabaseManager.CreateDbContext();
 
         if (meteringPointEntity.Id == 0)
         {

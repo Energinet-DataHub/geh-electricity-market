@@ -12,17 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+using System.Threading.Tasks;
+using Xunit;
 
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
+namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 
-public sealed class MeteringPointEnergySupplier
+public sealed class ElectricityMarketDbUpDatabaseFixture : IAsyncLifetime
 {
-    public MeteringPointIdentification Identification { get; init; } = null!;
+    public ElectricityMarketDbUpDatabaseManager DbUpDatabaseManager { get; } = new();
 
-    public string EnergySupplier { get; init; } = null!;
+    public Task InitializeAsync()
+    {
+        return DbUpDatabaseManager.CreateDatabaseAsync();
+    }
 
-    public Instant StartDate { get; init; }
-
-    public Instant EndDate { get; init; }
+    public Task DisposeAsync()
+    {
+        return DbUpDatabaseManager.DeleteDatabaseAsync();
+    }
 }

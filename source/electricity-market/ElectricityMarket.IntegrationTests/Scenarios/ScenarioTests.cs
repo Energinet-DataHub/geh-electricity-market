@@ -68,7 +68,7 @@ public class ScenarioTests
         await fixture.InitializeAsync();
 
         using var scope = fixture.ServiceProvider.CreateScope();
-        await using var context = fixture.DatabaseManager.CreateDbContext();
+        await using var context = fixture.DbUpDatabaseManager.CreateDbContext();
 
         await using var csvStream = assembly.GetManifestResourceStream(path);
         using var streamReader = new StreamReader(csvStream!);
@@ -165,6 +165,7 @@ public class ScenarioTests
         lines = SanitizeSectionColumn(lines, "CommercialRelation", "ClientId", Guid.Empty.ToString()).ToList();
         lines = SanitizeSectionColumn(lines, "MeteringPointPeriod", "RetiredAt", DateTimeOffset.MinValue.ToString("u")).ToList();
         lines = SanitizeSectionColumn(lines, "MeteringPoint", "Version", DateTimeOffset.MinValue.ToString("u")).ToList();
+        lines = SanitizeSectionColumn(lines, "EnergySupplyPeriod", "RetiredAt", DateTimeOffset.MinValue.ToString("u")).ToList();
 
         var trimEnd = string.Join('\n', lines).TrimEnd('\n');
 
