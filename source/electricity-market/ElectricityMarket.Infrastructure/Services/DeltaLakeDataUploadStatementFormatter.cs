@@ -27,12 +27,12 @@ public class DeltaLakeDataUploadStatementFormatter
     private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
     private readonly string _dateTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
 
-    public string CreateUploadStatement<T>(string tableName, IEnumerable<T> dtos)
+    public string CreateUploadStatement<T>(string tableName, IEnumerable<T> rowObjects)
     {
         var columnNames = GetColumnNames<T>().ToList();
         var columnsString = string.Join(", ", columnNames);
 
-        var valuesString = string.Join(", ", dtos.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop => GetPropertyValue(prop, dto))) + ")"));
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop => GetPropertyValue(prop, dto))) + ")"));
 
         var keyNames = GetKeyNames<T>().ToList();
         var mergeConditionString = string.Join(" AND ", keyNames.Select(key => $"t.{key} = u.{key}"));
@@ -54,35 +54,53 @@ public class DeltaLakeDataUploadStatementFormatter
                 """;
     }
 
+    public string CreateDeleteStatement<T>(string tableName, IEnumerable<T> rowObjects)
+    {
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetKeys<T>().Select(prop => GetPropertyValue(prop, dto))) + ")"));
+
+        var keyNames = GetKeyNames<T>().ToList();
+        var keyColumnsString = string.Join(", ", keyNames);
+
+        return $"""
+                DELETE FROM {tableName}
+                WHERE ({keyColumnsString}) IN ({valuesString});
+                """;
+    }
+
     private static IEnumerable<PropertyInfo> GetProperties<T>()
     {
         return typeof(T).GetProperties().Where(p => p.CanRead).OrderBy(p => p.Name);
     }
 
-    private string? GetPropertyValue<T>(PropertyInfo prop, T dto)
+    private static IEnumerable<PropertyInfo> GetKeys<T>()
     {
-        if (prop.PropertyType == typeof(DateTimeOffset))
-        {
-            return "'" + ((DateTimeOffset)prop.GetValue(dto, null)!).ToString(_dateTimeFormat, CultureInfo.InvariantCulture) + "'";
-        }
+        return typeof(T).GetProperties().Where(p => p.CanRead && p.CustomAttributes.Any(attr => attr.AttributeType == typeof(DeltaLakeKeyAttribute)));
+    }
 
-        if (prop.PropertyType == typeof(DateTimeOffset?))
+    private string GetPropertyValue<T>(PropertyInfo prop, T dto)
+    {
+        var propertyValue = prop.GetValue(dto, null);
+        if (propertyValue is null)
         {
-            var value = (DateTimeOffset?)prop.GetValue(dto, null);
-            if (value is not null)
+            if (prop.PropertyType == typeof(DateTimeOffset) || prop.PropertyType == typeof(DateTimeOffset?))
             {
-                return "'" + ((DateTimeOffset)value).ToString(_dateTimeFormat, CultureInfo.InvariantCulture) + "'";
+                return "to_timestamp(null)";
             }
 
             return "null";
         }
 
-        return "'" + prop.GetValue(dto, null) + "'";
+        if (prop.PropertyType == typeof(DateTimeOffset) || prop.PropertyType == typeof(DateTimeOffset?))
+        {
+            return $"to_timestamp('{((DateTimeOffset)propertyValue).ToString(_dateTimeFormat, CultureInfo.InvariantCulture)}')";
+        }
+
+        return $"'{propertyValue}'";
     }
 
     private IEnumerable<string> GetKeyNames<T>()
     {
-        return typeof(T).GetProperties().Where(p => p.CanRead && p.CustomAttributes.Any(attr => attr.AttributeType == typeof(DeltaLakeKeyAttribute))).Select(p => _snakeCaseFormatter.ToSnakeCase(p.Name));
+        return GetKeys<T>().Select(p => _snakeCaseFormatter.ToSnakeCase(p.Name));
     }
 
     private IEnumerable<string> GetColumnNames<T>()

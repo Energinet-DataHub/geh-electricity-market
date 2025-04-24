@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
@@ -72,6 +73,34 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         {
             string resultString = Convert.ToString(record);
             _logger.LogInformation("Electrical Heating Children Uploaded: {ResultString}", resultString);
+        }
+    }
+
+    public async Task ImportTransactionsAsync(IEnumerable<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken)
+    {
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
+        var queryAString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, capacitySettlementPeriods);
+        var query = DatabricksStatement.FromRawSql(queryAString);
+
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build(), cancellationToken);
+        await foreach (var record in result.ConfigureAwait(false))
+        {
+            string resultString = Convert.ToString(record);
+            _logger.LogInformation("Capacity settlement Uploaded: {ResultString}", resultString);
+        }
+    }
+
+    public async Task ImportTransactionsAsync(IEnumerable<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken)
+    {
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
+        var queryAString = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatement(tableName, capacitySettlementEmptyDtos);
+        var query = DatabricksStatement.FromRawSql(queryAString);
+
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build(), cancellationToken);
+        await foreach (var record in result.ConfigureAwait(false))
+        {
+            string resultString = Convert.ToString(record);
+            _logger.LogInformation("Capacity settlement deleted: {ResultString}", resultString);
         }
     }
 }

@@ -44,4 +44,16 @@ public class SyncController : ControllerBase
 
         return Ok();
     }
+
+    [HttpGet("capacity-settlement")]
+    public async Task<ActionResult> StartCapacitySettlementSyncAsync()
+    {
+        var command = new SyncCapacitySettlementCommand();
+
+        await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok();
+    }
 }

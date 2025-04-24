@@ -13,16 +13,13 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
-public interface IDeltaLakeDataUploadService
+public interface ICapacitySettlementService
 {
-    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingParentDto> electricalHeatingParent);
-
-    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren);
-
-    Task ImportTransactionsAsync(IEnumerable<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken);
-
-    Task ImportTransactionsAsync(IEnumerable<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken);
+    IAsyncEnumerable<ICapacitySettlementResult> GetCapacitySettlementPeriodsAsync(
+        MeteringPointIdentification meteringPointIdentification,
+        CancellationToken cancellationToken);
 }
