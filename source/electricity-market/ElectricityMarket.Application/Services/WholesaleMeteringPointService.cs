@@ -162,16 +162,17 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             string energySupplierId,
             Dictionary<string, string> cache)
         {
-            if (!cache.TryGetValue(energySupplierId, out var brpId))
+            if (!cache.TryGetValue(energySupplierId, out var balanceResponsiblePartyId))
             {
-                brpId = await _balanceResponsibleRepository
+                balanceResponsiblePartyId = await _balanceResponsibleRepository
                     .GetBalanceResponsiblePartyIdByEnergySupplierAsync(energySupplierId)
                     .ConfigureAwait(false);
-                if (brpId is not null)
-                    cache[energySupplierId] = brpId;
+
+                if (balanceResponsiblePartyId is not null)
+                    cache[energySupplierId] = balanceResponsiblePartyId;
             }
 
-            return brpId;
+            return balanceResponsiblePartyId;
         }
     }
 }
