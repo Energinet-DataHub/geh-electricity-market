@@ -64,8 +64,8 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
     var mppList = await _electricityMarketDatabaseContext.MeteringPointPeriods
         .Where(mpp =>
             mpp.MeteringPointId == meteringPoint.Id &&
-            mpp.ValidFrom <= endDate &&
-            mpp.ValidTo > startDate &&
+            mpp.ValidFrom < endDate &&
+            mpp.ValidTo >= startDate &&
             mpp.RetiredById == null)
         .OrderBy(x => x.ValidFrom)
         .ToListAsync()
