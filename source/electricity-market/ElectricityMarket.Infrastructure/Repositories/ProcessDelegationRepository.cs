@@ -49,7 +49,7 @@ public sealed class ProcessDelegationRepository : IProcessDelegationRepository
                       && processDelegation.DelegatedProcess == mappedProcessType
                       && actor.ActorNumber == processDelegationRequest.ActorNumber
                       && actor.MarketRole.Function == mappedEicFunction
-                      && delegationPeriods.StartsAt <= requestDate && (delegationPeriods.StopsAt == null || delegationPeriods.StopsAt >= requestDate)
+                      && delegationPeriods.StartsAt <= requestDate && (delegationPeriods.StopsAt == null || delegationPeriods.StopsAt > requestDate)
                 select new ProcessDelegationDto(delegatedToActor.ActorNumber, EicFunctionMapper.Map(delegatedToActor.MarketRole.Function)))
             .SingleOrDefaultAsync()
             .ConfigureAwait(false);
