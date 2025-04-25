@@ -1,0 +1,1 @@
+DROP VIEW {catalog_name}.electricity_market_measurements_input.net_consumption_group_6_child_metering_point_v1

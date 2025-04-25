@@ -47,7 +47,7 @@ public static class MeteringPointPeriodFactory
             PowerLimitKw = importedTransaction.power_limit_kw,
             PowerLimitA = importedTransaction.power_limit_a,
             MeterNumber = importedTransaction.meter_number?.TrimEnd(),
-            SettlementGroup = importedTransaction.net_settlement_group,
+            SettlementGroup = importedTransaction.net_settlement_group == 0 ? null : importedTransaction.net_settlement_group,
             ScheduledMeterReadingMonth = ScheduledMeterReadingMonthHelper.ConvertToSingleMonth(importedTransaction.scheduled_meter_reading_date01),
             ExchangeFromGridArea = importedTransaction.from_grid_area?.TrimEnd(),
             ExchangeToGridArea = importedTransaction.to_grid_area?.TrimEnd(),
