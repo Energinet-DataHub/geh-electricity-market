@@ -55,7 +55,7 @@ public sealed class ImportStateService : IImportStateService
     {
         var importState = await _databaseContext.ImportStates.SingleAsync().ConfigureAwait(false);
         importState.Offset = cutoff;
-        importState.Mode = ImportStateEntity.Off;
+        importState.Mode = ImportStateEntity.StreamingImport;
         await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
