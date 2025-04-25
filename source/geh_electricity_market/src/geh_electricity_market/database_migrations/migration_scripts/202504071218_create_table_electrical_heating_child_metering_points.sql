@@ -5,5 +5,7 @@ CREATE TABLE {catalog_name}.electricity_market_internal.electrical_heating_child
     metering_point_sub_type STRING NOT NULL COMMENT 'The sub type of the metering point. E.g. consumption, production, etc.',
     coupled_date TIMESTAMP NOT NULL COMMENT 'UTC time. The date when the child metering point was coupled to the parent metering point.',
     uncoupled_date TIMESTAMP COMMENT 'UTC time. The date when the child metering point was uncoupled from the parent metering point.'
-) -- CLUSTER BY parent_metering_point_id, metering_point_id;
+)
+USING DELTA
+-- CLUSTER BY parent_metering_point_id, metering_point_id;
 -- TODO: What to cluster by? --> Bjarke, JMK, Jonas
