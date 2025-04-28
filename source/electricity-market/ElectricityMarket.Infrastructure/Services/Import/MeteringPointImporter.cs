@@ -27,7 +27,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 {
     private static readonly IReadOnlySet<string> _ignoredTransactions = new HashSet<string> { "CALCENC", "CALCTSSBM", "CNCCNSMRK", "CNCCNSOTH", "CNCREADMRK", "CNCREADOTH", "EOSMDUPD", "HEATYTDREQ", "HISANNCON", "HISANNREQ", "HISDATREQ", "INITCNCCOS", "LDSHRSBM", "MNTCHRGLNK", "MOVEINGO", "MSTDATREQ", "MSTDATRNO", "MTRDATREQ", "MTRDATSBM", "QRYCHARGE", "QRYMSDCHG", "SBMCNTADR", "SBMEACES", "SBMEACGO", "SBMMRDES", "SBMMRDGO", "SERVICEREQ", "STOPFEE", "STOPSUB", "STOPTAR", "UNEXPERR", "UPDBLCKLNK", "VIEWACCNO", "VIEWMOVES", "VIEWMP", "VIEWMPNO", "VIEWMTDNO" };
 
-    private static readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "DATAMIG", "LNKCHLDMP", "MANCOR", "MSTDATSBM", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "HTXCOR" };
+    private static readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "DATAMIG", "ENDSUPPLY", "LNKCHLDMP", "MANCOR", "MSTDATSBM", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "HTXCOR" };
 
     private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BLKCHGBRP" };
 
@@ -218,8 +218,8 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 case "INCCHGSUP" or "INCMOVEAUT" or "INCMOVEIN" or "INCMOVEMAN":
                     {
                         var cr = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
-                        var prevCr = allCrsOrdered.Last(x => x.StartDate < importedTransaction.valid_from_date);
-                        var nextCr = allCrsOrdered.FirstOrDefault(x => x.StartDate > importedTransaction.valid_from_date);
+                        var prevCr = allCrsOrdered.Last(x => x.StartDate < cr.StartDate);
+                        var nextCr = allCrsOrdered.FirstOrDefault(x => x.StartDate > cr.StartDate);
 
                         cr.EndDate = cr.StartDate;
                         prevCr.EndDate = nextCr?.StartDate ?? DateTimeOffset.MaxValue;
@@ -348,7 +348,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (activeEsp == null)
         {
-            changeEsp.ValidTo = DateTimeOffset.MaxValue;
+            changeEsp.ValidTo = AllSavedValidCrs(meteringPoint)
+                .SelectMany(x => x.EnergySupplyPeriods)
+                .Where(x => x.ValidFrom > importedTransaction.valid_from_date)
+                .MinBy(x => x.ValidFrom)?.ValidFrom ?? DateTimeOffset.MaxValue;
             return;
         }
 

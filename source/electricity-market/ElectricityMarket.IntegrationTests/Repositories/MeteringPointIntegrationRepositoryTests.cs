@@ -64,8 +64,8 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
 
         var result = await sut.GetMeteringPointMasterDataChangesAsync(
                 "570715000001552082",
-                new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero),
-                new DateTimeOffset(2023, 10, 2, 0, 0, 0, TimeSpan.Zero))
+                new DateTimeOffset(2017, 1, 20, 22, 0, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2017, 1, 20, 23, 0, 0, 0, TimeSpan.Zero))
             .ToListAsync();
 
         result.Should()
@@ -87,7 +87,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                     Type = MeteringPointType.Production,
                     Unit = MeasureUnit.kWh,
                     ValidFrom = new DateTimeOffset(2017, 1, 19, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
-                    ValidTo = DateTimeOffset.MaxValue.ToInstant(),
+                    ValidTo = new DateTimeOffset(2017, 1, 20, 23, 0, 0, 0, TimeSpan.Zero).ToInstant(),
                 });
     }
 
@@ -1075,10 +1075,22 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                 FullFlexDate = new DateTimeOffset(2019, 12, 31, 23, 0, 0, 0, TimeSpan.Zero),
             });
 
-        await context.InstallationAddresses.AddAsync(
+        await context.InstallationAddresses.AddRangeAsync(
             new InstallationAddressEntity
             {
                 // Id = 516430002,
+                StreetCode = "5695",
+                StreetName = "Test Road",
+                BuildingNumber = "42",
+                CityName = "Test City",
+                WashInstructions = "Washable",
+                CountryCode = "DK",
+                PostCode = "9999",
+                MunicipalityCode = "1024",
+            },
+            new InstallationAddressEntity
+            {
+                // Id = 41295070001,
                 StreetCode = "5695",
                 StreetName = "Test Road",
                 BuildingNumber = "42",
@@ -1132,7 +1144,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         // Id = 516430000,
                         MeteringPointId = 51643,
                         ValidFrom = new DateTimeOffset(2017, 1, 19, 23, 0, 0, 0, TimeSpan.Zero),
-                        ValidTo = DateTimeOffset.MaxValue,
+                        ValidTo = new DateTimeOffset(2017, 1, 20, 23, 0, 0, 0, TimeSpan.Zero),
                         CreatedAt = new DateTimeOffset(2017, 1, 23, 10, 46, 13, 552, TimeSpan.Zero),
                         Type = "Production",
                         SubType = "Virtual",
@@ -1148,6 +1160,31 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
                         SettlementGroup = 4,
                         PowerPlantGsrn = "570715000001552082",
                         InstallationAddressId = 1,
+                        MeteringPointStateId = 188242634,
+                        BusinessTransactionDosId = 194336484,
+                        TransactionType = "CONNECTMP",
+                    },
+                    new MeteringPointPeriodEntity
+                    {
+                        // Id = 516430000,
+                        MeteringPointId = 51643,
+                        ValidFrom = new DateTimeOffset(2017, 1, 20, 23, 0, 0, 0, TimeSpan.Zero),
+                        ValidTo = DateTimeOffset.MaxValue,
+                        CreatedAt = new DateTimeOffset(2017, 1, 24, 10, 46, 13, 552, TimeSpan.Zero),
+                        Type = "Production",
+                        SubType = "Virtual",
+                        ConnectionState = "Connected",
+                        Resolution = "PT15M",
+                        GridAreaCode = "543",
+                        ConnectionType = "Installation",
+                        DisconnectionType = "ManualDisconnection",
+                        Product = "EnergyActive",
+                        ProductObligation = true,
+                        MeasureUnit = "kWh",
+                        Capacity = "6",
+                        SettlementGroup = 4,
+                        PowerPlantGsrn = "570715000001552082",
+                        InstallationAddressId = 2,
                         MeteringPointStateId = 188242634,
                         BusinessTransactionDosId = 194336484,
                         TransactionType = "CONNECTMP",
