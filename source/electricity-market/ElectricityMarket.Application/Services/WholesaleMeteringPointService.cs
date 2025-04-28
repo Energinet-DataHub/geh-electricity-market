@@ -51,7 +51,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             return new WholesaleMeteringPointDto(
                 MeteringPointId: meteringPoint.Identification.Value,
                 Type: meteringPointMetadata.Type.ToString(),
-                CalculationType: null,
+                CalculationType: null, // TODO: Set this when we have the data available
                 SettlementMethod: meteringPointMetadata.SettlementMethod?.ToString(),
                 GridAreaCode: meteringPointMetadata.GridAreaCode,
                 Resolution: meteringPointMetadata.Resolution,
