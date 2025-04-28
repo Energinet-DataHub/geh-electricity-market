@@ -224,7 +224,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         cr.EndDate = cr.StartDate;
                         prevCr.EndDate = nextCr?.StartDate ?? DateTimeOffset.MaxValue;
                         var correctionEsp = CommercialRelationFactory.CreateEnergySupplyPeriodEntity(importedTransaction);
-                        cr.EnergySupplyPeriods.Add(correctionEsp);
                         correctionEsp.ValidTo = DateTimeOffset.MaxValue;
 
                         foreach (var toBeRetired in cr.EnergySupplyPeriods.Where(x => x.RetiredBy == null))
@@ -233,6 +232,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                             toBeRetired.RetiredAt = DateTimeOffset.UtcNow;
                         }
 
+                        cr.EnergySupplyPeriods.Add(correctionEsp);
                         return true;
                     }
 

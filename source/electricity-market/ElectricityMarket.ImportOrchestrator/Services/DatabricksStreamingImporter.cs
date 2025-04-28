@@ -64,13 +64,9 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
         if (currentMaxCutoff == previousCutoff)
             return;
 
-        var transaction = await _databaseContext.Database
-            .BeginTransactionAsync()
-            .ConfigureAwait(false);
+        var targetCutoff = Math.Min(currentMaxCutoff, previousCutoff + 30_000);
 
-        await using (transaction.ConfigureAwait(false))
-        {
-            var query = DatabricksStatement.FromRawSql(
+        var query = DatabricksStatement.FromRawSql(
             $"""
              SELECT
                 CAST(metering_point_id AS BIGINT) AS metering_point_id,
@@ -164,13 +160,19 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 CAST(tax_settlement_date AS TIMESTAMP) AS tax_settlement_date
 
              FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v5
-             WHERE btd_trans_doss_id >= {previousCutoff} AND btd_trans_doss_id < {currentMaxCutoff}
+             WHERE btd_trans_doss_id >= {previousCutoff} AND btd_trans_doss_id < {targetCutoff}
              """);
 
-            var results = _databricksSqlWarehouseQueryExecutor
-                .ExecuteStatementAsync(query.Build())
-                .ConfigureAwait(false);
+        var results = _databricksSqlWarehouseQueryExecutor
+            .ExecuteStatementAsync(query.Build())
+            .ConfigureAwait(false);
 
+        var transaction = await _databaseContext.Database
+            .BeginTransactionAsync()
+            .ConfigureAwait(false);
+
+        await using (transaction.ConfigureAwait(false))
+        {
             var lookup = ImportModelHelper
                 .ImportFields
                 .ToImmutableDictionary(k => k.Key, v => v.Value);
@@ -294,7 +296,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
             }
 
             await _importStateService
-                .UpdateStreamingCutoffAsync(currentMaxCutoff)
+                .UpdateStreamingCutoffAsync(targetCutoff)
                 .ConfigureAwait(false);
 
             await transaction.CommitAsync().ConfigureAwait(false);
