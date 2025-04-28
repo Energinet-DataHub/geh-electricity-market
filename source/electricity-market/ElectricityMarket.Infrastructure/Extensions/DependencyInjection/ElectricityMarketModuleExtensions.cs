@@ -22,6 +22,7 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using static NodaTime.TimeZones.ZoneEqualityComparer;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 
@@ -48,6 +49,17 @@ public static class ElectricityMarketModuleExtensions
         });
 
         services.AddDbContext<IMarketParticipantDatabaseContext, MarketParticipantDatabaseContext>((p, o) =>
+        {
+            var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
+            o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
+            {
+                options.UseNodaTime();
+            })
+            .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+        });
+
+        // Factories
+        services.AddDbContextFactory<ElectricityMarketDatabaseContext>((p, o) =>
         {
             var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
