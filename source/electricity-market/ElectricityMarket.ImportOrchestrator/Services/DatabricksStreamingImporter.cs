@@ -278,7 +278,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                             {(importedTransaction.contact_4_municipality_code == null ? "NULL" : $"'{importedTransaction.contact_4_municipality_code.Replace("'", "''", StringComparison.InvariantCulture)}'")},
                             {(importedTransaction.dossier_status == null ? "NULL" : $"'{importedTransaction.dossier_status.Replace("'", "''", StringComparison.InvariantCulture)}'")},
                             {(importedTransaction.tax_reduction == null ? "NULL" : importedTransaction.tax_reduction.Value ? "1" : "0")},
-                            {(importedTransaction.tax_settlement_date == null ? "NULL" : $"'{importedTransaction.tax_settlement_date:O}'")}
+                            {(importedTransaction.tax_settlement_date == null ? "NULL" : $"'{importedTransaction.tax_settlement_date.Value:O}'")}
                             )
                             """;
 
