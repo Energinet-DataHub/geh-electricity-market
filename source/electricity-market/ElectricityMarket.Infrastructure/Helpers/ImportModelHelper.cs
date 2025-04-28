@@ -112,6 +112,8 @@ public static class ImportModelHelper
         MapProperty(t => t.contact_4_post_box),
         MapProperty(t => t.contact_4_municipality_code),
         MapProperty(t => t.dossier_status),
+        MapProperty(t => t.tax_reduction),
+        MapProperty(t => t.tax_settlement_date),
     ];
 
     public static Func<T, object> GetValueGetter<T>(this PropertyInfo propertyInfo)
