@@ -64,12 +64,13 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();
         services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
         services.AddScoped<IBalanceResponsibleRepository, BalanceResponsibleRepository>();
+        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
 
         // Services
         services.AddScoped<ICsvImporter, CsvImporter>();
         services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
-        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
+        services.AddScoped<IWholesaleMeteringPointService, WholesaleMeteringPointService>();
 
         return services;
     }
