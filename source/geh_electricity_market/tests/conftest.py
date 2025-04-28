@@ -41,12 +41,6 @@ def fix_print():
         yield mock_print
 
 
-@pytest.fixture(scope="session", autouse=True)
-def ensure_schemas_exist(spark: SparkSession) -> None:
-    for db in DATABASE_NAMES:
-        spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
-
-
 @pytest.fixture(scope="session")
 def migrations_executed(spark: SparkSession) -> None:
     """Executes all migrations.
