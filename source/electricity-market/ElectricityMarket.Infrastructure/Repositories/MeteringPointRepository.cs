@@ -24,7 +24,6 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
