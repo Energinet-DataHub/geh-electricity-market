@@ -24,6 +24,11 @@ public sealed class ElectricalHeatingPeriodEntity
     public DateTimeOffset ValidTo { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 
+    public long MeteringPointStateId { get; set; }
+    public long BusinessTransactionDosId { get; set; }
+    public string TransactionType { get; set; } = null!;
+    public bool Active { get; set; }
+
     public long? RetiredById { get; set; }
     public DateTimeOffset? RetiredAt { get; set; }
     public ElectricalHeatingPeriodEntity? RetiredBy { get; set; }
