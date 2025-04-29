@@ -93,7 +93,19 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 return (true, string.Empty);
 
             if (dossierStatus is "CAN" or "CNL")
+            {
+                if (transactionType is ("MOVEOUTES" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP"))
+                {
+                    var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
+                    commercialRelationEntity.EndDate = commercialRelationEntity.StartDate;
+                    meteringPoint.CommercialRelations.Add(commercialRelationEntity);
+
+                    var changeEsp = CommercialRelationFactory.CreateEnergySupplyPeriodEntity(importedTransaction);
+                    commercialRelationEntity.EnergySupplyPeriods.Add(changeEsp);
+                }
+
                 return (true, string.Empty);
+            }
 
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY")
                 return (true, string.Empty);
