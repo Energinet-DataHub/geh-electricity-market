@@ -94,7 +94,7 @@ public sealed class RelationalModelWriter : IRelationalModelWriter
                             transaction,
                             batch.SelectMany(b => b.CommercialRelations.SelectMany(cr => cr.ElectricalHeatingPeriods)),
                             "ElectricalHeatingPeriod",
-                            ["Id", "CommercialRelationId", "ValidFrom", "ValidTo", "CreatedAt", "RetiredById", "RetiredAt"])
+                            ["Id", "CommercialRelationId", "ValidFrom", "ValidTo", "CreatedAt", "MeteringPointStateId", "BusinessTransactionDosId", "TransactionType", "Active", "RetiredById", "RetiredAt"])
                         .ConfigureAwait(false);
 
                     await BulkInsertAsync(
