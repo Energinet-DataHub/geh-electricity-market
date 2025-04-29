@@ -236,6 +236,30 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         return true;
                     }
 
+                case "MDCNSEHON":
+                    {
+                        if (importedTransaction.tax_settlement_date is null)
+                        {
+                            errorMessage = "MDCNSEHON transaction without tax_settlement_date";
+                            return false;
+                        }
+
+                        var cr = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+
+                        cr.ElectricalHeatingPeriods.Add(new ElectricalHeatingPeriodEntity
+                        {
+                            CreatedAt = importedTransaction.dh2_created,
+                            ValidFrom = importedTransaction.tax_settlement_date.Value,
+                            ValidTo = DateTimeOffset.MaxValue,
+                            MeteringPointStateId = importedTransaction.metering_point_state_id,
+                            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
+                            Active = true,
+                            TransactionType = transactionType,
+                        });
+
+                        return true;
+                    }
+
                 default:
                     {
                         var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
