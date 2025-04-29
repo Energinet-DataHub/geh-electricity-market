@@ -232,7 +232,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                             toBeRetired.RetiredAt = DateTimeOffset.UtcNow;
                         }
 
-                        cr.EnergySupplyPeriods.Add(correctionEsp);
+                        prevCr.EnergySupplyPeriods.Add(correctionEsp);
                         return true;
                     }
 

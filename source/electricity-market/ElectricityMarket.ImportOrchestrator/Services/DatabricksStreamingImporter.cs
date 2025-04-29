@@ -64,7 +64,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
         if (currentMaxCutoff == previousCutoff)
             return;
 
-        var targetCutoff = Math.Min(currentMaxCutoff, previousCutoff + 30_000);
+        var targetCutoff = Math.Min(currentMaxCutoff, previousCutoff + 5_000);
 
         var query = DatabricksStatement.FromRawSql(
             $"""
