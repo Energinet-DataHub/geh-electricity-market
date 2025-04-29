@@ -33,7 +33,7 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 public sealed class ImportGoldModelActivity : IDisposable
 {
-    public const string ActivityName = "ImportGoldModelActivityV4";
+    public const string ActivityName = "ImportGoldModelActivityV6";
 
     private readonly BlockingCollection<ExpandoObject> _importCollection = new(500_000);
     private readonly BlockingCollection<IDataReader> _submitCollection = new(2);

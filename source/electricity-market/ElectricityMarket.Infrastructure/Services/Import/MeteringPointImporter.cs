@@ -93,7 +93,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 return (true, string.Empty);
 
             if (dossierStatus is "CAN" or "CNL")
-                return (true, string.Empty);
+            {
+                if (transactionType is not ("MOVEINES" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP"))
+                    return (true, string.Empty);
+            }
 
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY")
                 return (true, string.Empty);
@@ -224,7 +227,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         cr.EndDate = cr.StartDate;
                         prevCr.EndDate = nextCr?.StartDate ?? DateTimeOffset.MaxValue;
                         var correctionEsp = CommercialRelationFactory.CreateEnergySupplyPeriodEntity(importedTransaction);
-                        cr.EnergySupplyPeriods.Add(correctionEsp);
                         correctionEsp.ValidTo = DateTimeOffset.MaxValue;
 
                         foreach (var toBeRetired in cr.EnergySupplyPeriods.Where(x => x.RetiredBy == null))
@@ -232,6 +234,31 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                             toBeRetired.RetiredBy = correctionEsp;
                             toBeRetired.RetiredAt = DateTimeOffset.UtcNow;
                         }
+
+                        prevCr.EnergySupplyPeriods.Add(correctionEsp);
+                        return true;
+                    }
+
+                case "MDCNSEHON":
+                    {
+                        if (importedTransaction.tax_settlement_date is null)
+                        {
+                            errorMessage = "MDCNSEHON transaction without tax_settlement_date";
+                            return false;
+                        }
+
+                        var cr = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+
+                        cr.ElectricalHeatingPeriods.Add(new ElectricalHeatingPeriodEntity
+                        {
+                            CreatedAt = importedTransaction.dh2_created,
+                            ValidFrom = importedTransaction.tax_settlement_date.Value,
+                            ValidTo = DateTimeOffset.MaxValue,
+                            MeteringPointStateId = importedTransaction.metering_point_state_id,
+                            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
+                            Active = true,
+                            TransactionType = transactionType,
+                        });
 
                         return true;
                     }
