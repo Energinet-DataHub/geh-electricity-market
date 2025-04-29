@@ -25,4 +25,5 @@ public interface IMeteringPointRepository
 
     Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification);
     IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion);
+    Task<MeteringPointHierarchy> GetMeteringPointHierarchyAsync(MeteringPointIdentification identification, CancellationToken cancellationToken = default);
 }
