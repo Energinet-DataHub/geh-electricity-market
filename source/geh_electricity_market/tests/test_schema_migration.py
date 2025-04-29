@@ -1,5 +1,6 @@
 import pytest
 from geh_common.data_products.electricity_market_measurements_input import (
+    capacity_settlement_metering_point_periods_v1,
     electrical_heating_child_metering_points_v1,
     electrical_heating_consumption_metering_point_periods_v1,
     missing_measurements_log_metering_point_periods_v1,
@@ -14,7 +15,7 @@ from tests import SPARK_CATALOG_NAME
 @pytest.mark.parametrize(
     "dataproduct",
     [
-        capacity_metering_point_periods_v1,
+        capacity_settlement_metering_point_periods_v1,
         electrical_heating_child_metering_points_v1,
         electrical_heating_consumption_metering_point_periods_v1,
         missing_measurements_log_metering_point_periods_v1,
