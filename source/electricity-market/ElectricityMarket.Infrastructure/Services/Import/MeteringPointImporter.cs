@@ -94,7 +94,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             if (dossierStatus is "CAN" or "CNL")
             {
-                if (transactionType is not ("MOVEOUTES" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP"))
+                if (transactionType is not ("MOVEINES" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP"))
                     return (true, string.Empty);
             }
 
