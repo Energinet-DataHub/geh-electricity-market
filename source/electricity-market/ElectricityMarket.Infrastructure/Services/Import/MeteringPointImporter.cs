@@ -27,7 +27,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 {
     private static readonly IReadOnlySet<string> _ignoredTransactions = new HashSet<string> { "CALCENC", "CALCTSSBM", "CNCCNSMRK", "CNCCNSOTH", "CNCREADMRK", "CNCREADOTH", "EOSMDUPD", "HEATYTDREQ", "HISANNCON", "HISANNREQ", "HISDATREQ", "INITCNCCOS", "LDSHRSBM", "MNTCHRGLNK", "MOVEINGO", "MSTDATREQ", "MSTDATRNO", "MTRDATREQ", "MTRDATSBM", "QRYCHARGE", "QRYMSDCHG", "SBMCNTADR", "SBMEACES", "SBMEACGO", "SBMMRDES", "SBMMRDGO", "SERVICEREQ", "STOPFEE", "STOPSUB", "STOPTAR", "UNEXPERR", "UPDBLCKLNK", "VIEWACCNO", "VIEWMOVES", "VIEWMP", "VIEWMPNO", "VIEWMTDNO" };
 
-    private static readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "DATAMIG", "LNKCHLDMP", "MANCOR", "MSTDATSBM", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "HTXCOR" };
+    private static readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "DATAMIG", "ENDSUPPLY", "LNKCHLDMP", "MANCOR", "MSTDATSBM", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "HTXCOR" };
 
     private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BLKCHGBRP" };
 
@@ -93,7 +93,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 return (true, string.Empty);
 
             if (dossierStatus is "CAN" or "CNL")
-                return (true, string.Empty);
+            {
+                if (transactionType is not ("MOVEINES" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP"))
+                    return (true, string.Empty);
+            }
 
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY")
                 return (true, string.Empty);
@@ -121,12 +124,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (currentlyActiveMeteringPointPeriod != null)
         {
-            if (currentlyActiveMeteringPointPeriod.ValidTo != DateTimeOffset.MaxValue && currentlyActiveMeteringPointPeriod.ValidTo != importedTransaction.valid_to_date)
-            {
-                errorMessage = "Currently active mpps valid_to is neither infinity nor equal to the valid_to of the imported transaction";
-                return false;
-            }
-
             if (currentlyActiveMeteringPointPeriod.ValidFrom == importedTransaction.valid_from_date)
             {
                 meteringPointPeriod.ValidTo = currentlyActiveMeteringPointPeriod.ValidTo == DateTimeOffset.MaxValue
@@ -154,6 +151,18 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                     : meteringPoint.MeteringPointPeriods
                         .Where(p => p.ValidFrom > meteringPointPeriod.ValidFrom && p.RetiredBy == null)
                         .Min(p => p.ValidFrom);
+            }
+        }
+
+        if (importedTransaction.transaction_type.Trim() == "CLSDWNMP")
+        {
+            var futureClosedPeriods = meteringPoint.MeteringPointPeriods
+                .Where(p => p.RetiredBy == null && p.ValidFrom > importedTransaction.valid_from_date);
+
+            foreach (var futureClosedPeriod in futureClosedPeriods)
+            {
+                futureClosedPeriod.RetiredBy = meteringPointPeriod;
+                futureClosedPeriod.RetiredAt = DateTimeOffset.UtcNow;
             }
         }
 
@@ -218,13 +227,12 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 case "INCCHGSUP" or "INCMOVEAUT" or "INCMOVEIN" or "INCMOVEMAN":
                     {
                         var cr = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
-                        var prevCr = allCrsOrdered.Last(x => x.StartDate < importedTransaction.valid_from_date);
-                        var nextCr = allCrsOrdered.FirstOrDefault(x => x.StartDate > importedTransaction.valid_from_date);
+                        var prevCr = allCrsOrdered.Last(x => x.StartDate < cr.StartDate);
+                        var nextCr = allCrsOrdered.FirstOrDefault(x => x.StartDate > cr.StartDate);
 
                         cr.EndDate = cr.StartDate;
                         prevCr.EndDate = nextCr?.StartDate ?? DateTimeOffset.MaxValue;
                         var correctionEsp = CommercialRelationFactory.CreateEnergySupplyPeriodEntity(importedTransaction);
-                        cr.EnergySupplyPeriods.Add(correctionEsp);
                         correctionEsp.ValidTo = DateTimeOffset.MaxValue;
 
                         foreach (var toBeRetired in cr.EnergySupplyPeriods.Where(x => x.RetiredBy == null))
@@ -232,6 +240,31 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                             toBeRetired.RetiredBy = correctionEsp;
                             toBeRetired.RetiredAt = DateTimeOffset.UtcNow;
                         }
+
+                        prevCr.EnergySupplyPeriods.Add(correctionEsp);
+                        return true;
+                    }
+
+                case "MDCNSEHON":
+                    {
+                        if (importedTransaction.tax_settlement_date is null)
+                        {
+                            errorMessage = "MDCNSEHON transaction without tax_settlement_date";
+                            return false;
+                        }
+
+                        var cr = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+
+                        cr.ElectricalHeatingPeriods.Add(new ElectricalHeatingPeriodEntity
+                        {
+                            CreatedAt = importedTransaction.dh2_created,
+                            ValidFrom = importedTransaction.tax_settlement_date.Value,
+                            ValidTo = DateTimeOffset.MaxValue,
+                            MeteringPointStateId = importedTransaction.metering_point_state_id,
+                            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
+                            Active = true,
+                            TransactionType = transactionType,
+                        });
 
                         return true;
                     }
@@ -348,7 +381,10 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (activeEsp == null)
         {
-            changeEsp.ValidTo = DateTimeOffset.MaxValue;
+            changeEsp.ValidTo = AllSavedValidCrs(meteringPoint)
+                .SelectMany(x => x.EnergySupplyPeriods)
+                .Where(x => x.ValidFrom > importedTransaction.valid_from_date)
+                .MinBy(x => x.ValidFrom)?.ValidFrom ?? DateTimeOffset.MaxValue;
             return;
         }
 

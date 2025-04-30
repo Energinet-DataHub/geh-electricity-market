@@ -134,7 +134,9 @@ public sealed class RequestCutoffActivity
                 contact_4_room_id,
                 contact_4_post_box,
                 contact_4_municipality_code,
-                dossier_status
+                dossier_status,
+                CAST(tax_reduction AS BOOLEAN) AS tax_reduction,
+                CAST(tax_settlement_date AS TIMESTAMP) AS tax_settlement_date
 
              FROM {_catalogOptions.Value.Name}.migrations_electricity_market.electricity_market_metering_points_view_v5
              WHERE btd_trans_doss_id >= {input.CutoffFromInclusive} AND btd_trans_doss_id < {input.CutoffToExclusive}
