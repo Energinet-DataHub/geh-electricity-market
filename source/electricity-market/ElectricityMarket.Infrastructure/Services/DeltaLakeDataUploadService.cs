@@ -14,9 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
@@ -30,6 +27,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
 {
     private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
+    private readonly DeltaLakeDataUploadStatementFormatter _deltaLakeDataUploadStatementFormatter = new();
 
     public DeltaLakeDataUploadService(IOptions<DatabricksCatalogOptions> catalogOptions, DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
     {
@@ -37,52 +35,33 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
     }
 
+    public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingDto> electricalHeating)
+    {
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingChildTableName}";
+        var queryAString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeating);
+        var query = DatabricksStatement.FromRawSql(queryAString);
+
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        await foreach (var record in result.ConfigureAwait(false))
+        {
+            // Process each record
+            Console.WriteLine(record);
+            Console.WriteLine(record.num_inserted_rows);
+        }
+    }
+
     public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingChildDto> electricalHeatingChildren)
     {
-        var query = DatabricksStatement.FromRawSql(
-            $"""
-            INSERT INTO {_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingChildTableName}
-            ({string.Join(", ", GetColumnNames(typeof(ElectricalHeatingChildDto)))})
-            VALUES
-            {string.Join(",", $"({electricalHeatingChildren.Select(GetValues)})")}
-        """);
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingChildTableName}";
+        var queryAString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingChildren);
+        var query = DatabricksStatement.FromRawSql(queryAString);
 
-        try
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        await foreach (var record in result.ConfigureAwait(false))
         {
-            var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                // Process each record
-                Console.WriteLine(record);
-                Console.WriteLine(record.num_inserted_rows);
-            }
-
-        }
-        catch (Exception)
-        {
-            throw;
+            // Process each record
+            Console.WriteLine(record);
+            Console.WriteLine(record.num_inserted_rows);
         }
     }
-
-    private static string GetValues(ElectricalHeatingChildDto electricalHeatingChild)
-    {
-        IEnumerable<string> value = [
-            electricalHeatingChild.CoupledDate.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
-            electricalHeatingChild.MeteringPointId,
-            electricalHeatingChild.MeteringPointType,
-            electricalHeatingChild.ParentMeteringPointId,
-            electricalHeatingChild.SubType,
-            electricalHeatingChild.UncoupledDate?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture) ?? DateTimeOffset.MaxValue.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)
-        ];
-        return string.Join(", ", value);
-    }
-
-    private static IEnumerable<string> GetColumnNames(Type type) =>
-        type.GetProperties().Where(p => p.CanRead).Select(p => TransformToSnakeCase(p.Name)).Order();
-
-    private static string TransformToSnakeCase(string propertyName) =>
-#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
-        Regex.Replace(Regex.Replace(propertyName, "(.)([A-Z][a-z]+)", "$1_$2"), "([a-z0-9])([A-Z])", "$1_$2").ToLower(CultureInfo.CurrentCulture);
-#pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
-
 }
