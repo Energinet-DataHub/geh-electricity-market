@@ -33,24 +33,25 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var meteringPoint = await _meteringPointRepository
+        var currentMeteringPoint = await _meteringPointRepository
             .GetAsync(new MeteringPointIdentification(request.Identification))
             .ConfigureAwait(false);
 
-        if (meteringPoint == null)
+        if (currentMeteringPoint == null)
         {
             return null;
         }
 
         IEnumerable<MeteringPoint>? relatedMeteringPoints;
-        RelatedMeteringPointDto? parent = null;
-        if (meteringPoint.Metadata.Parent is not null)
+        RelatedMeteringPointDto? parentAsRelated = null;
+        MeteringPoint? parentMeteringPoint = null;
+        if (currentMeteringPoint.Metadata.Parent is not null)
         {
             relatedMeteringPoints = await _meteringPointRepository
-                .GetRelatedMeteringPointsAsync(meteringPoint.Metadata.Parent)
+                .GetRelatedMeteringPointsAsync(currentMeteringPoint.Metadata.Parent)
                 .ConfigureAwait(false);
-            parent = MapToRelated(await _meteringPointRepository.GetAsync(meteringPoint.Metadata.Parent).ConfigureAwait(false)
-                            ?? throw new InvalidOperationException("Parent metering point not found even though it should have one"));
+            parentMeteringPoint = await _meteringPointRepository.GetAsync(currentMeteringPoint.Metadata.Parent).ConfigureAwait(false);
+            parentAsRelated = MapToRelated(parentMeteringPoint ?? throw new InvalidOperationException("Parent metering point not found even though it should have one"));
         }
         else
         {
@@ -59,10 +60,12 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
                 .ConfigureAwait(false);
         }
 
-        relatedMeteringPoints = relatedMeteringPoints?.Where(x => x.Identification != meteringPoint.Identification).ToList();
+        var relatedMeteringPointToUseForCheck = parentMeteringPoint ?? currentMeteringPoint;
+
+        relatedMeteringPoints = relatedMeteringPoints?.Where(x => x.Identification != relatedMeteringPointToUseForCheck.Identification).ToList();
 
         var relatedPoints = relatedMeteringPoints?
-            .Where(x => x.Metadata.Parent == meteringPoint.Identification
+            .Where(x => x.Metadata.Parent == relatedMeteringPointToUseForCheck.Identification
                         && x.Metadata.Valid.End.ToDateTimeOffset() > DateTimeOffset.Now)
             .OrderBy(y => y.Metadata.Type)
             .Select(MapToRelated) ?? [];
@@ -70,13 +73,13 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
         var relatedByGsrn = relatedMeteringPoints?
             .Where(x => string.IsNullOrEmpty(x.Metadata?.Parent?.Value)
                         && !string.IsNullOrWhiteSpace(x.Metadata?.PowerPlantGsrn)
-                        && x.Metadata.PowerPlantGsrn == meteringPoint.Metadata.PowerPlantGsrn)
+                        && x.Metadata.PowerPlantGsrn == relatedMeteringPointToUseForCheck.Metadata.PowerPlantGsrn)
             .OrderBy(y => y.Metadata.Type)
             .Select(MapToRelated) ?? [];
 
         var historical = relatedMeteringPoints?
             .Where(x => x.MetadataTimeline.Any(
-                            y => y.Parent == meteringPoint.Identification
+                            y => y.Parent == relatedMeteringPointToUseForCheck.Identification
                                 && y.Valid.End.ToDateTimeOffset() < DateTimeOffset.Now)
                                 && string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn))
             .OrderBy(y => y.Metadata.Type)
@@ -84,17 +87,17 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
 
         var historicalByGsrn = relatedMeteringPoints?
             .Where(x => x.MetadataTimeline.Any(
-                            y => y.Parent == meteringPoint.Identification
+                            y => y.Parent == relatedMeteringPointToUseForCheck.Identification
                                  && y.Valid.End.ToDateTimeOffset() < DateTimeOffset.Now)
                         && !string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn)
-                        && x.Metadata.PowerPlantGsrn == meteringPoint.Metadata.PowerPlantGsrn)
+                        && x.Metadata.PowerPlantGsrn == relatedMeteringPointToUseForCheck.Metadata.PowerPlantGsrn)
             .OrderBy(y => y.Metadata.Type)
             .Select(MapToRelated) ?? [];
 
         return new GetRelatedMeteringPointsResponse(
             new RelatedMeteringPointsDto(
-                MapToRelated(meteringPoint),
-                parent,
+                MapToRelated(currentMeteringPoint),
+                parentAsRelated,
                 relatedPoints,
                 relatedByGsrn,
                 historical,

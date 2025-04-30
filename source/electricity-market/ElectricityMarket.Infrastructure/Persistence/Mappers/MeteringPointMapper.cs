@@ -113,7 +113,7 @@ internal static class MeteringPointMapper
         CustomerContact? legal = null;
         CustomerContact? technical = null;
 
-        if (from.RelationType == "Contact1")
+        if (from.RelationType == "Contact4")
         {
             legal = new CustomerContact(
                 from.Id,
@@ -125,7 +125,7 @@ internal static class MeteringPointMapper
                 MapFromEntity(from.ContactAddress));
         }
 
-        if (from.RelationType == "Contact4")
+        if (from.RelationType == "Contact1")
         {
             technical = new CustomerContact(
                 from.Id,
