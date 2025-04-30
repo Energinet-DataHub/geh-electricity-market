@@ -124,6 +124,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (currentlyActiveMeteringPointPeriod != null)
         {
+            // TODO:
             if (currentlyActiveMeteringPointPeriod.ValidTo != DateTimeOffset.MaxValue && currentlyActiveMeteringPointPeriod.ValidTo != importedTransaction.valid_to_date)
             {
                 errorMessage = "Currently active mpps valid_to is neither infinity nor equal to the valid_to of the imported transaction";
@@ -157,6 +158,18 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                     : meteringPoint.MeteringPointPeriods
                         .Where(p => p.ValidFrom > meteringPointPeriod.ValidFrom && p.RetiredBy == null)
                         .Min(p => p.ValidFrom);
+            }
+        }
+
+        if (importedTransaction.transaction_type.Trim() == "CLSDWNMP")
+        {
+            var futureClosedPeriods = meteringPoint.MeteringPointPeriods
+                .Where(p => p.RetiredBy == null && p.ValidFrom > importedTransaction.valid_from_date);
+
+            foreach (var futureClosedPeriod in futureClosedPeriods)
+            {
+                futureClosedPeriod.RetiredBy = meteringPointPeriod;
+                futureClosedPeriod.RetiredAt = DateTimeOffset.UtcNow;
             }
         }
 
