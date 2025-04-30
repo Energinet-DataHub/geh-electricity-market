@@ -183,7 +183,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (allCrsOrdered.Count > 0)
         {
-            if (_changeTransactions.Contains(transactionType) && transactionType != "DATAMIG")
+            if (_changeTransactions.Contains(transactionType) && transactionType != "DATAMIG" && transactionType != "ENDSUPPLY")
             {
                 return true;
             }
@@ -385,6 +385,8 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 .SelectMany(x => x.EnergySupplyPeriods)
                 .Where(x => x.ValidFrom > importedTransaction.valid_from_date)
                 .MinBy(x => x.ValidFrom)?.ValidFrom ?? DateTimeOffset.MaxValue;
+
+            RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
             return;
         }
 
@@ -392,6 +394,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         {
             if (activeEsp.ValidTo == DateTimeOffset.MaxValue)
             {
+                RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
                 return;
             }
 
@@ -403,6 +406,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             activeEsp.RetiredBy = changeEsp;
             activeEsp.RetiredAt = DateTimeOffset.UtcNow;
 
+            RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
             return;
         }
 
@@ -416,6 +420,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         if (activeEsp.ValidTo == DateTimeOffset.MaxValue)
         {
             changeEsp.ValidTo = DateTimeOffset.MaxValue;
+            RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
             return;
         }
 
@@ -423,5 +428,23 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             .SelectMany(x => x.EnergySupplyPeriods)
             .Where(x => x.ValidFrom > importedTransaction.valid_from_date)
             .MinBy(x => x.ValidFrom)?.ValidFrom ?? DateTimeOffset.MaxValue;
+
+        RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
+    }
+
+    private static void RetireEspStuff(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint, EnergySupplyPeriodEntity changeEsp)
+    {
+        var espToRetire = AllSavedValidCrs(meteringPoint)
+            .SelectMany(x => x.EnergySupplyPeriods)
+            .Where(esp => esp.RetiredBy == null &&
+                          esp != changeEsp &&
+                          esp.ValidFrom <= importedTransaction.valid_from_date &&
+                          esp.ValidTo > importedTransaction.valid_from_date);
+
+        foreach (var retiredEsp in espToRetire)
+        {
+            retiredEsp.RetiredBy = changeEsp;
+            retiredEsp.RetiredAt = DateTimeOffset.UtcNow;
+        }
     }
 }
