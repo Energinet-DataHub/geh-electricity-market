@@ -82,7 +82,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
 
     public async Task ImportTransactionsAsync(IEnumerable<NetConsumptionChildDto> netConsumptionChildren)
     {
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionParentTableName}";
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionChildTableName}";
         var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, netConsumptionChildren);
         var query = DatabricksStatement.FromRawSql(queryString);
 

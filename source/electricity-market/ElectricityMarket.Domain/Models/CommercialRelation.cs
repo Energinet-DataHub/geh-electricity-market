@@ -20,5 +20,6 @@ public sealed record CommercialRelation(
     long Id,
     string EnergySupplier,
     Interval Period,
+    Guid? ClientId,
     IReadOnlyList<EnergySupplyPeriod> EnergySupplyPeriodTimeline,
     IReadOnlyList<ElectricalHeatingPeriod> ElectricalHeatingPeriods);

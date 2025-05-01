@@ -88,6 +88,7 @@ internal static class MeteringPointMapper
             from.Id,
             from.EnergySupplier,
             new Interval(from.StartDate.ToInstant(), from.EndDate.ToInstant()),
+            from.ClientId,
             from.EnergySupplyPeriods.Where(esp => esp.RetiredBy == null).Select(MapFromEntity).OrderBy(esp => esp.Valid.Start).ToList(),
             from.ElectricalHeatingPeriods.Where(ehp => ehp.RetiredBy == null).Select(MapFromEntity).OrderBy(ehp => ehp.Period.Start).ToList());
     }
