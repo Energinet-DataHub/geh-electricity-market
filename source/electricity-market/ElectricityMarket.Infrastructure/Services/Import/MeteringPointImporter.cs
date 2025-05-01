@@ -295,9 +295,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private static IEnumerable<CommercialRelationEntity> AllSavedValidCrs(MeteringPointEntity meteringPoint)
     {
-        return meteringPoint.CommercialRelations
-            .Where(x => x.StartDate < x.EndDate)
-            .OrderBy(x => x.StartDate);
+        return meteringPoint.CommercialRelations.OrderBy(x => x.StartDate);
     }
 
     private static void HandleMoveOut(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
