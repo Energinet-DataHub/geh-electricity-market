@@ -12,7 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Common;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-public sealed record ElectricalHeatingChildDto([property: DeltaLakeKey] string MeteringPointId, string MeteringPointType, string MeteringPointSubType, string ParentMeteringPointId, DateTimeOffset CoupledDate, DateTimeOffset? UncoupledDate);
+public class NotFoundException : Exception
+{
+    public NotFoundException()
+    {
+    }
+
+    public NotFoundException(string msg)
+        : base(msg)
+    {
+    }
+
+    public NotFoundException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Common;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-public sealed record ElectricalHeatingChildDto([property: DeltaLakeKey] string MeteringPointId, string MeteringPointType, string MeteringPointSubType, string ParentMeteringPointId, DateTimeOffset CoupledDate, DateTimeOffset? UncoupledDate);
+public sealed record MeteringPointHierarchy(MeteringPoint Parent, IEnumerable<MeteringPoint> ChildMeteringPoints);

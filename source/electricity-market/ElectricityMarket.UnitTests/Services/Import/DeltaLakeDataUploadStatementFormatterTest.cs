@@ -13,9 +13,9 @@
 // limitations under the License.
 
 using System;
+using Energinet.DataHub.ElectricityMarket.Application.Common;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
-using Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
 using Xunit;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Services.Import;

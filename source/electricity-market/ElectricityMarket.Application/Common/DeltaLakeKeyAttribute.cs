@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-
-namespace Energinet.DataHub.ElectricityMarket.Integration.Models.Common;
+namespace Energinet.DataHub.ElectricityMarket.Application.Common;
 
 /// <summary>
 /// Specify that a field or property is part of the key, used to determine update or insert operation, when uploading to Databricks.

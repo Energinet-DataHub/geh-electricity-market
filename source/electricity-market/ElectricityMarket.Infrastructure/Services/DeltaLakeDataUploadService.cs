@@ -37,9 +37,9 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
 
     public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingParentDto> electricalHeatingParent)
     {
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingChildTableName}";
-        var queryAString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingParent);
-        var query = DatabricksStatement.FromRawSql(queryAString);
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingParentTableName}";
+        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingParent);
+        var query = DatabricksStatement.FromRawSql(queryString);
 
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
@@ -53,8 +53,8 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
     public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingChildDto> electricalHeatingChildren)
     {
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingChildTableName}";
-        var queryAString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingChildren);
-        var query = DatabricksStatement.FromRawSql(queryAString);
+        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingChildren);
+        var query = DatabricksStatement.FromRawSql(queryString);
 
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
