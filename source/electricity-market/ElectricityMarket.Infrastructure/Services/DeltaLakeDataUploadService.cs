@@ -35,10 +35,10 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
     }
 
-    public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingDto> electricalHeating)
+    public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingParentDto> electricalHeatingParent)
     {
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingChildTableName}";
-        var queryAString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeating);
+        var queryAString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingParent);
         var query = DatabricksStatement.FromRawSql(queryAString);
 
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());

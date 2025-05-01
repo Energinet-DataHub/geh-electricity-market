@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
 public interface IDeltaLakeDataUploadService
 {
-    Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingDto> electricalHeating);
+    Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingParentDto> electricalHeatingParent);
 
     Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingChildDto> electricalHeatingChildren);
 }
