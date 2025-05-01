@@ -12,8 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using MediatR;
-
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
-
-public sealed record SyncWholesaleMeteringPointCommand : IRequest;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
+{
+    public sealed record NetConsumptionDto(
+        string MeteringPointId,
+        string Type,
+        string? CalculationType,
+        string? SettlementMethod,
+        string GridAreaCode,
+        string Resolution,
+        string? FromGridAreaCode,
+        string? ToGridAreaCode,
+        string? Identification,
+        string? EnergySupplier,
+        string? BalanceResponsiblePartyId,
+        DateTimeOffset FromDate,
+        DateTimeOffset? ToDate);
+}

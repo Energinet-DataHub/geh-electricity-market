@@ -21,4 +21,8 @@ public interface IDeltaLakeDataUploadService
     Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingParentDto> electricalHeatingParent);
 
     Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingChildDto> electricalHeatingChildren);
+
+    Task ImportTransactionsAsync(IEnumerable<NetConsumptionParentDto> netConsumptionParents);
+
+    Task ImportTransactionsAsync(IEnumerable<NetConsumptionChildDto> netConsumptionChildren);
 }

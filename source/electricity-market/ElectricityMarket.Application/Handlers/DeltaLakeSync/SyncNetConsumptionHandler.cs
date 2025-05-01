@@ -20,25 +20,25 @@ using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers.DeltaLakeSync;
 
-public sealed class SyncWholesaleMeteringPointHandler : IRequestHandler<SyncWholesaleMeteringPointCommand>
+public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumptionCommand>
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
     private readonly ISyncJobsRepository _syncJobsRepository;
-    private readonly IWholesaleMeteringPointService _wholesaleMeteringPointService;
+    private readonly INetConsumptionService _netConsumptionService;
 
-    public SyncWholesaleMeteringPointHandler(
+    public SyncNetConsumptionHandler(
         IMeteringPointRepository meteringPointRepository,
         ISyncJobsRepository syncJobsRepository,
-        IWholesaleMeteringPointService wholesaleMeteringPointService)
+        INetConsumptionService netConsumptionService)
     {
         _meteringPointRepository = meteringPointRepository;
         _syncJobsRepository = syncJobsRepository;
-        _wholesaleMeteringPointService = wholesaleMeteringPointService;
+        _netConsumptionService = netConsumptionService;
     }
 
-    public async Task Handle(SyncWholesaleMeteringPointCommand request, CancellationToken cancellationToken)
+    public async Task Handle(SyncNetConsumptionCommand request, CancellationToken cancellationToken)
     {
-        var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.WholesaleMeteringPoint).ConfigureAwait(false);
+        var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.NetConsumption).ConfigureAwait(false);
         var meteringPointsToSync = _meteringPointRepository
             .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
@@ -55,11 +55,11 @@ public sealed class SyncWholesaleMeteringPointHandler : IRequestHandler<SyncWhol
 
     private async Task HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync, DateTimeOffset maxVersion, CancellationToken cancellationToken)
     {
-        var wholesaleMeteringPoints = await _wholesaleMeteringPointService.GetWholesaleMeteringPointsAsync(meteringPointsToSync).ConfigureAwait(false);
+        var netConsumptionMeteringPoints = await _netConsumptionService.GetNetConsumptionMeteringPointsAsync(meteringPointsToSync).ConfigureAwait(false);
 
         await foreach (var meteringPoint in meteringPointsToSync)
         {
-            // TODO: Implement the sync logic to Databricks for wholesale metering points.
+            // TODO: Implement the sync logic to Databricks for net consumption metering points.
         }
     }
 }

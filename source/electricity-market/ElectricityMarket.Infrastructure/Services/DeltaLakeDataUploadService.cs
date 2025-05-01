@@ -64,4 +64,34 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
             Console.WriteLine(record.num_inserted_rows);
         }
     }
+
+    public async Task ImportTransactionsAsync(IEnumerable<NetConsumptionParentDto> netConsumptionParents)
+    {
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionParentTableName}";
+        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, netConsumptionParents);
+        var query = DatabricksStatement.FromRawSql(queryString);
+
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        await foreach (var record in result.ConfigureAwait(false))
+        {
+            // Process each record
+            Console.WriteLine(record);
+            Console.WriteLine(record.num_inserted_rows);
+        }
+    }
+
+    public async Task ImportTransactionsAsync(IEnumerable<NetConsumptionChildDto> netConsumptionChildren)
+    {
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionParentTableName}";
+        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, netConsumptionChildren);
+        var query = DatabricksStatement.FromRawSql(queryString);
+
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        await foreach (var record in result.ConfigureAwait(false))
+        {
+            // Process each record
+            Console.WriteLine(record);
+            Console.WriteLine(record.num_inserted_rows);
+        }
+    }
 }

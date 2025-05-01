@@ -20,9 +20,9 @@ using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services
 {
-    public class WholesaleMeteringPointService(
+    public class NetConsumptionService(
         IMeteringPointRepository meteringPointRepository,
-        IBalanceResponsibleRepository balanceResponsibleRepository) : IWholesaleMeteringPointService
+        IBalanceResponsibleRepository balanceResponsibleRepository) : INetConsumptionService
     {
         private static readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
         private static readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.Consumption, MeteringPointType.Production];
@@ -30,7 +30,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
         private readonly IMeteringPointRepository _meteringPointRepository = meteringPointRepository;
         private readonly IBalanceResponsibleRepository _balanceResponsibleRepository = balanceResponsibleRepository;
 
-        public async Task<IEnumerable<WholesaleMeteringPointDto>> GetWholesaleMeteringPointsAsync(IAsyncEnumerable<MeteringPoint> meteringPoints)
+        public async Task<IEnumerable<NetConsumptionDto>> GetNetConsumptionMeteringPointsAsync(IAsyncEnumerable<MeteringPoint> meteringPoints)
         {
             ArgumentNullException.ThrowIfNull(meteringPoints);
 
@@ -42,13 +42,13 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             _relevantConnectionStates.Contains(meteringPointMetaData.ConnectionState) &&
             _relevantMeteringPointTypes.Contains(meteringPointMetaData.Type);
 
-        private static WholesaleMeteringPointDto CreateDto(
+        private static NetConsumptionDto CreateDto(
             MeteringPoint meteringPoint,
             MeteringPointMetadata meteringPointMetadata,
             string energySupplierId,
             string? balanceResponsiblePartyId)
         {
-            return new WholesaleMeteringPointDto(
+            return new NetConsumptionDto(
                 MeteringPointId: meteringPoint.Identification.Value,
                 Type: meteringPointMetadata.Type.ToString(),
                 CalculationType: null, // TODO: Set this when we have the data available
@@ -78,10 +78,10 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             return relation is not null;
         }
 
-        private static List<WholesaleMeteringPointDto> FilterAndMergeCandidates(
-            List<WholesaleMeteringPointDto> candidates)
+        private static List<NetConsumptionDto> FilterAndMergeCandidates(
+            List<NetConsumptionDto> candidates)
         {
-            var result = new List<WholesaleMeteringPointDto>();
+            var result = new List<NetConsumptionDto>();
 
             foreach (var group in candidates
                 .Where(d => d.FromDate < d.ToDate)
@@ -106,10 +106,10 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             return result;
         }
 
-        private async Task<List<WholesaleMeteringPointDto>> BuildCandidatesAsync(
+        private async Task<List<NetConsumptionDto>> BuildCandidatesAsync(
             IAsyncEnumerable<MeteringPoint> meteringPoints)
         {
-            var candidates = new List<WholesaleMeteringPointDto>();
+            var candidates = new List<NetConsumptionDto>();
             var parentCache = new Dictionary<string, MeteringPoint?>();
             var balanceResponsiblePartyCache = new Dictionary<string, string>();
 
