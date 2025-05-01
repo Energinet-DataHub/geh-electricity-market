@@ -12,7 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Common;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-public sealed record ElectricalHeatingChildDto([property: DeltaLakeKey] string MeteringPointId, string MeteringPointType, string MeteringPointSubType, string ParentMeteringPointId, DateTimeOffset CoupledDate, DateTimeOffset? UncoupledDate);
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
+
+public class SnakeCaseFormatter
+{
+    private readonly string _regex = "(?!^)[_ ]*([A-Z][a-z]*)";
+
+    public string ToSnakeCase(string name)
+    {
+        return Regex.Replace(name, _regex, "_$1").ToLower(CultureInfo.CurrentCulture);
+    }
+}

@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
@@ -146,5 +147,27 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         {
             yield return MeteringPointMapper.MapFromEntity(entity);
         }
+    }
+
+    public async Task<MeteringPointHierarchy> GetMeteringPointHierarchyAsync(
+        MeteringPointIdentification identification,
+        CancellationToken cancellationToken = default)
+    {
+        var parent = await _electricityMarketDatabaseContext.MeteringPoints
+            .Where(x => (x.Identification == identification.Value && x.MeteringPointPeriods.All(y => y.ParentIdentification == null)) ||
+                        _electricityMarketDatabaseContext.MeteringPoints.First(y => y.Identification == identification.Value)
+                            .MeteringPointPeriods.Select(m => m.ParentIdentification).Contains(x.Identification))
+            .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+
+        if (parent is null)
+        {
+            throw new NotFoundException("Parent metering point not found");
+        }
+
+        var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
+            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == parent.Identification)).ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return new MeteringPointHierarchy(MeteringPointMapper.MapFromEntity(parent), childMeteringPoints.Select(MeteringPointMapper.MapFromEntity));
     }
 }

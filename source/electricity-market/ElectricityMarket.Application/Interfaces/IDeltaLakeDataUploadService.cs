@@ -12,7 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Common;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-public sealed record ElectricalHeatingChildDto([property: DeltaLakeKey] string MeteringPointId, string MeteringPointType, string MeteringPointSubType, string ParentMeteringPointId, DateTimeOffset CoupledDate, DateTimeOffset? UncoupledDate);
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+
+public interface IDeltaLakeDataUploadService
+{
+    Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingParentDto> electricalHeatingParent);
+
+    Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingChildDto> electricalHeatingChildren);
+}
