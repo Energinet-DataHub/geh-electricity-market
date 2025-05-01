@@ -22,4 +22,12 @@ public sealed record DatabricksCatalogOptions
 
     [Required]
     public string Name { get; set; } = null!;
+
+    public string SchemaName { get; } = "electricity_market_internal";
+
+    public string ElectricalHeatingParentTableName { get; } = "electrical_heating_consumption_metering_point_periods";
+    public string ElectricalHeatingChildTableName { get; } = "electrical_heating_child_metering_points";
+    public string MissingMeasurementLogsTableName { get; } = "missing_measurements_log_metering_point_periods";
+    public string NetConsumptionParentTableName { get; } = "net_consumption_group_6_consumption_metering_point_periods";
+    public string NetConsumptionChildTableName { get; } = "net_consumption_group_6_child_metering_point";
 }
