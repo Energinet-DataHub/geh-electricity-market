@@ -24,5 +24,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ElectricityMarket.Application\ElectricityMarket.Application.csproj" />
     <ProjectReference Include="..\ElectricityMarket.Domain\ElectricityMarket.Domain.csproj" />
+    <ProjectReference Include="..\ElectricityMarket.Infrastructure\ElectricityMarket.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

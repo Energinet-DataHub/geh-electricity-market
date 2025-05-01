@@ -38,7 +38,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             return FilterAndMergeCandidates(candidates);
         }
 
-        private static bool IsRelevantConnectionAndType(MeteringPointMetadata meteringPointMetaData) =>
+        private static bool IsRelevantConnectionStateAndType(MeteringPointMetadata meteringPointMetaData) =>
             _relevantConnectionStates.Contains(meteringPointMetaData.ConnectionState) &&
             _relevantMeteringPointTypes.Contains(meteringPointMetaData.Type);
 
@@ -115,7 +115,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
 
             await foreach (var mp in meteringPoints)
             {
-                foreach (var mpm in mp.MetadataTimeline.Where(IsRelevantConnectionAndType))
+                foreach (var mpm in mp.MetadataTimeline.Where(IsRelevantConnectionStateAndType))
                 {
                     var lookupPoint = await ResolveLookupPointAsync(mpm.Parent, mp, parentCache).ConfigureAwait(false);
 

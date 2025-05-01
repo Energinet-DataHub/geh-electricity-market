@@ -12,14 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using static NodaTime.TimeZones.ZoneEqualityComparer;
@@ -83,6 +87,16 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
         services.AddScoped<IWholesaleMeteringPointService, WholesaleMeteringPointService>();
+        services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddElectricityMarketDatabricksModule(this IServiceCollection services, IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        services
+            .AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
         return services;
     }

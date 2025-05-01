@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
@@ -23,25 +24,27 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
     private readonly ISyncJobsRepository _syncJobsRepository;
+    private readonly IDeltaLakeDataUploadService _deltaLakeDataUploadService;
 
-    public SyncElectricalHeatingHandler(IMeteringPointRepository meteringPointRepository, ISyncJobsRepository syncJobsRepository)
+    public SyncElectricalHeatingHandler(IMeteringPointRepository meteringPointRepository, ISyncJobsRepository syncJobsRepository, IDeltaLakeDataUploadService deltaLakeDataUploadService)
     {
         _meteringPointRepository = meteringPointRepository;
         _syncJobsRepository = syncJobsRepository;
+        _deltaLakeDataUploadService = deltaLakeDataUploadService;
     }
 
     public async Task Handle(SyncElectricalHeatingCommand request, CancellationToken cancellationToken)
     {
         var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.ElectricalHeating).ConfigureAwait(false);
         var meteringPointsToSync = _meteringPointRepository
-            .GetMeteringPointsToSyncAsync(currentSyncJob.Version)
-            .ConfigureAwait(false);
+           .GetMeteringPointsToSyncAsync(currentSyncJob.Version)
+           .ConfigureAwait(false);
 
         DateTimeOffset maxVersion = currentSyncJob.Version;
         await foreach (var meteringPoint in meteringPointsToSync)
         {
-            // TODO: Implement the sync logic to Databricks for electrical heating metering points
-            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
+           // TODO: Implement the sync logic to Databricks for electrical heating metering points
+           maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
         }
 
         currentSyncJob = currentSyncJob with { Version = maxVersion };
