@@ -108,4 +108,6 @@ public sealed class ImportedTransactionEntity
     public string? contact_4_post_box { get; set; }
     public string? contact_4_municipality_code { get; set; }
     public string? dossier_status { get; set; }
+    public bool? tax_reduction { get; set; }
+    public DateTimeOffset? tax_settlement_date { get; set; }
 }
