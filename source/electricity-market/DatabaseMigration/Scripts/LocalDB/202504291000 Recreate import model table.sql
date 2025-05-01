@@ -112,13 +112,17 @@ CREATE INDEX [IX_CommercialRelation_MeteringPointId]
 
 CREATE TABLE [electricitymarket].[ElectricalHeatingPeriod]
 (
-    [Id]                   bigint IDENTITY(1,1) NOT NULL,
-    [CommercialRelationId] bigint NOT NULL,
-    [ValidFrom]            datetimeoffset NOT NULL,
-    [ValidTo]              datetimeoffset NOT NULL,
-    [RetiredById]          bigint NULL,
-    [RetiredAt]            datetimeoffset NULL,
-    [CreatedAt]            datetimeoffset NOT NULL
+    [Id]                       bigint IDENTITY(1,1) NOT NULL,
+    [CommercialRelationId]     bigint NOT NULL,
+    [ValidFrom]                datetimeoffset NOT NULL,
+    [ValidTo]                  datetimeoffset NOT NULL,
+    [RetiredById]              bigint NULL,
+    [RetiredAt]                datetimeoffset NULL,
+    [CreatedAt]                datetimeoffset NOT NULL,
+    [MeteringPointStateId]     bigint NOT NULL,
+    [BusinessTransactionDosId] bigint NOT NULL,
+    [TransactionType]          char(10) NOT NULL,
+    [Active]                   bit NOT NULL,
 
     CONSTRAINT PK_ElectricalHeatingPeriod PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_ElectricalHeatingPeriod_ElectricalHeatingPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[ElectricalHeatingPeriod]([ID]),
@@ -311,4 +315,7 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [contact_4_post_box]              NVARCHAR(64)       NULL,
     [contact_4_municipality_code]     NVARCHAR(64)       NULL,
     [dossier_status]                  CHAR(3)            NULL,
+
+    [tax_reduction]                   BIT                NULL,
+    [tax_settlement_date]             DATETIMEOFFSET     NULL,
 )
