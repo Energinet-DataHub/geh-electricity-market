@@ -17,5 +17,5 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 public enum SyncJobName
 {
     ElectricalHeating,
-    NetConsumption
+    Wholesale
 }

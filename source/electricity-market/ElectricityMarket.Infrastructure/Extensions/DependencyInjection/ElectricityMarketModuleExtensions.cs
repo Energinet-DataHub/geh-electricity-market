@@ -86,7 +86,6 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<ICsvImporter, CsvImporter>();
         services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
-        services.AddScoped<INetConsumptionService, NetConsumptionService>();
         services.AddScoped<IWholesaleService, WholesaleService>();
         services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
 
