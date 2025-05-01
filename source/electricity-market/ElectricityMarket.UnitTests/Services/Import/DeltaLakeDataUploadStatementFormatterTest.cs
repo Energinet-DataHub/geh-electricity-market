@@ -28,7 +28,7 @@ public class DeltaLakeDataUploadStatementFormatterTest
     public void GivenTestDto_WhenCreatingStatement_StatementIsCreated()
     {
         var sut = new DeltaLakeDataUploadStatementFormatter();
-        var statement = sut.CreateUploadStatement<TestDto>("testCatalog.TestTable", [new TestDto("123", "abc")]);
+        var statement = sut.CreateUploadStatement<TestDto>("testCatalog.TestTable", [new TestDto("123", "abc", DateTimeOffset.Now), new TestDto("123", "abc", null)]);
     }
 
     [Fact(Skip = "Manual")]
@@ -49,5 +49,5 @@ public class DeltaLakeDataUploadStatementFormatterTest
         var statement = sut.CreateUploadStatement<ElectricalHeatingChildDto>(_devTableName, [dto1, dto2, dto3]);
     }
 
-    public sealed record TestDto([property: DeltaLakeKey] string Id, string Prop);
+    public sealed record TestDto([property: DeltaLakeKey] string Id, string Prop, DateTimeOffset? NullableTimestamp);
 }
