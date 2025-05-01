@@ -124,7 +124,10 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
                             : closedDateTime
                                 ? "closed-"
                                 : string.Empty) + value.GetType().Name.ToLower(CultureInfo.InvariantCulture)}-span\">{
-                                stringValue}</span>"
+                                stringValue
+                                    .Replace("&", "&amp;", StringComparison.InvariantCultureIgnoreCase)
+                                    .Replace("<", "&lt;", StringComparison.InvariantCultureIgnoreCase)
+                                    .Replace(">", "&gt;", StringComparison.InvariantCultureIgnoreCase)}</span>"
                         : stringValue;
 #pragma warning restore CA1308
                 })) + " |";
