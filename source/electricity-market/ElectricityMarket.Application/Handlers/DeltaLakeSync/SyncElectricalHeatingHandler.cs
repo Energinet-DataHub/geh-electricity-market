@@ -39,16 +39,19 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
         var meteringPointsToSync = _meteringPointRepository
             .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
-        var parentMeteringPoints = await _electricalHeatingPeriodizationService.GetParentElectricalHeatingAsync(meteringPointsToSync).ConfigureAwait(false);
-        var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(meteringPointsToSync, parentMeteringPoints.Select(p => p.MeteringPointId)).ConfigureAwait(false);
-        DateTimeOffset maxVersion = currentSyncJob.Version;
-        await foreach (var meteringPoint in meteringPointsToSync)
+        while (await meteringPointsToSync.AnyAsync(cancellationToken).ConfigureAwait(false))
         {
-            // TODO: Implement the sync logic to Databricks for electrical heating metering points
-            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
+            var maxVersion = await meteringPointsToSync.MaxAsync(mp => mp.Version, cancellationToken).ConfigureAwait(false);
+            await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
+            currentSyncJob = currentSyncJob with { Version = maxVersion };
+            await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
+            meteringPointsToSync = _meteringPointRepository.GetMeteringPointsToSyncAsync(currentSyncJob.Version);
         }
+    }
 
-        currentSyncJob = currentSyncJob with { Version = maxVersion };
-        await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
+    private async Task HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
+    {
+        var parentMeteringPoints = await _electricalHeatingPeriodizationService.GetParentElectricalHeatingAsync(meteringPointsToSync).ConfigureAwait(false);
+        //var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(meteringPointsToSync, parentMeteringPoints.Select(p => p.MeteringPointId)).ConfigureAwait(false);
     }
 }

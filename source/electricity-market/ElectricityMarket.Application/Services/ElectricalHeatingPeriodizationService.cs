@@ -51,14 +51,25 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// </summary>
     public async Task<IEnumerable<ElectricalHeatingParentDto>> GetParentElectricalHeatingAsync(IAsyncEnumerable<MeteringPoint> meteringPoints)
     {
-        var meteringPointsWithElectricalHeating = await meteringPoints
-            .Where(mp => mp.CommercialRelationTimeline.Any(cr => cr.ElectricalHeatingPeriods.Any()))
-            .ToListAsync().ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(meteringPoints);
+        var meteringPointsWithElectricalHeating = new List<MeteringPoint>();
+        await foreach (var meteringPoint in meteringPoints.ConfigureAwait(false))
+        {
+            if (meteringPoint.CommercialRelationTimeline.Any(cr => cr.ElectricalHeatingPeriods.Any()))
+            {
+                meteringPointsWithElectricalHeating.Add(meteringPoint);
+            }
+        }
+
+        if (meteringPointsWithElectricalHeating.Count == 0)
+        {
+            return [];
+        }
 
         var parentMeteringPointPeriods = meteringPointsWithElectricalHeating
             .SelectMany(mp => mp.MetadataTimeline.Where(
                 mpm => mpm.Parent is null && mpm.Type == MeteringPointType.Consumption // Consumption (parent) metering points
-                && _relevantTransactionTypes.Contains(mpm.TransactionType) // the following transaction types are relevant for determining the periods
+                && _relevantTransactionTypes.Contains(mpm.TransactionType.Trim()) // the following transaction types are relevant for determining the periods
                 && mpm.SubType == MeteringPointSubType.Physical && _relevantConnectionStates.Contains(mpm.ConnectionState) // the metering point physical status is connected or disconnected
                 && mpm.Valid.End > InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value) // the period does not end before 2021-01-01
             .Select(mpm => new { MeteringPoint = mp, MeteringPointPeriod = mpm }));
