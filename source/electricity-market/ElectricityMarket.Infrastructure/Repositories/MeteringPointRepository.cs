@@ -23,7 +23,6 @@ using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
 
@@ -137,8 +136,9 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
+        var ids = new List<string> { "571313102300048167", "571313102300048181", "571313102300048198" };
         var entities = _electricityMarketDatabaseContext.MeteringPoints
-            .Where(x => x.Version >= lastSyncedVersion)
+            .Where(x => x.Version >= lastSyncedVersion && ids.Contains(x.Identification))
             .OrderBy(x => x.Version)
             .Take(batchSize)
             .AsAsyncEnumerable();

@@ -12,16 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ElectricityMarket.WebAPI.Model;
-using ElectricityMarket.WebAPI.Revision;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
-using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
-using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
-using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

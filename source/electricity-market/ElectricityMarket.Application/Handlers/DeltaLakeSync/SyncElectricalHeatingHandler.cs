@@ -47,13 +47,14 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
     public async Task Handle(SyncElectricalHeatingCommand request, CancellationToken cancellationToken)
     {
         var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.ElectricalHeating).ConfigureAwait(false);
-        var meteringPointsToSync = _meteringPointRepository
-            .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
-
         _logger.LogInformation(
             "SyncElectricalHeatingHandler: Sync job version {Version} for {JobName} started.",
             currentSyncJob.Version,
             SyncJobName.ElectricalHeating);
+
+        var meteringPointsToSync = _meteringPointRepository
+            .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+
 
         while (await meteringPointsToSync.AnyAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -61,11 +62,12 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
             await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
             currentSyncJob = currentSyncJob with { Version = maxVersion };
             await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
-            meteringPointsToSync = _meteringPointRepository.GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+
             _logger.LogInformation(
-            "SyncElectricalHeatingHandler: Sync job version {Version} for {JobName} started.",
-            currentSyncJob.Version,
-            SyncJobName.ElectricalHeating);
+                "SyncElectricalHeatingHandler: Sync job version {Version} for {JobName} started.",
+                currentSyncJob.Version,
+                SyncJobName.ElectricalHeating);
+            meteringPointsToSync = _meteringPointRepository.GetMeteringPointsToSyncAsync(currentSyncJob.Version);
         }
     }
 

@@ -82,6 +82,12 @@ public static class ElectricityMarketModuleExtensions
     public static IServiceCollection AddElectricityMarketDatabricksModule(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
+
+        services
+            .AddOptions<DatabricksCatalogOptions>()
+            .BindConfiguration(DatabricksCatalogOptions.SectionName)
+            .ValidateDataAnnotations();
+
         services
             .AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
