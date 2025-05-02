@@ -19,6 +19,7 @@ using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
@@ -28,11 +29,16 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
     private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
     private readonly DeltaLakeDataUploadStatementFormatter _deltaLakeDataUploadStatementFormatter = new();
+    private readonly ILogger<DeltaLakeDataUploadService> _logger;
 
-    public DeltaLakeDataUploadService(IOptions<DatabricksCatalogOptions> catalogOptions, DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor)
+    public DeltaLakeDataUploadService(
+        IOptions<DatabricksCatalogOptions> catalogOptions,
+        DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
+        ILogger<DeltaLakeDataUploadService> logger)
     {
         _catalogOptions = catalogOptions;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
+        _logger = logger;
     }
 
     public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingParentDto> electricalHeatingParent)
@@ -44,9 +50,8 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            // Process each record
-            Console.WriteLine(record);
-            Console.WriteLine(record.num_inserted_rows);
+            string resultString = Convert.ToString(record);
+            _logger.LogInformation("Electrical Heating Parents Uploaded: {ResultString}", resultString);
         }
     }
 
@@ -59,9 +64,8 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            // Process each record
-            Console.WriteLine(record);
-            Console.WriteLine(record.num_inserted_rows);
+            string resultString = Convert.ToString(record);
+            _logger.LogInformation("Electrical Heating Childrenn Uploaded: {ResultString}", resultString);
         }
     }
 }
