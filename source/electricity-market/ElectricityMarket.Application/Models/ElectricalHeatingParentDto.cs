@@ -12,5 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Application.Common;
+
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-public sealed record ElectricalHeatingParentDto(string MeteringPointId, bool HasElectricalHeating, int? NetSettlementGroup, int? SettlementMonth, DateTimeOffset PeriodFromDate, DateTimeOffset? PeriodToDate);
+public sealed record ElectricalHeatingParentDto([property: DeltaLakeKey] string MeteringPointId, int? NetSettlementGroup, int? SettlementMonth, DateTimeOffset PeriodFromDate, DateTimeOffset? PeriodToDate);
