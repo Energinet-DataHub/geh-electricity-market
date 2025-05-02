@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Import;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,9 @@ public class ImportController : ControllerBase
     public async Task<ActionResult<string>> ImportTransactionsAsync()
     {
         var insertedCount = await _mediator.Send(new ImportTransactionsCommand(Request.Body)).ConfigureAwait(false);
+
+        await _mediator.Send(new SyncElectricalHeatingCommand()).ConfigureAwait(false);
+
         return Ok(insertedCount);
     }
 }

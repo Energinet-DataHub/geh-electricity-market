@@ -22,20 +22,19 @@ using Microsoft.AspNetCore.Mvc;
 namespace ElectricityMarket.WebAPI.Controllers;
 
 [ApiController]
-[Route("metering-point")]
-public class ElectricalHeatingController : ControllerBase
+[Route("sync")]
+public class SyncController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IUserContext<FrontendUser> _userContext;
 
-    public ElectricalHeatingController(IMediator mediator, IUserContext<FrontendUser> userContext)
+    public SyncController(IMediator mediator, IUserContext<FrontendUser> userContext)
     {
         _mediator = mediator;
         _userContext = userContext;
     }
 
-    [HttpGet]
-    [AllowAnonymous]
+    [HttpGet("electrical-heating")]
     public async Task<ActionResult> GetAsync()
     {
         var command = new SyncElectricalHeatingCommand();
