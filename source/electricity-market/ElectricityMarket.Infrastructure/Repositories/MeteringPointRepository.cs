@@ -170,4 +170,13 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
         return new MeteringPointHierarchy(MeteringPointMapper.MapFromEntity(parent), childMeteringPoints.Select(MeteringPointMapper.MapFromEntity));
     }
+
+    public async Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(string identification)
+    {
+        var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
+            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
+            .ConfigureAwait(false);
+
+        return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
+    }
 }
