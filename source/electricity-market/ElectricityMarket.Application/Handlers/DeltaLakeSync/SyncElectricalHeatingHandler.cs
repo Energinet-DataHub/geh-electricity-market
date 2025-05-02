@@ -73,8 +73,19 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
     private async Task HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
     {
         var parentMeteringPoints = await _electricalHeatingPeriodizationService.GetParentElectricalHeatingAsync(meteringPointsToSync).ConfigureAwait(false);
-        await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPoints).ConfigureAwait(false);
-        var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(parentMeteringPoints.Select(p => p.MeteringPointId).Distinct()).ConfigureAwait(false);
-        await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPoints).ConfigureAwait(false);
+        if (parentMeteringPoints.Any())
+        {
+            _logger.LogInformation(
+                "Found {Count} electrical heating parent metering points. Starting upload to DeltaLake", parentMeteringPoints.Count());
+            await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPoints).ConfigureAwait(false);
+
+            var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(parentMeteringPoints.Select(p => p.MeteringPointId).Distinct()).ConfigureAwait(false);
+            if (childMeteringPoints.Any())
+            {
+                _logger.LogInformation(
+                    "Found {Count} electrical heating child metering points. Starting upload to DeltaLake", childMeteringPoints.Count());
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPoints).ConfigureAwait(false);
+            }
+        }
     }
 }
