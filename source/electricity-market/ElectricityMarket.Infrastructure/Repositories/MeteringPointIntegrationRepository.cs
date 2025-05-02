@@ -81,6 +81,12 @@ public sealed class MeteringPointIntegrationRepository : IMeteringPointIntegrati
 
         foreach (var period in periods)
         {
+            if (period.PEnd <= startDate)
+                continue;
+
+            if (period.PStart >= endDate)
+                continue;
+
             gridAreaOwnerDictionary.TryGetValue(mpp.GridAreaCode, out var gridAccessProviderActorNumber);
 
             var neighbors = new List<string>();

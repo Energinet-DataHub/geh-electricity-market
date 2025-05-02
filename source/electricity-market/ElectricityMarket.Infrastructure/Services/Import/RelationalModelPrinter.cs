@@ -112,10 +112,22 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
                         _ => (cultureAwareToString is not null ? cultureAwareToString.Invoke(value, [cultureInfo]) : value)!.ToString()!.TrimEnd().PadRight(columnWidths[i]),
                     };
 
+                    var closedDateTime = (p.Name == "StartDate" && properties.First(x => x.Name == "EndDate").GetValue(item)!.Equals(value)) ||
+                                         (p.Name == "EndDate" && properties.First(x => x.Name == "StartDate").GetValue(item)!.Equals(value)) ||
+                                         (p.Name == "ValidFrom" && properties.First(x => x.Name == "ValidTo").GetValue(item)!.Equals(value)) ||
+                                         (p.Name == "ValidTo" && properties.First(x => x.Name == "ValidFrom").GetValue(item)!.Equals(value));
+
 #pragma warning disable CA1308
                     return html
-                        ? $"<span class=\"{(value is DateTimeOffset { Year: 9999 } ? "infinity-" : string.Empty) + value.GetType().Name.ToLower(CultureInfo.InvariantCulture)}-span\">{
-                            stringValue}</span>"
+                        ? $"<span class=\"{(value is DateTimeOffset { Year: 9999 }
+                            ? "infinity-"
+                            : closedDateTime
+                                ? "closed-"
+                                : string.Empty) + value.GetType().Name.ToLower(CultureInfo.InvariantCulture)}-span\">{
+                                stringValue
+                                    .Replace("&", "&amp;", StringComparison.InvariantCultureIgnoreCase)
+                                    .Replace("<", "&lt;", StringComparison.InvariantCultureIgnoreCase)
+                                    .Replace(">", "&gt;", StringComparison.InvariantCultureIgnoreCase)}</span>"
                         : stringValue;
 #pragma warning restore CA1308
                 })) + " |";
