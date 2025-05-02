@@ -55,7 +55,6 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
         var meteringPointsToSync = _meteringPointRepository
             .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
-
         while (await meteringPointsToSync.AnyAsync(cancellationToken).ConfigureAwait(false))
         {
             var maxVersion = await meteringPointsToSync.MaxAsync(mp => mp.Version, cancellationToken).ConfigureAwait(false);

@@ -16,7 +16,6 @@ using Energinet.DataHub.Core.App.Common.Abstractions.Users;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElectricityMarket.WebAPI.Controllers;

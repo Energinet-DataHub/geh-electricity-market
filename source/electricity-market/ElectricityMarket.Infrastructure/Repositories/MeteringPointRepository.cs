@@ -136,9 +136,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
-        var ids = new List<string> { "571313102300048167", "571313102300048181", "571313102300048198" };
         var entities = _electricityMarketDatabaseContext.MeteringPoints
-            .Where(x => x.Version >= lastSyncedVersion && ids.Contains(x.Identification))
+            .Where(x => x.Version >= lastSyncedVersion)
             .OrderBy(x => x.Version)
             .Take(batchSize)
             .AsAsyncEnumerable();
