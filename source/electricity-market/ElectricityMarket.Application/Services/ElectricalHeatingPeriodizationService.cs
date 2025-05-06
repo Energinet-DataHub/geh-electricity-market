@@ -25,10 +25,11 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     private readonly string[] _relevantTransactionTypes = ["CHANGESUP", "ENDSUPPLY", "INCCHGSUP", "MSTDATSBM", "LNKCHLDMP", "ULNKCHLDMP", "ULNKCHLDMP", "MOVEINES", "MOVEOUTES", "INCMOVEAUT", "INCMOVEMAN", "MDCNSEHON", "MDCNSEHOFF", "CHGSUPSHRT", "MANCHGSUP", "MANCOR"];
     private readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
     private readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.ConsumptionFromGrid, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
+    private readonly Instant _cutoffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
 
     private readonly IMeteringPointRepository _meteringPointRepository;
 
-    public ElectricalHeatingPeriodizationService(IMeteringPointRepository meteringPointRepository, IServiceScopeFactory scopeFactory)
+    public ElectricalHeatingPeriodizationService(IMeteringPointRepository meteringPointRepository)
     {
         _meteringPointRepository = meteringPointRepository;
     }
@@ -70,7 +71,7 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
                     .Where(mt => mt.Parent is null && mt.Type == MeteringPointType.Consumption // Consumption (parent) metering points
                         && _relevantTransactionTypes.Contains(mt.TransactionType.Trim()) // the following transaction types are relevant for determining the periods
                         && mt.SubType == MeteringPointSubType.Physical && _relevantConnectionStates.Contains(mt.ConnectionState) // the metering point physical status is connected or disconnected
-                        && mt.Valid.End > InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value); // the period does not end before 2021-01-01
+                        && mt.Valid.End > _cutoffDate); // the period does not end before 2021-01-01
 
                 foreach (var electricalHeatingPeriod in electricalHeatingTimeline)
                 {
@@ -110,14 +111,6 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     ///
     public async Task<IEnumerable<ElectricalHeatingChildDto>> GetChildElectricalHeatingAsync(IEnumerable<string> parentMeteringPointIds)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var scopedService = (ElectricalHeatingPeriodizationService)scope.ServiceProvider.GetService<IElectricalHeatingPeriodizationService>()!;
-
-        return await scopedService.GetChildElectricalHeatingInternalAsync(parentMeteringPointIds).ConfigureAwait(false);
-    }
-
-    private async Task<IEnumerable<ElectricalHeatingChildDto>> GetChildElectricalHeatingInternalAsync(IEnumerable<string> parentMeteringPointIds)
-    {
         ArgumentNullException.ThrowIfNull(parentMeteringPointIds);
         var response = new List<ElectricalHeatingChildDto>();
         foreach (var parentId in parentMeteringPointIds)
@@ -129,7 +122,7 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
                 mt.Parent is not null &&
                 _relevantMeteringPointTypes.Contains(mt.Type) // the metering point is of following types
                 && _relevantConnectionStates.Contains(mt.ConnectionState) // the child metering point physical status is connected or disconnected
-                && mt.Valid.End > InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value); // the period does not end before 2021-01-01
+                && mt.Valid.End > _cutoffDate); // the period does not end before 2021-01-01
 
                 foreach (var metadataTimeline in metadataTimelines)
                 {
