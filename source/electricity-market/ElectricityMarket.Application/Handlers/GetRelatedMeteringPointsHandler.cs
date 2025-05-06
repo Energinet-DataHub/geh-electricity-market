@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
@@ -72,7 +73,7 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
             .Select(MapToRelated) ?? [];
 
         var relatedByGsrn = relatedMeteringPoints?
-            .Where(x => string.IsNullOrEmpty(x.Metadata?.Parent?.Value)
+            .Where(x => x.Metadata?.Parent == null
                         && !string.IsNullOrWhiteSpace(x.Metadata?.PowerPlantGsrn)
                         && x.Metadata.PowerPlantGsrn == relatedMeteringPointToUseForCheck.Metadata.PowerPlantGsrn
                         && x.Identification != currentMeteringPoint.Identification)
@@ -113,7 +114,7 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
     {
         return new RelatedMeteringPointDto(
             meteringPoint.Id,
-            meteringPoint.Identification.Value,
+            meteringPoint.Identification.Value.ToString(CultureInfo.InvariantCulture),
             meteringPoint.Metadata.Type,
             meteringPoint.Metadata.ConnectionState,
             FindFirstConnectedDate(meteringPoint.MetadataTimeline),
