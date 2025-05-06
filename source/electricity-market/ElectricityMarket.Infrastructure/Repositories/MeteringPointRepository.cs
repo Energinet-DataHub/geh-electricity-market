@@ -141,11 +141,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
-        //var ids = new List<string> { "571313102300048167", "571313102300048181", "571313102300048198" };
-        var ids = new List<string> { "571313180401330916" };
         var entities = _electricityMarketDatabaseContext.MeteringPoints
-            //.Where(x => x.Version > lastSyncedVersion)
-            .Where(x => x.Identification == ids[0])
+            .Where(x => x.Version > lastSyncedVersion)
             .OrderBy(x => x.Version)
             .Take(batchSize)
             .AsAsyncEnumerable();
@@ -178,7 +175,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return new MeteringPointHierarchy(MeteringPointMapper.MapFromEntity(parent), childMeteringPoints.Select(MeteringPointMapper.MapFromEntity));
     }
 
-    public async Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(string identification)
+    public async Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(long identification)
     {
         var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
         readContext.Database.SetCommandTimeout(60 * 60);

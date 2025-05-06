@@ -102,7 +102,7 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
                             && meteringPointMetadata.Valid.End <= electricalHeatingPeriod.Period.End)
                         {
                             var electricalHeatingParent = new ElectricalHeatingParentDto(
-                                meteringPoint.Identification.Value.ToString(CultureInfo.InvariantCulture),
+                            meteringPoint.Identification.Value,
                                 meteringPointMetadata.NetSettlementGroup,
                                 meteringPointMetadata.NetSettlementGroup == 6 ? meteringPointMetadata.ScheduledMeterReadingMonth : 1,
                                 meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
@@ -128,7 +128,7 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// - the period does not end before 2021-01-01.
     /// </summary>
     ///
-    public async Task<IEnumerable<ElectricalHeatingChildDto>> GetChildElectricalHeatingAsync(IEnumerable<string> parentMeteringPointIds)
+    public async Task<IEnumerable<ElectricalHeatingChildDto>> GetChildElectricalHeatingAsync(IEnumerable<long> parentMeteringPointIds)
     {
         ArgumentNullException.ThrowIfNull(parentMeteringPointIds);
         var response = new List<ElectricalHeatingChildDto>();
@@ -146,10 +146,10 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
                 foreach (var metadataTimeline in metadataTimelines)
                 {
                     var electricalHeatingChild = new ElectricalHeatingChildDto(
-                        child.Identification.Value.ToString(CultureInfo.InvariantCulture),
+                        child.Identification.Value,
                         metadataTimeline.Type.ToString(),
                         metadataTimeline.SubType.ToString(),
-                        metadataTimeline.Parent!.Value.ToString(CultureInfo.InvariantCulture),
+                        metadataTimeline.Parent!.Value,
                         metadataTimeline.Valid.Start.ToDateTimeOffset(),
                         metadataTimeline.Valid.End.ToDateTimeOffset());
                     response.Add(electricalHeatingChild);
