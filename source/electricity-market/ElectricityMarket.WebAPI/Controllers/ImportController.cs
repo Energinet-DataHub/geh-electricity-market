@@ -35,8 +35,6 @@ public class ImportController : ControllerBase
     {
         var insertedCount = await _mediator.Send(new ImportTransactionsCommand(Request.Body)).ConfigureAwait(false);
 
-        await _mediator.Send(new SyncElectricalHeatingCommand()).ConfigureAwait(false);
-
         return Ok(insertedCount);
     }
 }
