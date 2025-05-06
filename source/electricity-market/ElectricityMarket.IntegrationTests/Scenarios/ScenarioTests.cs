@@ -79,7 +79,7 @@ public class ScenarioTests
             NullLogger<BulkImporter>.Instance,
             new CsvImportedTransactionModelReader(csv, cultureInfo),
             new RelationalModelWriter(scope.ServiceProvider.GetRequiredService<IOptions<DatabaseOptions>>(), NullLogger<RelationalModelWriter>.Instance),
-            new MeteringPointImporter());
+            new MeteringPointImporter(NullLogger<MeteringPointImporter>.Instance));
 
         await bulkImporter.RunAsync(0, int.MaxValue).ConfigureAwait(false);
 
