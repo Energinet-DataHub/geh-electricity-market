@@ -23,4 +23,5 @@ public interface IMarketParticipantDatabaseContext
     DbSet<ActorEntity> Actors { get; }
     DbSet<ProcessDelegationEntity> ProcessDelegations { get; }
     DbSet<DelegationPeriodEntity> DelegationPeriods { get; }
+    DbSet<BalanceResponsibilityRelationEntity> BalanceResponsibleRelations { get; }
 }

@@ -12,10 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
-
-public enum SyncJobName
+// TODO: WORK IN PROGRESS - Revisit this task in Phase 3
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
-    ElectricalHeating,
-    Wholesale
+    public sealed record WholesaleDto(
+        string MeteringPointId,
+        string Type,
+        string? CalculationType,
+        string? SettlementMethod,
+        string GridAreaCode,
+        string Resolution,
+        string? FromGridAreaCode,
+        string? ToGridAreaCode,
+        string? Identification,
+        string? EnergySupplier,
+        string? BalanceResponsiblePartyId,
+        DateTimeOffset FromDate,
+        DateTimeOffset? ToDate);
 }

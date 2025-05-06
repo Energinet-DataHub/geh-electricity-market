@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
-public enum SyncJobName
+public interface IBalanceResponsibleRepository
 {
-    ElectricalHeating,
-    Wholesale
+    Task<string?> GetBalanceResponsiblePartyIdByEnergySupplierAsync(string energySupplierId);
 }

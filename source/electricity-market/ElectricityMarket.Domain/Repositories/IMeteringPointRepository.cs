@@ -19,11 +19,15 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 public interface IMeteringPointRepository
 {
     Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
+
     Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification);
 
     Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode);
 
     Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification);
-    IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion);
+
+    IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000);
+
+    Task<MeteringPoint?> GetMeteringPointByIdAsync(MeteringPointIdentification identification);
     Task<MeteringPointHierarchy> GetMeteringPointHierarchyAsync(MeteringPointIdentification identification, CancellationToken cancellationToken = default);
 }

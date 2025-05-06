@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using static NodaTime.TimeZones.ZoneEqualityComparer;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 
@@ -61,18 +62,31 @@ public static class ElectricityMarketModuleExtensions
             .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
         });
 
+        // Factories
+        services.AddDbContextFactory<ElectricityMarketDatabaseContext>((p, o) =>
+        {
+            var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
+            o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
+            {
+                options.UseNodaTime();
+            })
+            .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+        });
+
         // Repositories
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
         services.AddScoped<IMeteringPointIntegrationRepository, MeteringPointIntegrationRepository>();
         services.AddScoped<IGridAreaRepository, GridAreaRepository>();
         services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();
         services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
+        services.AddScoped<IBalanceResponsibleRepository, BalanceResponsibleRepository>();
+        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
 
         // Services
         services.AddScoped<ICsvImporter, CsvImporter>();
         services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
-        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
+        services.AddScoped<IWholesaleService, WholesaleService>();
         services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
 
         return services;
