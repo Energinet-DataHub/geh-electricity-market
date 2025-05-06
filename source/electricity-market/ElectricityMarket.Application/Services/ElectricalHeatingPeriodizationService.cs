@@ -15,7 +15,7 @@
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
-using Microsoft.Extensions.DependencyInjection;
+using NodaTime;
 using NodaTime.Text;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services;
@@ -26,13 +26,11 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     private readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
     private readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.ConsumptionFromGrid, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
 
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IMeteringPointRepository _meteringPointRepository;
 
     public ElectricalHeatingPeriodizationService(IMeteringPointRepository meteringPointRepository, IServiceScopeFactory scopeFactory)
     {
         _meteringPointRepository = meteringPointRepository;
-        _scopeFactory = scopeFactory;
     }
 
     /// <summary>

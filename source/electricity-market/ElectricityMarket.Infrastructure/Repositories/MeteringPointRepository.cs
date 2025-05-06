@@ -33,15 +33,18 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     private readonly MarketParticipantDatabaseContext _marketParticipantDatabaseContext;
     private readonly ElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly IRelationalModelPrinter _relationalModelPrinter;
+    private readonly IDbContextFactory<ElectricityMarketDatabaseContext> _contextFactory;
 
     public MeteringPointRepository(
         MarketParticipantDatabaseContext marketParticipantDatabaseContext,
         ElectricityMarketDatabaseContext electricityMarketDatabaseContext,
-        IRelationalModelPrinter relationalModelPrinter)
+        IRelationalModelPrinter relationalModelPrinter,
+        IDbContextFactory<ElectricityMarketDatabaseContext> contextFactory)
     {
         _marketParticipantDatabaseContext = marketParticipantDatabaseContext;
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
         _relationalModelPrinter = relationalModelPrinter;
+        _contextFactory = contextFactory;
     }
 
     public async Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification)
@@ -136,8 +139,11 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
+        //var ids = new List<string> { "571313102300048167", "571313102300048181", "571313102300048198" };
+        var ids = new List<string> { "571313180401330916" };
         var entities = _electricityMarketDatabaseContext.MeteringPoints
-            .Where(x => x.Version > lastSyncedVersion)
+            //.Where(x => x.Version > lastSyncedVersion)
+            .Where(x => x.Identification == ids[0])
             .OrderBy(x => x.Version)
             .Take(batchSize)
             .AsAsyncEnumerable();
@@ -172,10 +178,16 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(string identification)
     {
-        var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
-            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
-            .ConfigureAwait(false);
+        var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        readContext.Database.SetCommandTimeout(60 * 60);
 
-        return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
+        await using (readContext.ConfigureAwait(false))
+        {
+            var childMeteringPoints = await readContext.MeteringPoints
+                .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
+                .ConfigureAwait(false);
+
+            return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
+        }
     }
 }

@@ -61,6 +61,18 @@ public static class ElectricityMarketModuleExtensions
             .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
         });
 
+        services.AddDbContextFactory<ElectricityMarketDatabaseContext>(
+            (p, o) =>
+            {
+                var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
+                o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
+                {
+                    options.UseNodaTime();
+                })
+                .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+            },
+            ServiceLifetime.Scoped);
+
         // Repositories
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
         services.AddScoped<IMeteringPointIntegrationRepository, MeteringPointIntegrationRepository>();
