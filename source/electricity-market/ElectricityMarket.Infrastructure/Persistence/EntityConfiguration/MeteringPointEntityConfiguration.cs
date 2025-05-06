@@ -25,6 +25,9 @@ public sealed class MeteringPointEntityConfiguration : IEntityTypeConfiguration<
     {
         ArgumentNullException.ThrowIfNull(builder);
         builder.ToTable("MeteringPoint");
+        builder.HasKey(mp => mp.Id);
+        builder.HasIndex(mp => mp.Identification).IsUnique();
+
         builder
             .HasMany(x => x.MeteringPointPeriods)
             .WithOne()

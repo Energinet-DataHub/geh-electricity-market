@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
@@ -24,7 +25,7 @@ internal static class MeteringPointMapper
         var cr = meteringPoint.CommercialRelation;
         return new MeteringPointDto(
             meteringPoint.Id,
-            meteringPoint.Identification.Value,
+            meteringPoint.Identification.Value.ToString(CultureInfo.InvariantCulture),
             Map(meteringPoint.Metadata),
             meteringPoint.MetadataTimeline.Select(Map),
             cr != null ? Map(cr) : null,
@@ -37,7 +38,7 @@ internal static class MeteringPointMapper
             meteringPointMetadata.Id,
             meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
             meteringPointMetadata.Valid.End.ToDateTimeOffset(),
-            meteringPointMetadata.Parent?.Value,
+            meteringPointMetadata.Parent?.Value.ToString(CultureInfo.InvariantCulture),
             meteringPointMetadata.Type,
             meteringPointMetadata.SubType,
             meteringPointMetadata.ConnectionState,
