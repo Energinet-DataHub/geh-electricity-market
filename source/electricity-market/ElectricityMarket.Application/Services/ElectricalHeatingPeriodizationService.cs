@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Application.Common;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
@@ -101,7 +102,7 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
                             && meteringPointMetadata.Valid.End <= electricalHeatingPeriod.Period.End)
                         {
                             var electricalHeatingParent = new ElectricalHeatingParentDto(
-                                meteringPoint.Identification.Value,
+                                meteringPoint.Identification.Value.ToString(CultureInfo.InvariantCulture),
                                 meteringPointMetadata.NetSettlementGroup,
                                 meteringPointMetadata.NetSettlementGroup == 6 ? meteringPointMetadata.ScheduledMeterReadingMonth : 1,
                                 meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
@@ -145,10 +146,10 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
                 foreach (var metadataTimeline in metadataTimelines)
                 {
                     var electricalHeatingChild = new ElectricalHeatingChildDto(
-                        child.Identification.Value,
+                        child.Identification.Value.ToString(CultureInfo.InvariantCulture),
                         metadataTimeline.Type.ToString(),
                         metadataTimeline.SubType.ToString(),
-                        metadataTimeline.Parent!.Value,
+                        metadataTimeline.Parent!.Value.ToString(CultureInfo.InvariantCulture),
                         metadataTimeline.Valid.Start.ToDateTimeOffset(),
                         metadataTimeline.Valid.End.ToDateTimeOffset());
                     response.Add(electricalHeatingChild);
