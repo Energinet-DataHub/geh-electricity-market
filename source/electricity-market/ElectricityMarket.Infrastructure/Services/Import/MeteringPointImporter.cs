@@ -15,7 +15,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
@@ -44,10 +43,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             foreach (var importedTransaction in importedTransactions)
             {
-                if (string.IsNullOrWhiteSpace(meteringPoint.Identification))
-                {
-                    meteringPoint.Identification = importedTransaction.metering_point_id.ToString(CultureInfo.InvariantCulture);
-                }
+                meteringPoint.Identification = importedTransaction.metering_point_id;
 
                 if (importedTransaction.valid_to_date < _importCutoff)
                     continue;

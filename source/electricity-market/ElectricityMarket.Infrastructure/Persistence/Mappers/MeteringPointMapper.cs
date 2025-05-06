@@ -37,7 +37,7 @@ internal static class MeteringPointMapper
         return new MeteringPointMetadata(
             from.Id,
             new Interval(from.ValidFrom.ToInstant(), from.ValidTo.ToInstant()),
-            from.ParentIdentification != null ? new MeteringPointIdentification(from.ParentIdentification) : null,
+            from.ParentIdentification != null ? new MeteringPointIdentification(from.ParentIdentification.Value) : null,
             MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.MeteringPointTypes, from.Type),
             MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.MeteringPointSubTypes, from.SubType),
             MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.ConnectionStates, from.ConnectionState),

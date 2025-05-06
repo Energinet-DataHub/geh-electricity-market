@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
@@ -30,7 +31,7 @@ public static class MeteringPointPeriodFactory
             ValidFrom = importedTransaction.valid_from_date,
             ValidTo = DateTimeOffset.MaxValue,
             CreatedAt = importedTransaction.dh2_created,
-            ParentIdentification = importedTransaction.parent_metering_point_id?.TrimEnd(),
+            ParentIdentification = string.IsNullOrWhiteSpace(importedTransaction.parent_metering_point_id) ? null : long.Parse(importedTransaction.parent_metering_point_id.Trim(), CultureInfo.InvariantCulture),
             Type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp),
             SubType = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointSubTypes, importedTransaction.sub_type_of_mp),
             ConnectionState = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.ConnectionStates, importedTransaction.physical_status_of_mp),

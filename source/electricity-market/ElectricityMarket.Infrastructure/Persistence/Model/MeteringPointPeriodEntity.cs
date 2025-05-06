@@ -23,7 +23,7 @@ public sealed class MeteringPointPeriodEntity
     public DateTimeOffset ValidFrom { get; set; }
     public DateTimeOffset ValidTo { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
-    public string? ParentIdentification { get; set; }
+    public long? ParentIdentification { get; set; }
 
     public long? RetiredById { get; set; }
     public DateTimeOffset? RetiredAt { get; set; }
