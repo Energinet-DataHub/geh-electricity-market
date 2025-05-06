@@ -49,6 +49,7 @@ public sealed class StreamingImporter : IStreamingImporter
             return;
 
         var existingMeteringPoint = await _databaseContext.MeteringPoints
+            .AsSplitQuery()
             .SingleOrDefaultAsync(mp => mp.Identification == meteringPointIdentification)
             .ConfigureAwait(false);
 
