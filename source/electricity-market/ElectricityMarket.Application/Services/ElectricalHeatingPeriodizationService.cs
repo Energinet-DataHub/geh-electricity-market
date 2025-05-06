@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Application.Common;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -22,7 +23,24 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
 public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodizationService
 {
-    private readonly string[] _relevantTransactionTypes = ["CHANGESUP", "ENDSUPPLY", "INCCHGSUP", "MSTDATSBM", "LNKCHLDMP", "ULNKCHLDMP", "ULNKCHLDMP", "MOVEINES", "MOVEOUTES", "INCMOVEAUT", "INCMOVEMAN", "MDCNSEHON", "MDCNSEHOFF", "CHGSUPSHRT", "MANCHGSUP", "MANCOR"];
+    private readonly string[] _relevantTransactionTypes =
+    {
+        TransactionTypes.ChangeSupplier,
+        TransactionTypes.EndSupply,
+        TransactionTypes.IncorrectSupplierChange,
+        TransactionTypes.MasterDataSent,
+        TransactionTypes.AttachChild,
+        TransactionTypes.DettachChild,
+        TransactionTypes.MoveIn,
+        TransactionTypes.MoveOut,
+        TransactionTypes.TransactionTypeIncMove,
+        TransactionTypes.IncorrectMoveIn,
+        TransactionTypes.ElectricalHeatingOn,
+        TransactionTypes.ElectricalHeatingOff,
+        TransactionTypes.ChangeSupplierShort,
+        TransactionTypes.ManualChangeSupplier,
+        TransactionTypes.ManualCorrections
+    };
     private readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
     private readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.ConsumptionFromGrid, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
     private readonly Instant _cutoffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
