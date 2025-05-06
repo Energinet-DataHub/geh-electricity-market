@@ -76,7 +76,7 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// - the period does not end before 2021-01-01<br/>
     /// - the electrical heating is or has been registered for the period.
     /// </summary>
-    public async Task<IEnumerable<ElectricalHeatingParentDto>> GetParentElectricalHeatingAsync(MeteringPoint meteringPoint)
+    public IEnumerable<ElectricalHeatingParentDto> GetParentElectricalHeating(MeteringPoint meteringPoint)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
         var response = new List<ElectricalHeatingParentDto>();

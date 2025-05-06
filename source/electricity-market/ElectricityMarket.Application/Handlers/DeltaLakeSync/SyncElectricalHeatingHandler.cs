@@ -75,11 +75,11 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
         await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
         {
             maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
-            var parentMeteringPoints = await _electricalHeatingPeriodizationService.GetParentElectricalHeatingAsync(meteringPoint).ConfigureAwait(false);
-            if (parentMeteringPoints.Any())
+            var parentMeteringPoints = _electricalHeatingPeriodizationService.GetParentElectricalHeating(meteringPoint).ToList();
+            if (parentMeteringPoints.Count != 0)
             {
                 _logger.LogInformation(
-                    "Found {Count} electrical heating parent metering points. Starting upload to DeltaLake", parentMeteringPoints.Count());
+                    "Found {Count} electrical heating parent metering points. Starting upload to DeltaLake", parentMeteringPoints.Count);
                 await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPoints).ConfigureAwait(false);
 
                 var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(parentMeteringPoints.Select(p => p.MeteringPointId).Distinct()).ConfigureAwait(false);
