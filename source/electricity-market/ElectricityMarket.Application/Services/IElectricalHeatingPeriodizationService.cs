@@ -19,6 +19,6 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
 public interface IElectricalHeatingPeriodizationService
 {
-    Task<IEnumerable<ElectricalHeatingParentDto>> GetParentElectricalHeatingAsync(IAsyncEnumerable<MeteringPoint> meteringPoints);
-    Task<IEnumerable<ElectricalHeatingChildDto>> GetChildElectricalHeatingAsync(IEnumerable<string> parentMeteringPointIds);
+    Task<IEnumerable<ElectricalHeatingParentDto>> GetParentElectricalHeatingAsync(MeteringPoint meteringPoint);
+    Task<IEnumerable<ElectricalHeatingChildDto>> GetChildElectricalHeatingAsync(IEnumerable<long> parentMeteringPointIds);
 }

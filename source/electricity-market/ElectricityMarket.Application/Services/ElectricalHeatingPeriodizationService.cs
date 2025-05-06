@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Application.Common;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
@@ -77,38 +76,35 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// - the period does not end before 2021-01-01<br/>
     /// - the electrical heating is or has been registered for the period.
     /// </summary>
-    public async Task<IEnumerable<ElectricalHeatingParentDto>> GetParentElectricalHeatingAsync(IAsyncEnumerable<MeteringPoint> meteringPoints)
+    public async Task<IEnumerable<ElectricalHeatingParentDto>> GetParentElectricalHeatingAsync(MeteringPoint meteringPoint)
     {
-        ArgumentNullException.ThrowIfNull(meteringPoints);
+        ArgumentNullException.ThrowIfNull(meteringPoint);
         var response = new List<ElectricalHeatingParentDto>();
-        await foreach (var meteringPoint in meteringPoints.ConfigureAwait(false))
+        if (meteringPoint.CommercialRelationTimeline.Any(cr => cr.ElectricalHeatingPeriods.Any()))
         {
-            if (meteringPoint.CommercialRelationTimeline.Any(cr => cr.ElectricalHeatingPeriods.Any()))
-            {
-                var electricalHeatingTimeline = meteringPoint.CommercialRelationTimeline.SelectMany(cr => cr.ElectricalHeatingPeriods);
-                var metadataTimeline = meteringPoint.MetadataTimeline
-                    .Where(mt => mt.Parent is null && mt.Type == MeteringPointType.Consumption // Consumption (parent) metering points
-                        && _relevantTransactionTypes.Contains(mt.TransactionType.Trim()) // the following transaction types are relevant for determining the periods
-                        && mt.SubType == MeteringPointSubType.Physical && _relevantConnectionStates.Contains(mt.ConnectionState) // the metering point physical status is connected or disconnected
-                        && mt.Valid.End > _cutoffDate); // the period does not end before 2021-01-01
+            var electricalHeatingTimeline = meteringPoint.CommercialRelationTimeline.SelectMany(cr => cr.ElectricalHeatingPeriods);
+            var metadataTimeline = meteringPoint.MetadataTimeline
+                .Where(mt => mt.Parent is null && mt.Type == MeteringPointType.Consumption // Consumption (parent) metering points
+                    && _relevantTransactionTypes.Contains(mt.TransactionType.Trim()) // the following transaction types are relevant for determining the periods
+                    && mt.SubType == MeteringPointSubType.Physical && _relevantConnectionStates.Contains(mt.ConnectionState) // the metering point physical status is connected or disconnected
+                    && mt.Valid.End > _cutoffDate); // the period does not end before 2021-01-01
 
-                foreach (var electricalHeatingPeriod in electricalHeatingTimeline)
+            foreach (var electricalHeatingPeriod in electricalHeatingTimeline)
+            {
+                var metadataInPeriod = metadataTimeline
+                    .Where(m => m.Valid.Start >= electricalHeatingPeriod.Period.Start && m.Valid.End <= electricalHeatingPeriod.Period.End);
+                foreach (var meteringPointMetadata in metadataInPeriod)
                 {
-                    var metadataInPeriod = metadataTimeline
-                        .Where(m => m.Valid.Start >= electricalHeatingPeriod.Period.Start && m.Valid.End <= electricalHeatingPeriod.Period.End);
-                    foreach (var meteringPointMetadata in metadataInPeriod)
+                    if (meteringPointMetadata.Valid.Start >= electricalHeatingPeriod.Period.Start
+                        && meteringPointMetadata.Valid.End <= electricalHeatingPeriod.Period.End)
                     {
-                        if (meteringPointMetadata.Valid.Start >= electricalHeatingPeriod.Period.Start
-                            && meteringPointMetadata.Valid.End <= electricalHeatingPeriod.Period.End)
-                        {
-                            var electricalHeatingParent = new ElectricalHeatingParentDto(
+                        var electricalHeatingParent = new ElectricalHeatingParentDto(
                             meteringPoint.Identification.Value,
-                                meteringPointMetadata.NetSettlementGroup,
-                                meteringPointMetadata.NetSettlementGroup == 6 ? meteringPointMetadata.ScheduledMeterReadingMonth : 1,
-                                meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
-                                meteringPointMetadata.Valid.End.ToDateTimeOffset());
-                            response.Add(electricalHeatingParent);
-                        }
+                            meteringPointMetadata.NetSettlementGroup,
+                            meteringPointMetadata.NetSettlementGroup == 6 ? meteringPointMetadata.ScheduledMeterReadingMonth : 1,
+                            meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
+                            meteringPointMetadata.Valid.End.ToDateTimeOffset());
+                        response.Add(electricalHeatingParent);
                     }
                 }
             }
