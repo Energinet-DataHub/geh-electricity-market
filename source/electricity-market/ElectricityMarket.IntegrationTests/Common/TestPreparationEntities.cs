@@ -31,7 +31,7 @@ public static class TestPreparationEntities
     public static MeteringPointEntity ValidMeteringPoint => new()
     {
 #pragma warning disable CA5394
-        Identification = new string(Enumerable.Range(0, 18).Select(_ => (char)('0' + Random.Shared.Next(10))).ToArray())
+        Identification = long.Parse(new string(Enumerable.Range(0, 18).Select(_ => (char)('0' + Random.Shared.Next(10))).ToArray()), CultureInfo.InvariantCulture)
 #pragma warning restore CA5394
     };
 

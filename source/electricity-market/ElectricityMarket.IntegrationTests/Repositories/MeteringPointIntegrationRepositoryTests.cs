@@ -546,7 +546,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.MeteringPoints.AddAsync(
             new MeteringPointEntity
             {
-                Identification = "571313180400031999",
+                Identification = 571313180400031999,
 
                 // Id = 3787854,
                 Version = new DateTimeOffset(2025, 4, 9, 12, 54, 29, 0, TimeSpan.Zero),
@@ -910,7 +910,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.MeteringPoints.AddAsync(
             new MeteringPointEntity
             {
-                Identification = "571313180400090019",
+                Identification = 571313180400090019,
 
                 // Id = 3790625,
                 Version = new DateTimeOffset(2025, 4, 7, 8, 38, 13, 0, TimeSpan.Zero),
@@ -1142,7 +1142,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.MeteringPoints.AddAsync(
             new MeteringPointEntity
             {
-                Identification = "570715000001552082",
+                Identification = 570715000001552082,
 
                 // Id = 51643,
                 Version = new DateTimeOffset(2025, 4, 7, 8, 18, 3, 0, TimeSpan.Zero),
@@ -1347,7 +1347,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.MeteringPoints.AddAsync(
             new MeteringPointEntity
             {
-                Identification = "578044607691001804",
+                Identification = 578044607691001804,
 
                 // Id = 4129507,
                 Version = new DateTimeOffset(2025, 4, 8, 11, 53, 25, 0, TimeSpan.Zero),
@@ -1668,7 +1668,7 @@ public class MeteringPointIntegrationRepositoryTests : IClassFixture<Electricity
         await context.MeteringPoints.AddAsync(
             new MeteringPointEntity
             {
-                Identification = "38277810000000",
+                Identification = 38277810000000,
 
                 // Id = 3790625,
                 Version = new DateTimeOffset(2025, 4, 7, 8, 38, 13, 0, TimeSpan.Zero),
