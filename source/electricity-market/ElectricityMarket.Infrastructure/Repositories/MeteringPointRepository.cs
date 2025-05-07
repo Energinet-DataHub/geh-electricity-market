@@ -141,16 +141,22 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
-        var entities = _electricityMarketDatabaseContext.MeteringPoints
+        var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        readContext.Database.SetCommandTimeout(60 * 60);
+
+        await using (readContext.ConfigureAwait(false))
+        {
+            var entities = readContext.MeteringPoints
             .AsSplitQuery()
             .Where(x => x.Version > lastSyncedVersion)
             .OrderBy(x => x.Version)
             .Take(batchSize)
             .AsAsyncEnumerable();
 
-        await foreach (var entity in entities)
-        {
-            yield return MeteringPointMapper.MapFromEntity(entity);
+            await foreach (var entity in entities)
+            {
+                yield return MeteringPointMapper.MapFromEntity(entity);
+            }
         }
     }
 
@@ -178,17 +184,11 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(long identification)
     {
-        var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        readContext.Database.SetCommandTimeout(60 * 60);
+        var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
+            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
+            .ConfigureAwait(false);
 
-        await using (readContext.ConfigureAwait(false))
-        {
-            var childMeteringPoints = await readContext.MeteringPoints
-                .AsSplitQuery()
-                .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
-                .ConfigureAwait(false);
-
-            return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
-        }
+        return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
     }
 }
