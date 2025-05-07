@@ -142,6 +142,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
         var entities = _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
             .Where(x => x.Version > lastSyncedVersion)
             .OrderBy(x => x.Version)
             .Take(batchSize)
@@ -183,6 +184,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         await using (readContext.ConfigureAwait(false))
         {
             var childMeteringPoints = await readContext.MeteringPoints
+                .AsSplitQuery()
                 .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
                 .ConfigureAwait(false);
 
