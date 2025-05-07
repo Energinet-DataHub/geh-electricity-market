@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
@@ -43,6 +44,8 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
 
     public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingParentDto> electricalHeatingParent)
     {
+        _logger.LogInformation(
+            "Starting upload of {Count} electrical heating parent metering points.", electricalHeatingParent.Count());
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingParentTableName}";
         var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingParent);
         var query = DatabricksStatement.FromRawSql(queryString);
@@ -57,6 +60,8 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
 
     public async Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingChildDto> electricalHeatingChildren)
     {
+        _logger.LogInformation(
+            "Starting upload of {Count} electrical heating child metering points.", electricalHeatingChildren.Count());
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingChildTableName}";
         var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingChildren);
         var query = DatabricksStatement.FromRawSql(queryString);
@@ -65,7 +70,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         await foreach (var record in result.ConfigureAwait(false))
         {
             string resultString = Convert.ToString(record);
-            _logger.LogInformation("Electrical Heating Childrenn Uploaded: {ResultString}", resultString);
+            _logger.LogInformation("Electrical Heating Children Uploaded: {ResultString}", resultString);
         }
     }
 }
