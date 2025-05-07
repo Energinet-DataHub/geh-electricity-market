@@ -47,25 +47,27 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
     public async Task Handle(SyncElectricalHeatingCommand request, CancellationToken cancellationToken)
     {
         var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.ElectricalHeating).ConfigureAwait(false);
-        _logger.LogInformation(
-            "SyncElectricalHeatingHandler: Sync job version {Version} for {JobName} started.",
-            currentSyncJob.Version,
-            SyncJobName.ElectricalHeating);
 
-        var meteringPointsToSync = _meteringPointRepository
-            .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
-
-        while (await meteringPointsToSync.AnyAsync(cancellationToken).ConfigureAwait(false))
+        var moreData = true;
+        while (moreData)
         {
-            var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
-            currentSyncJob = currentSyncJob with { Version = maxVersion };
-            await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
-
             _logger.LogInformation(
                 "SyncElectricalHeatingHandler: Sync job version {Version} for {JobName} started.",
                 currentSyncJob.Version,
                 SyncJobName.ElectricalHeating);
-            meteringPointsToSync = _meteringPointRepository.GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+            var meteringPointsToSync = _meteringPointRepository
+                .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+
+            var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
+            if (maxVersion > DateTimeOffset.MinValue)
+            {
+                currentSyncJob = currentSyncJob with { Version = maxVersion };
+                await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
+            }
+            else
+            {
+                moreData = false;
+            }
         }
     }
 
