@@ -23,24 +23,6 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
 public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodizationService
 {
-    private readonly string[] _relevantTransactionTypes =
-    {
-        TransactionTypes.ChangeSupplier,
-        TransactionTypes.EndSupply,
-        TransactionTypes.IncorrectSupplierChange,
-        TransactionTypes.MasterDataSent,
-        TransactionTypes.AttachChild,
-        TransactionTypes.DettachChild,
-        TransactionTypes.MoveIn,
-        TransactionTypes.MoveOut,
-        TransactionTypes.TransactionTypeIncMove,
-        TransactionTypes.IncorrectMoveIn,
-        TransactionTypes.ElectricalHeatingOn,
-        TransactionTypes.ElectricalHeatingOff,
-        TransactionTypes.ChangeSupplierShort,
-        TransactionTypes.ManualChangeSupplier,
-        TransactionTypes.ManualCorrections
-    };
     private readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
     private readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.ConsumptionFromGrid, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
     private readonly Instant _cutoffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
@@ -85,7 +67,6 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
             var electricalHeatingTimeline = meteringPoint.CommercialRelationTimeline.SelectMany(cr => cr.ElectricalHeatingPeriods);
             var metadataTimeline = meteringPoint.MetadataTimeline
                 .Where(mt => mt.Parent is null && mt.Type == MeteringPointType.Consumption // Consumption (parent) metering points
-                    && _relevantTransactionTypes.Contains(mt.TransactionType.Trim()) // the following transaction types are relevant for determining the periods
                     && mt.SubType == MeteringPointSubType.Physical && _relevantConnectionStates.Contains(mt.ConnectionState) // the metering point physical status is connected or disconnected
                     && mt.Valid.End > _cutoffDate); // the period does not end before 2021-01-01
 
