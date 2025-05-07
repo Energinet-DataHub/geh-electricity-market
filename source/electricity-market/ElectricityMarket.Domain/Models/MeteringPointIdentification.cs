@@ -12,6 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Globalization;
+
 namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public sealed record MeteringPointIdentification(string Value);
+public sealed record MeteringPointIdentification(long Value)
+{
+    public MeteringPointIdentification(string identification)
+        : this(long.Parse(identification, CultureInfo.InvariantCulture))
+    {
+    }
+}

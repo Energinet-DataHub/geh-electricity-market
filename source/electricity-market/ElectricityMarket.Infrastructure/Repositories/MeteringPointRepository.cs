@@ -49,6 +49,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(identification);
 
         var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
 
@@ -88,6 +89,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(identification);
 
         var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
 
