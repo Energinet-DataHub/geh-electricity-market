@@ -9,3 +9,9 @@
 
 ALTER TABLE {catalog_name}.electricity_market_internal.missing_measurements_log_metering_point_periods
 CLUSTER BY (metering_point_id, grid_area_code, period_from_date, period_to_date)
+GO
+
+ALTER TABLE {catalog_name}.electricity_market_internal.missing_measurements_log_metering_point_periods 
+SET TBLPROPERTIES (
+    delta.deletedFileRetentionDuration = "interval 30 days"
+)

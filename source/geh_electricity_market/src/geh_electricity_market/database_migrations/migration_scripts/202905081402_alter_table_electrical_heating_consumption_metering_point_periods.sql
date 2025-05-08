@@ -10,3 +10,9 @@
 
 ALTER TABLE {catalog_name}.electricity_market_internal.electrical_heating_consumption_metering_point_periods
 CLUSTER BY (metering_point_id, period_from_date, period_to_date)
+GO
+
+ALTER TABLE {catalog_name}.electricity_market_internal.electrical_heating_consumption_metering_point_periods 
+SET TBLPROPERTIES (
+    delta.deletedFileRetentionDuration = "interval 30 days"
+)

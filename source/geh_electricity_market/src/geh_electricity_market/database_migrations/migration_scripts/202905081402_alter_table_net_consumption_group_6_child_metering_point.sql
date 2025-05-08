@@ -9,3 +9,9 @@
 
 ALTER TABLE {catalog_name}.electricity_market_internal.net_consumption_group_6_child_metering_point
 CLUSTER BY (metering_point_id, parent_metering_point_id)
+GO
+
+ALTER TABLE {catalog_name}.electricity_market_internal.net_consumption_group_6_child_metering_point 
+SET TBLPROPERTIES (
+    delta.deletedFileRetentionDuration = "interval 30 days"
+)

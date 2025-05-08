@@ -9,7 +9,7 @@ from geh_common.testing.spark.spark_test_session import get_spark_test_session
 from pyspark.sql import SparkSession
 
 from geh_electricity_market.database_migrations.migrations_runner import _migrate
-from tests import DATABASE_NAMES, SPARK_CATALOG_NAME
+from tests import REQUIRED_DATABASES, SPARK_CATALOG_NAME
 
 # pytest-xdist plugin does not work with SparkSession as a fixture. The session scope is not supported.
 # Therefore, we need to create a global variable to store the Spark session and data directory.
@@ -50,7 +50,7 @@ def migrations_executed(spark: SparkSession) -> None:
 
     # Databases are created in dh3infrastructure using terraform
     # So we need to create them in test environment
-    for db in DATABASE_NAMES:
+    for db in REQUIRED_DATABASES:
         spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
 
     _migrate(SPARK_CATALOG_NAME)
