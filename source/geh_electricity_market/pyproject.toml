@@ -8,6 +8,7 @@ dependencies = [
     "azure-identity>=1.21.0",
     "azure-keyvault-secrets>=4.9.0",
     "azure-monitor-query>=1.4.1",
+    "delta-spark>=3.3.0",
     "geh_common @ git+https://git@github.com/Energinet-DataHub/opengeh-python-packages@geh_common_5.8.5#subdirectory=source/geh_common",
     "pydantic>=2.11.2",
     "pyspark>=3.5.0",

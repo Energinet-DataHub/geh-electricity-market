@@ -9,4 +9,4 @@
 -- USING DELTA
 
 ALTER TABLE {catalog_name}.electricity_market_internal.capacity_settlement_metering_point_periods
-CLUSTER BY AUTO
+CLUSTER BY (metering_point_id, child_metering_point_id)

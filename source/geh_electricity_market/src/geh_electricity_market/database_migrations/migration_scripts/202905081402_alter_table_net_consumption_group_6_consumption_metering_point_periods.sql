@@ -9,4 +9,4 @@
 -- USING DELTA
 
 ALTER TABLE {catalog_name}.electricity_market_internal.net_consumption_group_6_consumption_metering_point_periods
-CLUSTER BY AUTO
+CLUSTER BY (metering_point_id, period_from_date, period_to_date)
