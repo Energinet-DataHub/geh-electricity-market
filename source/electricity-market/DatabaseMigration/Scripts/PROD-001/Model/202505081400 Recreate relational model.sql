@@ -128,6 +128,10 @@ CREATE TABLE [electricitymarket].[ElectricalHeatingPeriod]
     CONSTRAINT FK_ElectricalHeatingPeriod_CommercialRelation FOREIGN KEY (CommercialRelationId) REFERENCES [electricitymarket].[CommercialRelation]([ID])
 )
 
+CREATE INDEX [IX_ElectricalHeatingPeriod_CommercialRelationId]
+    ON [electricitymarket].[ElectricalHeatingPeriod] (CommercialRelationId);
+
+
 CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
 (
     [Id]                       bigint IDENTITY(1,1) NOT NULL,
