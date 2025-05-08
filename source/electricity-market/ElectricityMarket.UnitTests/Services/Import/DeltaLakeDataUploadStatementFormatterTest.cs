@@ -22,7 +22,7 @@ namespace Energinet.DataHub.ElectricityMarket.UnitTests.Services.Import;
 
 public class DeltaLakeDataUploadStatementFormatterTest
 {
-    private string _devTableName = "ctl_shres_d_we_002.electricity_market_internal.electrical_heating_child_metering_points";
+    private readonly string _devTableName = "ctl_shres_d_we_002.electricity_market_internal.electrical_heating_child_metering_points";
 
     [Fact(Skip = "Manual")]
     public void GivenTestDto_WhenCreatingStatement_StatementIsCreated()
@@ -35,7 +35,7 @@ public class DeltaLakeDataUploadStatementFormatterTest
     public void GivenElectricalHeatingChildDto_WhenCreatingStatement_StatementIsCreated()
     {
         var sut = new DeltaLakeDataUploadStatementFormatter();
-        var dto = new ElectricalHeatingChildDto("570714700000002601", "Consumption", "Physical", "570714700000004704", DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
+        var dto = new ElectricalHeatingChildDto(570714700000002601, "Consumption", "Physical", 570714700000004704, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
         var statement = sut.CreateUploadStatement<ElectricalHeatingChildDto>(_devTableName, [dto]);
     }
 
@@ -43,9 +43,9 @@ public class DeltaLakeDataUploadStatementFormatterTest
     public void GivenListOfElectricalHeatingChildDtos_WhenCreatingStatement_StatementIsCreated()
     {
         var sut = new DeltaLakeDataUploadStatementFormatter();
-        var dto1 = new ElectricalHeatingChildDto("570714700000002601", "Consumption", "Physical", "570714700000004704", DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
-        var dto2 = new ElectricalHeatingChildDto("570714700000002602", "Consumption", "Physical", "570714700000004704", DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
-        var dto3 = new ElectricalHeatingChildDto("570714700000002603", "Consumption", "Physical", "570714700000004704", DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
+        var dto1 = new ElectricalHeatingChildDto(570714700000002601, "Consumption", "Physical", 570714700000004704, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
+        var dto2 = new ElectricalHeatingChildDto(570714700000002602, "Consumption", "Physical", 570714700000004704, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
+        var dto3 = new ElectricalHeatingChildDto(570714700000002603, "Consumption", "Physical", 570714700000004704, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
         var statement = sut.CreateUploadStatement<ElectricalHeatingChildDto>(_devTableName, [dto1, dto2, dto3]);
     }
 

@@ -12,28 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Commands.Import;
+using Energinet.DataHub.Core.App.Common.Abstractions.Users;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
+using Energinet.DataHub.ElectricityMarket.Application.Security;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElectricityMarket.WebAPI.Controllers;
 
 [ApiController]
-[Route("import")]
-public class ImportController : ControllerBase
+[Route("sync")]
+public class SyncController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IUserContext<FrontendUser> _userContext;
 
-    public ImportController(IMediator mediator)
+    public SyncController(IMediator mediator, IUserContext<FrontendUser> userContext)
     {
         _mediator = mediator;
+        _userContext = userContext;
     }
 
-    [HttpPost("transactions")]
-    public async Task<ActionResult<string>> ImportTransactionsAsync()
+    [HttpGet("electrical-heating")]
+    public async Task<ActionResult> GetAsync()
     {
-        var insertedCount = await _mediator.Send(new ImportTransactionsCommand(Request.Body)).ConfigureAwait(false);
+        var command = new SyncElectricalHeatingCommand();
 
-        return Ok(insertedCount);
+        await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok();
     }
 }

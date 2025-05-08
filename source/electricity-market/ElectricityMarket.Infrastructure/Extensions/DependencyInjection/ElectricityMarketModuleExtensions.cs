@@ -61,6 +61,18 @@ public static class ElectricityMarketModuleExtensions
             .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
         });
 
+        services.AddDbContextFactory<ElectricityMarketDatabaseContext>(
+            (p, o) =>
+            {
+                var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
+                o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
+                {
+                    options.UseNodaTime();
+                })
+                .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+            },
+            ServiceLifetime.Scoped);
+
         // Repositories
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
         services.AddScoped<IMeteringPointIntegrationRepository, MeteringPointIntegrationRepository>();
@@ -72,6 +84,7 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<ICsvImporter, CsvImporter>();
         services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
+        services.AddScoped<IElectricalHeatingPeriodizationService, ElectricalHeatingPeriodizationService>();
         services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
         services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
 
@@ -81,6 +94,12 @@ public static class ElectricityMarketModuleExtensions
     public static IServiceCollection AddElectricityMarketDatabricksModule(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
+
+        services
+            .AddOptions<DatabricksCatalogOptions>()
+            .BindConfiguration(DatabricksCatalogOptions.SectionName)
+            .ValidateDataAnnotations();
+
         services
             .AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 

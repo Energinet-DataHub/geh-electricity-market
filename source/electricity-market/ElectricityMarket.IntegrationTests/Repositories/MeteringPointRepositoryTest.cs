@@ -46,7 +46,7 @@ public class MeteringPointRepositoryTest : IClassFixture<ElectricityMarketDataba
         var dbContext = _fixture.DatabaseManager.CreateDbContext();
         await using var electricityMarketDatabaseContext = dbContext;
 
-        var sut = new MeteringPointRepository(null!, dbContext, null!);
+        var sut = new MeteringPointRepository(null!, dbContext, null!, null!);
 
         var res = await sut.GetMeteringPointHierarchyAsync(parentIdentification);
 
@@ -67,7 +67,7 @@ public class MeteringPointRepositoryTest : IClassFixture<ElectricityMarketDataba
         var dbContext = _fixture.DatabaseManager.CreateDbContext();
         await using var electricityMarketDatabaseContext = dbContext;
 
-        var sut = new MeteringPointRepository(null!, dbContext, null!);
+        var sut = new MeteringPointRepository(null!, dbContext, null!, null!);
 
         var res = await sut.GetMeteringPointHierarchyAsync(childIdentification);
 

@@ -17,6 +17,7 @@ using ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 using ElectricityMarket.ImportOrchestrator.Services;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution.Diagnostics.HealthChecks;
+using Energinet.DataHub.ElectricityMarket.Application;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
@@ -66,6 +67,11 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
         services.AddScoped<IGoldenStreamingImporter, GoldenStreamingImporter>();
         services.AddScoped<IDatabricksStreamingImporter, DatabricksStreamingImporter>();
         services.AddScoped<Func<IDatabricksStreamingImporter>>(scope => scope.GetRequiredService<IDatabricksStreamingImporter>);
+
+        services.AddMediatR(config =>
+        {
+            config.RegisterServicesFromAssemblyContaining<ApplicationAssemblyReference>();
+        });
 
         AddHealthChecks(services, configuration);
 

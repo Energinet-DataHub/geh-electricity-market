@@ -15,4 +15,4 @@
 using Energinet.DataHub.ElectricityMarket.Application.Common;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-public sealed record ElectricalHeatingChildDto([property: DeltaLakeKey] string MeteringPointId, string MeteringPointType, string MeteringPointSubType, string ParentMeteringPointId, DateTimeOffset CoupledDate, DateTimeOffset? UncoupledDate);
+public sealed record ElectricalHeatingChildDto([property: DeltaLakeKey] long MeteringPointId, string MeteringPointType, string MeteringPointSubType, long ParentMeteringPointId, DateTimeOffset CoupledDate, DateTimeOffset? UncoupledDate);

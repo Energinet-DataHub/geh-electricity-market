@@ -13,12 +13,12 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
-public interface IDeltaLakeDataUploadService
+public interface IElectricalHeatingPeriodizationService
 {
-    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingParentDto> electricalHeatingParent);
-
-    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren);
+    IReadOnlyList<ElectricalHeatingParentDto> GetParentElectricalHeating(MeteringPoint meteringPoint);
+    Task<IReadOnlyList<ElectricalHeatingChildDto>> GetChildElectricalHeatingAsync(IEnumerable<long> parentMeteringPointIds);
 }
