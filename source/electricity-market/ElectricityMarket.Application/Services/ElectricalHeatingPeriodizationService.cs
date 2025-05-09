@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Application.Helpers;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -25,6 +26,7 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     private readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
     private readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.ConsumptionFromGrid, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
     private readonly Instant _cutoffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
+    private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
 
     private readonly IMeteringPointRepository _meteringPointRepository;
 
@@ -123,8 +125,8 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
                 {
                     var electricalHeatingChild = new ElectricalHeatingChildDto(
                         child.Identification.Value,
-                        metadataTimeline.Type.ToString(),
-                        metadataTimeline.SubType.ToString(),
+                        _snakeCaseFormatter.ToSnakeCase(metadataTimeline.Type.ToString()),
+                        _snakeCaseFormatter.ToSnakeCase(metadataTimeline.SubType.ToString()),
                         metadataTimeline.Parent!.Value,
                         metadataTimeline.Valid.Start.ToDateTimeOffset(),
                         metadataTimeline.Valid.End.ToDateTimeOffset());
