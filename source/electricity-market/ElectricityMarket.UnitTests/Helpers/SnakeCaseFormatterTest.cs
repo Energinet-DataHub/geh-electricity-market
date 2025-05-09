@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
+using Energinet.DataHub.ElectricityMarket.Application.Helpers;
 using Xunit;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Helpers;
