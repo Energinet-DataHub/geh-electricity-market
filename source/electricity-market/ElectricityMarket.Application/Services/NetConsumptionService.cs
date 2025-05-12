@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -37,13 +38,13 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                     .Where(x => x.Parent is not null && IsRelevantType(x)))
                 {
                     children.Add(new NetConsumptionChildDto(
-                        MeteringPointId: mp.Identification.Value,
+                        MeteringPointId: mp.Identification.Value.ToString(CultureInfo.InvariantCulture),
                         MeteringPointType: mpm.Type.ToString(),
-                        ParentMeteringPointId: mpm.Parent!.Value,
+                        ParentMeteringPointId: mpm.Parent!.Value.ToString(CultureInfo.InvariantCulture),
                         CoupledDate: mpm.Valid.Start.ToDateTimeOffset(),
                         UncoupledDate: mpm.Valid.End.ToDateTimeOffset()));
 
-                    parentIds.Add(mpm.Parent.Value);
+                    parentIds.Add(mpm.Parent.Value.ToString(CultureInfo.InvariantCulture));
                 }
             }
 

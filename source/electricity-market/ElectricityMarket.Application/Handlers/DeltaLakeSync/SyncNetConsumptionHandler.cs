@@ -13,10 +13,12 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers.DeltaLakeSync;
 
@@ -25,41 +27,71 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
     private readonly IMeteringPointRepository _meteringPointRepository;
     private readonly ISyncJobsRepository _syncJobsRepository;
     private readonly INetConsumptionService _netConsumptionService;
+    private readonly IDeltaLakeDataUploadService _deltaLakeDataUploadService;
+    private readonly ILogger<SyncNetConsumptionHandler> _logger;
 
     public SyncNetConsumptionHandler(
         IMeteringPointRepository meteringPointRepository,
         ISyncJobsRepository syncJobsRepository,
-        INetConsumptionService netConsumptionService)
+        INetConsumptionService netConsumptionService,
+        IDeltaLakeDataUploadService deltaLakeDataUploadService,
+        ILogger<SyncNetConsumptionHandler> logger)
     {
         _meteringPointRepository = meteringPointRepository;
         _syncJobsRepository = syncJobsRepository;
         _netConsumptionService = netConsumptionService;
+        _deltaLakeDataUploadService = deltaLakeDataUploadService;
+        _logger = logger;
     }
 
     public async Task Handle(SyncNetConsumptionCommand request, CancellationToken cancellationToken)
     {
         var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.NetConsumption).ConfigureAwait(false);
-        var meteringPointsToSync = _meteringPointRepository
-            .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
-        while (await meteringPointsToSync.AnyAsync(cancellationToken).ConfigureAwait(false))
+        var moreData = true;
+        while (moreData)
         {
-            var maxVersion = await meteringPointsToSync.MaxAsync(mp => mp.Version, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation(
+                "SyncNetConsumptionHandler: Sync job version {Version} for {JobName} started.",
+                currentSyncJob.Version,
+                SyncJobName.NetConsumption);
 
-            await HandleBatchAsync(meteringPointsToSync, maxVersion, cancellationToken).ConfigureAwait(false);
-            currentSyncJob = currentSyncJob with { Version = maxVersion };
-            await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
-            meteringPointsToSync = _meteringPointRepository.GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+            var meteringPointsToSync = _meteringPointRepository
+                .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+
+            var maxVersion = await HandleBatchAsync(meteringPointsToSync, cancellationToken).ConfigureAwait(false);
+
+            if (maxVersion > DateTimeOffset.MinValue)
+            {
+                currentSyncJob = currentSyncJob with { Version = maxVersion };
+                await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
+            }
+            else
+            {
+                moreData = false;
+            }
         }
     }
 
-    private async Task HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync, DateTimeOffset maxVersion, CancellationToken cancellationToken)
+    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync, CancellationToken cancellationToken)
     {
-        var netConsumptionMeteringPoints = await _netConsumptionService.GetNetConsumptionMeteringPointsAsync(meteringPointsToSync).ConfigureAwait(false);
-
-        await foreach (var meteringPoint in meteringPointsToSync)
+        var maxVersion = DateTimeOffset.MinValue;
+        await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
         {
-            // TODO: Implement the sync logic to Databricks for net consumption metering points.
+            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
+            var (parents, children) = await _netConsumptionService.GetNetConsumptionMeteringPointsAsync(meteringPointsToSync).ConfigureAwait(false);
+
+            if (parents.Any())
+            {
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(parents).ConfigureAwait(false);
+            }
+
+            if (children.Any())
+            {
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(children).ConfigureAwait(false);
+            }
         }
+
+        return maxVersion;
     }
 }
