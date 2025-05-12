@@ -144,6 +144,7 @@ public static class CommercialRelationFactory
                 DisponentName = importedTransaction.second_consumer_party_name.TrimEnd(),
                 Cpr = importedTransaction.second_consumer_cpr?.TrimEnd(),
                 IsProtectedName = importedTransaction.protected_name ?? false,
+                ContactAddresses = { new ContactAddressEntity() }
             };
 
             energySupplyPeriodEntity.Contacts.Add(contact);
