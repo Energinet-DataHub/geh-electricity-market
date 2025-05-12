@@ -21,7 +21,7 @@ public sealed class MeteringPointEntity
 {
     public long Id { get; set; }
 
-    public string Identification { get; set; } = null!;
+    public long Identification { get; set; }
 
     public ICollection<MeteringPointPeriodEntity> MeteringPointPeriods { get; } = [];
 

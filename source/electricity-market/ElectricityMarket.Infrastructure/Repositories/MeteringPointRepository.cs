@@ -35,17 +35,20 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     private readonly MarketParticipantDatabaseContext _marketParticipantDatabaseContext;
     private readonly ElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly IRelationalModelPrinter _relationalModelPrinter;
+    private readonly IDbContextFactory<ElectricityMarketDatabaseContext> _contextFactory;
 
     public MeteringPointRepository(
         IDbContextFactory<ElectricityMarketDatabaseContext> electricityMarketFactory,
         MarketParticipantDatabaseContext marketParticipantDatabaseContext,
         ElectricityMarketDatabaseContext electricityMarketDatabaseContext,
-        IRelationalModelPrinter relationalModelPrinter)
+        IRelationalModelPrinter relationalModelPrinter,
+        IDbContextFactory<ElectricityMarketDatabaseContext> contextFactory)
     {
         _electricityMarketFactory = electricityMarketFactory;
         _marketParticipantDatabaseContext = marketParticipantDatabaseContext;
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
         _relationalModelPrinter = relationalModelPrinter;
+        _contextFactory = contextFactory;
     }
 
     public async Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification)
@@ -53,6 +56,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(identification);
 
         var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
 
@@ -92,6 +96,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(identification);
 
         var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
 
@@ -140,15 +145,24 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
-        var entities = _electricityMarketDatabaseContext.MeteringPoints
-            .Where(x => x.Version >= lastSyncedVersion)
+        var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        readContext.Database.SetCommandTimeout(60 * 60);
+
+        await using (readContext.ConfigureAwait(false))
+        {
+            var entities = readContext.MeteringPoints
+            .AsSplitQuery()
+            .Where(x => x.Version > lastSyncedVersion)
+            .OrderBy(x => x.Version)
+            .Take(batchSize)
             .OrderBy(x => x.Version)
             .Take(batchSize)
             .AsAsyncEnumerable();
 
-        await foreach (var entity in entities)
-        {
-            yield return MeteringPointMapper.MapFromEntity(entity);
+            await foreach (var entity in entities)
+            {
+                yield return MeteringPointMapper.MapFromEntity(entity);
+            }
         }
     }
 
@@ -184,5 +198,15 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             .ConfigureAwait(false);
 
         return new MeteringPointHierarchy(MeteringPointMapper.MapFromEntity(parent), childMeteringPoints.Select(MeteringPointMapper.MapFromEntity));
+    }
+
+    public async Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(long identification)
+    {
+        var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
+            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
+            .ConfigureAwait(false);
+
+        return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
     }
 }

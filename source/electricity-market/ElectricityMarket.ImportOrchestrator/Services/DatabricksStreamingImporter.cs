@@ -64,7 +64,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
         if (currentMaxCutoff == previousCutoff)
             return;
 
-        var targetCutoff = Math.Min(currentMaxCutoff, previousCutoff + 5_000);
+        var targetCutoff = Math.Min(currentMaxCutoff, previousCutoff + 1_000);
 
         var query = DatabricksStatement.FromRawSql(
             $"""
@@ -114,9 +114,9 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 location_municipality_code,
                 location_location_description,
                 first_consumer_party_name,
-                first_consumer_cpr,
+                CASE WHEN first_consumer_cpr IS NOT NULL AND length(first_consumer_cpr) > 0 THEN '1111110000' ELSE first_consumer_cpr END AS first_consumer_cpr,
                 second_consumer_party_name,
-                second_consumer_cpr,
+                CASE WHEN second_consumer_cpr IS NOT NULL AND length(second_consumer_cpr) > 0 THEN '1111110000' ELSE second_consumer_cpr END AS second_consumer_cpr,
                 consumer_cvr,
                 CAST(protected_name AS BOOLEAN) AS protected_name,
                 contact_1_contact_name1,

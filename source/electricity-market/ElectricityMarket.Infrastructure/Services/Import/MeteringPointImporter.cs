@@ -15,23 +15,30 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Microsoft.Extensions.Logging;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public sealed class MeteringPointImporter : IMeteringPointImporter
 {
-    private static readonly IReadOnlySet<string> _ignoredTransactions = new HashSet<string> { "CALCENC", "CALCTSSBM", "CNCCNSMRK", "CNCCNSOTH", "CNCREADMRK", "CNCREADOTH", "EOSMDUPD", "HEATYTDREQ", "HISANNCON", "HISANNREQ", "HISDATREQ", "INITCNCCOS", "LDSHRSBM", "MNTCHRGLNK", "MOVEINGO", "MSTDATREQ", "MSTDATRNO", "MTRDATREQ", "MTRDATSBM", "QRYCHARGE", "QRYMSDCHG", "SBMCNTADR", "SBMEACES", "SBMEACGO", "SBMMRDES", "SBMMRDGO", "SERVICEREQ", "STOPFEE", "STOPSUB", "STOPTAR", "UNEXPERR", "UPDBLCKLNK", "VIEWACCNO", "VIEWMOVES", "VIEWMP", "VIEWMPNO", "VIEWMTDNO" };
+    private static readonly IReadOnlySet<string> _ignoredTransactions = new HashSet<string> { "BLKCHGBRP", "CALCENC", "CALCTSSBM", "CNCCNSMRK", "CNCCNSOTH", "CNCREADMRK", "CNCREADOTH", "EOSMDUPD", "HEATYTDREQ", "HISANNCON", "HISANNREQ", "HISDATREQ", "INITCNCCOS", "LDSHRSBM", "LNKCHLDMP", "MNTCHRGLNK", "MOVEINGO", "MSTDATREQ", "MSTDATRNO", "MTRDATREQ", "MTRDATSBM", "QRYCHARGE", "QRYMSDCHG", "SBMCNTADR", "SBMEACES", "SBMEACGO", "SBMMRDES", "SBMMRDGO", "SERVICEREQ", "STOPFEE", "STOPSUB", "STOPTAR", "UNEXPERR", "ULNKCHLDMP", "UPDBLCKLNK", "VIEWACCNO", "VIEWMOVES", "VIEWMP", "VIEWMPNO", "VIEWMTDNO" };
 
-    private static readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "DATAMIG", "ENDSUPPLY", "LNKCHLDMP", "MANCOR", "MSTDATSBM", "STPMETER", "ULNKCHLDMP", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "HTXCOR" };
+    private static readonly IReadOnlySet<string> _changeTransactions = new HashSet<string> { "BLKMERGEGA", "BULKCOR", "CHGSETMTH", "CLSDWNMP", "CONNECTMP", "CREATEMP", "CREATESMP", "CREHISTMP", "CREMETER", "DATAMIG", "ENDSUPPLY", "MANCOR", "MSTDATSBM", "STPMETER", "UPDATESMP", "UPDHISTMP", "UPDMETER", "UPDPRDOBL", "XCONNECTMP", "HTXCOR" };
 
     private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BLKCHGBRP" };
 
     private static readonly DateTimeOffset _importCutoff = new(2016, 12, 31, 23, 0, 0, TimeSpan.Zero);
+
+    private readonly ILogger<MeteringPointImporter> _logger;
+
+    public MeteringPointImporter(ILogger<MeteringPointImporter> logger)
+    {
+        _logger = logger;
+    }
 
     public Task<(bool Imported, string Message)> ImportAsync(MeteringPointEntity meteringPoint, IEnumerable<ImportedTransactionEntity> importedTransactions)
     {
@@ -44,10 +51,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             foreach (var importedTransaction in importedTransactions)
             {
-                if (string.IsNullOrWhiteSpace(meteringPoint.Identification))
-                {
-                    meteringPoint.Identification = importedTransaction.metering_point_id.ToString(CultureInfo.InvariantCulture);
-                }
+                meteringPoint.Identification = importedTransaction.metering_point_id;
 
                 if (importedTransaction.valid_to_date < _importCutoff)
                     continue;
@@ -104,7 +108,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             if (_unhandledTransactions.Contains(transactionType))
                 return (false, $"Unhandled transaction type {transactionType}");
 
-            if (!TryAddCommercialRelation(importedTransaction, meteringPoint, out var addCommercialRelationError))
+            if (!TryAddCommercialRelation(_logger, importedTransaction, meteringPoint, out var addCommercialRelationError))
                 return (false, addCommercialRelationError);
 
             return (true, string.Empty);
@@ -172,6 +176,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
     }
 
     private static bool TryAddCommercialRelation(
+        ILogger<MeteringPointImporter> logger,
         ImportedTransactionEntity importedTransaction,
         MeteringPointEntity meteringPoint,
         [NotNullWhen(false)] out string? errorMessage)
@@ -227,6 +232,19 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                 case "INCCHGSUP" or "INCMOVEAUT" or "INCMOVEIN" or "INCMOVEMAN":
                     {
                         var cr = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+
+                        if ((transactionType is "INCCHGSUP" && !cr.EnergySupplyPeriods.Any(x => x.TransactionType == "CHANGESUP" && x.ValidFrom == importedTransaction.valid_from_date)) ||
+                            !cr.EnergySupplyPeriods.Any(x => x.TransactionType == "MOVEINES" && x.ValidFrom == importedTransaction.valid_from_date))
+                        {
+                            logger.LogWarning(
+                                "No match found for {TransactionType}. mp: {MeteringPointId}, btd_trans_doss_id: {BtdTransDossId}, valid_from: {ValidFrom}",
+                                transactionType,
+                                meteringPoint.Identification,
+                                importedTransaction.btd_trans_doss_id,
+                                importedTransaction.valid_from_date);
+                            return true;
+                        }
+
                         var prevCr = allCrsOrdered.Last(x => x.StartDate < cr.StartDate);
                         var nextCr = allCrsOrdered.FirstOrDefault(x => x.StartDate > cr.StartDate);
 
@@ -295,9 +313,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private static IEnumerable<CommercialRelationEntity> AllSavedValidCrs(MeteringPointEntity meteringPoint)
     {
-        return meteringPoint.CommercialRelations
-            .Where(x => x.StartDate < x.EndDate)
-            .OrderBy(x => x.StartDate);
+        return meteringPoint.CommercialRelations.OrderBy(x => x.StartDate);
     }
 
     private static void HandleMoveOut(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)

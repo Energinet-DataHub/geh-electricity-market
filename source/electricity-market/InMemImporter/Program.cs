@@ -31,7 +31,7 @@ public static class Program
                 NullLogger<BulkImporter>.Instance,
                 new CsvImportedTransactionModelReader(csv, cultureInfo),
                 new StdOutRelationalModelWriter(new RelationalModelPrinter(), cultureInfo),
-                new MeteringPointImporter());
+                new MeteringPointImporter(NullLogger<MeteringPointImporter>.Instance));
 
             await importer.RunAsync(0, int.MaxValue).ConfigureAwait(false);
         }

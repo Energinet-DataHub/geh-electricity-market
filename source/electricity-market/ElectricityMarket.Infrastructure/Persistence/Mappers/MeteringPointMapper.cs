@@ -37,7 +37,7 @@ internal static class MeteringPointMapper
         return new MeteringPointMetadata(
             from.Id,
             new Interval(from.ValidFrom.ToInstant(), from.ValidTo.ToInstant()),
-            from.ParentIdentification != null ? new MeteringPointIdentification(from.ParentIdentification) : null,
+            from.ParentIdentification != null ? new MeteringPointIdentification(from.ParentIdentification.Value) : null,
             MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.MeteringPointTypes, from.Type),
             MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.MeteringPointSubTypes, from.SubType),
             MeteringPointEnumMapper.MapEntity(MeteringPointEnumMapper.ConnectionStates, from.ConnectionState),
@@ -60,7 +60,8 @@ internal static class MeteringPointMapper
             from.ExchangeToGridArea,
             from.PowerPlantGsrn,
             MeteringPointEnumMapper.MapOptionalEntity(MeteringPointEnumMapper.SettlementMethods, from.SettlementMethod),
-            MapFromEntity(from.InstallationAddress));
+            MapFromEntity(from.InstallationAddress),
+            from.TransactionType);
     }
 
     private static InstallationAddress MapFromEntity(InstallationAddressEntity from)

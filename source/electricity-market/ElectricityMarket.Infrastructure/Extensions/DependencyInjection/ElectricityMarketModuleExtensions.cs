@@ -62,16 +62,17 @@ public static class ElectricityMarketModuleExtensions
             .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
         });
 
-        // Factories
-        services.AddDbContextFactory<ElectricityMarketDatabaseContext>((p, o) =>
-        {
-            var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
-            o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
+        services.AddDbContextFactory<ElectricityMarketDatabaseContext>(
+            (p, o) =>
             {
-                options.UseNodaTime();
-            })
-            .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
-        });
+                var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
+                o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
+                {
+                    options.UseNodaTime();
+                })
+                .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+            },
+            ServiceLifetime.Scoped);
 
         // Repositories
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
@@ -85,7 +86,9 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<ICsvImporter, CsvImporter>();
         services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
+        services.AddScoped<IElectricalHeatingPeriodizationService, ElectricalHeatingPeriodizationService>();
         services.AddScoped<INetConsumptionService, NetConsumptionService>();
+        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
         services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
 
         return services;
@@ -94,6 +97,12 @@ public static class ElectricityMarketModuleExtensions
     public static IServiceCollection AddElectricityMarketDatabricksModule(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
+
+        services
+            .AddOptions<DatabricksCatalogOptions>()
+            .BindConfiguration(DatabricksCatalogOptions.SectionName)
+            .ValidateDataAnnotations();
+
         services
             .AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 

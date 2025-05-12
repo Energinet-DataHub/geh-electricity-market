@@ -15,7 +15,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
+namespace Energinet.DataHub.ElectricityMarket.Application.Helpers;
 
 public class SnakeCaseFormatter
 {

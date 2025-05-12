@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS electricitymarket.ImportState;
 CREATE TABLE [electricitymarket].[MeteringPoint]
 (
     [Id]                 bigint IDENTITY(1,1) NOT NULL,
-    [Identification]     char(18) NOT NULL,
+    [Identification]     bigint NOT NULL,
     [Version]            datetimeoffset NOT NULL
 
     CONSTRAINT PK_MeteringPoint PRIMARY KEY CLUSTERED (Id),
@@ -52,7 +52,7 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     [RetiredById]                bigint NULL,
     [RetiredAt]                  datetimeoffset NULL,
     [CreatedAt]                  datetimeoffset NOT NULL,
-    [ParentIdentification]       char(18) NULL,
+    [ParentIdentification]       bigint NULL,
     
     [Type]                       varchar(64) NOT NULL,
     [SubType]                    varchar(64) NOT NULL,
@@ -127,6 +127,9 @@ CREATE TABLE [electricitymarket].[ElectricalHeatingPeriod]
     CONSTRAINT FK_ElectricalHeatingPeriod_ElectricalHeatingPeriod FOREIGN KEY (RetiredById) REFERENCES [electricitymarket].[ElectricalHeatingPeriod]([ID]),
     CONSTRAINT FK_ElectricalHeatingPeriod_CommercialRelation FOREIGN KEY (CommercialRelationId) REFERENCES [electricitymarket].[CommercialRelation]([ID])
 )
+
+CREATE INDEX [IX_ElectricalHeatingPeriod_CommercialRelationId]
+    ON [electricitymarket].[ElectricalHeatingPeriod] (CommercialRelationId);
 
 CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
 (
@@ -213,7 +216,7 @@ GO
 CREATE TABLE [electricitymarket].[QuarantinedMeteringPoint]
 (
     [Id]             bigint IDENTITY(1,1) NOT NULL,
-    [Identification] char(18) NOT NULL,
+    [Identification] bigint NOT NULL,
     [Message]        varchar(max) NOT NULL
 
     CONSTRAINT PK_QuarantinedMeteringPoint PRIMARY KEY CLUSTERED (Id),

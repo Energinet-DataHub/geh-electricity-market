@@ -14,9 +14,11 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers.DeltaLakeSync;
 
@@ -24,30 +26,70 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
     private readonly ISyncJobsRepository _syncJobsRepository;
+    private readonly IElectricalHeatingPeriodizationService _electricalHeatingPeriodizationService;
     private readonly IDeltaLakeDataUploadService _deltaLakeDataUploadService;
+    private readonly ILogger<SyncElectricalHeatingHandler> _logger;
 
-    public SyncElectricalHeatingHandler(IMeteringPointRepository meteringPointRepository, ISyncJobsRepository syncJobsRepository, IDeltaLakeDataUploadService deltaLakeDataUploadService)
+    public SyncElectricalHeatingHandler(
+        IMeteringPointRepository meteringPointRepository,
+        ISyncJobsRepository syncJobsRepository,
+        IElectricalHeatingPeriodizationService electricalHeatingPeriodizationService,
+        IDeltaLakeDataUploadService deltaLakeDataUploadService,
+        ILogger<SyncElectricalHeatingHandler> logger)
     {
         _meteringPointRepository = meteringPointRepository;
         _syncJobsRepository = syncJobsRepository;
+        _electricalHeatingPeriodizationService = electricalHeatingPeriodizationService;
         _deltaLakeDataUploadService = deltaLakeDataUploadService;
+        _logger = logger;
     }
 
     public async Task Handle(SyncElectricalHeatingCommand request, CancellationToken cancellationToken)
     {
         var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.ElectricalHeating).ConfigureAwait(false);
-        var meteringPointsToSync = _meteringPointRepository
-           .GetMeteringPointsToSyncAsync(currentSyncJob.Version)
-           .ConfigureAwait(false);
 
-        DateTimeOffset maxVersion = currentSyncJob.Version;
-        await foreach (var meteringPoint in meteringPointsToSync)
+        var moreData = true;
+        while (moreData)
         {
-           // TODO: Implement the sync logic to Databricks for electrical heating metering points
-           maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
+            _logger.LogInformation(
+                "SyncElectricalHeatingHandler: Sync job version {Version} for {JobName} started.",
+                currentSyncJob.Version,
+                SyncJobName.ElectricalHeating);
+            var meteringPointsToSync = _meteringPointRepository
+                .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+
+            var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
+            if (maxVersion > DateTimeOffset.MinValue)
+            {
+                currentSyncJob = currentSyncJob with { Version = maxVersion };
+                await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
+            }
+            else
+            {
+                moreData = false;
+            }
+        }
+    }
+
+    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
+    {
+        var maxVersion = DateTimeOffset.MinValue;
+        await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
+        {
+            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
+            var parentMeteringPoints = _electricalHeatingPeriodizationService.GetParentElectricalHeating(meteringPoint);
+            if (parentMeteringPoints.Any())
+            {
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPoints).ConfigureAwait(false);
+
+                var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(parentMeteringPoints.Select(p => p.MeteringPointId).Distinct()).ConfigureAwait(false);
+                if (childMeteringPoints.Any())
+                {
+                    await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPoints).ConfigureAwait(false);
+                }
+            }
         }
 
-        currentSyncJob = currentSyncJob with { Version = maxVersion };
-        await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
+        return maxVersion;
     }
 }

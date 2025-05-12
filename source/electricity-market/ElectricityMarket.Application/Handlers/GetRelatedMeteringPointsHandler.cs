@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
@@ -66,14 +67,16 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
 
         var relatedPoints = relatedMeteringPoints?
             .Where(x => x.Metadata.Parent == relatedMeteringPointToUseForCheck.Identification
-                        && x.Metadata.Valid.End.ToDateTimeOffset() > DateTimeOffset.Now)
+                        && x.Metadata.Valid.End.ToDateTimeOffset() > DateTimeOffset.Now
+                        && x.Identification != currentMeteringPoint.Identification)
             .OrderBy(y => y.Metadata.Type)
             .Select(MapToRelated) ?? [];
 
         var relatedByGsrn = relatedMeteringPoints?
-            .Where(x => string.IsNullOrEmpty(x.Metadata?.Parent?.Value)
+            .Where(x => x.Metadata?.Parent == null
                         && !string.IsNullOrWhiteSpace(x.Metadata?.PowerPlantGsrn)
-                        && x.Metadata.PowerPlantGsrn == relatedMeteringPointToUseForCheck.Metadata.PowerPlantGsrn)
+                        && x.Metadata.PowerPlantGsrn == relatedMeteringPointToUseForCheck.Metadata.PowerPlantGsrn
+                        && x.Identification != currentMeteringPoint.Identification)
             .OrderBy(y => y.Metadata.Type)
             .Select(MapToRelated) ?? [];
 
@@ -81,16 +84,19 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
             .Where(x => x.MetadataTimeline.Any(
                             y => y.Parent == relatedMeteringPointToUseForCheck.Identification
                                 && y.Valid.End.ToDateTimeOffset() < DateTimeOffset.Now)
-                                && string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn))
+                                && string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn)
+                                && x.Metadata.Parent != relatedMeteringPointToUseForCheck.Identification)
             .OrderBy(y => y.Metadata.Type)
             .Select(MapToRelated) ?? [];
 
         var historicalByGsrn = relatedMeteringPoints?
             .Where(x => x.MetadataTimeline.Any(
                             y => y.Parent == relatedMeteringPointToUseForCheck.Identification
+                                 && !string.IsNullOrWhiteSpace(y.PowerPlantGsrn)
+                                 && y.PowerPlantGsrn == relatedMeteringPointToUseForCheck.Metadata.PowerPlantGsrn
                                  && y.Valid.End.ToDateTimeOffset() < DateTimeOffset.Now)
                         && !string.IsNullOrWhiteSpace(x.Metadata.PowerPlantGsrn)
-                        && x.Metadata.PowerPlantGsrn == relatedMeteringPointToUseForCheck.Metadata.PowerPlantGsrn)
+                        && x.Metadata.PowerPlantGsrn != relatedMeteringPointToUseForCheck.Metadata.PowerPlantGsrn)
             .OrderBy(y => y.Metadata.Type)
             .Select(MapToRelated) ?? [];
 
@@ -108,7 +114,7 @@ public sealed class GetRelatedMeteringPointsHandler : IRequestHandler<GetRelated
     {
         return new RelatedMeteringPointDto(
             meteringPoint.Id,
-            meteringPoint.Identification.Value,
+            meteringPoint.Identification.Value.ToString(CultureInfo.InvariantCulture),
             meteringPoint.Metadata.Type,
             meteringPoint.Metadata.ConnectionState,
             FindFirstConnectedDate(meteringPoint.MetadataTimeline),

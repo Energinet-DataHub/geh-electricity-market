@@ -13,7 +13,9 @@
 // limitations under the License.
 
 using ElectricityMarket.ImportOrchestrator.Services;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
+using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask.Client;
 
@@ -21,6 +23,7 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
 public sealed class ContinuousImportTimerTrigger
 {
+    private readonly IMediator _mediator;
     private readonly IImportStateService _importStateService;
     private readonly IGoldenStreamingImporter _goldenStreamingImporter;
     private readonly Func<IDatabricksStreamingImporter> _databricksStreamingImporter;
@@ -28,11 +31,13 @@ public sealed class ContinuousImportTimerTrigger
     public ContinuousImportTimerTrigger(
         IImportStateService importStateService,
         IGoldenStreamingImporter goldenStreamingImporter,
-        Func<IDatabricksStreamingImporter> databricksStreamingImporter)
+        Func<IDatabricksStreamingImporter> databricksStreamingImporter,
+        IMediator mediator)
     {
         _importStateService = importStateService;
         _goldenStreamingImporter = goldenStreamingImporter;
         _databricksStreamingImporter = databricksStreamingImporter;
+        _mediator = mediator;
     }
 
     [Function(nameof(ContinuousImportTimerTrigger))]
@@ -47,6 +52,7 @@ public sealed class ContinuousImportTimerTrigger
         if (await _importStateService.ShouldStreamFromGoldAsync().ConfigureAwait(false))
         {
             await _goldenStreamingImporter.ImportAsync().ConfigureAwait(false);
+            await _mediator.Send(new SyncElectricalHeatingCommand()).ConfigureAwait(false);
         }
         else if (await _importStateService.IsStreamingImportEnabledAsync().ConfigureAwait(false))
         {

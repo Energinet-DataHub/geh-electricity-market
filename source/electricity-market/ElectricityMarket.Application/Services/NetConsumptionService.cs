@@ -81,7 +81,6 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                 var settlementMonth = latestMeta.ScheduledMeterReadingMonth
                     ?? fromDate.Month;
 
-                // CommercialRelation StartDate where ClientId is not null
                 var moveIn = parentMp.CommercialRelationTimeline
                     .Any(cr => cr.ClientId != null);
 

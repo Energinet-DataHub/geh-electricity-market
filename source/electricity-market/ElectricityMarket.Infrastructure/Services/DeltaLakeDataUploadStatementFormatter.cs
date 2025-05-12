@@ -18,7 +18,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Energinet.DataHub.ElectricityMarket.Application.Common;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
+using Energinet.DataHub.ElectricityMarket.Application.Helpers;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 

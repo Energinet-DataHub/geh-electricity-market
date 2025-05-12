@@ -18,7 +18,7 @@ public sealed class QuarantinedMeteringPointEntity
 {
     public long Id { get; set; }
 
-    public string Identification { get; set; } = null!;
+    public long Identification { get; set; }
 
     public string Message { get; set; } = null!;
 }

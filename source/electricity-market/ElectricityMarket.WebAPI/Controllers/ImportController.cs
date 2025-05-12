@@ -33,6 +33,7 @@ public class ImportController : ControllerBase
     public async Task<ActionResult<string>> ImportTransactionsAsync()
     {
         var insertedCount = await _mediator.Send(new ImportTransactionsCommand(Request.Body)).ConfigureAwait(false);
+
         return Ok(insertedCount);
     }
 }

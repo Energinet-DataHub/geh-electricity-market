@@ -18,9 +18,9 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
 public interface IDeltaLakeDataUploadService
 {
-    Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingParentDto> electricalHeatingParent);
+    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingParentDto> electricalHeatingParent);
 
-    Task ImportTransactionsAsync(IEnumerable<ElectricalHeatingChildDto> electricalHeatingChildren);
+    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren);
 
     Task ImportTransactionsAsync(IEnumerable<NetConsumptionParentDto> netConsumptionParents);
 
