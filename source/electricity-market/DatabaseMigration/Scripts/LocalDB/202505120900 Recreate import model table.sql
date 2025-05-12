@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS electricitymarket.MeteringPointPeriod;
 DROP TABLE IF EXISTS electricitymarket.InstallationAddress;
 DROP TABLE IF EXISTS electricitymarket.MeteringPoint;
 DROP TABLE IF EXISTS electricitymarket.ImportState;
+DROP TABLE IF EXISTS electricitymarket.GoldenImport;
 
 CREATE TABLE [electricitymarket].[MeteringPoint]
 (
@@ -156,6 +157,7 @@ CREATE INDEX [IX_EnergySupplyPeriod_CommercialRelationId]
 CREATE TABLE [electricitymarket].[ContactAddress]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
+    [ContactId]                  bigint NOT NULL,
     [IsProtectedAddress]         bit NOT NULL,
     [Attention]                  nvarchar(256) NULL,
     [StreetCode]                 char(4) NULL,
@@ -172,7 +174,11 @@ CREATE TABLE [electricitymarket].[ContactAddress]
     [MunicipalityCode]           nvarchar(64) NULL,
 
     CONSTRAINT PK_ContactAddress PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT FK_ContactAddress_Contact FOREIGN KEY (ContactId) REFERENCES [electricitymarket].[Contact]([ID])
 )
+
+CREATE INDEX [IX_ContactAddress_ContactId]
+    ON [electricitymarket].[ContactAddress] (ContactId);
 
 CREATE TABLE [electricitymarket].[Contact]
 (
@@ -184,7 +190,6 @@ CREATE TABLE [electricitymarket].[Contact]
     [CPR]                        char(12) NULL,
     [CVR]                        char(8) NULL,
 
-    [ContactAddressId]           bigint NULL,
     [ContactName]                nvarchar(256) NULL,
     [Email]                      nvarchar(256) NULL,
     [Phone]                      nvarchar(64) NULL,
@@ -193,7 +198,6 @@ CREATE TABLE [electricitymarket].[Contact]
 
     CONSTRAINT PK_Contact PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT FK_Contact_EnergySupplyPeriod FOREIGN KEY (EnergySupplyPeriodId) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
-    CONSTRAINT FK_Contact_ContactAddress FOREIGN KEY (ContactAddressId) REFERENCES [electricitymarket].[ContactAddress]([ID]),
 )
 
 CREATE INDEX [IX_Contact_EnergySupplyPeriod]
@@ -221,4 +225,103 @@ CREATE TABLE [electricitymarket].[QuarantinedMeteringPoint]
 
     CONSTRAINT PK_QuarantinedMeteringPoint PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT UQ_QuarantinedMeteringPoint_Identification UNIQUE (Identification),
+)
+
+CREATE TABLE [electricitymarket].[GoldenImport]
+(
+    [metering_point_id]               BIGINT             NOT NULL,
+    [valid_from_date]                 DATETIMEOFFSET     NOT NULL,
+    [valid_to_date]                   DATETIMEOFFSET     NOT NULL,
+    [dh2_created]                     DATETIMEOFFSET     NOT NULL,
+    [metering_grid_area_id]           CHAR(3)            NOT NULL,
+    [metering_point_state_id]         BIGINT             NOT NULL,
+    [btd_trans_doss_id]               BIGINT             NOT NULL,
+    [parent_metering_point_id]        CHAR(18)           NULL,
+    [type_of_mp]                      CHAR(3)            NOT NULL,
+    [sub_type_of_mp]                  CHAR(3)            NOT NULL,
+    [physical_status_of_mp]           CHAR(3)            NOT NULL,
+    [web_access_code]                 CHAR(10)           NULL,
+    [balance_supplier_id]             CHAR(16)           NULL,
+    [transaction_type]                CHAR(10)           NOT NULL,
+    [meter_reading_occurrence]        CHAR(8)            NOT NULL,
+    [mp_connection_type]              CHAR(3)            NULL,
+    [disconnection_type]              CHAR(3)            NULL,
+    [product]                         CHAR(13)           NOT NULL,
+    [product_obligation]              BIT                NULL,
+    [energy_timeseries_measure_unit]  CHAR(8)            NOT NULL,
+    [asset_type]                      CHAR(3)            NULL,
+    [fuel_type]                       BIT                NULL,
+    [mp_capacity]                     CHAR(20)           NULL,
+    [power_limit_kw]                  DECIMAL(11, 1)     NULL,
+    [power_limit_a]                   INT                NULL,
+    [meter_number]                    CHAR(20)           NULL,
+    [net_settlement_group]            INT                NULL,
+    [scheduled_meter_reading_date01]  CHAR(4)            NULL,
+    [from_grid_area]                  CHAR(3)            NULL,
+    [to_grid_area]                    CHAR(3)            NULL,
+    [power_plant_gsrn]                CHAR(18)           NULL,
+    [settlement_method]               CHAR(3)            NULL,
+
+    [location_street_code]                          CHAR(4)            NULL,
+    [location_street_name]                          NVARCHAR(64)       NULL,
+    [location_building_number]                      NVARCHAR(64)       NULL,
+    [location_city_name]                            NVARCHAR(64)       NULL,
+    [location_city_subdivision_name]                NVARCHAR(64)       NULL,
+    [location_dar_reference]                        NVARCHAR(36)       NULL,
+    [location_mp_address_wash_instructions]         NVARCHAR(64)       NULL,
+    [location_country_name]                         NVARCHAR(64)       NULL,
+    [location_floor_id]                             NVARCHAR(64)       NULL,
+    [location_room_id]                              NVARCHAR(64)       NULL,
+    [location_postcode]                             NVARCHAR(64)       NULL,
+    [location_municipality_code]                    NVARCHAR(64)       NULL,
+    [location_location_description]                 NVARCHAR(512)      NULL,
+
+    [first_consumer_party_name]       NVARCHAR(256)      NULL,
+    [first_consumer_cpr]              CHAR(10)           NULL,
+    [second_consumer_party_name]      NVARCHAR(256)      NULL,
+    [second_consumer_cpr]             CHAR(10)           NULL,
+    [consumer_cvr]                    CHAR(8)            NULL,
+    [protected_name]                  BIT                NULL,
+
+    [contact_1_contact_name1]         NVARCHAR(256)      NULL,
+    [contact_1_protected_address]     BIT                NULL,
+    [contact_1_phone_number]          NVARCHAR(64)       NULL,
+    [contact_1_mobile_number]         NVARCHAR(64)       NULL,
+    [contact_1_email_address]         NVARCHAR(256)      NULL,
+    [contact_1_attention]             NVARCHAR(64)       NULL,
+    [contact_1_street_code]           CHAR(4)            NULL,
+    [contact_1_street_name]           NVARCHAR(64)       NULL,
+    [contact_1_building_number]       NVARCHAR(64)       NULL,
+    [contact_1_postcode]              NVARCHAR(64)       NULL,
+    [contact_1_city_name]             NVARCHAR(64)       NULL,
+    [contact_1_city_subdivision_name] NVARCHAR(64)       NULL,
+    [contact_1_dar_reference]         NVARCHAR(36)       NULL,
+    [contact_1_country_name]          NVARCHAR(64)       NULL,
+    [contact_1_floor_id]              NVARCHAR(64)       NULL,
+    [contact_1_room_id]               NVARCHAR(64)       NULL,
+    [contact_1_post_box]              NVARCHAR(64)       NULL,
+    [contact_1_municipality_code]     NVARCHAR(64)       NULL,
+
+    [contact_4_contact_name1]         NVARCHAR(256)      NULL,
+    [contact_4_protected_address]     BIT                NULL,
+    [contact_4_phone_number]          NVARCHAR(64)       NULL,
+    [contact_4_mobile_number]         NVARCHAR(64)       NULL,
+    [contact_4_email_address]         NVARCHAR(256)      NULL,
+    [contact_4_attention]             NVARCHAR(64)       NULL,
+    [contact_4_street_code]           CHAR(4)            NULL,
+    [contact_4_street_name]           NVARCHAR(64)       NULL,
+    [contact_4_building_number]       NVARCHAR(64)       NULL,
+    [contact_4_postcode]              NVARCHAR(64)       NULL,
+    [contact_4_city_name]             NVARCHAR(64)       NULL,
+    [contact_4_city_subdivision_name] NVARCHAR(64)       NULL,
+    [contact_4_dar_reference]         NVARCHAR(36)       NULL,
+    [contact_4_country_name]          NVARCHAR(64)       NULL,
+    [contact_4_floor_id]              NVARCHAR(64)       NULL,
+    [contact_4_room_id]               NVARCHAR(64)       NULL,
+    [contact_4_post_box]              NVARCHAR(64)       NULL,
+    [contact_4_municipality_code]     NVARCHAR(64)       NULL,
+    [dossier_status]                  CHAR(3)            NULL,
+
+    [tax_reduction]                   BIT                NULL,
+    [tax_settlement_date]             DATETIMEOFFSET     NULL,
 )

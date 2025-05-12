@@ -54,7 +54,7 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
     [RetiredAt]                  datetimeoffset NULL,
     [CreatedAt]                  datetimeoffset NOT NULL,
     [ParentIdentification]       bigint NULL,
-    
+
     [Type]                       varchar(64) NOT NULL,
     [SubType]                    varchar(64) NOT NULL,
     [ConnectionState]            varchar(64) NOT NULL,
@@ -132,7 +132,6 @@ CREATE TABLE [electricitymarket].[ElectricalHeatingPeriod]
 CREATE INDEX [IX_ElectricalHeatingPeriod_CommercialRelationId]
     ON [electricitymarket].[ElectricalHeatingPeriod] (CommercialRelationId);
 
-
 CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
 (
     [Id]                       bigint IDENTITY(1,1) NOT NULL,
@@ -158,6 +157,7 @@ CREATE INDEX [IX_EnergySupplyPeriod_CommercialRelationId]
 CREATE TABLE [electricitymarket].[ContactAddress]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
+    [ContactId]                  bigint NOT NULL,
     [IsProtectedAddress]         bit NOT NULL,
     [Attention]                  nvarchar(256) NULL,
     [StreetCode]                 char(4) NULL,
@@ -174,7 +174,11 @@ CREATE TABLE [electricitymarket].[ContactAddress]
     [MunicipalityCode]           nvarchar(64) NULL,
 
     CONSTRAINT PK_ContactAddress PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT FK_ContactAddress_Contact FOREIGN KEY (ContactId) REFERENCES [electricitymarket].[Contact]([ID])
 )
+
+CREATE INDEX [IX_ContactAddress_ContactId]
+    ON [electricitymarket].[ContactAddress] (ContactId);
 
 CREATE TABLE [electricitymarket].[Contact]
 (
@@ -186,7 +190,6 @@ CREATE TABLE [electricitymarket].[Contact]
     [CPR]                        char(12) NULL,
     [CVR]                        char(8) NULL,
 
-    [ContactAddressId]           bigint NULL,
     [ContactName]                nvarchar(256) NULL,
     [Email]                      nvarchar(256) NULL,
     [Phone]                      nvarchar(64) NULL,
@@ -194,8 +197,7 @@ CREATE TABLE [electricitymarket].[Contact]
     [IsProtectedName]            bit NOT NULL,
 
     CONSTRAINT PK_Contact PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_Contact_EnergySupplyPeriod FOREIGN KEY (EnergySupplyPeriodId) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
-    CONSTRAINT FK_Contact_ContactAddress FOREIGN KEY (ContactAddressId) REFERENCES [electricitymarket].[ContactAddress]([ID]),
+    CONSTRAINT FK_Contact_EnergySupplyPeriod FOREIGN KEY (EnergySupplyPeriodId) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID])
 )
 
 CREATE INDEX [IX_Contact_EnergySupplyPeriod]
