@@ -31,7 +31,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BLKCHGBRP" };
 
-    private static readonly DateTimeOffset _importCutoff = new(2016, 12, 31, 23, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset _importCutoff = new(2018, 12, 31, 23, 0, 0, TimeSpan.Zero);
 
     private readonly ILogger<MeteringPointImporter> _logger;
 
