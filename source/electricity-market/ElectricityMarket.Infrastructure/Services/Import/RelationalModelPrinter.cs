@@ -52,7 +52,7 @@ public sealed class RelationalModelPrinter : IRelationalModelPrinter
         sb.Append(
             PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts)).ToList(), cultureInfo, html));
         sb.Append(
-            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts.Select(i => i.ContactAddresses.Single()))).Where(j => j is not null).Cast<ContactAddressEntity>().ToList(), cultureInfo, html));
+            PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.EnergySupplyPeriods).SelectMany(z => z.Contacts.Select(i => i.ContactAddresses.SingleOrDefault()))).Where(j => j is not null).Cast<ContactAddressEntity>().ToList(), cultureInfo, html));
         sb.Append(
             PrettyPrintObjects(meteringPointEntities.Select(x => x.CommercialRelations).SelectMany(x => x.SelectMany(y => y.ElectricalHeatingPeriods)).ToList(), cultureInfo, html));
 
