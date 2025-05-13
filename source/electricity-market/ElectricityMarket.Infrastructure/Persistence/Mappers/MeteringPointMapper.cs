@@ -119,10 +119,10 @@ internal static class MeteringPointMapper
                 from.Id,
                 from.ContactName!,
                 from.Email!,
-                from.ContactAddress?.IsProtectedAddress ?? false,
+                from.ContactAddresses.Single().IsProtectedAddress,
                 from.Phone,
                 from.Mobile,
-                MapFromEntity(from.ContactAddress));
+                MapFromEntity(from.ContactAddresses.First()));
         }
 
         if (from.RelationType == "Contact1")
@@ -131,10 +131,10 @@ internal static class MeteringPointMapper
                 from.Id,
                 from.ContactName!,
                 from.Email!,
-                from.ContactAddress?.IsProtectedAddress ?? false,
+                from.ContactAddresses.Single().IsProtectedAddress,
                 from.Phone,
                 from.Mobile,
-                MapFromEntity(from.ContactAddress));
+                MapFromEntity(from.ContactAddresses.Single()));
         }
 
         return new Customer(
