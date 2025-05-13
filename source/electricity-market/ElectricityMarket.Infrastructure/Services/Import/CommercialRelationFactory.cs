@@ -181,13 +181,27 @@ public static class CommercialRelationFactory
                 Email = contact.Email,
                 Phone = contact.Phone,
                 Mobile = contact.Mobile,
-                ContactAddresses = contact.ContactAddresses.ToList()
+                ContactAddresses =
+                {
+                    new ContactAddressEntity
+                    {
+                        IsProtectedAddress = contact.ContactAddresses.Single().IsProtectedAddress,
+                        Attention = contact.ContactAddresses.Single().Attention,
+                        StreetCode = contact.ContactAddresses.Single().StreetCode,
+                        StreetName = contact.ContactAddresses.Single().StreetName,
+                        BuildingNumber = contact.ContactAddresses.Single().BuildingNumber,
+                        CityName = contact.ContactAddresses.Single().CityName,
+                        CitySubdivisionName = contact.ContactAddresses.Single().CitySubdivisionName,
+                        DarReference = contact.ContactAddresses.Single().DarReference,
+                        CountryCode = contact.ContactAddresses.Single().CountryCode,
+                        Floor = contact.ContactAddresses.Single().Floor,
+                        Room = contact.ContactAddresses.Single().Room,
+                        PostCode = contact.ContactAddresses.Single().PostCode,
+                        PostBox = contact.ContactAddresses.Single().PostBox,
+                        MunicipalityCode = contact.ContactAddresses.Single().MunicipalityCode
+                    }
+                }
             };
-
-            if (contact.ContactAddresses.Count != 0)
-            {
-                contactCopy.ContactAddresses.Single().Id = 0;
-            }
 
             copy.Contacts.Add(contactCopy);
         }

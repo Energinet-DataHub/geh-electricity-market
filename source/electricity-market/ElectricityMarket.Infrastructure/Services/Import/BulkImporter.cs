@@ -228,6 +228,7 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
                 if (contactEntity.ContactAddresses.Count != 0)
                 {
                     contactEntity.ContactAddresses.Single().Id = contactEntity.Id;
+                    contactEntity.ContactAddresses.Single().ContactId = contactEntity.Id;
                 }
             }
 
