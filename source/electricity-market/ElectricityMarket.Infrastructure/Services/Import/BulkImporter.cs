@@ -225,10 +225,10 @@ public sealed class BulkImporter : IBulkImporter, IDisposable
                 contactEntity.Id = contactPrimaryKey++;
                 contactEntity.EnergySupplyPeriodId = energySupplyPeriodEntity.Id;
 
-                if (contactEntity.ContactAddress != null)
+                if (contactEntity.ContactAddresses.Count != 0)
                 {
-                    contactEntity.ContactAddressId = contactEntity.Id;
-                    contactEntity.ContactAddress.Id = contactEntity.Id;
+                    contactEntity.ContactAddresses.Single().Id = contactEntity.Id;
+                    contactEntity.ContactAddresses.Single().ContactId = contactEntity.Id;
                 }
             }
 
