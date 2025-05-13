@@ -24,7 +24,7 @@ public static class ElectricityMarketWebApiModuleExtensions
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddElectricityMarketModule();
+        services.AddElectricityMarketModule(true);
         services.AddElectricityMarketDatabricksModule(configuration);
 
         services.AddMediatR(config =>

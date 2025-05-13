@@ -25,13 +25,14 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 
 public static class ElectricityMarketModuleExtensions
 {
-    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services)
+    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services, bool aggressiveEfCoreLogging = false)
     {
         services.AddOptions();
 
@@ -47,8 +48,19 @@ public static class ElectricityMarketModuleExtensions
             {
                 options.UseNodaTime();
                 options.CommandTimeout(60 * 60 * 2);
-            })
-            .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+            });
+
+            if (!aggressiveEfCoreLogging)
+            {
+                o.LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+            }
+            else
+            {
+                var databaseLogger = p.GetRequiredService<ILogger<DatabaseOptions>>();
+#pragma warning disable CA1848, CA2254
+                o.LogTo(x => databaseLogger.Log(LogLevel.Warning, x));
+#pragma warning restore CA1848, CA2254
+            }
         });
 
         services.AddDbContext<IMarketParticipantDatabaseContext, MarketParticipantDatabaseContext>((p, o) =>
