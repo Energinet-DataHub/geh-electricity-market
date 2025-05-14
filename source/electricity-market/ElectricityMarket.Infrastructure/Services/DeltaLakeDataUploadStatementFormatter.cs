@@ -38,8 +38,8 @@ public class DeltaLakeDataUploadStatementFormatter
 
         var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
         {
-            var propValue = GetPropertyValue(prop, dto);
-            var paramName = $"p{paramIndex++}";
+            var propValue = GetPropertyValueForParameter(prop, dto);
+            var paramName = $"_p{paramIndex++}";
             parameters.Add(paramName, propValue);
             return $":{paramName}";
         })) + ")"));
@@ -80,8 +80,8 @@ public class DeltaLakeDataUploadStatementFormatter
 
         var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetKeys<T>().Select(prop =>
         {
-            var propValue = GetPropertyValue(prop, dto);
-            var paramName = $"p{paramIndex++}";
+            var propValue = GetPropertyValueForParameter(prop, dto);
+            var paramName = $"_p{paramIndex++}";
             parameters.Add(paramName, propValue);
             return $":{paramName}";
         })) + ")"));
@@ -173,6 +173,22 @@ public class DeltaLakeDataUploadStatementFormatter
         }
 
         return $"'{propertyValue}'";
+    }
+
+    private string GetPropertyValueForParameter<T>(PropertyInfo prop, T dto)
+    {
+        var propertyValue = prop.GetValue(dto, null);
+        if (propertyValue is null)
+        {
+            return "null";
+        }
+
+        if (prop.PropertyType == typeof(DateTimeOffset) || prop.PropertyType == typeof(DateTimeOffset?))
+        {
+            return $"{((DateTimeOffset)propertyValue).ToString(_dateTimeFormat, CultureInfo.InvariantCulture)}";
+        }
+
+        return $"{propertyValue}";
     }
 
     private IEnumerable<string> GetKeyNames<T>()
