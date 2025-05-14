@@ -157,6 +157,14 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         .Min(p => p.ValidFrom);
             }
         }
+        else
+        {
+            var nextMeteringPointPeriod = meteringPoint.MeteringPointPeriods
+                .Where(x => x.RetiredBy == null && x.ValidFrom > importedTransaction.valid_from_date)
+                .MinBy(x => x.ValidFrom);
+
+            meteringPointPeriod.ValidTo = nextMeteringPointPeriod?.ValidFrom ?? DateTimeOffset.MaxValue;
+        }
 
         if (importedTransaction.transaction_type.Trim() == "CLSDWNMP")
         {
