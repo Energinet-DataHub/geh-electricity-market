@@ -1,0 +1,48 @@
+Welcome to .NET 8.0!
+---------------------
+SDK Version: 8.0.409
+
+Telemetry
+---------
+The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
+
+Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry
+
+----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, run 'dotnet dev-certs https --trust'
+Learn about HTTPS: https://aka.ms/dotnet-https
+
+----------------
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------
+MeteringPoint
++----+--------------------+----------------------+
+| Id | Identification     | Version              |
++----+--------------------+----------------------+
+| 1  | 571313180401330626 | 2025-05-14 06:16:50Z |
++----+--------------------+----------------------+
+
+MeteringPointPeriod
++-------+-----------------+----------------------+----------------------+----------------------+----------------------+-------------+----------------------+-------------+----------+------------+--------------+---------+----------------+-----------------+-----------------+---------------------+--------------+-------------------+-------------+-----------+----------+----------+--------------+-------------+-------------+-----------------+----------------------------+----------------------+--------------------+----------------+------------------+-----------------------+----------------------+--------------------------+
+| Id    | MeteringPointId | ValidFrom            | ValidTo              | CreatedAt            | ParentIdentification | RetiredById | RetiredAt            | Type        | SubType  | Resolution | GridAreaCode | OwnedBy | ConnectionType | TransactionType | ConnectionState | DisconnectionType   | Product      | ProductObligation | MeasureUnit | AssetType | FuelType | Capacity | PowerLimitKw | PowerLimitA | MeterNumber | SettlementGroup | ScheduledMeterReadingMonth | ExchangeFromGridArea | ExchangeToGridArea | PowerPlantGsrn | SettlementMethod | InstallationAddressId | MeteringPointStateId | BusinessTransactionDosId |
++-------+-----------------+----------------------+----------------------+----------------------+----------------------+-------------+----------------------+-------------+----------+------------+--------------+---------+----------------+-----------------+-----------------+---------------------+--------------+-------------------+-------------+-----------+----------+----------+--------------+-------------+-------------+-----------------+----------------------------+----------------------+--------------------+----------------+------------------+-----------------------+----------------------+--------------------------+
+| 10000 | 1               | 2025-03-17 23:00:00Z | 9999-12-31 23:59:59Z | 2025-03-25 16:10:03Z |                      | 10001       | 2025-05-14 06:16:50Z | Consumption | Physical | PT1H       | 804          |         |                | CREATEMP        | New             | ManualDisconnection | EnergyActive |                   | kWh         |           |          |          | 11.0         | 16          | 00110048    |                 |                            |                      |                    |                | FlexSettled      | 10000                 | 224250436            | 341693292                |
+| 10001 | 1               | 2025-03-17 23:00:00Z | 2025-03-23 23:00:00Z | 2025-03-25 16:10:03Z |                      |             |                      | Consumption | Physical | PT1H       | 804          |         |                | CREATEMP        | New             | ManualDisconnection | EnergyActive |                   | kWh         |           |          |          | 11.0         | 16          | 00110048    |                 |                            |                      |                    |                | FlexSettled      | 10001                 | 224250436            | 341693292                |
+| 10002 | 1               | 2025-03-23 23:00:00Z | 9999-12-31 23:59:59Z | 2025-03-25 16:10:03Z |                      | 10003       | 2025-05-14 06:16:50Z | Consumption | Physical | PT1H       | 804          |         |                | HTXCOR          | New             | ManualDisconnection | EnergyActive |                   | kWh         |           |          |          | 11.0         | 16          | 00110048    |                 |                            |                      |                    |                | NonProfiled      | 10002                 | 224250437            | 341699875                |
+| 10003 | 1               | 2025-03-23 23:00:00Z | 9999-12-31 23:59:59Z | 2025-03-25 16:10:03Z |                      |             |                      | Consumption | Physical | PT1H       | 804          |         |                | CHGSETMTH       | New             | ManualDisconnection | EnergyActive |                   | kWh         |           |          |          | 11.0         | 16          | 00110048    |                 |                            |                      |                    |                | NonProfiled      | 10003                 | 224250437            | 341699876                |
++-------+-----------------+----------------------+----------------------+----------------------+----------------------+-------------+----------------------+-------------+----------+------------+--------------+---------+----------------+-----------------+-----------------+---------------------+--------------+-------------------+-------------+-----------+----------+----------+--------------+-------------+-------------+-----------------+----------------------------+----------------------+--------------------+----------------+------------------+-----------------------+----------------------+--------------------------+
+
+InstallationAddress
++-------+------------+-------------+----------------+------------+---------------------+--------------+------------------+-------------+-------+------+----------+------------------+---------------------+
+| Id    | StreetCode | StreetName  | BuildingNumber | CityName   | CitySubdivisionName | DarReference | WashInstructions | CountryCode | Floor | Room | PostCode | MunicipalityCode | LocationDescription |
++-------+------------+-------------+----------------+------------+---------------------+--------------+------------------+-------------+-------+------+----------+------------------+---------------------+
+| 10000 | 6595       | Raccoonsvej | 65             | Raccoonsby |                     |              | NotWashable      | DK          |       |      | 9999     | 607              |                     |
+| 10001 | 6595       | Raccoonsvej | 65             | Raccoonsby |                     |              | NotWashable      | DK          |       |      | 9999     | 607              |                     |
+| 10002 | 6595       | Raccoonsvej | 65             | Raccoonsby |                     |              | NotWashable      | DK          |       |      | 9999     | 607              |                     |
+| 10003 | 6595       | Raccoonsvej | 65             | Raccoonsby |                     |              | NotWashable      | DK          |       |      | 9999     | 607              |                     |
++-------+------------+-------------+----------------+------------+---------------------+--------------+------------------+-------------+-------+------+----------+------------------+---------------------+
