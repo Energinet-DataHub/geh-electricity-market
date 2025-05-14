@@ -54,7 +54,7 @@ public class DeltaLakeDataUploadStatementFormatterTests
                                 with _updates as (
                                  SELECT * FROM (
                                    VALUES
-                                     (:p0, :p1, :p2), (:p3, :p4, :p5)
+                                     (:_p0, :_p1, :_p2), (:_p3, :_p4, :_p5)
                                  ) A(id, nullable_timestamp, prop)
                                 )
                                 MERGE INTO testCatalog.TestTable t USING _updates u
@@ -84,7 +84,7 @@ public class DeltaLakeDataUploadStatementFormatterTests
         var statement = sut.CreateDeleteStatementWithParameters<MultiKeyTestDto>("testCatalog.TestTable", [new MultiKeyTestDto("123", "abc", "fiz"), new MultiKeyTestDto("789", "hij", "buz")]);
         var expectedStatement = """
                                 DELETE FROM testCatalog.TestTable
-                                WHERE (id, id2) IN ((:p0, :p1), (:p2, :p3));
+                                WHERE (id, id2) IN ((:_p0, :_p1), (:_p2, :_p3));
                                 """;
         Assert.Equal(expectedStatement, statement.ToString());
     }
