@@ -85,6 +85,12 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         {
             var transactionType = importedTransaction.transaction_type.TrimEnd();
             var dossierStatus = importedTransaction.dossier_status?.TrimEnd();
+
+            if (dossierStatus is "CAN" or "CNL")
+            {
+                return (true, string.Empty);
+            }
+
             var type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp);
 
             if ((_changeTransactions.Contains(transactionType) || meteringPoint.MeteringPointPeriods.Count == 0) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var addMeteringPointPeriodError))
@@ -95,12 +101,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             if (type is not "Production" and not "Consumption")
                 return (true, string.Empty);
-
-            if (dossierStatus is "CAN" or "CNL")
-            {
-                if (transactionType is not ("MOVEINES" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP"))
-                    return (true, string.Empty);
-            }
 
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY")
                 return (true, string.Empty);
