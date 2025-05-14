@@ -29,11 +29,11 @@ using MeteringPointType = Energinet.DataHub.ElectricityMarket.Domain.Models.Mete
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories;
 
-public class MeteringPointRepositoryTest : IClassFixture<ElectricityMarketDatabaseContextFixture>, IAsyncLifetime
+public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatabaseContextFixture>, IAsyncLifetime
 {
     private readonly ElectricityMarketDatabaseContextFixture _fixture;
 
-    public MeteringPointRepositoryTest(ElectricityMarketDatabaseContextFixture fixture)
+    public MeteringPointRepositoryTests(ElectricityMarketDatabaseContextFixture fixture)
     {
         _fixture = fixture;
     }

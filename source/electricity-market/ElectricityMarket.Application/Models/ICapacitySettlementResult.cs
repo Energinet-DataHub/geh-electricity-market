@@ -12,14 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
-
-public sealed record CommercialRelation(
-    long Id,
-    string EnergySupplier,
-    Interval Period,
-    Guid? ClientId,
-    IReadOnlyList<EnergySupplyPeriod> EnergySupplyPeriodTimeline,
-    IReadOnlyList<ElectricalHeatingPeriod> ElectricalHeatingPeriods);
+public interface ICapacitySettlementResult
+{
+    long MeteringPointId { get; }
+}

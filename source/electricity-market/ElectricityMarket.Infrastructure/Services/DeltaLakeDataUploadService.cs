@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
@@ -53,7 +54,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = Convert.ToString(record);
+            string resultString = record.ToString();
             _logger.LogInformation("Electrical Heating Parents Uploaded: {ResultString}", resultString);
         }
     }
@@ -70,8 +71,40 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = Convert.ToString(record);
+            string resultString = record.ToString();
             _logger.LogInformation("Electrical Heating Children Uploaded: {ResultString}", resultString);
+        }
+    }
+
+    public async Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(capacitySettlementPeriods);
+        _logger.LogInformation(
+            "Starting upload of {Count} capacity settlement metering point periods.", capacitySettlementPeriods.Count);
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
+        var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, capacitySettlementPeriods);
+
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
+        await foreach (var record in result.ConfigureAwait(false))
+        {
+            string resultString = record.ToString();
+            _logger.LogInformation("Capacity settlement Uploaded: {ResultString}", resultString);
+        }
+    }
+
+    public async Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(capacitySettlementEmptyDtos);
+        _logger.LogInformation(
+            "Starting clearing of {Count} capacity settlement metering point periods.", capacitySettlementEmptyDtos.Count);
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
+        var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, capacitySettlementEmptyDtos);
+
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
+        await foreach (var record in result.ConfigureAwait(false))
+        {
+            string resultString = record.ToString();
+            _logger.LogInformation("Capacity settlement deleted: {ResultString}", resultString);
         }
     }
 }

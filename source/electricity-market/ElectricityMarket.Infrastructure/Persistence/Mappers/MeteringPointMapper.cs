@@ -89,6 +89,7 @@ internal static class MeteringPointMapper
             from.Id,
             from.EnergySupplier,
             new Interval(from.StartDate.ToInstant(), from.EndDate.ToInstant()),
+            from.ClientId,
             from.EnergySupplyPeriods.Where(esp => esp.RetiredBy == null).Select(MapFromEntity).OrderBy(esp => esp.Valid.Start).ToList(),
             from.ElectricalHeatingPeriods.Where(ehp => ehp.RetiredBy == null).Select(MapFromEntity).OrderBy(ehp => ehp.Period.Start).ToList());
     }
@@ -119,10 +120,10 @@ internal static class MeteringPointMapper
                 from.Id,
                 from.ContactName!,
                 from.Email!,
-                from.ContactAddress?.IsProtectedAddress ?? false,
+                from.ContactAddresses.Single().IsProtectedAddress,
                 from.Phone,
                 from.Mobile,
-                MapFromEntity(from.ContactAddress));
+                MapFromEntity(from.ContactAddresses.First()));
         }
 
         if (from.RelationType == "Contact1")
@@ -131,10 +132,10 @@ internal static class MeteringPointMapper
                 from.Id,
                 from.ContactName!,
                 from.Email!,
-                from.ContactAddress?.IsProtectedAddress ?? false,
+                from.ContactAddresses.Single().IsProtectedAddress,
                 from.Phone,
                 from.Mobile,
-                MapFromEntity(from.ContactAddress));
+                MapFromEntity(from.ContactAddresses.Single()));
         }
 
         return new Customer(

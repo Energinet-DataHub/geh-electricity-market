@@ -12,14 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
+using MediatR;
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 
-public sealed record CommercialRelation(
-    long Id,
-    string EnergySupplier,
-    Interval Period,
-    Guid? ClientId,
-    IReadOnlyList<EnergySupplyPeriod> EnergySupplyPeriodTimeline,
-    IReadOnlyList<ElectricalHeatingPeriod> ElectricalHeatingPeriods);
+public sealed record SyncCapacitySettlementCommand : IRequest;

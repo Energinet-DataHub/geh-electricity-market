@@ -24,8 +24,8 @@ public interface IMeteringPointRepository
     Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode);
 
     Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification);
-    Task<MeteringPointHierarchy> GetMeteringPointHierarchyAsync(MeteringPointIdentification identification, CancellationToken cancellationToken = default);
     IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000);
 
+    Task<MeteringPointHierarchy> GetMeteringPointHierarchyAsync(MeteringPointIdentification meteringPointIdentification, CancellationToken cancellationToken = default);
     Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(long identification);
 }

@@ -26,12 +26,12 @@ public sealed class ContactEntityConfiguration : IEntityTypeConfiguration<Contac
         ArgumentNullException.ThrowIfNull(builder);
         builder.ToTable("Contact");
         builder
-            .HasOne(x => x.ContactAddress)
+            .HasMany(x => x.ContactAddresses)
             .WithOne()
-            .HasForeignKey<ContactEntity>(x => x.ContactAddressId);
+            .HasForeignKey(x => x.ContactId);
 
         builder
-            .Navigation(x => x.ContactAddress)
+            .Navigation(x => x.ContactAddresses)
             .AutoInclude();
     }
 }
