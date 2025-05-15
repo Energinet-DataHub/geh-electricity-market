@@ -74,4 +74,23 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
             _logger.LogInformation("Electrical Heating Children Uploaded: {ResultString}", resultString);
         }
     }
+
+    public async Task ImportTransactionsAsync(IReadOnlyList<HullerLogDto> hullerLogs)
+    {
+        ArgumentNullException.ThrowIfNull(hullerLogs);
+
+        _logger.LogInformation(
+            "Starting upload of {Count} huller log metering points.", hullerLogs.Count);
+
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.MissingMeasurementLogsTableName}";
+        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, hullerLogs);
+        var query = DatabricksStatement.FromRawSql(queryString);
+
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        await foreach (var record in result.ConfigureAwait(false))
+        {
+            string resultString = Convert.ToString(record);
+            _logger.LogInformation("Huller log uploaded: {ResultString}", resultString);
+        }
+    }
 }

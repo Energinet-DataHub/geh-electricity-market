@@ -85,6 +85,7 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
         services.AddScoped<IElectricalHeatingPeriodizationService, ElectricalHeatingPeriodizationService>();
+        services.AddScoped<IHullerLogService, HullerLogService>();
         services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
         services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
 

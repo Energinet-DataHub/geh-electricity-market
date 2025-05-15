@@ -12,15 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
+using MediatR;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 
-public interface IDeltaLakeDataUploadService
-{
-    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingParentDto> electricalHeatingParent);
-
-    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren);
-
-    Task ImportTransactionsAsync(IReadOnlyList<HullerLogDto> hullerLogs);
-}
+public sealed record SyncHullerLogCommand : IRequest;

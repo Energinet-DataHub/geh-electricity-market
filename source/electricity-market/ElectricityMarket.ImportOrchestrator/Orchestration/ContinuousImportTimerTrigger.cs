@@ -53,6 +53,7 @@ public sealed class ContinuousImportTimerTrigger
         {
             await _goldenStreamingImporter.ImportAsync().ConfigureAwait(false);
             await _mediator.Send(new SyncElectricalHeatingCommand()).ConfigureAwait(false);
+            await _mediator.Send(new SyncHullerLogCommand()).ConfigureAwait(false);
         }
         else if (await _importStateService.IsStreamingImportEnabledAsync().ConfigureAwait(false))
         {

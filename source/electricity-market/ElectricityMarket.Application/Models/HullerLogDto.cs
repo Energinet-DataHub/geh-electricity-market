@@ -12,15 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-
-namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
-
-public interface IDeltaLakeDataUploadService
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
-    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingParentDto> electricalHeatingParent);
-
-    Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren);
-
-    Task ImportTransactionsAsync(IReadOnlyList<HullerLogDto> hullerLogs);
+    public sealed record HullerLogDto(
+        string MeteringPointId,
+        string GridAreaCode,
+        string Resolution,
+        DateTimeOffset PeriodFromDate,
+        DateTimeOffset? PeriodToDate);
 }
