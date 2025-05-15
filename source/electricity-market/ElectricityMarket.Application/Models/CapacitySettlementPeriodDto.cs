@@ -20,6 +20,6 @@ public sealed record CapacitySettlementPeriodDto(
     [property: DeltaLakeKey] long MeteringPointId,
     DateTimeOffset PeriodFromDate,
     DateTimeOffset? PeriodToDate,
-    [property: DeltaLakeKey] string ChildMeteringPointId,
+    [property: DeltaLakeKey] long ChildMeteringPointId,
     DateTimeOffset ChildPeriodFromDate,
     DateTimeOffset? ChildPeriodToDate) : ICapacitySettlementResult;
