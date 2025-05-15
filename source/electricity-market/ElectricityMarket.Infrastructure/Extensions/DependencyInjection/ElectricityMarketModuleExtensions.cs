@@ -27,7 +27,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using static NodaTime.TimeZones.ZoneEqualityComparer;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 
