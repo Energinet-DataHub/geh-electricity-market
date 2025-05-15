@@ -241,7 +241,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                     {
                         var cr = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
 
-                        if ((transactionType is "INCCHGSUP" && !cr.EnergySupplyPeriods.Any(x => x.TransactionType == "CHANGESUP" && x.ValidFrom == importedTransaction.valid_from_date)) ||
+                        if ((transactionType is "INCCHGSUP" && !cr.EnergySupplyPeriods.Any(x => x.TransactionType is "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP" && x.ValidFrom == importedTransaction.valid_from_date)) ||
                             !cr.EnergySupplyPeriods.Any(x => x.TransactionType == "MOVEINES" && x.ValidFrom == importedTransaction.valid_from_date))
                         {
                             logger.LogWarning(
