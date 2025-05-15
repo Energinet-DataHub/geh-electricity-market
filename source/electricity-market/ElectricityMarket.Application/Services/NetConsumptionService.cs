@@ -98,7 +98,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                 if (meteringPointMetadata.ScheduledMeterReadingMonth is null)
                 {
                     _logger.LogError(
-                        "{ScheduledMeterReadingMonth} is null, which is not allowed for NetSettlement group 6.",
+                        "{ScheduledMeterReadingMonth} is null, which is not allowed for Net Settlement Group 6.",
                         meteringPointMetadata.ScheduledMeterReadingMonth);
                     continue;
                 }
