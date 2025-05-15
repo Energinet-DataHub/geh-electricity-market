@@ -24,7 +24,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 public class CapacitySettlementService : ICapacitySettlementService
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
-    private readonly Instant _capacitySettlementEnabledFrom = Instant.FromUtc(2025, 1, 1, 0, 0, 0);
+    private readonly Instant _capacitySettlementEnabledFrom = Instant.FromUtc(2024, 12, 31, 23, 0, 0);
 
     public CapacitySettlementService(IMeteringPointRepository meteringPointRepository)
     {
@@ -83,7 +83,7 @@ public class CapacitySettlementService : ICapacitySettlementService
             meteringPointHierarchy.Parent.Identification.Value,
             relation.Start.ToDateTimeOffset(),
             relation.End.ToDateTimeOffset(),
-            capacitySettlementMeteringPoint.Identification.ToString(),
+            capacitySettlementMeteringPoint.Identification.Value,
             GetCreatedTimestamp(capacitySettlementMeteringPoint),
             GetClosedDownTimestamp(capacitySettlementMeteringPoint)));
 

@@ -34,7 +34,7 @@ public class DeltaLakeDataUploadStatementFormatterTests
                                  with _updates as (
                                   SELECT * FROM (
                                     VALUES
-                                      ('123', to_timestamp('2019-03-25T12:13:14Z'), null), ('123', to_timestamp(null), 'abc')
+                                      ('123', to_timestamp('2019-03-25T11:13:14Z'), null), ('123', to_timestamp(null), 'abc')
                                   ) A(id, nullable_timestamp, prop)
                                  )
                                  MERGE INTO testCatalog.TestTable t USING _updates u
@@ -111,9 +111,9 @@ public class DeltaLakeDataUploadStatementFormatterTests
     public void GivenListOfCapacitySettlementPeriodDtos_WhenCreatingStatement_StatementIsCreated()
     {
         var sut = new DeltaLakeDataUploadStatementFormatter();
-        var dto1 = new CapacitySettlementPeriodDto(570714700000002601, DateTimeOffset.Now.AddDays(-10), DateTimeOffset.Now.AddDays(10), "570714700000002611", DateTimeOffset.Now.AddDays(-2), DateTimeOffset.Now.AddDays(2));
-        var dto2 = new CapacitySettlementPeriodDto(570714700000002602, DateTimeOffset.Now.AddDays(-10), null, "570714700000002612", DateTimeOffset.Now.AddDays(-2), null);
-        var dto3 = new CapacitySettlementPeriodDto(570714700000002603, DateTimeOffset.Now.AddDays(-10), DateTimeOffset.Now.AddDays(10), "570714700000002623", DateTimeOffset.Now.AddDays(-2), DateTimeOffset.Now.AddDays(2));
+        var dto1 = new CapacitySettlementPeriodDto(570714700000002601, DateTimeOffset.Now.AddDays(-10), DateTimeOffset.Now.AddDays(10), 570714700000002611, DateTimeOffset.Now.AddDays(-2), DateTimeOffset.Now.AddDays(2));
+        var dto2 = new CapacitySettlementPeriodDto(570714700000002602, DateTimeOffset.Now.AddDays(-10), null, 570714700000002612, DateTimeOffset.Now.AddDays(-2), null);
+        var dto3 = new CapacitySettlementPeriodDto(570714700000002603, DateTimeOffset.Now.AddDays(-10), DateTimeOffset.Now.AddDays(10), 570714700000002623, DateTimeOffset.Now.AddDays(-2), DateTimeOffset.Now.AddDays(2));
         var statement = sut.CreateUploadStatement<CapacitySettlementPeriodDto>(_capacitySettlementDevTableName, [dto1, dto2, dto3]);
     }
 
