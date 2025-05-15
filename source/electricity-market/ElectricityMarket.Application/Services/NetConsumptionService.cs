@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Common;
-using Energinet.DataHub.ElectricityMarket.Application.Handlers.DeltaLakeSync;
 using Energinet.DataHub.ElectricityMarket.Application.Helpers;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
