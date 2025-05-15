@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPointTransaction;
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPoint;
 DROP TABLE IF EXISTS electricitymarket.ElectricalHeatingPeriod;
-DROP TABLE IF EXISTS electricitymarket.Contact;
 DROP TABLE IF EXISTS electricitymarket.ContactAddress;
+DROP TABLE IF EXISTS electricitymarket.Contact;
 DROP TABLE IF EXISTS electricitymarket.EnergySupplyPeriod;
 DROP TABLE IF EXISTS electricitymarket.CommercialRelation;
 DROP TABLE IF EXISTS electricitymarket.MeteringPointPeriod;
@@ -154,9 +154,33 @@ CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
 CREATE INDEX [IX_EnergySupplyPeriod_CommercialRelationId]
     ON [electricitymarket].[EnergySupplyPeriod] (CommercialRelationId);
 
+CREATE TABLE [electricitymarket].[Contact]
+(
+    [Id]                         bigint IDENTITY(1,1) NOT NULL,
+    [EnergySupplyPeriodId]       bigint NOT NULL,
+    
+    [RelationType]               varchar(64) NOT NULL,
+    [DisponentName]              nvarchar(256) NOT NULL,
+    [CPR]                        char(12) NULL,
+    [CVR]                        char(8) NULL,
+
+    [ContactName]                nvarchar(256) NULL,
+    [Email]                      nvarchar(256) NULL,
+    [Phone]                      nvarchar(64) NULL,
+    [Mobile]                     nvarchar(64) NULL,
+    [IsProtectedName]            bit NOT NULL,
+
+    CONSTRAINT PK_Contact PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT FK_Contact_EnergySupplyPeriod FOREIGN KEY (EnergySupplyPeriodId) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID])
+)
+
+CREATE INDEX [IX_Contact_EnergySupplyPeriod]
+    ON [electricitymarket].[Contact] (EnergySupplyPeriodId);
+
 CREATE TABLE [electricitymarket].[ContactAddress]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
+    [ContactId]                  bigint NOT NULL,
     [IsProtectedAddress]         bit NOT NULL,
     [Attention]                  nvarchar(256) NULL,
     [StreetCode]                 char(4) NULL,
@@ -173,32 +197,11 @@ CREATE TABLE [electricitymarket].[ContactAddress]
     [MunicipalityCode]           nvarchar(64) NULL,
 
     CONSTRAINT PK_ContactAddress PRIMARY KEY CLUSTERED (Id),
+    CONSTRAINT FK_ContactAddress_Contact FOREIGN KEY (ContactId) REFERENCES [electricitymarket].[Contact]([ID])
 )
 
-CREATE TABLE [electricitymarket].[Contact]
-(
-    [Id]                         bigint IDENTITY(1,1) NOT NULL,
-    [EnergySupplyPeriodId]       bigint NOT NULL,
-    
-    [RelationType]               varchar(64) NOT NULL,
-    [DisponentName]              nvarchar(256) NOT NULL,
-    [CPR]                        char(12) NULL,
-    [CVR]                        char(8) NULL,
-
-    [ContactAddressId]           bigint NULL,
-    [ContactName]                nvarchar(256) NULL,
-    [Email]                      nvarchar(256) NULL,
-    [Phone]                      nvarchar(64) NULL,
-    [Mobile]                     nvarchar(64) NULL,
-    [IsProtectedName]            bit NOT NULL,
-
-    CONSTRAINT PK_Contact PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT FK_Contact_EnergySupplyPeriod FOREIGN KEY (EnergySupplyPeriodId) REFERENCES [electricitymarket].[EnergySupplyPeriod]([ID]),
-    CONSTRAINT FK_Contact_ContactAddress FOREIGN KEY (ContactAddressId) REFERENCES [electricitymarket].[ContactAddress]([ID]),
-)
-
-CREATE INDEX [IX_Contact_EnergySupplyPeriod]
-    ON [electricitymarket].[Contact] (EnergySupplyPeriodId);
+CREATE INDEX [IX_ContactAddress_ContactId]
+    ON [electricitymarket].[ContactAddress] (ContactId);
 
 CREATE TABLE [electricitymarket].[ImportState]
 (

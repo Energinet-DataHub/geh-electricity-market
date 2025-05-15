@@ -31,7 +31,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
     private static readonly IReadOnlySet<string> _unhandledTransactions = new HashSet<string> { "BLKBANKBS", "BLKCHGBRP" };
 
-    private static readonly DateTimeOffset _importCutoff = new(2016, 12, 31, 23, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset _importCutoff = new(2018, 12, 31, 23, 0, 0, TimeSpan.Zero);
 
     private readonly ILogger<MeteringPointImporter> _logger;
 
@@ -85,6 +85,12 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         {
             var transactionType = importedTransaction.transaction_type.TrimEnd();
             var dossierStatus = importedTransaction.dossier_status?.TrimEnd();
+
+            if (dossierStatus is "CAN" or "CNL")
+            {
+                return (true, string.Empty);
+            }
+
             var type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp);
 
             if ((_changeTransactions.Contains(transactionType) || meteringPoint.MeteringPointPeriods.Count == 0) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var addMeteringPointPeriodError))
@@ -95,12 +101,6 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             if (type is not "Production" and not "Consumption")
                 return (true, string.Empty);
-
-            if (dossierStatus is "CAN" or "CNL")
-            {
-                if (transactionType is not ("MOVEINES" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP"))
-                    return (true, string.Empty);
-            }
 
             if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY")
                 return (true, string.Empty);
@@ -156,6 +156,14 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         .Where(p => p.ValidFrom > meteringPointPeriod.ValidFrom && p.RetiredBy == null)
                         .Min(p => p.ValidFrom);
             }
+        }
+        else
+        {
+            var nextMeteringPointPeriod = meteringPoint.MeteringPointPeriods
+                .Where(x => x.RetiredBy == null && x.ValidFrom > importedTransaction.valid_from_date)
+                .MinBy(x => x.ValidFrom);
+
+            meteringPointPeriod.ValidTo = nextMeteringPointPeriod?.ValidFrom ?? DateTimeOffset.MaxValue;
         }
 
         if (importedTransaction.transaction_type.Trim() == "CLSDWNMP")
