@@ -104,7 +104,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                 }
 
                 var hasElectricalHeating = electricalHeatingPeriods
-                    .Any(h => h.Start < meteringPointMetadata.Valid.End && meteringPointMetadata.Valid.Start < h.End);
+                    .Any(h => h.Start <= meteringPointMetadata.Valid.End && meteringPointMetadata.Valid.Start <= h.End);
 
                 var periodToDate = meteringPointMetadata.Valid.End.ToDateTimeOffset();
 
