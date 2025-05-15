@@ -108,8 +108,11 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         }
     }
 
-    public async Task ImportTransactionsAsync(IEnumerable<NetConsumptionParentDto> netConsumptionParents)
+    public async Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents)
     {
+        ArgumentNullException.ThrowIfNull(netConsumptionParents);
+        _logger.LogInformation(
+            "Starting upload of {Count} net consumption parent metering points.", netConsumptionParents.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionParentTableName}";
         var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, netConsumptionParents);
         var query = DatabricksStatement.FromRawSql(queryString);
@@ -117,14 +120,16 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            // Process each record
-            Console.WriteLine(record);
-            Console.WriteLine(record.num_inserted_rows);
+            string resultString = record.ToString();
+            _logger.LogInformation("Net Consumption Parents Uploaded: {ResultString}", resultString);
         }
     }
 
-    public async Task ImportTransactionsAsync(IEnumerable<NetConsumptionChildDto> netConsumptionChildren)
+    public async Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionChildDto> netConsumptionChildren)
     {
+        ArgumentNullException.ThrowIfNull(netConsumptionChildren);
+        _logger.LogInformation(
+            "Starting upload of {Count} net consumption child metering points.", netConsumptionChildren.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionChildTableName}";
         var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, netConsumptionChildren);
         var query = DatabricksStatement.FromRawSql(queryString);
@@ -132,9 +137,8 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            // Process each record
-            Console.WriteLine(record);
-            Console.WriteLine(record.num_inserted_rows);
+            string resultString = record.ToString();
+            _logger.LogInformation("Net Consumption Children Uploaded: {ResultString}", resultString);
         }
     }
 }

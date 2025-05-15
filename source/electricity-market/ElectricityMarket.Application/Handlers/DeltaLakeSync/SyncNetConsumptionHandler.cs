@@ -59,7 +59,7 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
             var meteringPointsToSync = _meteringPointRepository
                 .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
-            var maxVersion = await HandleBatchAsync(meteringPointsToSync, cancellationToken).ConfigureAwait(false);
+            var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
 
             if (maxVersion > DateTimeOffset.MinValue)
             {
@@ -73,22 +73,25 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
         }
     }
 
-    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync, CancellationToken cancellationToken)
+    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
     {
         var maxVersion = DateTimeOffset.MinValue;
         await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
         {
             maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
-            var (parents, children) = await _netConsumptionService.GetNetConsumptionMeteringPointsAsync(meteringPointsToSync).ConfigureAwait(false);
 
-            if (parents.Any())
+            var parentMeteringPoints = _netConsumptionService.GetParentNetConsumption(meteringPoint);
+            if (parentMeteringPoints.Any())
             {
-                await _deltaLakeDataUploadService.ImportTransactionsAsync(parents).ConfigureAwait(false);
-            }
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPoints).ConfigureAwait(false);
 
-            if (children.Any())
-            {
-                await _deltaLakeDataUploadService.ImportTransactionsAsync(children).ConfigureAwait(false);
+                var childMeteringPoints = await _netConsumptionService.GetChildNetConsumptionAsync(parentMeteringPoints.Select(p => p.MeteringPointId)
+                    .Distinct()).ConfigureAwait(false);
+
+                if (childMeteringPoints.Any())
+                {
+                    await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPoints).ConfigureAwait(false);
+                }
             }
         }
 

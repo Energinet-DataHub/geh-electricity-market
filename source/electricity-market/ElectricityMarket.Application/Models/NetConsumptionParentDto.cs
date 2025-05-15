@@ -15,7 +15,7 @@
 namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
     public sealed record NetConsumptionParentDto(
-        string MeteringPointId,
+        long MeteringPointId,
         bool HasElectricalHeating,
         int SettlementMonth,
         DateTimeOffset PeriodFromDate,

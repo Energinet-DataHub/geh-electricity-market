@@ -17,9 +17,9 @@ using Energinet.DataHub.ElectricityMarket.Application.Common;
 namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
     public sealed record NetConsumptionChildDto(
-        [property: DeltaLakeKey]string MeteringPointId,
+        [property: DeltaLakeKey]long MeteringPointId,
         string MeteringPointType,
-        string ParentMeteringPointId,
+        long ParentMeteringPointId,
         DateTimeOffset CoupledDate,
         DateTimeOffset? UncoupledDate);
 }

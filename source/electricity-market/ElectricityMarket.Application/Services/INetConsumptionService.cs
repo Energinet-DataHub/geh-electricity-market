@@ -19,5 +19,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
 public interface INetConsumptionService
 {
-    Task<(IEnumerable<NetConsumptionParentDto> Parents, IEnumerable<NetConsumptionChildDto> Children)> GetNetConsumptionMeteringPointsAsync(IAsyncEnumerable<MeteringPoint> meteringPoints);
+    IReadOnlyList<NetConsumptionParentDto> GetParentNetConsumption(MeteringPoint meteringPoint);
+
+    Task<IReadOnlyList<NetConsumptionChildDto>> GetChildNetConsumptionAsync(IEnumerable<long> parentMeteringPointIds);
 }
