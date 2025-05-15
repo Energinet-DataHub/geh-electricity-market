@@ -52,4 +52,16 @@ public class SyncController : ControllerBase
 
         return Ok();
     }
+
+    [HttpGet("net-consumption")]
+    public async Task<ActionResult> StartNetConsumptionSyncAsync()
+    {
+        var command = new SyncNetConsumptionCommand();
+
+        await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok();
+    }
 }
