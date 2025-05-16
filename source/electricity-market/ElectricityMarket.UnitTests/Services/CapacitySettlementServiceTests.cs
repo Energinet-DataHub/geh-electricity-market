@@ -68,7 +68,7 @@ public class CapacitySettlementServiceTests
         Assert.Equal(parentMeteringPoint.Identification.Value, dto.MeteringPointId);
         Assert.Equal(parentMeteringPointMetadata.Valid.Start.ToDateTimeOffset(), dto.PeriodFromDate);
         Assert.Equal(parentMeteringPointMetadata.Valid.End.ToDateTimeOffset(), dto.PeriodToDate);
-        Assert.Equal(capacitySettlementMeteringPoint.Identification.ToString(), dto.ChildMeteringPointId);
+        Assert.Equal(capacitySettlementMeteringPoint.Identification.Value, dto.ChildMeteringPointId);
         Assert.Equal(capacitySettlementMeteringPointMetadata.Valid.Start.ToDateTimeOffset(), dto.ChildPeriodFromDate);
         Assert.Null(dto.ChildPeriodToDate);
     }
@@ -100,7 +100,7 @@ public class CapacitySettlementServiceTests
         Assert.Equal(parentMeteringPoint.Identification.Value, dto.MeteringPointId);
         Assert.Equal(parentMeteringPointMetadata.Valid.Start.ToDateTimeOffset(), dto.PeriodFromDate);
         Assert.Equal(parentMeteringPointMetadata.Valid.End.ToDateTimeOffset(), dto.PeriodToDate);
-        Assert.Equal(capacitySettlementMeteringPoint.Identification.ToString(), dto.ChildMeteringPointId);
+        Assert.Equal(capacitySettlementMeteringPoint.Identification.Value, dto.ChildMeteringPointId);
         Assert.Equal(capacitySettlementMeteringPointMetadata.Valid.Start.ToDateTimeOffset(), dto.ChildPeriodFromDate);
         Assert.Equal(capacitySettlementMeteringPointMetadata.Valid.End.ToDateTimeOffset(), dto.ChildPeriodToDate);
     }
@@ -109,7 +109,7 @@ public class CapacitySettlementServiceTests
     public async Task GivenCapacityChildMeteringPointBefore2025_WhenFindingCapacitySettlementPeriods_ReturnEmptyPeriod()
     {
         // Given capacity settlement period From 2024
-        var interval = new Interval(Instant.FromUtc(2024, 1, 1, 0, 0, 0), Instant.FromUtc(2024, 12, 31, 23, 59, 59));
+        var interval = new Interval(Instant.FromUtc(2024, 1, 1, 0, 0, 0), Instant.FromUtc(2024, 12, 31, 22, 59, 59));
         var capacitySettlementMeteringPointMetadata = CreateCapacitySettlementMeteringPointMetadata(interval, Any.MeteringPointIdentification());
         var capacitySettlementMeteringPoint = CreateCapacitySettlementChildMeteringPoint([capacitySettlementMeteringPointMetadata], DateTimeOffset.Now);
 
@@ -136,7 +136,7 @@ public class CapacitySettlementServiceTests
     {
         // Given capacity settlement period before 2025
         var capacitySettlementStart = Instant.FromUtc(2024, 12, 25, 0, 0, 0);
-        var capacitySettlementEnd = Instant.FromUtc(2025, 2, 23, 0, 0, 0);
+        var capacitySettlementEnd = Instant.FromUtc(2025, 2, 23, 12, 0, 0);
         var capacitySettlementMeteringPointMetadata = CreateCapacitySettlementMeteringPointMetadata(new Interval(capacitySettlementStart,  capacitySettlementEnd), Any.MeteringPointIdentification());
         var capacitySettlementMeteringPointMetadataClosed = CreateCapacitySettlementMeteringPointMetadata(new Interval(capacitySettlementMeteringPointMetadata.Valid.End, capacitySettlementMeteringPointMetadata.Valid.End.Plus(Duration.FromDays(1))), null, ConnectionState.ClosedDown);
         var capacitySettlementMeteringPoint = CreateCapacitySettlementChildMeteringPoint([capacitySettlementMeteringPointMetadata, capacitySettlementMeteringPointMetadataClosed], DateTimeOffset.Now);
@@ -157,8 +157,8 @@ public class CapacitySettlementServiceTests
         // Capacity settlement period starts 1/1-2025
         Assert.Single(capacitySettlementPeriodsAsync);
         var dto = capacitySettlementPeriodsAsync.OfType<CapacitySettlementPeriodDto>().Single();
-        Assert.Equal(new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero), dto.ChildPeriodFromDate);
-        Assert.Equal(new DateTimeOffset(2025, 2, 23, 0, 0, 0, TimeSpan.Zero), dto.ChildPeriodToDate);
+        Assert.Equal(new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.FromHours(1)), dto.ChildPeriodFromDate);
+        Assert.Equal(new DateTimeOffset(2025, 2, 23, 13, 0, 0, TimeSpan.FromHours(1)), dto.ChildPeriodToDate);
     }
 
     [Fact]

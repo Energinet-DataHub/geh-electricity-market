@@ -116,6 +116,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(gridAreaCode);
 
         var entities = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
             .Where(x => x.MeteringPointPeriods.Any(mpp => mpp.GridAreaCode == gridAreaCode))
             .ToListAsync()
             .ConfigureAwait(false);

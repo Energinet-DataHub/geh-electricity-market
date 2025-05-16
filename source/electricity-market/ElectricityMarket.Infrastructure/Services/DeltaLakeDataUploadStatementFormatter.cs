@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
@@ -26,21 +24,21 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 public class DeltaLakeDataUploadStatementFormatter
 {
     private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
-    private readonly string _dateTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
+    private readonly DeltaLakeDataUploadParameterFormatter _parameterFormatter = new();
 
     public DatabricksStatement CreateUploadStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
     {
         var paramIndex = 0;
-        var parameters = new Dictionary<string, string>();
+        var parameters = new List<QueryParameter>();
 
         var columnNames = GetColumnNames<T>().ToList();
         var columnsString = string.Join(", ", columnNames);
 
         var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
         {
-            var propValue = GetPropertyValueForParameter(prop, dto);
             var paramName = $"_p{paramIndex++}";
-            parameters.Add(paramName, propValue);
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
             return $":{paramName}";
         })) + ")"));
 
@@ -64,11 +62,7 @@ public class DeltaLakeDataUploadStatementFormatter
                            """;
 
         var builder = DatabricksStatement.FromRawSql(queryString);
-
-        foreach (var kv in parameters)
-        {
-            builder.WithParameter(kv.Key, kv.Value);
-        }
+        AddParameters(parameters, builder);
 
         return builder.Build();
     }
@@ -76,13 +70,13 @@ public class DeltaLakeDataUploadStatementFormatter
     public DatabricksStatement CreateDeleteStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
     {
         var paramIndex = 0;
-        var parameters = new Dictionary<string, string>();
+        var parameters = new List<QueryParameter>();
 
         var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetKeys<T>().Select(prop =>
         {
-            var propValue = GetPropertyValueForParameter(prop, dto);
             var paramName = $"_p{paramIndex++}";
-            parameters.Add(paramName, propValue);
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
             return $":{paramName}";
         })) + ")"));
 
@@ -95,11 +89,7 @@ public class DeltaLakeDataUploadStatementFormatter
                 """;
 
         var builder = DatabricksStatement.FromRawSql(queryString);
-
-        foreach (var kv in parameters)
-        {
-            builder.WithParameter(kv.Key, kv.Value);
-        }
+        AddParameters(parameters, builder);
 
         return builder.Build();
     }
@@ -109,7 +99,7 @@ public class DeltaLakeDataUploadStatementFormatter
         var columnNames = GetColumnNames<T>().ToList();
         var columnsString = string.Join(", ", columnNames);
 
-        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop => GetPropertyValue(prop, dto))) + ")"));
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop => _parameterFormatter.GetPropertyValue(prop, dto))) + ")"));
 
         var keyNames = GetKeyNames<T>().ToList();
         var mergeConditionString = string.Join(" AND ", keyNames.Select(key => $"t.{key} = u.{key}"));
@@ -133,7 +123,7 @@ public class DeltaLakeDataUploadStatementFormatter
 
     public string CreateDeleteStatement<T>(string tableName, IEnumerable<T> rowObjects)
     {
-        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetKeys<T>().Select(prop => GetPropertyValue(prop, dto))) + ")"));
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetKeys<T>().Select(prop => _parameterFormatter.GetPropertyValue(prop, dto))) + ")"));
 
         var keyNames = GetKeyNames<T>().ToList();
         var keyColumnsString = string.Join(", ", keyNames);
@@ -144,6 +134,17 @@ public class DeltaLakeDataUploadStatementFormatter
                 """;
     }
 
+    private static void AddParameters(List<QueryParameter> parameters, DatabricksStatementBuilder builder)
+    {
+        // HACK: Use reflection to access private field _queryParameters in DatabricksStatementBuilder class. A fix for this is available in geh-core version > 13.1.0
+        foreach (var p in parameters)
+        {
+            var fieldInfo = builder.GetType().GetField("_queryParameters", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var parameterList = (List<QueryParameter>)fieldInfo.GetValue(builder)!;
+            parameterList.Add(p);
+        }
+    }
+
     private static IEnumerable<PropertyInfo> GetProperties<T>()
     {
         return typeof(T).GetProperties().Where(p => p.CanRead).OrderBy(p => p.Name);
@@ -152,43 +153,6 @@ public class DeltaLakeDataUploadStatementFormatter
     private static IEnumerable<PropertyInfo> GetKeys<T>()
     {
         return typeof(T).GetProperties().Where(p => p.CanRead && p.CustomAttributes.Any(attr => attr.AttributeType == typeof(DeltaLakeKeyAttribute)));
-    }
-
-    private string GetPropertyValue<T>(PropertyInfo prop, T dto)
-    {
-        var propertyValue = prop.GetValue(dto, null);
-        if (propertyValue is null)
-        {
-            if (prop.PropertyType == typeof(DateTimeOffset) || prop.PropertyType == typeof(DateTimeOffset?))
-            {
-                return "to_timestamp(null)";
-            }
-
-            return "null";
-        }
-
-        if (prop.PropertyType == typeof(DateTimeOffset) || prop.PropertyType == typeof(DateTimeOffset?))
-        {
-            return $"to_timestamp('{((DateTimeOffset)propertyValue).ToString(_dateTimeFormat, CultureInfo.InvariantCulture)}')";
-        }
-
-        return $"'{propertyValue}'";
-    }
-
-    private string GetPropertyValueForParameter<T>(PropertyInfo prop, T dto)
-    {
-        var propertyValue = prop.GetValue(dto, null);
-        if (propertyValue is null)
-        {
-            return "null";
-        }
-
-        if (prop.PropertyType == typeof(DateTimeOffset) || prop.PropertyType == typeof(DateTimeOffset?))
-        {
-            return $"{((DateTimeOffset)propertyValue).ToString(_dateTimeFormat, CultureInfo.InvariantCulture)}";
-        }
-
-        return $"{propertyValue}";
     }
 
     private IEnumerable<string> GetKeyNames<T>()
