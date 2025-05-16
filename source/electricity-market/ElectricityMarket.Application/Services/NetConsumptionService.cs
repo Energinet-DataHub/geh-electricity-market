@@ -173,13 +173,19 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             foreach (var m in meteringPoint.MetadataTimeline)
             {
                 changePoints.Add(m.Valid.Start);
-                changePoints.Add(m.Valid.End);
+                if (m.Valid.End.ToDateTimeOffset() != DateTimeOffset.MaxValue)
+                {
+                    changePoints.Add(m.Valid.End);
+                }
             }
 
             foreach (var cr in meteringPoint.CommercialRelationTimeline)
             {
                 changePoints.Add(cr.Period.Start);
-                changePoints.Add(cr.Period.End);
+                if (cr.Period.End.ToDateTimeOffset() != DateTimeOffset.MaxValue)
+                {
+                    changePoints.Add(cr.Period.End);
+                }
             }
 
             var builder = new TimelineBuilder();
