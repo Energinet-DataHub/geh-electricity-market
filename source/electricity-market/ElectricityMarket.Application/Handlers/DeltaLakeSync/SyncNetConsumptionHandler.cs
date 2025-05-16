@@ -22,43 +22,45 @@ using Microsoft.Extensions.Logging;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers.DeltaLakeSync;
 
-public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectricalHeatingCommand>
+public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumptionCommand>
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
     private readonly ISyncJobsRepository _syncJobsRepository;
-    private readonly IElectricalHeatingPeriodizationService _electricalHeatingPeriodizationService;
+    private readonly INetConsumptionService _netConsumptionService;
     private readonly IDeltaLakeDataUploadService _deltaLakeDataUploadService;
-    private readonly ILogger<SyncElectricalHeatingHandler> _logger;
+    private readonly ILogger<SyncNetConsumptionHandler> _logger;
 
-    public SyncElectricalHeatingHandler(
+    public SyncNetConsumptionHandler(
         IMeteringPointRepository meteringPointRepository,
         ISyncJobsRepository syncJobsRepository,
-        IElectricalHeatingPeriodizationService electricalHeatingPeriodizationService,
+        INetConsumptionService netConsumptionService,
         IDeltaLakeDataUploadService deltaLakeDataUploadService,
-        ILogger<SyncElectricalHeatingHandler> logger)
+        ILogger<SyncNetConsumptionHandler> logger)
     {
         _meteringPointRepository = meteringPointRepository;
         _syncJobsRepository = syncJobsRepository;
-        _electricalHeatingPeriodizationService = electricalHeatingPeriodizationService;
+        _netConsumptionService = netConsumptionService;
         _deltaLakeDataUploadService = deltaLakeDataUploadService;
         _logger = logger;
     }
 
-    public async Task Handle(SyncElectricalHeatingCommand request, CancellationToken cancellationToken)
+    public async Task Handle(SyncNetConsumptionCommand request, CancellationToken cancellationToken)
     {
-        var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.ElectricalHeating).ConfigureAwait(false);
+        var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.NetConsumption).ConfigureAwait(false);
 
         var moreData = true;
         while (moreData)
         {
             _logger.LogWarning(
-                "SyncElectricalHeatingHandler: Sync job version {Version} for {JobName} started.",
+                "SyncNetConsumptionHandler: Sync job version {Version} for {JobName} started.",
                 currentSyncJob.Version,
-                SyncJobName.ElectricalHeating);
+                SyncJobName.NetConsumption);
+
             var meteringPointsToSync = _meteringPointRepository
                 .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
+
             if (maxVersion > DateTimeOffset.MinValue)
             {
                 currentSyncJob = currentSyncJob with { Version = maxVersion };
@@ -77,12 +79,15 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
         await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
         {
             maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
-            var parentMeteringPoints = _electricalHeatingPeriodizationService.GetParentElectricalHeating(meteringPoint);
+
+            var parentMeteringPoints = _netConsumptionService.GetParentNetConsumption(meteringPoint);
             if (parentMeteringPoints.Any())
             {
                 await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPoints).ConfigureAwait(false);
 
-                var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(parentMeteringPoints.Select(p => p.MeteringPointId).Distinct()).ConfigureAwait(false);
+                var childMeteringPoints = await _netConsumptionService.GetChildNetConsumptionAsync(parentMeteringPoints.Select(p => p.MeteringPointId)
+                    .Distinct()).ConfigureAwait(false);
+
                 if (childMeteringPoints.Any())
                 {
                     await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPoints).ConfigureAwait(false);

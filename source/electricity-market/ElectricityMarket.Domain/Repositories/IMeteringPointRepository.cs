@@ -19,6 +19,7 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 public interface IMeteringPointRepository
 {
     Task<MeteringPoint?> GetAsync(MeteringPointIdentification identification);
+
     Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification);
 
     Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode);

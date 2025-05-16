@@ -54,7 +54,7 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
         var moreData = true;
         while (moreData)
         {
-            _logger.LogInformation(
+            _logger.LogWarning(
                 "SyncCapacitySettlementHandler: Sync job version {Version} for {JobName} started.",
                 currentSyncJob.Version,
                 SyncJobName.CapacitySettlement);

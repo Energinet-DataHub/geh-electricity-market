@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Common;
 
-public enum SyncJobName
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
-    ElectricalHeating,
-    CapacitySettlement,
-    NetConsumption
+    public sealed record NetConsumptionChildDto(
+        [property: DeltaLakeKey]long MeteringPointId,
+        string MeteringPointType,
+        long ParentMeteringPointId,
+        DateTimeOffset CoupledDate,
+        DateTimeOffset? UncoupledDate);
 }

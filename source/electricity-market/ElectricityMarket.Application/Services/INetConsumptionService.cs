@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public enum SyncJobName
+namespace Energinet.DataHub.ElectricityMarket.Application.Services;
+
+public interface INetConsumptionService
 {
-    ElectricalHeating,
-    CapacitySettlement,
-    NetConsumption
+    IReadOnlyList<NetConsumptionParentDto> GetParentNetConsumption(MeteringPoint meteringPoint);
+
+    Task<IReadOnlyList<NetConsumptionChildDto>> GetChildNetConsumptionAsync(IEnumerable<long> parentMeteringPointIds);
 }
