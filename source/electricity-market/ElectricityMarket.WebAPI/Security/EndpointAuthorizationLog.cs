@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Security;
+namespace ElectricityMarket.WebAPI.Security;
 
-public sealed record TenantDto(string ActorNumber, MarketRole MarketRole);
+// TODO: Move to package.
+public sealed record EndpointAuthorizationLog(Guid RequestId, string Endpoint, string Activity, string EntityType, string EntityKey);

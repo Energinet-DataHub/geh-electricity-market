@@ -12,6 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Security;
+namespace ElectricityMarket.WebAPI.Security;
 
-public sealed record TenantDto(string ActorNumber, MarketRole MarketRole);
+public enum AuthorizationCode
+{
+    Unavailable = 1,
+    Unauthorized,
+    Authorized
+}
+
+public sealed class AuthorizationResult(Guid requestId, AuthorizationCode result)
+{
+    public Guid RequestId { get; } = requestId;
+    public AuthorizationCode Result { get; } = result;
+}

@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Security;
+using Energinet.DataHub.MarketParticipant.Authorization.Model;
+using Energinet.DataHub.MarketParticipant.Authorization.Model.AccessValidationRequests;
 
-public sealed record TenantDto(string ActorNumber, MarketRole MarketRole);
+namespace ElectricityMarket.WebAPI.Security;
+
+// TODO: Move to package.
+public interface IEndpointAuthorizationLogger
+{
+    Task LogAsync(AccessValidationRequest accessValidationRequest, Signature? signature);
+}
