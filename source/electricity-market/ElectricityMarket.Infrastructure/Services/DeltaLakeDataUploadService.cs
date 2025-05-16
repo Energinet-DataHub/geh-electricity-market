@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
@@ -54,7 +55,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = record.ToString();
+            string resultString = JsonSerializer.Serialize(record)
             _logger.LogInformation("Electrical Heating Parents Uploaded: {ResultString}", resultString);
         }
     }
@@ -71,7 +72,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = record.ToString();
+            string resultString = JsonSerializer.Serialize(record)
             _logger.LogInformation("Electrical Heating Children Uploaded: {ResultString}", resultString);
         }
     }
@@ -87,7 +88,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = record.ToString();
+            string resultString = JsonSerializer.Serialize(record)
             _logger.LogInformation("Capacity settlement Uploaded: {ResultString}", resultString);
         }
     }
@@ -103,7 +104,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = record.ToString();
+            string resultString = JsonSerializer.Serialize(record)
             _logger.LogInformation("Capacity settlement deleted: {ResultString}", resultString);
         }
     }
@@ -120,7 +121,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = record.ToString();
+            string resultString = JsonSerializer.Serialize(record);
             _logger.LogInformation("Net Consumption Parents Uploaded: {ResultString}", resultString);
         }
     }
@@ -137,7 +138,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = record.ToString();
+            string resultString = JsonSerializer.Serialize(record);
             _logger.LogInformation("Net Consumption Children Uploaded: {ResultString}", resultString);
         }
     }
