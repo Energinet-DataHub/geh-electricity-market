@@ -14,4 +14,4 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
-public sealed record TenantDto(string ActorNumber, MarketRole? MarketRole);
+public sealed record TenantDto(string ActorNumber, MarketRole MarketRole);

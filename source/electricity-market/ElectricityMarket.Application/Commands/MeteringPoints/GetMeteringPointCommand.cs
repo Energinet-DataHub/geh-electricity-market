@@ -17,4 +17,4 @@ using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 
-public sealed record GetMeteringPointCommand(string Identification, MarketRole MarketRole) : IRequest<GetMeteringPointResponse?>;
+public sealed record GetMeteringPointCommand(string Identification, TenantDto Tenant) : IRequest<GetMeteringPointResponse?>;

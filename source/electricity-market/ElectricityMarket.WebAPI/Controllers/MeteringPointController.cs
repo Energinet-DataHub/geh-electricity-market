@@ -53,7 +53,8 @@ public class MeteringPointController : ControllerBase
     [Authorize(Roles = "metering-point:search")]
     public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification)
     {
-        var getMeteringPointCommand = new GetMeteringPointCommand(identification, _userContext.CurrentUser.MarketRole);
+        var tenant = new TenantDto(_userContext.CurrentUser.ActorNumber, _userContext.CurrentUser.MarketRole);
+        var getMeteringPointCommand = new GetMeteringPointCommand(identification, tenant);
 
         var meteringPoint = await _mediator
             .Send(getMeteringPointCommand)
@@ -137,7 +138,7 @@ public class MeteringPointController : ControllerBase
     }
 
     [HttpGet("{identification}/wip")]
-    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification, [FromQuery] MarketRole marketRole)
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification, [FromQuery] string actorNumber, [FromQuery] MarketRole marketRole)
     {
         var accessValidationRequest = new MeteringPointMasterDataAccessValidationRequest
         {
@@ -160,7 +161,7 @@ public class MeteringPointController : ControllerBase
             return Forbid();
         }
 
-        var getMeteringPointCommand = new GetMeteringPointCommand(identification, marketRole);
+        var getMeteringPointCommand = new GetMeteringPointCommand(identification, new TenantDto(actorNumber, marketRole));
 
         var meteringPoint = await _mediator
             .Send(getMeteringPointCommand)
