@@ -14,6 +14,7 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Common;
 using Energinet.DataHub.ElectricityMarket.Application.Helpers;
+using Energinet.DataHub.ElectricityMarket.Application.Helpers.Timeline;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -27,20 +28,6 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
     {
         private static readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
         private static readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.Consumption, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
-        private static readonly string[] _relevantTransactionTypes =
-            [TransactionTypes.ChangeSupplier,
-            TransactionTypes.EndSupply,
-            TransactionTypes.IncorrectSupplierChange,
-            TransactionTypes.MasterDataSent,
-            TransactionTypes.MoveIn,
-            TransactionTypes.MoveOut,
-            TransactionTypes.TransactionTypeIncMove,
-            TransactionTypes.IncorrectMoveIn,
-            TransactionTypes.ElectricalHeatingOn,
-            TransactionTypes.ElectricalHeatingOff,
-            TransactionTypes.ChangeSupplierShort,
-            TransactionTypes.ManualChangeSupplier,
-            TransactionTypes.ManualCorrections];
 
         private readonly Instant _cutOffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
         private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
@@ -76,15 +63,9 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
         {
             ArgumentNullException.ThrowIfNull(meteringPoint);
 
-            var response = new List<NetConsumptionParentDto>();
+            var segments = BuildMergedTimeline(meteringPoint);
 
-            var metadataTimeline = meteringPoint.MetadataTimeline
-                .Where(mt => mt.Parent is null
-                && mt.NetSettlementGroup == 6
-                && mt.Type == MeteringPointType.Consumption
-                && _relevantConnectionStates.Contains(mt.ConnectionState)
-                && _relevantTransactionTypes.Contains(mt.TransactionType)
-                && mt.Valid.End > _cutOffDate);
+            var response = new List<NetConsumptionParentDto>();
 
             var electricalHeatingPeriods = meteringPoint.CommercialRelationTimeline
                 .SelectMany(cr => cr.ElectricalHeatingPeriods)
@@ -92,30 +73,45 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                 .Where(iv => iv.End > _cutOffDate)
                 .ToList();
 
-            foreach (var meteringPointMetadata in metadataTimeline)
+            var firstCustomerRelationByClient = meteringPoint
+                    .CommercialRelationTimeline
+                        .Where(cr => cr.ClientId.HasValue)
+                        .GroupBy(cr => cr.ClientId!.Value)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.OrderBy(cr => cr.Period.Start).First().Period);
+
+            foreach (var segment in segments.Where(s =>
+                s.Metadata.Parent is null
+                && s.Metadata.NetSettlementGroup == 6
+                && s.Metadata.Type == MeteringPointType.Consumption
+                && _relevantConnectionStates.Contains(s.Metadata.ConnectionState)
+                && s.Period.End > _cutOffDate))
             {
-                if (meteringPointMetadata.ScheduledMeterReadingMonth is null)
+                if (segment.Metadata.ScheduledMeterReadingMonth is null)
                 {
                     _logger.LogError(
                         "{ScheduledMeterReadingMonth} is null, which is not allowed for Net Settlement Group 6.",
-                        meteringPointMetadata.ScheduledMeterReadingMonth);
+                        segment.Metadata.ScheduledMeterReadingMonth);
                     continue;
                 }
 
                 var hasElectricalHeating = electricalHeatingPeriods
-                    .Any(h => h.Start <= meteringPointMetadata.Valid.End && meteringPointMetadata.Valid.Start <= h.End);
+                    .Any(h => h.Start <= segment.Period.Start && segment.Period.End <= h.End);
 
-                var periodToDate = meteringPointMetadata.Valid.End.ToDateTimeOffset();
+                var isMoveIn = firstCustomerRelationByClient.Values.Any(fp =>
+                    fp.Start == segment.Period.Start);
 
-                var netConsumptionParent = new NetConsumptionParentDto(
+                var from = segment.Period.Start.ToDateTimeOffset();
+                var to = segment.Period.End == Instant.MaxValue ? (DateTimeOffset?)null : segment.Period.End.ToDateTimeOffset();
+
+                response.Add(new NetConsumptionParentDto(
                     MeteringPointId: meteringPoint.Identification.Value,
                     HasElectricalHeating: hasElectricalHeating,
-                    SettlementMonth: (int)meteringPointMetadata.ScheduledMeterReadingMonth,
-                    PeriodFromDate: meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
-                    PeriodToDate: periodToDate == DateTimeOffset.MaxValue ? null : periodToDate,
-                    MoveIn: meteringPointMetadata.TransactionType == TransactionTypes.MoveIn);
-
-                response.Add(netConsumptionParent);
+                    SettlementMonth: (int)segment.Metadata.ScheduledMeterReadingMonth,
+                    PeriodFromDate: from,
+                    PeriodToDate: to,
+                    MoveIn: isMoveIn));
             }
 
             return response;
@@ -169,6 +165,45 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             }
 
             return response;
+        }
+
+        private static IReadOnlyList<TimelineSegment> BuildMergedTimeline(MeteringPoint meteringPoint)
+        {
+            var changePoints = new SortedSet<Instant>();
+
+            foreach (var m in meteringPoint.MetadataTimeline)
+            {
+                changePoints.Add(m.Valid.Start);
+                changePoints.Add(m.Valid.End);
+            }
+
+            foreach (var cr in meteringPoint.CommercialRelationTimeline)
+            {
+                changePoints.Add(cr.Period.Start);
+                changePoints.Add(cr.Period.End);
+
+                foreach (var esp in cr.EnergySupplyPeriodTimeline)
+                {
+                    changePoints.Add(esp.Valid.Start);
+                    changePoints.Add(esp.Valid.End);
+                }
+            }
+
+            var builder = new TimelineBuilder();
+            foreach (var start in changePoints)
+            {
+                var metadata = meteringPoint.MetadataTimeline
+                    .First(m => m.Valid.Contains(start));
+                var commercialRelation = meteringPoint.CommercialRelationTimeline
+                    .FirstOrDefault(r => r.Period.Contains(start));
+                var energySupplyPeriod = commercialRelation?
+                    .EnergySupplyPeriodTimeline
+                    .FirstOrDefault(e => e.Valid.Contains(start));
+
+                builder.AddSegment(start, metadata, commercialRelation, energySupplyPeriod);
+            }
+
+            return builder.Build();
         }
     }
 }
