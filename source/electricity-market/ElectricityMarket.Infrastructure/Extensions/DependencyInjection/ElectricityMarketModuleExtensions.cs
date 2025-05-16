@@ -114,7 +114,7 @@ public static class ElectricityMarketModuleExtensions
             .ValidateDataAnnotations();
 
         services
-            .AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
+            .AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"), TokenProvider.ServicePrincipalTokenProvider);
 
         return services;
     }
