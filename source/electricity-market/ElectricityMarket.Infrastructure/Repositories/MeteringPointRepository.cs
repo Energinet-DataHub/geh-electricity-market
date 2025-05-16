@@ -31,21 +31,17 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
 public sealed class MeteringPointRepository : IMeteringPointRepository
 {
-    private readonly IDbContextFactory<ElectricityMarketDatabaseContext> _electricityMarketFactory;
-
     private readonly MarketParticipantDatabaseContext _marketParticipantDatabaseContext;
     private readonly ElectricityMarketDatabaseContext _electricityMarketDatabaseContext;
     private readonly IRelationalModelPrinter _relationalModelPrinter;
     private readonly IDbContextFactory<ElectricityMarketDatabaseContext> _contextFactory;
 
     public MeteringPointRepository(
-        IDbContextFactory<ElectricityMarketDatabaseContext> electricityMarketFactory,
         MarketParticipantDatabaseContext marketParticipantDatabaseContext,
         ElectricityMarketDatabaseContext electricityMarketDatabaseContext,
         IRelationalModelPrinter relationalModelPrinter,
         IDbContextFactory<ElectricityMarketDatabaseContext> contextFactory)
     {
-        _electricityMarketFactory = electricityMarketFactory;
         _marketParticipantDatabaseContext = marketParticipantDatabaseContext;
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
         _relationalModelPrinter = relationalModelPrinter;
@@ -157,8 +153,6 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             .Where(x => x.Version > lastSyncedVersion)
             .OrderBy(x => x.Version)
             .Take(batchSize)
-            .OrderBy(x => x.Version)
-            .Take(batchSize)
             .AsAsyncEnumerable();
 
             await foreach (var entity in entities)
@@ -166,18 +160,6 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                 yield return MeteringPointMapper.MapFromEntity(entity);
             }
         }
-    }
-
-    public async Task<MeteringPoint?> GetMeteringPointByIdAsync(MeteringPointIdentification identification)
-    {
-        using var electricityMarketFactory =
-                await _electricityMarketFactory.CreateDbContextAsync().ConfigureAwait(false);
-
-        var entity = await electricityMarketFactory.MeteringPoints
-            .FirstOrDefaultAsync(x => x.Identification == identification.Value)
-            .ConfigureAwait(false);
-
-        return entity == null ? null : MeteringPointMapper.MapFromEntity(entity);
     }
 
     public async Task<MeteringPointHierarchy> GetMeteringPointHierarchyAsync(

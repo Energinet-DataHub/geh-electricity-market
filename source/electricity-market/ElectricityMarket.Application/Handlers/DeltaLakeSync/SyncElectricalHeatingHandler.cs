@@ -51,7 +51,7 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
         var moreData = true;
         while (moreData)
         {
-            _logger.LogInformation(
+            _logger.LogWarning(
                 "SyncElectricalHeatingHandler: Sync job version {Version} for {JobName} started.",
                 currentSyncJob.Version,
                 SyncJobName.ElectricalHeating);

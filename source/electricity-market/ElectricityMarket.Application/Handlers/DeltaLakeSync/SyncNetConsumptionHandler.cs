@@ -51,7 +51,7 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
         var moreData = true;
         while (moreData)
         {
-            _logger.LogInformation(
+            _logger.LogWarning(
                 "SyncNetConsumptionHandler: Sync job version {Version} for {JobName} started.",
                 currentSyncJob.Version,
                 SyncJobName.NetConsumption);
