@@ -93,6 +93,9 @@ CREATE TABLE [electricitymarket].[MeteringPointPeriod]
 CREATE INDEX [IX_MeteringPointPeriod_MeteringPointId]
     ON [electricitymarket].[MeteringPointPeriod] (MeteringPointId);
 
+CREATE INDEX [IX_MeteringPointPeriod_GridAreaCode]
+    ON [electricitymarket].[MeteringPointPeriod] (GridAreaCode);
+
 CREATE TABLE [electricitymarket].[CommercialRelation]
 (
     [Id]                 bigint IDENTITY(1,1) NOT NULL,
