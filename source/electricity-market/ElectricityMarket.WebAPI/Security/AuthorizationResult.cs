@@ -12,9 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Security;
-using MediatR;
+namespace ElectricityMarket.WebAPI.Security;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+public enum AuthorizationCode
+{
+    Unavailable = 1,
+    Unauthorized,
+    Authorized
+}
 
-public sealed record GetMeteringPointCommand(string Identification, MarketRole MarketRole) : IRequest<GetMeteringPointResponse?>;
+public sealed class AuthorizationResult(Guid requestId, AuthorizationCode result)
+{
+    public Guid RequestId { get; } = requestId;
+    public AuthorizationCode Result { get; } = result;
+}

@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Security;
-using MediatR;
+using Energinet.DataHub.MarketParticipant.Authorization.Model.AccessValidationRequests;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+namespace ElectricityMarket.WebAPI.Security;
 
-public sealed record GetMeteringPointCommand(string Identification, MarketRole MarketRole) : IRequest<GetMeteringPointResponse?>;
+public interface IEndpointAuthorizationContext
+{
+    Task<AuthorizationResult> VerifyAsync(AccessValidationRequest accessValidationRequest);
+}

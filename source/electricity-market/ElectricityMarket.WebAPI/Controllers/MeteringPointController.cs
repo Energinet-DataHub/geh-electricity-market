@@ -14,12 +14,15 @@
 
 using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
+using ElectricityMarket.WebAPI.Security;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.MarketParticipant.Authorization.Model;
+using Energinet.DataHub.MarketParticipant.Authorization.Model.AccessValidationRequests;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -33,11 +36,16 @@ public class MeteringPointController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IUserContext<FrontendUser> _userContext;
+    private readonly IEndpointAuthorizationContext _endpointAuthorizationContext;
 
-    public MeteringPointController(IMediator mediator, IUserContext<FrontendUser> userContext)
+    public MeteringPointController(
+        IMediator mediator,
+        IUserContext<FrontendUser> userContext,
+        IEndpointAuthorizationContext endpointAuthorizationContext)
     {
         _mediator = mediator;
         _userContext = userContext;
+        _endpointAuthorizationContext = endpointAuthorizationContext;
     }
 
     [HttpGet("{identification}")]
@@ -45,8 +53,7 @@ public class MeteringPointController : ControllerBase
     [Authorize(Roles = "metering-point:search")]
     public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification)
     {
-        var tenant = new TenantDto(_userContext.CurrentUser.ActorNumber, _userContext.CurrentUser.MarketRole);
-        var getMeteringPointCommand = new GetMeteringPointCommand(identification, tenant);
+        var getMeteringPointCommand = new GetMeteringPointCommand(identification, _userContext.CurrentUser.MarketRole);
 
         var meteringPoint = await _mediator
             .Send(getMeteringPointCommand)
@@ -127,5 +134,43 @@ public class MeteringPointController : ControllerBase
             .ConfigureAwait(false)).MeteringPoints;
 
         return Ok(meteringPoints);
+    }
+
+    [HttpGet("{identification}/wip")]
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification, [FromQuery] MarketRole marketRole)
+    {
+        var accessValidationRequest = new MeteringPointMasterDataAccessValidationRequest
+        {
+            MeteringPointId = identification,
+            MarketRole = marketRole switch
+            {
+                MarketRole.DataHubAdministrator => EicFunction.DataHubAdministrator,
+                MarketRole.EnergySupplier => EicFunction.EnergySupplier,
+                MarketRole.GridAccessProvider => EicFunction.GridAccessProvider,
+                _ => throw new ArgumentOutOfRangeException(nameof(marketRole), marketRole.ToString())
+            }
+        };
+
+        var authorizationResult = await _endpointAuthorizationContext
+            .VerifyAsync(accessValidationRequest)
+            .ConfigureAwait(false);
+
+        if (authorizationResult.Result != AuthorizationCode.Authorized)
+        {
+            return Forbid();
+        }
+
+        var getMeteringPointCommand = new GetMeteringPointCommand(identification, marketRole);
+
+        var meteringPoint = await _mediator
+            .Send(getMeteringPointCommand)
+            .ConfigureAwait(false);
+
+        if (meteringPoint == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(meteringPoint.MeteringPoint);
     }
 }
