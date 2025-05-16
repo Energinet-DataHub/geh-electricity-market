@@ -20,6 +20,5 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Helpers.Timeline
     public sealed record TimelineSegment(
         Interval Period,
         MeteringPointMetadata Metadata,
-        CommercialRelation? Relation,
-        EnergySupplyPeriod? SupplyPeriod);
+        CommercialRelation? Relation);
 }

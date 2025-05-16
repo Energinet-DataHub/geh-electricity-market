@@ -180,12 +180,6 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             {
                 changePoints.Add(cr.Period.Start);
                 changePoints.Add(cr.Period.End);
-
-                foreach (var esp in cr.EnergySupplyPeriodTimeline)
-                {
-                    changePoints.Add(esp.Valid.Start);
-                    changePoints.Add(esp.Valid.End);
-                }
             }
 
             var builder = new TimelineBuilder();
@@ -195,11 +189,8 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                     .First(m => m.Valid.Contains(start));
                 var commercialRelation = meteringPoint.CommercialRelationTimeline
                     .FirstOrDefault(r => r.Period.Contains(start));
-                var energySupplyPeriod = commercialRelation?
-                    .EnergySupplyPeriodTimeline
-                    .FirstOrDefault(e => e.Valid.Contains(start));
 
-                builder.AddSegment(start, metadata, commercialRelation, energySupplyPeriod);
+                builder.AddSegment(start, metadata, commercialRelation);
             }
 
             return builder.Build();
