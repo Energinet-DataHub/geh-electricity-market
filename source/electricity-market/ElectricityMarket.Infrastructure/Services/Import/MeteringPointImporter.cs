@@ -239,13 +239,24 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
                 case "INCCHGSUP" or "INCMOVEAUT" or "INCMOVEIN" or "INCMOVEMAN":
                     {
-                        var cr = allCrsOrdered.First(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+                        var cr = allCrsOrdered.FirstOrDefault(x => x.StartDate >= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+
+                        if (cr is null)
+                        {
+                            logger.LogWarning(
+                                "MISMATCH_INC_CR: No overlapping CR found {TransactionType}. mp: {MeteringPointId}, btd_trans_doss_id: {BtdTransDossId}, valid_from: {ValidFrom}",
+                                transactionType,
+                                meteringPoint.Identification,
+                                importedTransaction.btd_trans_doss_id,
+                                importedTransaction.valid_from_date);
+                            return true;
+                        }
 
                         if ((transactionType is "INCCHGSUP" && !cr.EnergySupplyPeriods.Any(x => x.TransactionType is "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP" && x.ValidFrom == importedTransaction.valid_from_date)) ||
                             (transactionType is not "INCCHGSUP" && !cr.EnergySupplyPeriods.Any(x => x.TransactionType == "MOVEINES" && x.ValidFrom == importedTransaction.valid_from_date)))
                         {
                             logger.LogWarning(
-                                "No match found for {TransactionType}. mp: {MeteringPointId}, btd_trans_doss_id: {BtdTransDossId}, valid_from: {ValidFrom}",
+                                "MISMATCH_INC_CR: No match found for {TransactionType}. mp: {MeteringPointId}, btd_trans_doss_id: {BtdTransDossId}, valid_from: {ValidFrom}",
                                 transactionType,
                                 meteringPoint.Identification,
                                 importedTransaction.btd_trans_doss_id,

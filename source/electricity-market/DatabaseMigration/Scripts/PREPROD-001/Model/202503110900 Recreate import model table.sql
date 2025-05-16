@@ -173,7 +173,7 @@ CREATE TABLE [electricitymarket].[Contact]
     
     [RelationType]               varchar(64) NOT NULL,
     [DisponentName]              nvarchar(128) NOT NULL,
-    [CPR]                        char(12) NULL,
+    [CPR]                        char(10) NULL,
     [CVR]                        char(8) NULL,
 
     [ContactAddressId]           bigint NULL,
