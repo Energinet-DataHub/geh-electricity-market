@@ -46,17 +46,43 @@ public class DeltaLakeDataUploadParameterFormatterTest
     {
         var dto = new TestDto("123abc", null, new DateTimeOffset(2023, 4, 3, 12, 5, 56, TimeSpan.FromHours(2)), null);
 
-        var paramValue = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Id)), dto);
-        Assert.Equal("123abc", paramValue);
+        var param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Id)), dto, "_p1");
+        Assert.Equal("123abc", param.Value);
 
-        paramValue = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Prop)), dto);
-        Assert.Equal("null", paramValue);
+        param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Prop)), dto, "_p1");
+        Assert.Equal("null", param.Value);
 
-        paramValue = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Timestamp)), dto);
-        Assert.Equal("2023-04-03T10:05:56Z", paramValue);
+        param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Timestamp)), dto, "_p1");
+        Assert.Equal("2023-04-03T10:05:56Z", param.Value);
 
-        paramValue = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.NullableTimestamp)), dto);
-        Assert.Equal("null", paramValue);
+        param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.NullableTimestamp)), dto, "_p1");
+        Assert.Equal(string.Empty, param.Value);
+        Assert.Equal("VOID", param.Type);
+    }
+
+    [Fact]
+    public void GivenMaxDate_WhenFormattingParameter_ParameterIsNull()
+    {
+        var dto = new TestDto("123abc", null, DateTimeOffset.MaxValue, null);
+
+        var param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Timestamp)), dto, "_p1");
+        Assert.Equal(string.Empty, param.Value);
+        Assert.Equal("VOID", param.Type);
+
+        var stringValue = _sut.GetPropertyValue(GetPropertyInfo(nameof(TestDto.Timestamp)), dto);
+        Assert.Equal("to_timestamp(null)", stringValue);
+    }
+
+    [Fact]
+    public void GivenDateTimeOffsetParameter_WhenFormattingParameter_ParameterTypeIsTimestamp()
+    {
+        var dto = new TestDto("123abc", null, DateTimeOffset.MaxValue, null);
+
+        var param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Timestamp)), dto, "_p1");
+        Assert.Equal("VOID", param.Type);
+
+        param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.NullableTimestamp)), dto, "_p1");
+        Assert.Equal("VOID", param.Type);
     }
 
     private static PropertyInfo GetPropertyInfo(string propertyName)

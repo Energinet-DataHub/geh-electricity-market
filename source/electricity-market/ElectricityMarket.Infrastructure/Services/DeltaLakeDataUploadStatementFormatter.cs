@@ -29,16 +29,16 @@ public class DeltaLakeDataUploadStatementFormatter
     public DatabricksStatement CreateUploadStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
     {
         var paramIndex = 0;
-        var parameters = new Dictionary<string, string>();
+        var parameters = new List<QueryParameter>();
 
         var columnNames = GetColumnNames<T>().ToList();
         var columnsString = string.Join(", ", columnNames);
 
         var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
         {
-            var propValue = _parameterFormatter.GetPropertyValueForParameter(prop, dto);
             var paramName = $"_p{paramIndex++}";
-            parameters.Add(paramName, propValue);
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
             return $":{paramName}";
         })) + ")"));
 
@@ -62,11 +62,7 @@ public class DeltaLakeDataUploadStatementFormatter
                            """;
 
         var builder = DatabricksStatement.FromRawSql(queryString);
-
-        foreach (var kv in parameters)
-        {
-            builder.WithParameter(kv.Key, kv.Value);
-        }
+        AddParameters(parameters, builder);
 
         return builder.Build();
     }
@@ -74,13 +70,13 @@ public class DeltaLakeDataUploadStatementFormatter
     public DatabricksStatement CreateDeleteStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
     {
         var paramIndex = 0;
-        var parameters = new Dictionary<string, string>();
+        var parameters = new List<QueryParameter>();
 
         var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetKeys<T>().Select(prop =>
         {
-            var propValue = _parameterFormatter.GetPropertyValueForParameter(prop, dto);
             var paramName = $"_p{paramIndex++}";
-            parameters.Add(paramName, propValue);
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
             return $":{paramName}";
         })) + ")"));
 
@@ -93,11 +89,7 @@ public class DeltaLakeDataUploadStatementFormatter
                 """;
 
         var builder = DatabricksStatement.FromRawSql(queryString);
-
-        foreach (var kv in parameters)
-        {
-            builder.WithParameter(kv.Key, kv.Value);
-        }
+        AddParameters(parameters, builder);
 
         return builder.Build();
     }
@@ -140,6 +132,17 @@ public class DeltaLakeDataUploadStatementFormatter
                 DELETE FROM {tableName}
                 WHERE ({keyColumnsString}) IN ({valuesString});
                 """;
+    }
+
+    private static void AddParameters(List<QueryParameter> parameters, DatabricksStatementBuilder builder)
+    {
+        // HACK: Use reflection to access private field _queryParameters in DatabricksStatementBuilder class. A fix for this is available in geh-core version > 13.1.0
+        foreach (var p in parameters)
+        {
+            var fieldInfo = builder.GetType().GetField("_queryParameters", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var parameterList = (List<QueryParameter>)fieldInfo.GetValue(builder)!;
+            parameterList.Add(p);
+        }
     }
 
     private static IEnumerable<PropertyInfo> GetProperties<T>()
