@@ -114,10 +114,9 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting upload of {Count} net consumption parent metering points.", netConsumptionParents.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionParentTableName}";
-        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, netConsumptionParents);
-        var query = DatabricksStatement.FromRawSql(queryString);
+        var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, netConsumptionParents);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
         await foreach (var record in result.ConfigureAwait(false))
         {
             string resultString = record.ToString();
@@ -131,10 +130,9 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting upload of {Count} net consumption child metering points.", netConsumptionChildren.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionChildTableName}";
-        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, netConsumptionChildren);
-        var query = DatabricksStatement.FromRawSql(queryString);
+        var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, netConsumptionChildren);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
         await foreach (var record in result.ConfigureAwait(false))
         {
             string resultString = record.ToString();
