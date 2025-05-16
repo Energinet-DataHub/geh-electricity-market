@@ -55,7 +55,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = JsonSerializer.Serialize(record)
+            string resultString = JsonSerializer.Serialize(record);
             _logger.LogInformation("Electrical Heating Parents Uploaded: {ResultString}", resultString);
         }
     }
@@ -72,7 +72,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = JsonSerializer.Serialize(record)
+            string resultString = JsonSerializer.Serialize(record);
             _logger.LogInformation("Electrical Heating Children Uploaded: {ResultString}", resultString);
         }
     }
@@ -88,7 +88,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = JsonSerializer.Serialize(record)
+            string resultString = JsonSerializer.Serialize(record);
             _logger.LogInformation("Capacity settlement Uploaded: {ResultString}", resultString);
         }
     }
@@ -104,7 +104,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
         await foreach (var record in result.ConfigureAwait(false))
         {
-            string resultString = JsonSerializer.Serialize(record)
+            string resultString = JsonSerializer.Serialize(record);
             _logger.LogInformation("Capacity settlement deleted: {ResultString}", resultString);
         }
     }
