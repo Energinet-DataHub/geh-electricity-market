@@ -23,6 +23,7 @@ using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
 
@@ -111,6 +112,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(gridAreaCode);
 
         var entities = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
             .Where(x => x.MeteringPointPeriods.Any(mpp => mpp.GridAreaCode == gridAreaCode))
             .ToListAsync()
             .ConfigureAwait(false);
@@ -161,14 +163,29 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     }
 
     public async Task<MeteringPointHierarchy> GetMeteringPointHierarchyAsync(
-        MeteringPointIdentification identification,
+        MeteringPointIdentification meteringPointIdentification,
         CancellationToken cancellationToken = default)
     {
-        var parent = await _electricityMarketDatabaseContext.MeteringPoints
-            .Where(x => (x.Identification == identification.Value && x.MeteringPointPeriods.All(y => y.ParentIdentification == null)) ||
-                        _electricityMarketDatabaseContext.MeteringPoints.First(y => y.Identification == identification.Value)
-                            .MeteringPointPeriods.Select(m => m.ParentIdentification).Contains(x.Identification))
-            .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(meteringPointIdentification);
+
+        MeteringPointEntity? parent;
+
+        var meteringPoint = await _electricityMarketDatabaseContext.MeteringPoints.AsSplitQuery().FirstOrDefaultAsync(mp => mp.Identification == meteringPointIdentification.Value, cancellationToken).ConfigureAwait(false);
+
+        if (meteringPoint is null)
+        {
+            throw new NotFoundException("Metering point not found");
+        }
+
+        var periodWithParentIdentification = meteringPoint.MeteringPointPeriods.FirstOrDefault(mp => mp.ParentIdentification is not null);
+        if (periodWithParentIdentification?.ParentIdentification != null)
+        {
+            parent = await _electricityMarketDatabaseContext.MeteringPoints.AsSplitQuery().FirstOrDefaultAsync(y => y.Identification == periodWithParentIdentification.ParentIdentification, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            parent = meteringPoint;
+        }
 
         if (parent is null)
         {
@@ -176,6 +193,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         }
 
         var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
             .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == parent.Identification)).ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 

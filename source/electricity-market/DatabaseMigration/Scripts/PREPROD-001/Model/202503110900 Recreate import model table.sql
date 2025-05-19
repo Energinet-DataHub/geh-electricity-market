@@ -4,8 +4,8 @@ DROP VIEW IF EXISTS electricitymarket.vw_MeteringPointChanges;
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPointTransaction;
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPoint;
 DROP TABLE IF EXISTS electricitymarket.ElectricalHeatingPeriod;
-DROP TABLE IF EXISTS electricitymarket.Contact;
 DROP TABLE IF EXISTS electricitymarket.ContactAddress;
+DROP TABLE IF EXISTS electricitymarket.Contact;
 DROP TABLE IF EXISTS electricitymarket.EnergySupplyPeriod;
 DROP TABLE IF EXISTS electricitymarket.CommercialRelation;
 DROP TABLE IF EXISTS electricitymarket.MeteringPointPeriod;
@@ -173,7 +173,7 @@ CREATE TABLE [electricitymarket].[Contact]
     
     [RelationType]               varchar(64) NOT NULL,
     [DisponentName]              nvarchar(128) NOT NULL,
-    [CPR]                        char(12) NULL,
+    [CPR]                        char(10) NULL,
     [CVR]                        char(8) NULL,
 
     [ContactAddressId]           bigint NULL,

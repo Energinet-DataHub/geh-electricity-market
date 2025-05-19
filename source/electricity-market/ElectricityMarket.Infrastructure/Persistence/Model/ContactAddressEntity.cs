@@ -19,6 +19,7 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 public sealed class ContactAddressEntity
 {
     public long Id { get; set; }
+    public long ContactId { get; set; }
     public bool IsProtectedAddress { get; set; }
     public string? Attention { get; set; }
     public string? StreetCode { get; set; }

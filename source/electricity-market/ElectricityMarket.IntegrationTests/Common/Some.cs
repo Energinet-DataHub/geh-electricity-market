@@ -25,7 +25,9 @@ public static class Some
     {
         var alphabet = "0123456789";
         var random = new Random();
+#pragma warning disable CA5394
         var characterSelector = new Func<int, string>(_ => alphabet.Substring(random.Next(0, alphabet.Length), 1));
+#pragma warning restore CA5394
         return Enumerable.Range(1, charCount).Select(characterSelector).Aggregate((a, b) => a + b);
     }
 

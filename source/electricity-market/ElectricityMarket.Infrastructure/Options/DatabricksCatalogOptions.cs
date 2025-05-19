@@ -30,4 +30,5 @@ public sealed record DatabricksCatalogOptions
     public string MissingMeasurementLogsTableName { get; } = "missing_measurements_log_metering_point_periods";
     public string NetConsumptionParentTableName { get; } = "net_consumption_group_6_consumption_metering_point_periods";
     public string NetConsumptionChildTableName { get; } = "net_consumption_group_6_child_metering_point";
+    public string CapacitySettlementPeriodTableName { get; } = "capacity_settlement_metering_point_periods";
 }

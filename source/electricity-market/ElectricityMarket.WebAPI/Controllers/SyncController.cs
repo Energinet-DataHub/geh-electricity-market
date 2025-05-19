@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.Core.App.Common.Abstractions.Users;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
-using Energinet.DataHub.ElectricityMarket.Application.Security;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,18 +23,40 @@ namespace ElectricityMarket.WebAPI.Controllers;
 public class SyncController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly IUserContext<FrontendUser> _userContext;
 
-    public SyncController(IMediator mediator, IUserContext<FrontendUser> userContext)
+    public SyncController(IMediator mediator)
     {
         _mediator = mediator;
-        _userContext = userContext;
     }
 
     [HttpGet("electrical-heating")]
     public async Task<ActionResult> GetAsync()
     {
         var command = new SyncElectricalHeatingCommand();
+
+        await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok();
+    }
+
+    [HttpGet("capacity-settlement")]
+    public async Task<ActionResult> StartCapacitySettlementSyncAsync()
+    {
+        var command = new SyncCapacitySettlementCommand();
+
+        await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok();
+    }
+
+    [HttpGet("net-consumption")]
+    public async Task<ActionResult> StartNetConsumptionSyncAsync()
+    {
+        var command = new SyncNetConsumptionCommand();
 
         await _mediator
             .Send(command)
