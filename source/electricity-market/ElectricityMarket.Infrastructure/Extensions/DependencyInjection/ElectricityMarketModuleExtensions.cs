@@ -91,6 +91,7 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<IGridAreaRepository, GridAreaRepository>();
         services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();
         services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
+        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
 
         // Services
         services.AddScoped<ICsvImporter, CsvImporter>();
@@ -98,7 +99,7 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
         services.AddScoped<IElectricalHeatingPeriodizationService, ElectricalHeatingPeriodizationService>();
         services.AddScoped<ICapacitySettlementService, CapacitySettlementService>();
-        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
+        services.AddScoped<INetConsumptionService, NetConsumptionService>();
         services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
 
         return services;

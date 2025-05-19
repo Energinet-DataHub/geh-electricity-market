@@ -113,7 +113,7 @@ public class MeteringPointController : ControllerBase
 
     [HttpGet("debug")]
     [EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "gridAreaCode")]
-    public async Task<ActionResult<IEnumerable<MeteringPointDto>>> GetMeteringPointsByGridAreaCodeAsync([FromQuery] string gridAreaCode)
+    public async Task<ActionResult<IEnumerable<MeteringPointIdentificationDto>>> GetMeteringPointsByGridAreaCodeAsync([FromQuery] string gridAreaCode)
     {
         if (!_userContext.CurrentUser.IsFas)
         {

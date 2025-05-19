@@ -107,17 +107,17 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             CultureInfo.GetCultureInfo("da-DK")).ConfigureAwait(false);
     }
 
-    public async Task<IEnumerable<MeteringPoint>> GetByGridAreaCodeAsync(string gridAreaCode)
+    public async Task<IEnumerable<MeteringPointIdentification>> GetByGridAreaCodeAsync(string gridAreaCode)
     {
         ArgumentNullException.ThrowIfNull(gridAreaCode);
 
-        var entities = await _electricityMarketDatabaseContext.MeteringPoints
-            .AsSplitQuery()
-            .Where(x => x.MeteringPointPeriods.Any(mpp => mpp.GridAreaCode == gridAreaCode))
-            .ToListAsync()
-            .ConfigureAwait(false);
+        var query = from mpp in _electricityMarketDatabaseContext.MeteringPointPeriods
+            join mp in _electricityMarketDatabaseContext.MeteringPoints on mpp.MeteringPointId equals mp.Id
+            where mpp.GridAreaCode == gridAreaCode
+            select mp.Identification;
 
-        return entities.Select(MeteringPointMapper.MapFromEntity);
+        return (await query.Distinct().ToListAsync().ConfigureAwait(false))
+            .Select(x => new MeteringPointIdentification(x));
     }
 
     public async Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification)

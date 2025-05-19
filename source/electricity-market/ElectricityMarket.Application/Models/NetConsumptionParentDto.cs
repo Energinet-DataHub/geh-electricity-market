@@ -12,8 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Common;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
-
-public sealed record GetMeteringPointByGridAreaCodeResponse(IEnumerable<MeteringPointIdentificationDto> MeteringPoints);
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
+{
+    public sealed record NetConsumptionParentDto(
+        [property: DeltaLakeKey]long MeteringPointId,
+        bool HasElectricalHeating,
+        int SettlementMonth,
+        DateTimeOffset PeriodFromDate,
+        DateTimeOffset? PeriodToDate,
+        bool MoveIn);
+}
