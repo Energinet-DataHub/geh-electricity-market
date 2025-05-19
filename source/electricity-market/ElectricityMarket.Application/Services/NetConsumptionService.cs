@@ -29,6 +29,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
         private static readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.Consumption, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
 
         private readonly Instant _cutOffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
+        private readonly DateTimeOffset _endPeriodCutOffDate = new(DateTime.Today, DateTimeOffset.Now.Offset);
         private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
 
         private readonly IMeteringPointRepository _meteringPointRepository = meteringPointRepository;
@@ -102,7 +103,11 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                     fp.Start == segment.Period.Start);
 
                 var from = segment.Period.Start.ToDateTimeOffset();
-                var to = segment.Period.End == Instant.MaxValue ? (DateTimeOffset?)null : segment.Period.End.ToDateTimeOffset();
+
+                DateTimeOffset? to = segment.Period.End.ToDateTimeOffset();
+                to = segment.Period.End == Instant.MaxValue || to > _endPeriodCutOffDate.ToUniversalTime()
+                    ? null
+                    : to;
 
                 response.Add(new NetConsumptionParentDto(
                     MeteringPointId: meteringPoint.Identification.Value,
@@ -156,7 +161,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                             MeteringPointType: _snakeCaseFormatter.ToSnakeCase(metadataTimeline.Type.ToString()),
                             ParentMeteringPointId: metadataTimeline.Parent!.Value,
                             CoupledDate: metadataTimeline.Valid.Start.ToDateTimeOffset(),
-                            UncoupledDate: uncoupledDate == DateTimeOffset.MaxValue ? null : uncoupledDate);
+                            UncoupledDate: uncoupledDate == DateTimeOffset.MaxValue || uncoupledDate > _endPeriodCutOffDate.ToUniversalTime() ? null : uncoupledDate);
 
                         response.Add(netConsumptionChild);
                     }
