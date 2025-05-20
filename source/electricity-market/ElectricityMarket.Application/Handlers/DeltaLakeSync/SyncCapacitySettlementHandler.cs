@@ -81,7 +81,7 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
             mp =>
             {
                 maxVersion = maxVersion is null || maxVersion < mp.Version ? mp.Version : maxVersion;
-                return _capacitySettlementService.GetCapacitySettlementPeriodsAsync(mp.Identification, cancellationToken);
+                return _capacitySettlementService.GetCapacitySettlementPeriodsAsync(mp, cancellationToken);
             }).ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var meteringPointsToInsert = meteringPoints.OfType<CapacitySettlementPeriodDto>().ToList();
