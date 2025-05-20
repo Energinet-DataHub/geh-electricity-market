@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
+
 namespace Energinet.DataHub.ElectricityMarket.Application.Security;
 
 public sealed class FrontendUser
 {
-    public FrontendUser(Guid userId, Guid actorId, string actorNumber, bool isFas, MarketRole marketRole)
+    public FrontendUser(Guid userId, Guid actorId, string actorNumber, bool isFas, EicFunction marketRole)
     {
         UserId = userId;
         ActorId = actorId;
@@ -25,11 +27,11 @@ public sealed class FrontendUser
         MarketRole = marketRole;
     }
 
-    public MarketRole MarketRole { get; }
     public Guid UserId { get; }
     public Guid ActorId { get; }
-    public string ActorNumber { get; }
     public bool IsFas { get; }
+    public string ActorNumber { get; }
+    public EicFunction MarketRole { get; }
 
     public bool IsFasOrAssignedToActor(Guid actorId)
     {

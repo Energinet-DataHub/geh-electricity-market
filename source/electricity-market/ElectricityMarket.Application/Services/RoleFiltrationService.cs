@@ -14,6 +14,7 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
+using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
@@ -26,9 +27,9 @@ public class RoleFiltrationService : IRoleFiltrationService
 
         return tenant.MarketRole switch
         {
-            MarketRole.DataHubAdministrator or MarketRole.SystemOperator or MarketRole.DanishEnergyAgency => meteringPoint,
-            MarketRole.EnergySupplier => EnergySupplierFiltering(meteringPoint, tenant),
-            MarketRole.GridAccessProvider => GridAccessProviderFiltering(meteringPoint, tenant),
+            EicFunction.DataHubAdministrator or EicFunction.SystemOperator or EicFunction.DanishEnergyAgency => meteringPoint,
+            EicFunction.EnergySupplier => EnergySupplierFiltering(meteringPoint, tenant),
+            EicFunction.GridAccessProvider => GridAccessProviderFiltering(meteringPoint, tenant),
             _ => null
         };
     }
