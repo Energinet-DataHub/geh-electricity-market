@@ -51,6 +51,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(identification);
 
         var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .TagWith("FAST1")
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
@@ -91,6 +92,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(identification);
 
         var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .TagWith("FAST1")
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
@@ -121,6 +123,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     public async Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification)
     {
         var parent = await _electricityMarketDatabaseContext.MeteringPoints
+            .TagWith("FAST1")
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
 
@@ -132,6 +135,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             .FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.UtcNow && x.ValidTo >= DateTimeOffset.UtcNow)?.PowerPlantGsrn;
 
         var allRelated = await _electricityMarketDatabaseContext.MeteringPoints
+            .TagWith("FAST1")
             .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification.Value || (powerPlantGsrn != null && powerPlantGsrn == y.PowerPlantGsrn)))
             .ToListAsync()
             .ConfigureAwait(false);
