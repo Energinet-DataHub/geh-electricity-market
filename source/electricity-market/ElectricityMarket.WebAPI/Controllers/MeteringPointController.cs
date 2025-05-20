@@ -12,21 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using ElectricityMarket.WebAPI.Extensions.Authorization;
 using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
-using ElectricityMarket.WebAPI.Security;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.MarketParticipant.Authorization.Http;
 using Energinet.DataHub.MarketParticipant.Authorization.Model;
 using Energinet.DataHub.MarketParticipant.Authorization.Model.AccessValidationRequests;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EicFunction = Energinet.DataHub.ElectricityMarket.Domain.Models.Actors.EicFunction;
 
 namespace ElectricityMarket.WebAPI.Controllers;
 
@@ -138,18 +140,16 @@ public class MeteringPointController : ControllerBase
     }
 
     [HttpGet("{identification}/wip")]
-    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(string identification, [FromQuery] string actorNumber, [FromQuery] MarketRole marketRole)
+    public async Task<ActionResult<MeteringPointDto>> GetMeteringPointAsync(
+        string identification,
+        [FromQuery] string actorNumber,
+        [FromQuery] EicFunction marketRole)
     {
         var accessValidationRequest = new MeteringPointMasterDataAccessValidationRequest
         {
             MeteringPointId = identification,
-            MarketRole = marketRole switch
-            {
-                MarketRole.DataHubAdministrator => EicFunction.DataHubAdministrator,
-                MarketRole.EnergySupplier => EicFunction.EnergySupplier,
-                MarketRole.GridAccessProvider => EicFunction.GridAccessProvider,
-                _ => throw new ArgumentOutOfRangeException(nameof(marketRole), marketRole.ToString())
-            }
+            ActorNumber = actorNumber,
+            MarketRole = marketRole.ToAuthorizationRole()
         };
 
         var authorizationResult = await _endpointAuthorizationContext
