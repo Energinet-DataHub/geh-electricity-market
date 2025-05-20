@@ -84,20 +84,20 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
                 return _capacitySettlementService.GetCapacitySettlementPeriodsAsync(mp.Identification, cancellationToken);
             }).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        var periodsToUpsert = meteringPoints.OfType<CapacitySettlementPeriodDto>().ToList();
-        var periodsToClear = meteringPoints.OfType<CapacitySettlementEmptyDto>().ToList();
+        var meteringPointsToInsert = meteringPoints.OfType<CapacitySettlementPeriodDto>().ToList();
+        var meteringPointsToDelete = meteringPoints.ToList();
 
-        if (periodsToUpsert.Count > 0)
+        if (meteringPointsToDelete.Count > 0)
         {
             await _deltaLakeDataUploadService
-                .ImportTransactionsAsync(periodsToUpsert, cancellationToken)
+                .ImportTransactionsAsync(meteringPointsToDelete, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        if (periodsToClear.Count > 0)
+        if (meteringPointsToInsert.Count > 0)
         {
             await _deltaLakeDataUploadService
-                .ImportTransactionsAsync(periodsToClear, cancellationToken)
+                .ImportTransactionsAsync(meteringPointsToInsert, cancellationToken)
                 .ConfigureAwait(false);
         }
 
