@@ -50,6 +50,8 @@ public class CapacitySettlementService : ICapacitySettlementService
     public async IAsyncEnumerable<ICapacitySettlementResult> GetCapacitySettlementPeriodsAsync(
         MeteringPointIdentification meteringPointIdentification, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(meteringPointIdentification);
+
         var meteringPointHierarchy = await _meteringPointRepository.GetMeteringPointHierarchyAsync(meteringPointIdentification, cancellationToken).ConfigureAwait(false);
 
         var capacitySettlementMeteringPoint =
@@ -58,7 +60,7 @@ public class CapacitySettlementService : ICapacitySettlementService
 
         if (capacitySettlementMeteringPoint is null)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
+            yield return new CapacitySettlementEmptyDto(meteringPointIdentification.Value);
             yield break;
         }
 
@@ -67,13 +69,13 @@ public class CapacitySettlementService : ICapacitySettlementService
 
         if (consumptionPeriod is null)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
+            yield return new CapacitySettlementEmptyDto(meteringPointIdentification.Value);
             yield break;
         }
 
         if (capacitySettlementPeriod.Valid.End < _capacitySettlementEnabledFrom)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
+            yield return new CapacitySettlementEmptyDto(meteringPointIdentification.Value);
             yield break;
         }
 

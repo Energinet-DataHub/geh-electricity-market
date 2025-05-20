@@ -83,7 +83,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting upload of {Count} capacity settlement metering point periods.", capacitySettlementPeriods.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
-        var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, capacitySettlementPeriods);
+        var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, capacitySettlementPeriods);
 
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
         await foreach (var record in result.ConfigureAwait(false))
@@ -93,13 +93,13 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         }
     }
 
-    public async Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken)
+    public async Task ImportTransactionsAsync(IReadOnlyList<ICapacitySettlementResult> capacitySettlementResultDtos, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(capacitySettlementEmptyDtos);
+        ArgumentNullException.ThrowIfNull(capacitySettlementResultDtos);
         _logger.LogInformation(
-            "Starting clearing of {Count} capacity settlement metering point periods.", capacitySettlementEmptyDtos.Count);
+            "Starting clearing of {Count} capacity settlement metering point periods.", capacitySettlementResultDtos.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
-        var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, capacitySettlementEmptyDtos);
+        var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, capacitySettlementResultDtos);
 
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
         await foreach (var record in result.ConfigureAwait(false))

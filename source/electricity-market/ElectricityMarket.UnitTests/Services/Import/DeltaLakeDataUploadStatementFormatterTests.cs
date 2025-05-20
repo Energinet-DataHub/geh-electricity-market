@@ -84,7 +84,7 @@ public class DeltaLakeDataUploadStatementFormatterTests
         var statement = sut.CreateDeleteStatementWithParameters<MultiKeyTestDto>("testCatalog.TestTable", [new MultiKeyTestDto("123", "abc", "fiz"), new MultiKeyTestDto("789", "hij", "buz")]);
         var expectedStatement = """
                                 DELETE FROM testCatalog.TestTable
-                                WHERE (id, id2) IN ((:_p0, :_p1), (:_p2, :_p3));
+                                WHERE (id, id2, prop) IN ((:_p0, :_p1, :_p2), (:_p3, :_p4, :_p5));
                                 """;
         Assert.Equal(expectedStatement, statement.ToString());
     }
