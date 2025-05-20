@@ -19,7 +19,7 @@ using Xunit;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Services.Import;
 
-public class DeltaLakeDataUploadParameterFormatterTest
+public class DeltaLakeDataUploadParameterFormatterTests
 {
     private DeltaLakeDataUploadParameterFormatter _sut = new();
 
@@ -50,13 +50,13 @@ public class DeltaLakeDataUploadParameterFormatterTest
         Assert.Equal("123abc", param.Value);
 
         param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Prop)), dto, "_p1");
-        Assert.Equal("null", param.Value);
+        Assert.Null(param.Value);
 
         param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Timestamp)), dto, "_p1");
         Assert.Equal("2023-04-03T10:05:56Z", param.Value);
 
         param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.NullableTimestamp)), dto, "_p1");
-        Assert.Equal(string.Empty, param.Value);
+        Assert.Null(param.Value);
         Assert.Equal("VOID", param.Type);
     }
 
@@ -66,7 +66,7 @@ public class DeltaLakeDataUploadParameterFormatterTest
         var dto = new TestDto("123abc", null, DateTimeOffset.MaxValue, null);
 
         var param = _sut.GetPropertyValueForParameter(GetPropertyInfo(nameof(TestDto.Timestamp)), dto, "_p1");
-        Assert.Equal(string.Empty, param.Value);
+        Assert.Null(param.Value);
         Assert.Equal("VOID", param.Type);
 
         var stringValue = _sut.GetPropertyValue(GetPropertyInfo(nameof(TestDto.Timestamp)), dto);

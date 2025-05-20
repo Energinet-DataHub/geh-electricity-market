@@ -67,12 +67,15 @@ public class DeltaLakeDataUploadStatementFormatter
         return builder.Build();
     }
 
-    public DatabricksStatement CreateDeleteStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
+    public DatabricksStatement CreateInsertStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
     {
         var paramIndex = 0;
         var parameters = new List<QueryParameter>();
 
-        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetKeys<T>().Select(prop =>
+        var columnNames = GetColumnNames<T>().ToList();
+        var columnsString = string.Join(", ", columnNames);
+
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
         {
             var paramName = $"_p{paramIndex++}";
             var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
@@ -80,12 +83,35 @@ public class DeltaLakeDataUploadStatementFormatter
             return $":{paramName}";
         })) + ")"));
 
-        var keyNames = GetKeyNames<T>().ToList();
-        var keyColumnsString = string.Join(", ", keyNames);
+        var queryString = $"""
+                           INSERT INTO {tableName} ({columnsString}) VALUES {valuesString}
+                           """;
+
+        var builder = DatabricksStatement.FromRawSql(queryString);
+        AddParameters(parameters, builder);
+
+        return builder.Build();
+    }
+
+    public DatabricksStatement CreateDeleteStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
+    {
+        var paramIndex = 0;
+        var parameters = new List<QueryParameter>();
+
+        var columnNames = GetColumnNames<T>().ToList();
+        var columnsString = string.Join(", ", columnNames);
+
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
+        {
+            var paramName = $"_p{paramIndex++}";
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
+            return $":{paramName}";
+        })) + ")"));
 
         var queryString = $"""
                 DELETE FROM {tableName}
-                WHERE ({keyColumnsString}) IN ({valuesString});
+                WHERE ({columnsString}) IN ({valuesString});
                 """;
 
         var builder = DatabricksStatement.FromRawSql(queryString);
