@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Globalization;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
-using Energinet.DataHub.ElectricityMarket.Application.Mappers;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
 
@@ -36,6 +37,6 @@ public sealed class GetMeteringPointByGridAreaCodeHandler : IRequestHandler<GetM
             .GetByGridAreaCodeAsync(request.GridAreaCode)
             .ConfigureAwait(false);
 
-        return new GetMeteringPointByGridAreaCodeResponse(meteringPoints.Select(x => MeteringPointMapper.Map(x)));
+        return new GetMeteringPointByGridAreaCodeResponse(meteringPoints.Select(x => new MeteringPointIdentificationDto(x.Value.ToString(CultureInfo.InvariantCulture))));
     }
 }

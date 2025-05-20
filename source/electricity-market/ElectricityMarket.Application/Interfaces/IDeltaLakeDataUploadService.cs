@@ -25,4 +25,8 @@ public interface IDeltaLakeDataUploadService
     Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken);
 
     Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken);
+
+    Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents);
+
+    Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionChildDto> netConsumptionChildren);
 }

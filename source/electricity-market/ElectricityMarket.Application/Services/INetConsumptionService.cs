@@ -13,7 +13,13 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
-public sealed record GetMeteringPointByGridAreaCodeResponse(IEnumerable<MeteringPointIdentificationDto> MeteringPoints);
+public interface INetConsumptionService
+{
+    IReadOnlyList<NetConsumptionParentDto> GetParentNetConsumption(MeteringPoint meteringPoint);
+
+    Task<IReadOnlyList<NetConsumptionChildDto>> GetChildNetConsumptionAsync(IEnumerable<long> parentMeteringPointIds);
+}

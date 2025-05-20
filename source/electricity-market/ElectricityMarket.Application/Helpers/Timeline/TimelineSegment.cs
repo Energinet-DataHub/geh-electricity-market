@@ -12,8 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
-
-public sealed record GetMeteringPointByGridAreaCodeResponse(IEnumerable<MeteringPointIdentificationDto> MeteringPoints);
+namespace Energinet.DataHub.ElectricityMarket.Application.Helpers.Timeline
+{
+    public sealed record TimelineSegment(
+        Interval Period,
+        MeteringPointMetadata Metadata,
+        CommercialRelation? Relation);
+}

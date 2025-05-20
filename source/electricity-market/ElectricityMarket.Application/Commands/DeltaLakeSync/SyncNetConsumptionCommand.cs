@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
+using MediatR;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 
-public sealed record GetMeteringPointByGridAreaCodeResponse(IEnumerable<MeteringPointIdentificationDto> MeteringPoints);
+public sealed record SyncNetConsumptionCommand : IRequest;
