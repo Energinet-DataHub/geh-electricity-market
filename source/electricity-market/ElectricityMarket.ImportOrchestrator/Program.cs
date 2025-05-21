@@ -35,7 +35,7 @@ var host = new HostBuilder()
         services.AddRevisionLogIntegrationModule(context.Configuration);
 
         // Modules
-        services.AddElectricityMarketModule();
+        services.AddElectricityMarketModule(context.Configuration);
         services.AddElectricityMarketImportOrchestratorModule(context.Configuration);
     })
     .ConfigureLogging((hostingContext, logging) =>
