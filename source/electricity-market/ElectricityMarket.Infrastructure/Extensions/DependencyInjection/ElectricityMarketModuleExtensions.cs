@@ -30,6 +30,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
@@ -64,7 +65,7 @@ public static class ElectricityMarketModuleExtensions
             }
             else
             {
-                o.LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], LogLevel.None);
+                o.UseLoggerFactory(NullLoggerFactory.Instance);
             }
         });
 
@@ -74,8 +75,9 @@ public static class ElectricityMarketModuleExtensions
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
                 {
                     options.UseNodaTime();
+                    options.CommandTimeout(60 * 60 * 2);
                 })
-                .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], LogLevel.None);
+                .UseLoggerFactory(NullLoggerFactory.Instance);
         });
 
         services.AddDbContextFactory<ElectricityMarketDatabaseContext>(

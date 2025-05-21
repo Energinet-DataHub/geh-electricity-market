@@ -23,7 +23,6 @@ using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NodaTime;
@@ -55,7 +54,7 @@ public class CapacitySettlementServiceTests
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now.AddDays(-2), []);
 
         _meteringPointRepository.Setup(m =>
-            m.GetAsync(parentMeteringPoint.Identification)).Returns(Task.FromResult(parentMeteringPoint));
+            m.GetAsync(parentMeteringPoint.Identification)).ReturnsAsync(parentMeteringPoint);
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriodsAsync = await _sut.GetCapacitySettlementPeriodsAsync(
@@ -143,7 +142,7 @@ public class CapacitySettlementServiceTests
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now.AddDays(-2), []);
 
         _meteringPointRepository.Setup(m =>
-            m.GetAsync(parentMeteringPoint.Identification)).Returns(Task.FromResult(parentMeteringPoint));
+            m.GetAsync(parentMeteringPoint.Identification)).ReturnsAsync(parentMeteringPoint);
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriodsAsync = await _sut.GetCapacitySettlementPeriodsAsync(
@@ -177,7 +176,7 @@ public class CapacitySettlementServiceTests
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now.AddDays(-2), [commercialRelation1, commercialRelation2, commercialRelation3]);
 
         _meteringPointRepository.Setup(m =>
-            m.GetAsync(parentMeteringPoint.Identification)).Returns(Task.FromResult(parentMeteringPoint));
+            m.GetAsync(parentMeteringPoint.Identification)).ReturnsAsync(parentMeteringPoint);
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriods = await _sut.GetCapacitySettlementPeriodsAsync(
