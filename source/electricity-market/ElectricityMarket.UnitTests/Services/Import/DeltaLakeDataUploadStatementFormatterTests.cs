@@ -13,6 +13,8 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Application.Common;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
@@ -49,7 +51,7 @@ public class DeltaLakeDataUploadStatementFormatterTests
     public void GivenTestDto_WhenCreatingStatementWithParameters_StatementIsCreated()
     {
         var sut = new DeltaLakeDataUploadStatementFormatter();
-        var statement = sut.CreateUploadStatementWithParameters<TestDto>("testCatalog.TestTable", [new TestDto("123", null, new DateTimeOffset(2019, 3, 25, 12, 13, 14, TimeSpan.FromHours(1))), new TestDto("123", "abc", null)]);
+        var statement = sut.CreateUploadStatementsWithParameters<TestDto>("testCatalog.TestTable", [new TestDto("123", null, new DateTimeOffset(2019, 3, 25, 12, 13, 14, TimeSpan.FromHours(1))), new TestDto("123", "abc", null)]);
         var expectedStatement = """
                                 with _updates as (
                                  SELECT * FROM (
@@ -62,7 +64,7 @@ public class DeltaLakeDataUploadStatementFormatterTests
                                 WHEN MATCHED THEN UPDATE SET t.nullable_timestamp = u.nullable_timestamp, t.prop = u.prop
                                 WHEN NOT MATCHED BY TARGET THEN INSERT (id, nullable_timestamp, prop) VALUES(u.id, u.nullable_timestamp, u.prop);
                                 """;
-        Assert.Equal(expectedStatement, statement.ToString());
+        Assert.Equal(expectedStatement, statement.Single().ToString());
     }
 
     [Fact]
@@ -81,12 +83,64 @@ public class DeltaLakeDataUploadStatementFormatterTests
     public void GivenTestDto_WhenCreatingDeleteStatementWithParameters_StatementIsCreated()
     {
         var sut = new DeltaLakeDataUploadStatementFormatter();
-        var statement = sut.CreateDeleteStatementWithParameters<MultiKeyTestDto>("testCatalog.TestTable", [new MultiKeyTestDto("123", "abc", "fiz"), new MultiKeyTestDto("789", "hij", "buz")]);
+        var statement = sut.CreateDeleteStatementsWithParameters<MultiKeyTestDto>("testCatalog.TestTable", [new MultiKeyTestDto("123", "abc", "fiz"), new MultiKeyTestDto("789", "hij", "buz")]);
         var expectedStatement = """
                                 DELETE FROM testCatalog.TestTable
                                 WHERE (id, id2, prop) IN ((:_p0, :_p1, :_p2), (:_p3, :_p4, :_p5));
                                 """;
-        Assert.Equal(expectedStatement, statement.ToString());
+        Assert.Equal(expectedStatement, statement.Single().ToString());
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(50)]
+    [InlineData(51)]
+    public void
+        GivenListOfElectricalHeatingParentDtos_WhenCreatingInsertStatementsWithParameters_SingleStatementIsCreated(int count)
+    {
+        // Arrange
+        var seed = new ElectricalHeatingParentDto(123, 1, 1, DateTimeOffset.Now, null);
+
+        var list = new List<ElectricalHeatingParentDto>();
+        for (var i = 0; i < count; i++)
+        {
+            list.Add(seed);
+        }
+
+        var sut = new DeltaLakeDataUploadStatementFormatter();
+
+        // Act
+        var statements = sut.CreateInsertStatementsWithParameters(_electricalHeatingDevTableName, list).ToList();
+
+        // Assert
+        Assert.NotEmpty(statements);
+        Assert.Single(statements);
+    }
+
+    [Theory]
+    [InlineData(52)]
+    [InlineData(100)]
+    public void
+        GivenListOfElectricalHeatingParentDtos_WhenCreatingInsertStatementsWithParameters_MultipleStatementsAreCreated(int count)
+    {
+        // Arrange
+        var seed = new ElectricalHeatingParentDto(123, 1, 1, DateTimeOffset.Now, null);
+
+        var list = new List<ElectricalHeatingParentDto>();
+        for (var i = 0; i < count; i++)
+        {
+            list.Add(seed);
+        }
+
+        var sut = new DeltaLakeDataUploadStatementFormatter();
+
+        // Act
+        var statements = sut.CreateInsertStatementsWithParameters(_electricalHeatingDevTableName, list).ToList();
+
+        // Assert
+        Assert.NotEmpty(statements);
+        Assert.Equal(2, statements.Count);
     }
 
     [Fact(Skip = "Manual")]
@@ -119,4 +173,5 @@ public class DeltaLakeDataUploadStatementFormatterTests
 
     private sealed record TestDto([property: DeltaLakeKey] string Id, string? Prop, DateTimeOffset? NullableTimestamp);
     private sealed record MultiKeyTestDto([property: DeltaLakeKey] string Id, [property: DeltaLakeKey] string Id2, string Prop);
+
 }
