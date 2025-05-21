@@ -15,6 +15,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,7 @@ public sealed class StreamingImporter : IStreamingImporter
             return;
 
         var existingMeteringPoint = await _databaseContext.MeteringPoints
+            .HintFewRows()
             .AsSplitQuery()
             .SingleOrDefaultAsync(mp => mp.Identification == meteringPointIdentification)
             .ConfigureAwait(false);

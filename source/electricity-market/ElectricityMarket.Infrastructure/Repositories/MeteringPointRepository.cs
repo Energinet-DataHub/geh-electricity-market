@@ -16,14 +16,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,6 +52,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(identification);
 
         var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .HintFewRows()
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
@@ -93,6 +93,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(identification);
 
         var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .HintFewRows()
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
@@ -123,6 +124,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     public async Task<IEnumerable<MeteringPoint>?> GetRelatedMeteringPointsAsync(MeteringPointIdentification identification)
     {
         var parent = await _electricityMarketDatabaseContext.MeteringPoints
+            .HintFewRows()
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
 
@@ -134,6 +136,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             .FirstOrDefault(x => x.ValidFrom <= DateTimeOffset.UtcNow && x.ValidTo >= DateTimeOffset.UtcNow)?.PowerPlantGsrn;
 
         var allRelated = await _electricityMarketDatabaseContext.MeteringPoints
+            .HintFewRows()
             .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification.Value || (powerPlantGsrn != null && powerPlantGsrn == y.PowerPlantGsrn)))
             .ToListAsync()
             .ConfigureAwait(false);
@@ -160,44 +163,6 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                 yield return MeteringPointMapper.MapFromEntity(entity);
             }
         }
-    }
-
-    public async Task<MeteringPointHierarchy> GetMeteringPointHierarchyAsync(
-        MeteringPointIdentification meteringPointIdentification,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(meteringPointIdentification);
-
-        MeteringPointEntity? parent;
-
-        var meteringPoint = await _electricityMarketDatabaseContext.MeteringPoints.AsSplitQuery().FirstOrDefaultAsync(mp => mp.Identification == meteringPointIdentification.Value, cancellationToken).ConfigureAwait(false);
-
-        if (meteringPoint is null)
-        {
-            throw new NotFoundException("Metering point not found");
-        }
-
-        var periodWithParentIdentification = meteringPoint.MeteringPointPeriods.FirstOrDefault(mp => mp.ParentIdentification is not null);
-        if (periodWithParentIdentification?.ParentIdentification != null)
-        {
-            parent = await _electricityMarketDatabaseContext.MeteringPoints.AsSplitQuery().FirstOrDefaultAsync(y => y.Identification == periodWithParentIdentification.ParentIdentification, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            parent = meteringPoint;
-        }
-
-        if (parent is null)
-        {
-            throw new NotFoundException("Parent metering point not found");
-        }
-
-        var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
-            .AsSplitQuery()
-            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == parent.Identification)).ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        return new MeteringPointHierarchy(MeteringPointMapper.MapFromEntity(parent), childMeteringPoints.Select(MeteringPointMapper.MapFromEntity));
     }
 
     public async Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(long identification)

@@ -27,14 +27,14 @@ public static class ElectricityMarketWebApiModuleExtensions
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddElectricityMarketModule(true);
+        services.AddElectricityMarketModule(configuration);
         services.AddElectricityMarketDatabricksModule(configuration);
 
         services
             .AddAuthorizationVerifyModule()
             .AddEndpointAuthorizationModule(serviceProvider =>
             {
-                var revisionLogClient = serviceProvider.GetRequiredService<RevisionLogClient>();
+                var revisionLogClient = serviceProvider.GetRequiredService<IRevisionLogClient>();
                 var clock = serviceProvider.GetRequiredService<IClock>();
                 return log => revisionLogClient.LogAsync(new RevisionLogEntry(
                     Guid.NewGuid(),

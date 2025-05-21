@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions;
 
-public interface ICapacitySettlementService
+public static class QueryableExtensions
 {
-    IAsyncEnumerable<ICapacitySettlementResult> GetCapacitySettlementPeriodsAsync(
-        MeteringPoint meteringPoint,
-        CancellationToken cancellationToken);
+    public static IQueryable<T> HintFewRows<T>(this IQueryable<T> source)
+    {
+        return source.TagWith("FAST1");
+    }
 }
