@@ -22,10 +22,8 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyIn
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Extensions.DependencyInjection;
 
@@ -36,16 +34,6 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
         ArgumentNullException.ThrowIfNull(configuration);
 
         services.AddElectricityMarketModule(configuration);
-
-        services.AddDbContextFactory<ElectricityMarketDatabaseContext>((p, o) =>
-        {
-            var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
-            o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
-            {
-                options.UseNodaTime();
-                options.CommandTimeout(60 * 60 * 2);
-            });
-        });
 
         services
             .AddOptions<DatabricksCatalogOptions>()
