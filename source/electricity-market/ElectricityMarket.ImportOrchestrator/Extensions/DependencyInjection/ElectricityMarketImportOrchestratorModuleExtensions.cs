@@ -35,7 +35,7 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddElectricityMarketModule();
+        services.AddElectricityMarketModule(configuration);
 
         services.AddDbContextFactory<ElectricityMarketDatabaseContext>((p, o) =>
         {

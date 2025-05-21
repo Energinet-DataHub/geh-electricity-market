@@ -36,7 +36,7 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.Dependen
 
 public static class ElectricityMarketModuleExtensions
 {
-    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services, bool aggressiveEfCoreLogging = false)
+    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions();
 
@@ -55,16 +55,16 @@ public static class ElectricityMarketModuleExtensions
                 })
                 .AddInterceptors(new FastInterceptor());
 
-            if (!aggressiveEfCoreLogging)
-            {
-                o.LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], LogLevel.None);
-            }
-            else
+            if (configuration.GetValue("AggressiveEfCoreLogging", false))
             {
                 var databaseLogger = p.GetRequiredService<ILogger<DatabaseOptions>>();
 #pragma warning disable CA1848, CA2254
                 o.LogTo(x => databaseLogger.Log(LogLevel.Warning, x));
 #pragma warning restore CA1848, CA2254
+            }
+            else
+            {
+                o.LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], LogLevel.None);
             }
         });
 
