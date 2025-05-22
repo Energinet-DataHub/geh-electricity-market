@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.ObjectModel;
 using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
@@ -47,6 +48,26 @@ public class MeteringPointController : ControllerBase
     {
         var tenant = new TenantDto(_userContext.CurrentUser.ActorNumber, _userContext.CurrentUser.MarketRole);
         var getMeteringPointCommand = new GetMeteringPointCommand(identification, tenant);
+
+        var meteringPoint = await _mediator
+            .Send(getMeteringPointCommand)
+            .ConfigureAwait(false);
+
+        if (meteringPoint == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(meteringPoint.MeteringPoint);
+    }
+
+    [HttpPost("{verify-grid-owner}")]
+    //[EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "identification")]
+    [AllowAnonymous]
+    public async Task<ActionResult<bool>> VerifyGridOwnerAsync(string meteringPointId, ReadOnlyCollection<string> gridAreas)
+    {
+        var tenant = new TenantDto(string.Empty, null);
+        var getMeteringPointCommand = new GetMeteringPointCommand(meteringPointId, tenant);
 
         var meteringPoint = await _mediator
             .Send(getMeteringPointCommand)
