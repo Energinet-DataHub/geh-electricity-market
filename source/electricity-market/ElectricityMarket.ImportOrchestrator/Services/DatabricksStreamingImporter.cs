@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
 using ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
@@ -22,6 +23,7 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Services;
@@ -34,6 +36,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
     private readonly ElectricityMarketDatabaseContext _databaseContext;
     private readonly IImportStateService _importStateService;
     private readonly IStreamingImporter _streamingImporter;
+    private readonly ILogger<DatabricksStreamingImporter> _logger;
 
     public DatabricksStreamingImporter(
         IOptions<DatabricksCatalogOptions> catalogOptions,
@@ -41,7 +44,8 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
         FindCutoffActivity findCutoffActivity,
         ElectricityMarketDatabaseContext databaseContext,
         IImportStateService importStateService,
-        IStreamingImporter streamingImporter)
+        IStreamingImporter streamingImporter,
+        ILogger<DatabricksStreamingImporter> logger)
     {
         _catalogOptions = catalogOptions;
         _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
@@ -49,17 +53,26 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
         _databaseContext = databaseContext;
         _importStateService = importStateService;
         _streamingImporter = streamingImporter;
+        _logger = logger;
     }
 
     public async Task ImportAsync()
     {
+        var sw = Stopwatch.StartNew();
+
         var currentMaxCutoff = await _findCutoffActivity
             .RunAsync(new NoInput())
             .ConfigureAwait(false);
 
+        _logger.LogDebug($"databricks-streaming-importer: current max cutoff fetched in {sw.ElapsedMilliseconds}ms");
+        sw.Restart();
+
         var previousCutoff = await _importStateService
             .GetStreamingImportCutoffAsync()
             .ConfigureAwait(false);
+
+        _logger.LogDebug($"databricks-streaming-importer: current prev cutoff fetched in {sw.ElapsedMilliseconds}ms");
+        sw.Restart();
 
         if (currentMaxCutoff == previousCutoff)
             return;
@@ -295,11 +308,16 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
+            _logger.LogDebug($"databricks-streaming-importer: golden import updated in {sw.ElapsedMilliseconds}ms");
+            sw.Restart();
+
             await _importStateService
                 .UpdateStreamingCutoffAsync(targetCutoff)
                 .ConfigureAwait(false);
 
             await transaction.CommitAsync().ConfigureAwait(false);
+
+            _logger.LogDebug($"databricks-streaming-importer: transaction committed in {sw.ElapsedMilliseconds}ms");
         }
     }
 }
