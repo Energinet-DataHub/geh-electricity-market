@@ -152,7 +152,6 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         await using (readContext.ConfigureAwait(false))
         {
             var entities = readContext.MeteringPoints
-            .AsSplitQuery()
             .Where(x => x.Version > lastSyncedVersion)
             .OrderBy(x => x.Version)
             .Take(batchSize)
@@ -169,9 +168,17 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     {
         var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
             .AsSplitQuery()
-            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
+            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification))
+            .ToListAsync()
             .ConfigureAwait(false);
 
         return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
+    }
+
+    public async Task<bool> HasCapacitySettlementChildMeteringPointAsync(long identification)
+    {
+        return await _electricityMarketDatabaseContext.MeteringPointPeriods
+            .AnyAsync(x => x.ParentIdentification == identification && x.Type == "CapacitySettlement")
+            .ConfigureAwait(false);
     }
 }

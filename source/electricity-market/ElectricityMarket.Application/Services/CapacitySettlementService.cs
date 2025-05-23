@@ -169,7 +169,12 @@ public class CapacitySettlementService : ICapacitySettlementService
             // This is a consumption parent metering point, so we must process the hierarchy
             if (meteringPoint.MetadataTimeline.Any(period => period.Type == MeteringPointType.Consumption))
             {
-                var children = await _meteringPointRepository.GetChildMeteringPointsAsync(meteringPoint.Identification.Value).ConfigureAwait(false);
+                IEnumerable<MeteringPoint> children = new List<MeteringPoint>();
+                if (await _meteringPointRepository.HasCapacitySettlementChildMeteringPointAsync(meteringPoint.Identification.Value))
+                {
+                    children = await _meteringPointRepository.GetChildMeteringPointsAsync(meteringPoint.Identification.Value).ConfigureAwait(false);
+                }
+
                 return new MeteringPointHierarchy(meteringPoint, children);
             }
 
