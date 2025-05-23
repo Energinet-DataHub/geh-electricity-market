@@ -75,7 +75,6 @@ public static class ElectricityMarketModuleExtensions
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
                 {
                     options.UseNodaTime();
-                    options.CommandTimeout(60 * 60 * 2);
                 })
                 .UseLoggerFactory(NullLoggerFactory.Instance);
         });
@@ -87,6 +86,7 @@ public static class ElectricityMarketModuleExtensions
                 o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
                     {
                         options.UseNodaTime();
+                        options.CommandTimeout(60 * 60 * 2);
                     })
                     .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], LogLevel.None)
                     .AddInterceptors(new FastInterceptor());
