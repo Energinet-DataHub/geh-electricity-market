@@ -64,14 +64,14 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
             .RunAsync(new NoInput())
             .ConfigureAwait(false);
 
-        _logger.LogDebug($"databricks-streaming-importer: current max cutoff fetched in {sw.ElapsedMilliseconds}ms");
+        _logger.LogWarning($"databricks-streaming-importer: current max cutoff fetched in {sw.ElapsedMilliseconds}ms");
         sw.Restart();
 
         var previousCutoff = await _importStateService
             .GetStreamingImportCutoffAsync()
             .ConfigureAwait(false);
 
-        _logger.LogDebug($"databricks-streaming-importer: current prev cutoff fetched in {sw.ElapsedMilliseconds}ms");
+        _logger.LogWarning($"databricks-streaming-importer: current prev cutoff fetched in {sw.ElapsedMilliseconds}ms");
         sw.Restart();
 
         if (currentMaxCutoff == previousCutoff)
@@ -337,10 +337,10 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 total += goldenTotal + relTotal + saveTotal;
             }
 
-            _logger.LogDebug($"databricks-streaming-importer: gold time. Min: {goldenMin}ms. Max: {goldenMax}ms. Avg: {(i > 0 ? goldenTotal / i : 0)}ms.");
-            _logger.LogDebug($"databricks-streaming-importer: rel time. Min: {relMin}ms. Max: {relMax}ms. Avg: {(i > 0 ? relTotal / i : 0)}ms.");
-            _logger.LogDebug($"databricks-streaming-importer: save time. Min: {saveMin}ms. Max: {saveMax}ms. Avg: {(i > 0 ? saveTotal / i : 0)}ms.");
-            _logger.LogDebug($"databricks-streaming-importer: total time. Min: {min}ms. Max: {max}ms. Avg: {(i > 0 ? total / i : 0)}ms.");
+            _logger.LogWarning($"databricks-streaming-importer: gold time. Min: {goldenMin}ms. Max: {goldenMax}ms. Avg: {(i > 0 ? goldenTotal / i : 0)}ms.");
+            _logger.LogWarning($"databricks-streaming-importer: rel time. Min: {relMin}ms. Max: {relMax}ms. Avg: {(i > 0 ? relTotal / i : 0)}ms.");
+            _logger.LogWarning($"databricks-streaming-importer: save time. Min: {saveMin}ms. Max: {saveMax}ms. Avg: {(i > 0 ? saveTotal / i : 0)}ms.");
+            _logger.LogWarning($"databricks-streaming-importer: total time. Min: {min}ms. Max: {max}ms. Avg: {(i > 0 ? total / i : 0)}ms.");
             sw.Restart();
 
             await _importStateService
@@ -349,7 +349,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 
             await transaction.CommitAsync().ConfigureAwait(false);
 
-            _logger.LogDebug($"databricks-streaming-importer: transaction committed in {sw.ElapsedMilliseconds}ms");
+            _logger.LogWarning($"databricks-streaming-importer: transaction committed in {sw.ElapsedMilliseconds}ms");
         }
     }
 }
