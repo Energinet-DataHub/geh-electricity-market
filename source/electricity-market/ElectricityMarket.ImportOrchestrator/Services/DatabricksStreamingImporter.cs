@@ -191,6 +191,9 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 .ToImmutableDictionary(k => k.Key, v => v.Value);
 
             var i = 0;
+            long goldenMin = 0, goldenMax = 0, goldenTotal = 0;
+            long relMin = 0, relMax = 0, relTotal = 0;
+            long saveMin = 0, saveMax = 0, saveTotal = 0;
             long min = 0, max = 0, total = 0;
 
             await foreach (var record in results)
@@ -308,17 +311,36 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 #pragma warning restore EF1002
                     .ConfigureAwait(false);
 
+                sw.Stop();
+                goldenMin = Math.Min(goldenMin, sw.ElapsedMilliseconds);
+                goldenMax = Math.Max(goldenMax, sw.ElapsedMilliseconds);
+                goldenTotal += sw.ElapsedMilliseconds;
+
+                sw.Restart();
                 await _streamingImporter.ImportAsync(importedTransaction).ConfigureAwait(false);
 
+                sw.Stop();
+                relMin = Math.Min(relMin, sw.ElapsedMilliseconds);
+                relMax = Math.Max(relMax, sw.ElapsedMilliseconds);
+                relTotal += sw.ElapsedMilliseconds;
+
+                sw.Restart();
                 await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
 
                 sw.Stop();
-                min = Math.Min(min, sw.ElapsedMilliseconds);
-                max = Math.Max(max, sw.ElapsedMilliseconds);
-                total += sw.ElapsedMilliseconds;
+                saveMin = Math.Min(saveMin, sw.ElapsedMilliseconds);
+                saveMax = Math.Max(saveMax, sw.ElapsedMilliseconds);
+                saveTotal += sw.ElapsedMilliseconds;
+
+                min = Math.Min(min, goldenMin + relMin + saveMin);
+                max = Math.Max(max, goldenMax + relMax + saveMax);
+                total += goldenTotal + relTotal + saveTotal;
             }
 
-            _logger.LogDebug($"databricks-streaming-importer: golden import updated in {total}ms. Min: {min}ms. Max: {max}ms. Avg: {(i > 0 ? total / i : 0)}ms.");
+            _logger.LogDebug($"databricks-streaming-importer: gold time. Min: {goldenMin}ms. Max: {goldenMax}ms. Avg: {(i > 0 ? goldenTotal / i : 0)}ms.");
+            _logger.LogDebug($"databricks-streaming-importer: rel time. Min: {relMin}ms. Max: {relMax}ms. Avg: {(i > 0 ? relTotal / i : 0)}ms.");
+            _logger.LogDebug($"databricks-streaming-importer: save time. Min: {saveMin}ms. Max: {saveMax}ms. Avg: {(i > 0 ? saveTotal / i : 0)}ms.");
+            _logger.LogDebug($"databricks-streaming-importer: total time. Min: {min}ms. Max: {max}ms. Avg: {(i > 0 ? total / i : 0)}ms.");
             sw.Restart();
 
             await _importStateService
