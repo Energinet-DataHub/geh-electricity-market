@@ -190,8 +190,13 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 .ImportFields
                 .ToImmutableDictionary(k => k.Key, v => v.Value);
 
+            var i = 0;
+            long min = 0, max = 0, total = 0;
+
             await foreach (var record in results)
             {
+                ++i;
+                sw.Restart();
                 var importedTransaction = new ImportedTransactionEntity();
 
                 foreach (var keyValuePair in record)
@@ -306,9 +311,14 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 await _streamingImporter.ImportAsync(importedTransaction).ConfigureAwait(false);
 
                 await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
+
+                sw.Stop();
+                min = Math.Min(min, sw.ElapsedMilliseconds);
+                max = Math.Max(max, sw.ElapsedMilliseconds);
+                total += sw.ElapsedMilliseconds;
             }
 
-            _logger.LogDebug($"databricks-streaming-importer: golden import updated in {sw.ElapsedMilliseconds}ms");
+            _logger.LogDebug($"databricks-streaming-importer: golden import updated in {total}ms. Min: {min}ms. Max: {max}ms. Avg: {(i > 0 ? total / i : 0)}ms.");
             sw.Restart();
 
             await _importStateService
