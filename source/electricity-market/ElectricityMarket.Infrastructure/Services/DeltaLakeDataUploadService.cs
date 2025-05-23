@@ -49,14 +49,15 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting upload of {Count} electrical heating parent metering points.", electricalHeatingParent.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingParentTableName}";
-        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingParent);
-        var query = DatabricksStatement.FromRawSql(queryString);
+        var statements = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementsWithParameters(tableName, electricalHeatingParent);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
-        await foreach (var record in result.ConfigureAwait(false))
+        foreach (var databricksStatement in statements)
         {
-            string resultString = JsonSerializer.Serialize(record);
-            _logger.LogInformation("Electrical Heating Parents Uploaded: {ResultString}", resultString);
+            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement).ConfigureAwait(false))
+            {
+                string resultString = JsonSerializer.Serialize(record);
+                _logger.LogInformation("Electrical Heating Parents Uploaded: {ResultString}", resultString);
+            }
         }
     }
 
@@ -83,13 +84,15 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting upload of {Count} capacity settlement metering point periods.", capacitySettlementPeriods.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
-        var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, capacitySettlementPeriods);
+        var statements = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementsWithParameters(tableName, capacitySettlementPeriods);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
-        await foreach (var record in result.ConfigureAwait(false))
+        foreach (var databricksStatement in statements)
         {
-            string resultString = JsonSerializer.Serialize(record);
-            _logger.LogInformation("Capacity settlement Uploaded: {ResultString}", resultString);
+            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement, cancellationToken).ConfigureAwait(false))
+            {
+                string resultString = JsonSerializer.Serialize(record);
+                _logger.LogInformation("Capacity settlement Uploaded: {ResultString}", resultString);
+            }
         }
     }
 
@@ -99,13 +102,15 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting clearing of {Count} capacity settlement metering point periods.", capacitySettlementResultDtos.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
-        var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, capacitySettlementResultDtos);
+        var statements = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementsWithParameters(tableName, capacitySettlementResultDtos);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
-        await foreach (var record in result.ConfigureAwait(false))
+        foreach (var databricksStatement in statements)
         {
-            string resultString = JsonSerializer.Serialize(record);
-            _logger.LogInformation("Capacity settlement deleted: {ResultString}", resultString);
+            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement, cancellationToken).ConfigureAwait(false))
+            {
+                string resultString = JsonSerializer.Serialize(record);
+                _logger.LogInformation("Capacity settlement deleted: {ResultString}", resultString);
+            }
         }
     }
 
@@ -115,13 +120,15 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting upload of {Count} net consumption parent metering points.", netConsumptionParents.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionParentTableName}";
-        var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, netConsumptionParents);
+        var statements = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementsWithParameters(tableName, netConsumptionParents);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
-        await foreach (var record in result.ConfigureAwait(false))
+        foreach (var databricksStatement in statements)
         {
-            string resultString = JsonSerializer.Serialize(record);
-            _logger.LogInformation("Net Consumption Parents Uploaded: {ResultString}", resultString);
+            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement).ConfigureAwait(false))
+            {
+                string resultString = JsonSerializer.Serialize(record);
+                _logger.LogInformation("Net Consumption Parents Uploaded: {ResultString}", resultString);
+            }
         }
     }
 
@@ -131,13 +138,15 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting upload of {Count} net consumption child metering points.", netConsumptionChildren.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionChildTableName}";
-        var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, netConsumptionChildren);
+        var statements = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementsWithParameters(tableName, netConsumptionChildren);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
-        await foreach (var record in result.ConfigureAwait(false))
+        foreach (var databricksStatement in statements)
         {
-            string resultString = JsonSerializer.Serialize(record);
-            _logger.LogInformation("Net Consumption Children Uploaded: {ResultString}", resultString);
+            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement).ConfigureAwait(false))
+            {
+                string resultString = JsonSerializer.Serialize(record);
+                _logger.LogInformation("Net Consumption Children Uploaded: {ResultString}", resultString);
+            }
         }
     }
 }
