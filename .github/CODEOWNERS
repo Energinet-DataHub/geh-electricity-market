@@ -1,4 +1,8 @@
 * @Energinet-DataHub/team-raccoons
-/.github/actions @Energinet-DataHub/TeamFusion
-/.github/workflows @Energinet-DataHub/TeamFusion
+
+/.github/actions @Energinet-DataHub/TeamFusion @Energinet-DataHub/team-raccoons
+/.github/workflows @Energinet-DataHub/TeamFusion @Energinet-DataHub/team-raccoons
+/.github/CODEOWNERS @Energinet-DataHub/TeamFusion
+/.github/workflows/ci-orchestrator.yml @Energinet-DataHub/TeamFusion
+/.github/workflows/cd.yml @Energinet-DataHub/TeamFusion
 /source/geh_electricity_market @Energinet-DataHub/Mandalorian
