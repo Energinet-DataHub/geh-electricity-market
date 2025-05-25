@@ -67,7 +67,7 @@ public class MeteringPointController : ControllerBase
     public async Task<ActionResult<bool>> VerifyGridOwnerAsync(string meteringPointId, ReadOnlyCollection<string> gridAreas)
     {
         var tenant = new TenantDto(string.Empty, null);
-        var getMeteringPointCommand = new GetMeteringPointCommand(meteringPointId, tenant);
+        var verifyGridOwnerCommand = new VerifyGridOwnerCommand(meteringPointId, gridAreaCode);
 
         var meteringPoint = await _mediator
             .Send(getMeteringPointCommand)
