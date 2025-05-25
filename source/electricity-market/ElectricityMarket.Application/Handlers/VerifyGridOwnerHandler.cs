@@ -40,7 +40,7 @@ public sealed class VerifyGridOwnerHandler : IRequestHandler<VerifyGridOwnerComm
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
         var result = await _meteringPointIntegrationRepository.GetMeteringPointMasterDataChangesAsync(
-            request.Request.MeteringPointIdentification,
+            request.MeteringPointIdentification,
             DateTime.UtcNow,
             DateTime.UtcNow)
             .ToListAsync(cancellationToken)
@@ -55,6 +55,6 @@ public sealed class VerifyGridOwnerHandler : IRequestHandler<VerifyGridOwnerComm
         }
 
         // Can we use accessGridProvider (instead of list of gridareas)
-        return request.Request.GridAreas.Contains(first.GridAreaCode.Value);
+        return request.GridAreaCode.Contains(first.GridAreaCode.Value);
     }
 }

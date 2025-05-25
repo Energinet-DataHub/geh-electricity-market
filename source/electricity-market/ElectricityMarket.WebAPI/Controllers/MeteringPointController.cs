@@ -16,6 +16,7 @@ using System.Collections.ObjectModel;
 using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
@@ -61,24 +62,24 @@ public class MeteringPointController : ControllerBase
         return Ok(meteringPoint.MeteringPoint);
     }
 
-    [HttpPost("{verify-grid-owner}")]
-    //[EnableRevision(RevisionActivities.MeteringPointRequested, typeof(MeteringPoint), "identification")]
+    [HttpPost("{identification}/verify-grid-owner")]
+    [EnableRevision(RevisionActivities.VerifyGridOwnerRequested, typeof(MeteringPoint), "meteringPointId")]
     [AllowAnonymous]
-    public async Task<ActionResult<bool>> VerifyGridOwnerAsync(string meteringPointId, ReadOnlyCollection<string> gridAreas)
+    public async Task<ActionResult<bool>> VerifyGridOwnerAsync(string meteringPointId, [FromBody] ReadOnlyCollection<string> gridAreaCode)
     {
         var tenant = new TenantDto(string.Empty, null);
         var verifyGridOwnerCommand = new VerifyGridOwnerCommand(meteringPointId, gridAreaCode);
 
         var meteringPoint = await _mediator
-            .Send(getMeteringPointCommand)
+            .Send(verifyGridOwnerCommand)
             .ConfigureAwait(false);
 
-        if (meteringPoint == null)
+        if (!meteringPoint)
         {
             return NotFound();
         }
 
-        return Ok(meteringPoint.MeteringPoint);
+        return Ok(meteringPoint);
     }
 
     [HttpGet("{identification}/related")]

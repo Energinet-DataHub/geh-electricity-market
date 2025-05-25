@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Integration.Models.Authorize;
+using System.Collections.ObjectModel;
 using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 
-public sealed record VerifyGridOwnerCommand(VerifyGridOwnerRequestDto Request) : IRequest<bool>;
+public sealed record VerifyGridOwnerCommand(string MeteringPointIdentification,
+    ReadOnlyCollection<string> GridAreaCode) : IRequest<bool>;

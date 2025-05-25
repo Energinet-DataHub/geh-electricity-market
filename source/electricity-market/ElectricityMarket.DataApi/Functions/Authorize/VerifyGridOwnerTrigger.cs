@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.ObjectModel;
 using System.Net;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
-using Energinet.DataHub.ElectricityMarket.Integration.Models.Authorize;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -38,17 +38,26 @@ internal sealed class VerifyGridOwnerTrigger
     public async Task<HttpResponseData> VerifyGridOwnerAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "verify-grid-owner")]
         HttpRequestData req,
-        [FromBody] VerifyGridOwnerRequestDto request,
+        [FromBody] ReadOnlyCollection<string> gridAreaCode,
         FunctionContext executionContext)
     {
-        var command = new VerifyGridOwnerCommand(request);
+        // Ensure the "identification" query parameter is not null or empty
+        if (string.IsNullOrWhiteSpace(req.Query["identification"]))
+        {
+            var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            // await badRequestResponse.WriteStringAsync("The 'identification' query parameter is required.").ConfigureAwait(false);
+            return badRequestResponse;
+        }
+
+#pragma warning disable CS8604 // Possible null reference argument.
+        var command = new VerifyGridOwnerCommand(req.Query["identification"], gridAreaCode);
+#pragma warning restore CS8604 // Possible null reference argument.
 
         var result = await _mediator
             .Send(command)
             .ConfigureAwait(false);
 
-        HttpResponseData response;
-        response = req.CreateResponse(HttpStatusCode.OK);
+        HttpResponseData response = req.CreateResponse(HttpStatusCode.OK);
         await response
             .WriteAsJsonAsync(result)
             .ConfigureAwait(false);
