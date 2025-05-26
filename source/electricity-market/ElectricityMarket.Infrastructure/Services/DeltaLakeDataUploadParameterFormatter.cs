@@ -65,12 +65,7 @@ public class DeltaLakeDataUploadParameterFormatter
         var propertyValue = prop.GetValue(dto, null);
         if (propertyValue is null)
         {
-            if (prop.PropertyType == typeof(DateTimeOffset) || prop.PropertyType == typeof(DateTimeOffset?))
-            {
-                return CreateNullParameter(paramName);
-            }
-
-            return QueryParameter.Create(paramName, NullString);
+            return CreateNullParameter(paramName);
         }
 
         if (prop.PropertyType == typeof(DateTimeOffset) || prop.PropertyType == typeof(DateTimeOffset?))
@@ -92,7 +87,7 @@ public class DeltaLakeDataUploadParameterFormatter
     {
         // HACK: Use reflection to access private constructor in QueryParameter class. A fix for this is available in geh-core version > 13.1.0
         var constructorInfo = typeof(QueryParameter).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
-        return (QueryParameter)constructorInfo.Invoke([paramName, string.Empty, VoidTypeString]);
+        return (QueryParameter)constructorInfo.Invoke([paramName, null, VoidTypeString]);
     }
 
     private static QueryParameter CreateTimestampParameter(string paramName, string value)

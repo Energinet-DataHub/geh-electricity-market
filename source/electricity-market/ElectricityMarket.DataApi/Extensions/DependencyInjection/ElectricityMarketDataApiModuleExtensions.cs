@@ -35,7 +35,7 @@ public static class ElectricityMarketDataApiModuleExtensions
             config.RegisterServicesFromAssemblyContaining<ApplicationAssemblyReference>();
         });
 
-        services.AddElectricityMarketModule();
+        services.AddElectricityMarketModule(configuration);
 
         var authenticationOptions = configuration
             .GetRequiredSection(AuthenticationOptions.SectionName)

@@ -14,7 +14,4 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public interface ICapacitySettlementResult
-{
-    long MeteringPointId { get; }
-}
+public sealed record MeteringPointIdentificationDto(string Identification);

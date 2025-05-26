@@ -95,6 +95,9 @@ CREATE INDEX [IX_MeteringPointPeriod_MeteringPointId]
 CREATE INDEX [IX_MeteringPointPeriod_GridAreaCode]
     ON [electricitymarket].[MeteringPointPeriod] (GridAreaCode);
 
+CREATE INDEX [IX_MeteringPointPeriod_ParentIdentification]
+    ON [electricitymarket].[MeteringPointPeriod] (ParentIdentification);
+
 CREATE TABLE [electricitymarket].[CommercialRelation]
 (
     [Id]                 bigint IDENTITY(1,1) NOT NULL,
@@ -156,7 +159,7 @@ CREATE TABLE [electricitymarket].[EnergySupplyPeriod]
 
 CREATE INDEX [IX_EnergySupplyPeriod_CommercialRelationId]
     ON [electricitymarket].[EnergySupplyPeriod] (CommercialRelationId);
-    
+
 CREATE TABLE [electricitymarket].[Contact]
 (
     [Id]                         bigint IDENTITY(1,1) NOT NULL,
