@@ -56,7 +56,6 @@ public class VerifyGridOwnerRepositoryTests : IClassFixture<ElectricityMarketDat
 
         var res = await sut.GetMeteringPointForSignatureAsync(parentIdentification);
 
-        // var verifyGridOwner = new VerifyGridOwnerHandler()
         Assert.NotNull(res);
         Assert.NotNull(res.Identification);
         Assert.Equal(parentIdentification, res.Identification);
