@@ -47,6 +47,6 @@ public sealed class VerifyGridOwnerHandler : IRequestHandler<VerifyGridOwnerComm
             return false;
         }
 
-        return request.GridAreaCode.Contains(result.Metadata.GridAreaCode);
+        return request.GridAreaCodes.Contains(result.Metadata.GridAreaCode);
     }
 }

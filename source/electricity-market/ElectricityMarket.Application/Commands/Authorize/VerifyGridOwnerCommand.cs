@@ -18,4 +18,4 @@ using MediatR;
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 
 public sealed record VerifyGridOwnerCommand(string MeteringPointIdentification,
-    ReadOnlyCollection<string> GridAreaCode) : IRequest<bool>;
+    ReadOnlyCollection<string> GridAreaCodes) : IRequest<bool>;
