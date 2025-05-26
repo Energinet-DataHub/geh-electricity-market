@@ -90,14 +90,14 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
         if (meteringPointsToDelete.Count > 0)
         {
             await _deltaLakeDataUploadService
-                .ImportTransactionsAsync(meteringPointsToDelete, cancellationToken)
+                .DeleteCapacitySettlementPeriodsAsync(meteringPointsToDelete, cancellationToken)
                 .ConfigureAwait(false);
         }
 
         if (meteringPointsToInsert.Count > 0)
         {
             await _deltaLakeDataUploadService
-                .ImportTransactionsAsync(meteringPointsToInsert, cancellationToken)
+                .InsertCapacitySettlementPeriodsAsync(meteringPointsToInsert, cancellationToken)
                 .ConfigureAwait(false);
         }
 

@@ -22,9 +22,9 @@ public interface IDeltaLakeDataUploadService
 
     Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren);
 
-    Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken);
+    Task InsertCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken);
 
-    Task ImportTransactionsAsync(IReadOnlyList<ICapacitySettlementResult> capacitySettlementResultDtos, CancellationToken cancellationToken);
+    Task DeleteCapacitySettlementPeriodsAsync(IReadOnlyList<ICapacitySettlementResult> capacitySettlementResultDtos, CancellationToken cancellationToken);
 
     Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents);
 
