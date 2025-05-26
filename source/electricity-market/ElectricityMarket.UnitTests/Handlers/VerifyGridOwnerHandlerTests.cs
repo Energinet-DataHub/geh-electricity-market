@@ -52,7 +52,7 @@ public sealed class VerifyGridOwnerHandlerTests
         };
         var command = new VerifyGridOwnerCommand(
                 MeteringPointIdentification: "123456789012345678",
-                GridAreaCode: gridAreaCode.AsReadOnly());
+                GridAreaCodes: gridAreaCode.AsReadOnly());
 
         // Act + Assert
         Assert.False(await target.Handle(command, CancellationToken.None));

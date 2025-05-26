@@ -55,6 +55,6 @@ public sealed class VerifyGridOwnerHandler : IRequestHandler<VerifyGridOwnerComm
         }
 
         // Can we use accessGridProvider (instead of list of gridareas)
-        return request.GridAreaCode.Contains(first.GridAreaCode.Value);
+        return request.GridAreaCodes.Contains(first.GridAreaCode.Value);
     }
 }
