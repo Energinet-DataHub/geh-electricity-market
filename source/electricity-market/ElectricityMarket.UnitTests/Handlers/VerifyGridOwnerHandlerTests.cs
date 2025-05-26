@@ -20,6 +20,7 @@ using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
 using Energinet.DataHub.ElectricityMarket.Application.Handlers;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
 using Moq;
 using Xunit;
@@ -36,7 +37,7 @@ public sealed class VerifyGridOwnerHandlerTests
         // TBC!
 
         // Arrange
-        var gridAreaRepository = new Mock<IMeteringPointIntegrationRepository>();
+        var gridAreaRepository = new Mock<IMeteringPointRepository>();
         var target = new VerifyGridOwnerHandler(gridAreaRepository.Object);
 
         /*

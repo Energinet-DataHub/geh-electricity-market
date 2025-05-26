@@ -28,33 +28,25 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
 public sealed class VerifyGridOwnerHandler : IRequestHandler<VerifyGridOwnerCommand, bool>
 {
-    private readonly IMeteringPointIntegrationRepository _meteringPointIntegrationRepository;
+    private readonly IMeteringPointRepository _meteringPointRepository;
 
-    public VerifyGridOwnerHandler(IMeteringPointIntegrationRepository meteringPointIntegrationRepository)
+    public VerifyGridOwnerHandler(IMeteringPointRepository meteringPointRepository)
     {
-        _meteringPointIntegrationRepository = meteringPointIntegrationRepository;
+        _meteringPointRepository = meteringPointRepository;
     }
 
     public async Task<bool> Handle(VerifyGridOwnerCommand request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var result = await _meteringPointIntegrationRepository.GetMeteringPointMasterDataChangesAsync(
-            request.MeteringPointIdentification,
-            DateTime.UtcNow,
-            DateTime.UtcNow)
-            .ToListAsync(cancellationToken)
+        var result = await _meteringPointRepository.GetMeteringPointForSignatureAsync(
+           new Domain.Models.MeteringPointIdentification(request.MeteringPointIdentification))
             .ConfigureAwait(false);
-
-        // How do we get only the current state (like used in GUI meteringpoint)
-        var first = result.FirstOrDefault<MeteringPointMasterData>();
-
-        if (first == null)
+        if (result == null)
         {
             return false;
         }
 
-        // Can we use accessGridProvider (instead of list of gridareas)
-        return request.GridAreaCode.Contains(first.GridAreaCode.Value);
+        return request.GridAreaCode.Contains(result.Metadata.GridAreaCode);
     }
 }
