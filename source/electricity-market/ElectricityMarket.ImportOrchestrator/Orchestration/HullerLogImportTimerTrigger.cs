@@ -21,14 +21,14 @@ using Microsoft.DurableTask.Client;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
-public sealed class ContinuousImportTimerTrigger
+public sealed class HullerLogImportTimerTrigger
 {
     private readonly IMediator _mediator;
     private readonly IImportStateService _importStateService;
     private readonly IGoldenStreamingImporter _goldenStreamingImporter;
     private readonly Func<IDatabricksStreamingImporter> _databricksStreamingImporter;
 
-    public ContinuousImportTimerTrigger(
+    public HullerLogImportTimerTrigger(
         IImportStateService importStateService,
         IGoldenStreamingImporter goldenStreamingImporter,
         Func<IDatabricksStreamingImporter> databricksStreamingImporter,
@@ -40,9 +40,9 @@ public sealed class ContinuousImportTimerTrigger
         _mediator = mediator;
     }
 
-    [Function(nameof(ContinuousImportTimerTrigger))]
+    [Function(nameof(HullerLogImportTimerTrigger))]
     public async Task ImportAsync(
-        [TimerTrigger("0 */1 * * * *")]
+        [TimerTrigger("0 0 * * * *")]
         TimerInfo timer,
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
@@ -52,9 +52,7 @@ public sealed class ContinuousImportTimerTrigger
         if (await _importStateService.ShouldStreamFromGoldAsync().ConfigureAwait(false))
         {
             await _goldenStreamingImporter.ImportAsync().ConfigureAwait(false);
-            await _mediator.Send(new SyncElectricalHeatingCommand()).ConfigureAwait(false);
-            await _mediator.Send(new SyncCapacitySettlementCommand()).ConfigureAwait(false);
-            await _mediator.Send(new SyncNetConsumptionCommand()).ConfigureAwait(false);
+            await _mediator.Send(new SyncHullerLogCommand()).ConfigureAwait(false);
         }
         else if (await _importStateService.IsStreamingImportEnabledAsync().ConfigureAwait(false))
         {

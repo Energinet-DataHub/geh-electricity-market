@@ -42,13 +42,12 @@ public sealed class SyncHullerLogHandler(
         var moreData = true;
         while (moreData)
         {
-            _logger.LogInformation(
+            _logger.LogWarning(
                 "SyncHullerLogHandler: Sync job version {Version} for {JobName} started.",
                 currentSyncJob.Version,
                 SyncJobName.HullerLog);
 
-            var meteringPointsToSync = _meteringPointRepository
-                .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+            var meteringPointsToSync = _meteringPointRepository.GetAllMeteringPointsAsync();
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
             if (maxVersion > DateTimeOffset.MinValue)
