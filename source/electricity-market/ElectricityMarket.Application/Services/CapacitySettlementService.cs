@@ -50,7 +50,7 @@ public class CapacitySettlementService : ICapacitySettlementService
     // - No column may use quoted values
     // - All date/time values must include seconds
     // """
-    public async IAsyncEnumerable<ICapacitySettlementResult> GetCapacitySettlementPeriodsAsync(
+    public async IAsyncEnumerable<CapacitySettlementPeriodDto> GetCapacitySettlementPeriodsAsync(
         MeteringPoint meteringPoint, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
@@ -69,7 +69,6 @@ public class CapacitySettlementService : ICapacitySettlementService
 
         if (capacitySettlementMeteringPoint is null)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
             yield break;
         }
 
@@ -78,13 +77,11 @@ public class CapacitySettlementService : ICapacitySettlementService
 
         if (consumptionPeriod is null)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
             yield break;
         }
 
         if (capacitySettlementPeriod.Valid.End < _capacitySettlementEnabledFrom)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
             yield break;
         }
 
