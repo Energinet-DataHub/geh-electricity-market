@@ -173,5 +173,4 @@ public class DeltaLakeDataUploadStatementFormatterTests
 
     private sealed record TestDto([property: DeltaLakeKey] string Id, string? Prop, DateTimeOffset? NullableTimestamp);
     private sealed record MultiKeyTestDto([property: DeltaLakeKey] string Id, [property: DeltaLakeKey] string Id2, string Prop);
-
 }

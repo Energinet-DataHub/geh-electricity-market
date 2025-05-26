@@ -114,18 +114,19 @@ public class CapacitySettlementServiceTests
         var parentMeteringPointMetadata = CreateParentMeteringPointMetadata(ValidIntervalNow());
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now.AddDays(-2), []);
 
-        IEnumerable<MeteringPoint> childMeteringPoints = new List<MeteringPoint> { capacitySettlementMeteringPoint };
         _meteringPointRepository.Setup(m =>
-            m.GetChildMeteringPointsAsync(parentMeteringPoint.Identification.Value)).Returns(Task.FromResult(childMeteringPoints));
+            m.GetAsync(parentMeteringPoint.Identification)).ReturnsAsync(parentMeteringPoint);
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriodsAsync = await _sut.GetCapacitySettlementPeriodsAsync(
-            parentMeteringPoint,
+            capacitySettlementMeteringPoint,
             CancellationToken.None).ToListAsync();
 
         // No capacity settlement period found
         Assert.Single(capacitySettlementPeriodsAsync);
-        Assert.Single(capacitySettlementPeriodsAsync.OfType<CapacitySettlementEmptyDto>());
+        var emptyPeriodDtos = capacitySettlementPeriodsAsync.OfType<CapacitySettlementEmptyDto>().ToList();
+        Assert.Single(emptyPeriodDtos);
+        Assert.Equal(parentMeteringPoint.Identification.Value, emptyPeriodDtos.Single().MeteringPointId);
     }
 
     [Fact]
