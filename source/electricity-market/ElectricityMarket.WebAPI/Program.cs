@@ -14,6 +14,7 @@
 
 using System.Reflection;
 using Asp.Versioning;
+using ElectricityMarket.WebAPI;
 using ElectricityMarket.WebAPI.Extensions.DependencyInjection;
 using Energinet.DataHub.Core.App.Common.Extensions.DependencyInjection;
 using Energinet.DataHub.Core.App.WebApp.Extensions.Builder;
@@ -26,8 +27,8 @@ using Energinet.DataHub.RevisionLog.Integration.WebApi.Extensions.DependencyInje
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpLoggingScope("electricity-market");
-builder.Services.AddApplicationInsightsForWebApp("electricity-market");
+builder.Services.AddHttpLoggingScope(SubsystemInformation.Name);
+builder.Services.AddApplicationInsightsForWebApp(SubsystemInformation.Name);
 builder.Services.AddHealthChecksForWebApp();
 
 builder.Services
@@ -36,7 +37,7 @@ builder.Services
 builder.Services
     .AddNodaTimeForApplication()
     .AddApiVersioningForWebApp(new ApiVersion(1, 0))
-    .AddSwaggerForWebApp(Assembly.GetExecutingAssembly(), "electricity-market");
+    .AddSwaggerForWebApp(Assembly.GetExecutingAssembly(), SubsystemInformation.Name);
 
 builder.Services
     .AddJwtBearerAuthenticationForWebApp(builder.Configuration)
@@ -44,7 +45,7 @@ builder.Services
     .AddPermissionAuthorizationForWebApp()
     .AddElectricityMarketWebApiModule(builder.Configuration)
     .AddRevisionLogIntegrationModule(builder.Configuration)
-    .AddRevisionLogIntegrationWebApiModule<DefaultRevisionLogEntryHandler>(new Guid("1fc93427-e6fb-45db-bf92-b6efefe5aad9"));
+    .AddRevisionLogIntegrationWebApiModule<DefaultRevisionLogEntryHandler>(SubsystemInformation.Id);
 
 var app = builder.Build();
 

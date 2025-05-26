@@ -62,4 +62,9 @@ public sealed record MeteringPoint(
                 .EnergySupplyPeriodTimeline.First(esp => esp.Valid.Contains(now));
         }
     }
+
+    public bool IsParent()
+    {
+        return MetadataTimeline.All(mpp => mpp.Parent is null);
+    }
 }

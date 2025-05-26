@@ -12,24 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Security;
+namespace ElectricityMarket.WebAPI;
 
-public enum MarketRole
+public static class SubsystemInformation
 {
-    BalanceResponsibleParty,
-    BillingAgent,
-    EnergySupplier,
-    GridAccessProvider,
-    ImbalanceSettlementResponsible,
-    MeterOperator,
-    MeteredDataAdministrator,
-    MeteredDataResponsible,
-    MeteringPointAdministrator,
-    SystemOperator,
-    DanishEnergyAgency,
-    DataHubAdministrator,
-    IndependentAggregator,
-    SerialEnergyTrader,
-    Delegated,
-    ItSupplier,
+    public static Guid Id { get; } = Guid.Parse("1fc93427-e6fb-45db-bf92-b6efefe5aad9");
+    public static string Name => "electricity-market";
 }

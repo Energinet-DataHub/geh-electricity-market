@@ -12,8 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions;
 
-public sealed record GetMeteringPointByGridAreaCodeResponse(IEnumerable<MeteringPointIdentificationDto> MeteringPoints);
+public static class QueryableExtensions
+{
+    public static IQueryable<T> HintFewRows<T>(this IQueryable<T> source)
+    {
+        return source.TagWith("FAST1");
+    }
+}

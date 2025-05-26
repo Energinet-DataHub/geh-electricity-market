@@ -77,13 +77,13 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         }
     }
 
-    public async Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken)
+    public async Task InsertCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(capacitySettlementPeriods);
         _logger.LogInformation(
             "Starting upload of {Count} capacity settlement metering point periods.", capacitySettlementPeriods.Count);
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
-        var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, capacitySettlementPeriods);
+        var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, capacitySettlementPeriods);
 
         var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
         await foreach (var record in result.ConfigureAwait(false))
@@ -93,7 +93,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         }
     }
 
-    public async Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken)
+    public async Task DeleteCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(capacitySettlementEmptyDtos);
         _logger.LogInformation(

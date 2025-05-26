@@ -77,27 +77,28 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
     {
         DateTimeOffset? maxVersion = null;
 
-        var meteringPoints = await meteringPointsToSync.SelectMany(
+        var meteringPointsToDelete = new List<CapacitySettlementEmptyDto>();
+        var meteringPoints = await meteringPointsToSync.Where(mp => mp.IsParent()).SelectMany(
             mp =>
             {
                 maxVersion = maxVersion is null || maxVersion < mp.Version ? mp.Version : maxVersion;
-                return _capacitySettlementService.GetCapacitySettlementPeriodsAsync(mp.Identification, cancellationToken);
+                meteringPointsToDelete.Add(new CapacitySettlementEmptyDto(mp.Identification.Value));
+                return _capacitySettlementService.GetCapacitySettlementPeriodsAsync(mp, cancellationToken);
             }).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        var periodsToUpsert = meteringPoints.OfType<CapacitySettlementPeriodDto>().ToList();
-        var periodsToClear = meteringPoints.OfType<CapacitySettlementEmptyDto>().ToList();
+        var meteringPointsToInsert = meteringPoints.ToList();
 
-        if (periodsToUpsert.Count > 0)
+        if (meteringPointsToDelete.Count > 0)
         {
             await _deltaLakeDataUploadService
-                .ImportTransactionsAsync(periodsToUpsert, cancellationToken)
+                .DeleteCapacitySettlementPeriodsAsync(meteringPointsToDelete, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        if (periodsToClear.Count > 0)
+        if (meteringPointsToInsert.Count > 0)
         {
             await _deltaLakeDataUploadService
-                .ImportTransactionsAsync(periodsToClear, cancellationToken)
+                .InsertCapacitySettlementPeriodsAsync(meteringPointsToInsert, cancellationToken)
                 .ConfigureAwait(false);
         }
 

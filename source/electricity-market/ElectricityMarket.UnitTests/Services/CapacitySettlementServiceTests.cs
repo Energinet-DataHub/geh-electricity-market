@@ -23,6 +23,7 @@ using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NodaTime;
 using Xunit;
@@ -39,7 +40,7 @@ public class CapacitySettlementServiceTests
     public CapacitySettlementServiceTests()
     {
         _meteringPointRepository = new Mock<IMeteringPointRepository>();
-        _sut = new CapacitySettlementService(_meteringPointRepository.Object);
+        _sut = new CapacitySettlementService(_meteringPointRepository.Object, NullLogger<CapacitySettlementService>.Instance);
     }
 
     [Fact]
@@ -52,14 +53,12 @@ public class CapacitySettlementServiceTests
         var parentMeteringPointMetadata = CreateParentMeteringPointMetadata(ValidIntervalNow());
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now.AddDays(-2), []);
 
-        var meteringPointHierarchy = new MeteringPointHierarchy(parentMeteringPoint, [capacitySettlementMeteringPoint]);
-
         _meteringPointRepository.Setup(m =>
-            m.GetMeteringPointHierarchyAsync(capacitySettlementMeteringPoint.Identification, It.IsAny<CancellationToken>())).Returns(Task.FromResult(meteringPointHierarchy));
+            m.GetAsync(parentMeteringPoint.Identification)).ReturnsAsync(parentMeteringPoint);
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriodsAsync = await _sut.GetCapacitySettlementPeriodsAsync(
-            capacitySettlementMeteringPoint.Identification,
+            capacitySettlementMeteringPoint,
             CancellationToken.None).ToListAsync();
 
         // Single capacity settlement period found
@@ -84,14 +83,13 @@ public class CapacitySettlementServiceTests
         var parentMeteringPointMetadata = CreateParentMeteringPointMetadata(ValidIntervalNow());
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now, []);
 
-        var meteringPointHierarchy = new MeteringPointHierarchy(parentMeteringPoint, [capacitySettlementMeteringPoint]);
-
+        IEnumerable<MeteringPoint> childMeteringPoints = new List<MeteringPoint> { capacitySettlementMeteringPoint };
         _meteringPointRepository.Setup(m =>
-            m.GetMeteringPointHierarchyAsync(parentMeteringPoint.Identification, It.IsAny<CancellationToken>())).Returns(Task.FromResult(meteringPointHierarchy));
+            m.GetChildMeteringPointsAsync(parentMeteringPoint.Identification.Value)).Returns(Task.FromResult(childMeteringPoints));
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriodsAsync = await _sut.GetCapacitySettlementPeriodsAsync(
-            parentMeteringPoint.Identification,
+            parentMeteringPoint,
             CancellationToken.None).ToListAsync();
 
         // Single capacity settlement period found
@@ -116,19 +114,16 @@ public class CapacitySettlementServiceTests
         var parentMeteringPointMetadata = CreateParentMeteringPointMetadata(ValidIntervalNow());
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now.AddDays(-2), []);
 
-        var meteringPointHierarchy = new MeteringPointHierarchy(parentMeteringPoint, [capacitySettlementMeteringPoint]);
-
         _meteringPointRepository.Setup(m =>
-            m.GetMeteringPointHierarchyAsync(parentMeteringPoint.Identification, It.IsAny<CancellationToken>())).Returns(Task.FromResult(meteringPointHierarchy));
+            m.GetAsync(parentMeteringPoint.Identification)).ReturnsAsync(parentMeteringPoint);
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriodsAsync = await _sut.GetCapacitySettlementPeriodsAsync(
-            parentMeteringPoint.Identification,
+            capacitySettlementMeteringPoint,
             CancellationToken.None).ToListAsync();
 
         // No capacity settlement period found
-        Assert.Single(capacitySettlementPeriodsAsync);
-        Assert.Single(capacitySettlementPeriodsAsync.OfType<CapacitySettlementEmptyDto>());
+        Assert.Empty(capacitySettlementPeriodsAsync);
     }
 
     [Fact]
@@ -144,14 +139,12 @@ public class CapacitySettlementServiceTests
         var parentMeteringPointMetadata = CreateParentMeteringPointMetadata(ValidIntervalNow());
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now.AddDays(-2), []);
 
-        var meteringPointHierarchy = new MeteringPointHierarchy(parentMeteringPoint, [capacitySettlementMeteringPoint]);
-
         _meteringPointRepository.Setup(m =>
-            m.GetMeteringPointHierarchyAsync(capacitySettlementMeteringPoint.Identification, It.IsAny<CancellationToken>())).Returns(Task.FromResult(meteringPointHierarchy));
+            m.GetAsync(parentMeteringPoint.Identification)).ReturnsAsync(parentMeteringPoint);
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriodsAsync = await _sut.GetCapacitySettlementPeriodsAsync(
-            capacitySettlementMeteringPoint.Identification,
+            capacitySettlementMeteringPoint,
             CancellationToken.None).ToListAsync();
 
         // Capacity settlement period starts 1/1-2025
@@ -180,14 +173,12 @@ public class CapacitySettlementServiceTests
         var commercialRelation3 = new CommercialRelation(1, "Watts Inc.", commercialRelation3Interval, Guid.NewGuid(), [], []);
         var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, parentMeteringPointMetadata, DateTimeOffset.Now.AddDays(-2), [commercialRelation1, commercialRelation2, commercialRelation3]);
 
-        var meteringPointHierarchy = new MeteringPointHierarchy(parentMeteringPoint, [capacitySettlementMeteringPoint]);
-
         _meteringPointRepository.Setup(m =>
-            m.GetMeteringPointHierarchyAsync(capacitySettlementMeteringPoint.Identification, It.IsAny<CancellationToken>())).Returns(Task.FromResult(meteringPointHierarchy));
+            m.GetAsync(parentMeteringPoint.Identification)).ReturnsAsync(parentMeteringPoint);
 
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriods = await _sut.GetCapacitySettlementPeriodsAsync(
-            capacitySettlementMeteringPoint.Identification,
+            capacitySettlementMeteringPoint,
             CancellationToken.None).ToListAsync();
 
         // One row per commercial relation is exported
