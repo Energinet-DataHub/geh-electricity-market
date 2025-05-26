@@ -19,7 +19,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
 public interface ICapacitySettlementService
 {
-    IAsyncEnumerable<ICapacitySettlementResult> GetCapacitySettlementPeriodsAsync(
+    IAsyncEnumerable<CapacitySettlementPeriodDto> GetCapacitySettlementPeriodsAsync(
         MeteringPoint meteringPoint,
         CancellationToken cancellationToken);
 }

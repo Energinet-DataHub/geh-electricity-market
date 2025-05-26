@@ -14,4 +14,4 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public sealed record CapacitySettlementEmptyDto(long MeteringPointId) : ICapacitySettlementResult;
+public sealed record CapacitySettlementEmptyDto(long MeteringPointId);
