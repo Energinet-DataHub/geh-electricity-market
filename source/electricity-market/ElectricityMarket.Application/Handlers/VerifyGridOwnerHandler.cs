@@ -34,6 +34,7 @@ public sealed class VerifyGridOwnerHandler : IRequestHandler<VerifyGridOwnerComm
         var result = await _meteringPointRepository.GetMeteringPointForSignatureAsync(
            new Domain.Models.MeteringPointIdentification(request.MeteringPointIdentification))
             .ConfigureAwait(false);
+
         if (result == null)
         {
             return false;

@@ -13,11 +13,13 @@
 // limitations under the License.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 using Energinet.DataHub.ElectricityMarket.Application.Handlers;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
@@ -41,7 +43,7 @@ public class VerifyGridOwnerRepositoryTests : IClassFixture<ElectricityMarketDat
     }
 
     [Fact]
-    public async Task GivenMeteringPoints_WhenQueryingForParentHierarchy_ThenCompleteHierarchyIsReturned()
+    public async Task GetMeteringPointForSignature_WhenQuerying_CorrectGridAreaCodeIsReturned()
     {
         var parentIdentification = await CreateTestDataAsync();
 
@@ -50,6 +52,8 @@ public class VerifyGridOwnerRepositoryTests : IClassFixture<ElectricityMarketDat
 
         var sut = new MeteringPointRepository(null!, dbContext, null!, null!);
 
+        var target = new VerifyGridOwnerHandler(sut);
+
         var res = await sut.GetMeteringPointForSignatureAsync(parentIdentification);
 
         // var verifyGridOwner = new VerifyGridOwnerHandler()
@@ -57,6 +61,27 @@ public class VerifyGridOwnerRepositoryTests : IClassFixture<ElectricityMarketDat
         Assert.NotNull(res.Identification);
         Assert.Equal(parentIdentification, res.Identification);
         Assert.Equal("001", res.Metadata.GridAreaCode);
+    }
+
+    [Fact]
+    public async Task VerifyGridOwnerHandler_WhenQuerying_TrueIsReturned()
+    {
+        var parentIdentification = await CreateTestDataAsync();
+
+        var dbContext = _fixture.DatabaseManager.CreateDbContext();
+        await using var electricityMarketDatabaseContext = dbContext;
+
+        var sut = new MeteringPointRepository(null!, dbContext, null!, null!);
+        var res = await sut.GetMeteringPointForSignatureAsync(parentIdentification);
+
+        Assert.NotNull(res);
+
+        var target = new VerifyGridOwnerHandler(sut);
+
+        var command = new VerifyGridOwnerCommand(res.Identification.Value.ToString(CultureInfo.InvariantCulture), new List<string> { "001" }.AsReadOnly());
+
+        var response = await target.Handle(command, CancellationToken.None);
+        Assert.True(response);
     }
 
     public Task InitializeAsync() => _fixture.InitializeAsync();
