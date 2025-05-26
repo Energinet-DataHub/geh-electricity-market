@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;

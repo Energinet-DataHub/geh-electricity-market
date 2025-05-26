@@ -13,15 +13,7 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
-using Energinet.DataHub.ElectricityMarket.Application.Commands.GridArea;
-using Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
-using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
-using Energinet.DataHub.ElectricityMarket.Application.Mappers;
-using Energinet.DataHub.ElectricityMarket.Application.Services;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
-using Energinet.DataHub.ElectricityMarket.Integration.Models.GridAreas;
-using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using MediatR;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;

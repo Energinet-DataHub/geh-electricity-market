@@ -15,9 +15,6 @@
 using System.Collections.ObjectModel;
 using System.Net;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
-using Energinet.DataHub.ElectricityMarket.Application.Commands.MasterData;
-using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
-using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Functions.Worker;
@@ -45,6 +42,7 @@ internal sealed class VerifyGridOwnerTrigger
         if (string.IsNullOrWhiteSpace(req.Query["identification"]))
         {
             var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+
             // await badRequestResponse.WriteStringAsync("The 'identification' query parameter is required.").ConfigureAwait(false);
             return badRequestResponse;
         }
