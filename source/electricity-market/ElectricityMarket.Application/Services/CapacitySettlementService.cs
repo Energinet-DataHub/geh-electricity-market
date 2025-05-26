@@ -69,7 +69,7 @@ public class CapacitySettlementService : ICapacitySettlementService
 
         if (capacitySettlementMeteringPoint is null)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPoint.Identification.Value);
+            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
             yield break;
         }
 
@@ -78,13 +78,13 @@ public class CapacitySettlementService : ICapacitySettlementService
 
         if (consumptionPeriod is null)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPoint.Identification.Value);
+            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
             yield break;
         }
 
         if (capacitySettlementPeriod.Valid.End < _capacitySettlementEnabledFrom)
         {
-            yield return new CapacitySettlementEmptyDto(meteringPoint.Identification.Value);
+            yield return new CapacitySettlementEmptyDto(meteringPointHierarchy.Parent.Identification.Value);
             yield break;
         }
 

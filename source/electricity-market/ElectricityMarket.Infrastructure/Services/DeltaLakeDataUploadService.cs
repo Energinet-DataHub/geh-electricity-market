@@ -77,7 +77,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         }
     }
 
-    public async Task ImportTransactionsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken)
+    public async Task InsertCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(capacitySettlementPeriods);
         _logger.LogInformation(
@@ -93,7 +93,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         }
     }
 
-    public async Task ImportTransactionsAsync(IReadOnlyList<ICapacitySettlementResult> capacitySettlementResultDtos, CancellationToken cancellationToken)
+    public async Task DeleteCapacitySettlementPeriodsAsync(IReadOnlyList<ICapacitySettlementResult> capacitySettlementResultDtos, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(capacitySettlementResultDtos);
         _logger.LogInformation(
