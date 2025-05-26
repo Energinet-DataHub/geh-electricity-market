@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,72 +27,66 @@ using Microsoft.Extensions.Options;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
-public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
+public class DeltaLakeDataUploadService(
+    IOptions<DatabricksCatalogOptions> catalogOptions,
+    DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
+    ILogger<DeltaLakeDataUploadService> logger)
+    : IDeltaLakeDataUploadService
 {
-    private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
-    private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
     private readonly DeltaLakeDataUploadStatementFormatter _deltaLakeDataUploadStatementFormatter = new();
-    private readonly ILogger<DeltaLakeDataUploadService> _logger;
-
-    public DeltaLakeDataUploadService(
-        IOptions<DatabricksCatalogOptions> catalogOptions,
-        DatabricksSqlWarehouseQueryExecutor databricksSqlWarehouseQueryExecutor,
-        ILogger<DeltaLakeDataUploadService> logger)
-    {
-        _catalogOptions = catalogOptions;
-        _databricksSqlWarehouseQueryExecutor = databricksSqlWarehouseQueryExecutor;
-        _logger = logger;
-    }
 
     public async Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingParentDto> electricalHeatingParent)
     {
         ArgumentNullException.ThrowIfNull(electricalHeatingParent);
-        _logger.LogInformation(
+        logger.LogInformation(
             "Starting upload of {Count} electrical heating parent metering points.", electricalHeatingParent.Count);
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingParentTableName}";
-        var statements = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementsWithParameters(tableName, electricalHeatingParent);
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingParentTableName}";
+        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingParent);
+        var query = DatabricksStatement.FromRawSql(queryString);
 
-        foreach (var databricksStatement in statements)
+        var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        await foreach (var record in result.ConfigureAwait(false))
         {
-            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement).ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                _logger.LogInformation("Electrical Heating Parents Uploaded: {ResultString}", resultString);
-            }
+            string resultString = JsonSerializer.Serialize(record);
+            logger.LogInformation(" - Electrical Heating Parents Uploaded: {ResultString}", resultString);
         }
     }
 
     public async Task ImportTransactionsAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren)
     {
         ArgumentNullException.ThrowIfNull(electricalHeatingChildren);
-        _logger.LogInformation(
+        logger.LogInformation(
             "Starting upload of {Count} electrical heating child metering points.", electricalHeatingChildren.Count);
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.ElectricalHeatingChildTableName}";
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingChildTableName}";
         var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, electricalHeatingChildren);
         var query = DatabricksStatement.FromRawSql(queryString);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
         await foreach (var record in result.ConfigureAwait(false))
         {
             string resultString = JsonSerializer.Serialize(record);
-            _logger.LogInformation("Electrical Heating Children Uploaded: {ResultString}", resultString);
+            logger.LogInformation(" - Electrical Heating Children Uploaded: {ResultString}", resultString);
         }
     }
 
     public async Task InsertCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(capacitySettlementPeriods);
-        _logger.LogInformation(
+        logger.LogInformation(
             "Starting upload of {Count} capacity settlement metering point periods.", capacitySettlementPeriods.Count);
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
-        var statements = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementsWithParameters(tableName, capacitySettlementPeriods);
+        var chunkSize = 42; // databricks max params (256) / number of properties
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.CapacitySettlementPeriodTableName}";
 
-        foreach (var databricksStatement in statements)
+        var chunks = capacitySettlementPeriods.Chunk(chunkSize);
+        foreach (var chunk in chunks)
         {
-            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement, cancellationToken).ConfigureAwait(false))
+            var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, capacitySettlementPeriods);
+
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
+            await foreach (var record in result.ConfigureAwait(false))
             {
                 string resultString = JsonSerializer.Serialize(record);
-                _logger.LogInformation("Capacity settlement Uploaded: {ResultString}", resultString);
+                logger.LogInformation(" - Capacity settlement Uploaded: {ResultString}", resultString);
             }
         }
     }
@@ -99,17 +94,21 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
     public async Task DeleteCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(capacitySettlementEmptyDtos);
-        _logger.LogInformation(
+        logger.LogInformation(
             "Starting clearing of {Count} capacity settlement metering point periods.", capacitySettlementEmptyDtos.Count);
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.CapacitySettlementPeriodTableName}";
-        var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, capacitySettlementEmptyDtos);
+        var chunkSize = 256; // databricks max params (256) / number of properties
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.CapacitySettlementPeriodTableName}";
 
-        foreach (var databricksStatement in statements)
+        var chunks = capacitySettlementEmptyDtos.Chunk(chunkSize);
+        foreach (var chunk in chunks)
         {
-            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement, cancellationToken).ConfigureAwait(false))
+            var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, capacitySettlementEmptyDtos);
+
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
+            await foreach (var record in result.ConfigureAwait(false))
             {
                 string resultString = JsonSerializer.Serialize(record);
-                _logger.LogInformation("Capacity settlement deleted: {ResultString}", resultString);
+                logger.LogInformation(" - Capacity settlement deleted: {ResultString}", resultString);
             }
         }
     }
@@ -117,17 +116,21 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
     public async Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents)
     {
         ArgumentNullException.ThrowIfNull(netConsumptionParents);
-        _logger.LogInformation(
+        logger.LogInformation(
             "Starting upload of {Count} net consumption parent metering points.", netConsumptionParents.Count);
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionParentTableName}";
-        var statements = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementsWithParameters(tableName, netConsumptionParents);
+        var chunkSize = 42; // databricks max params (256) / number of properties
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionParentTableName}";
 
-        foreach (var databricksStatement in statements)
+        var chunks = netConsumptionParents.Chunk(chunkSize);
+        foreach (var chunk in chunks)
         {
-            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement).ConfigureAwait(false))
+            var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, netConsumptionParents);
+
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
+            await foreach (var record in result.ConfigureAwait(false))
             {
                 string resultString = JsonSerializer.Serialize(record);
-                _logger.LogInformation("Net Consumption Parents Uploaded: {ResultString}", resultString);
+                logger.LogInformation(" - Net Consumption Parents Uploaded: {ResultString}", resultString);
             }
         }
     }
@@ -135,17 +138,20 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
     public async Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionChildDto> netConsumptionChildren)
     {
         ArgumentNullException.ThrowIfNull(netConsumptionChildren);
-        _logger.LogInformation(
+        logger.LogInformation(
             "Starting upload of {Count} net consumption child metering points.", netConsumptionChildren.Count);
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.NetConsumptionChildTableName}";
-        var statements = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementsWithParameters(tableName, netConsumptionChildren);
-
-        foreach (var databricksStatement in statements)
+        var chunkSize = 51; // databricks max params (256) / number of properties
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionChildTableName}";
+        var chunks = netConsumptionChildren.Chunk(chunkSize);
+        foreach (var chunk in chunks)
         {
-            await foreach (var record in _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(databricksStatement).ConfigureAwait(false))
+            var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, netConsumptionChildren);
+
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
+            await foreach (var record in result.ConfigureAwait(false))
             {
                 string resultString = JsonSerializer.Serialize(record);
-                _logger.LogInformation("Net Consumption Children Uploaded: {ResultString}", resultString);
+                logger.LogInformation(" - Net Consumption Children Uploaded: {ResultString}", resultString);
             }
         }
     }

@@ -23,123 +23,101 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 
 public class DeltaLakeDataUploadStatementFormatter
 {
-    private const int MaxParameters = 256;
     private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
     private readonly DeltaLakeDataUploadParameterFormatter _parameterFormatter = new();
 
-    public IEnumerable<DatabricksStatement> CreateUploadStatementsWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
+    public DatabricksStatement CreateUploadStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
     {
+        var paramIndex = 0;
+        var parameters = new List<QueryParameter>();
+
         var columnNames = GetColumnNames<T>().ToList();
         var columnsString = string.Join(", ", columnNames);
 
-        var countInBatch = MaxParameters / columnNames.Count;
-
-        foreach (var chunk in rowObjects.Chunk(countInBatch))
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
         {
-            var paramIndex = 0;
-            var parameters = new List<QueryParameter>();
-            var valuesString = string.Join(", ", chunk.Select(dto => "(" + string.Join(
-                ", ",
-                GetProperties<T>().Select(prop =>
-                {
-                    var paramName = $"_p{paramIndex++}";
-                    var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
-                    parameters.Add(param);
-                    return $":{paramName}";
-                })) + ")"));
+            var paramName = $"_p{paramIndex++}";
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
+            return $":{paramName}";
+        })) + ")"));
 
-            var keyNames = GetKeyNames<T>().ToList();
-            var mergeConditionString = string.Join(" AND ", keyNames.Select(key => $"t.{key} = u.{key}"));
+        var keyNames = GetKeyNames<T>().ToList();
+        var mergeConditionString = string.Join(" AND ", keyNames.Select(key => $"t.{key} = u.{key}"));
 
-            var updateString = string.Join(
-                ", ",
-                columnNames.Where(c => !keyNames.Contains(c)).Select(key => $"t.{key} = u.{key}"));
-            var insertString = string.Join(", ", columnNames.Select(key => $"u.{key}"));
+        var updateString = string.Join(", ", columnNames.Where(c => !keyNames.Contains(c)).Select(key => $"t.{key} = u.{key}"));
+        var insertString = string.Join(", ", columnNames.Select(key => $"u.{key}"));
 
-            var queryString = $"""
-                               with _updates as (
-                                SELECT * FROM (
-                                  VALUES
-                                    {valuesString}
-                                ) A({columnsString})
-                               )
-                               MERGE INTO {tableName} t USING _updates u
-                               ON {mergeConditionString}
-                               WHEN MATCHED THEN UPDATE SET {updateString}
-                               WHEN NOT MATCHED BY TARGET THEN INSERT ({columnsString}) VALUES({insertString});
-                               """;
+        var queryString = $"""
+                           with _updates as (
+                            SELECT * FROM (
+                              VALUES
+                                {valuesString}
+                            ) A({columnsString})
+                           )
+                           MERGE INTO {tableName} t USING _updates u
+                           ON {mergeConditionString}
+                           WHEN MATCHED THEN UPDATE SET {updateString}
+                           WHEN NOT MATCHED BY TARGET THEN INSERT ({columnsString}) VALUES({insertString});
+                           """;
 
-            var builder = DatabricksStatement.FromRawSql(queryString);
-            AddParameters(parameters, builder);
+        var builder = DatabricksStatement.FromRawSql(queryString);
+        AddParameters(parameters, builder);
 
-            yield return builder.Build();
-        }
+        return builder.Build();
     }
 
-    public IEnumerable<DatabricksStatement> CreateInsertStatementsWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
+    public DatabricksStatement CreateInsertStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
     {
+        var paramIndex = 0;
+        var parameters = new List<QueryParameter>();
+
         var columnNames = GetColumnNames<T>().ToList();
         var columnsString = string.Join(", ", columnNames);
 
-        var countInBatch = MaxParameters / columnNames.Count;
-
-        foreach (var chunk in rowObjects.Chunk(countInBatch))
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
         {
-            var paramIndex = 0;
-            var parameters = new List<QueryParameter>();
+            var paramName = $"_p{paramIndex++}";
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
+            return $":{paramName}";
+        })) + ")"));
 
-            var valuesString = string.Join(", ", chunk.Select(dto => "(" + string.Join(
-                ", ",
-                GetProperties<T>().Select(prop =>
-                {
-                    var paramName = $"_p{paramIndex++}";
-                    var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
-                    parameters.Add(param);
-                    return $":{paramName}";
-                })) + ")"));
+        var queryString = $"""
+                           INSERT INTO {tableName} ({columnsString}) VALUES {valuesString}
+                           """;
 
-            var queryString = $"""
-                               INSERT INTO {tableName} ({columnsString}) VALUES {valuesString}
-                               """;
+        var builder = DatabricksStatement.FromRawSql(queryString);
+        AddParameters(parameters, builder);
 
-            var builder = DatabricksStatement.FromRawSql(queryString);
-            AddParameters(parameters, builder);
-
-            yield return builder.Build();
-        }
+        return builder.Build();
     }
 
-    public IEnumerable<DatabricksStatement> CreateDeleteStatementsWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
+    public DatabricksStatement CreateDeleteStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
     {
+        var paramIndex = 0;
+        var parameters = new List<QueryParameter>();
+
         var columnNames = GetColumnNames<T>().ToList();
         var columnsString = string.Join(", ", columnNames);
 
-        var countInBatch = MaxParameters / columnNames.Count;
-
-        foreach (var chunk in rowObjects.Chunk(countInBatch))
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
         {
-            var paramIndex = 0;
-            var parameters = new List<QueryParameter>();
-            var valuesString = string.Join(", ", chunk.Select(dto => "(" + string.Join(
-                ", ",
-                GetProperties<T>().Select(prop =>
-                {
-                    var paramName = $"_p{paramIndex++}";
-                    var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
-                    parameters.Add(param);
-                    return $":{paramName}";
-                })) + ")"));
+            var paramName = $"_p{paramIndex++}";
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
+            return $":{paramName}";
+        })) + ")"));
 
-            var queryString = $"""
-                               DELETE FROM {tableName}
-                               WHERE ({columnsString}) IN ({valuesString});
-                               """;
+        var queryString = $"""
+                DELETE FROM {tableName}
+                WHERE ({columnsString}) IN ({valuesString});
+                """;
 
-            var builder = DatabricksStatement.FromRawSql(queryString);
-            AddParameters(parameters, builder);
+        var builder = DatabricksStatement.FromRawSql(queryString);
+        AddParameters(parameters, builder);
 
-            yield return builder.Build();
-        }
+        return builder.Build();
     }
 
     public string CreateUploadStatement<T>(string tableName, IEnumerable<T> rowObjects)
