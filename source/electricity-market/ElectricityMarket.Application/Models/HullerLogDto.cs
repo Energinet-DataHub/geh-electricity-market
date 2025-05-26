@@ -15,7 +15,7 @@
 namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
     public sealed record HullerLogDto(
-        string MeteringPointId,
+        long MeteringPointId,
         string GridAreaCode,
         string Resolution,
         DateTimeOffset PeriodFromDate,

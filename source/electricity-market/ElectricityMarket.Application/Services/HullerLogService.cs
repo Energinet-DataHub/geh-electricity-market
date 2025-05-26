@@ -12,24 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Helpers;
+using System.Security.Cryptography;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
-using NodaTime;
-using NodaTime.Text;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
-public class HullerLogService(IMeteringPointRepository meteringPointRepository) : IHullerLogService
+public class HullerLogService() : IHullerLogService
 {
-    private readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
-    private readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.ConsumptionFromGrid, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
-    private readonly Instant _cutoffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
+    private static readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
+    private static readonly MeteringPointType[] _irrelevantMeteringPointTypes = [MeteringPointType.InternalUse];
+    private static readonly MeteringPointSubType[] _irrelevantMeteringPointSubtypes = [MeteringPointSubType.Calculated];
 
-    private readonly IMeteringPointRepository _meteringPointRepository = meteringPointRepository;
-
-    public Task<IReadOnlyList<HullerLogDto>> GetHullerLogAsync(MeteringPoint meteringPoint)
+    public IReadOnlyList<HullerLogDto> GetHullerLog(MeteringPoint meteringPoint)
     {
+        ArgumentNullException.ThrowIfNull(meteringPoint);
+
+        var response = new List<HullerLogDto>();
+
+        var latestMetadataTimeline = meteringPoint.Metadata;
+
+        if (_relevantConnectionStates.Contains(latestMetadataTimeline.ConnectionState)
+            && !_irrelevantMeteringPointTypes.Contains(latestMetadataTimeline.Type)
+            && !_irrelevantMeteringPointSubtypes.Contains(latestMetadataTimeline.SubType))
+        {
+            response.Add(new HullerLogDto(
+                MeteringPointId: meteringPoint.Identification.Value,
+                GridAreaCode: latestMetadataTimeline.GridAreaCode,
+                Resolution: latestMetadataTimeline.Resolution,
+                PeriodFromDate: latestMetadataTimeline.Valid.Start.ToDateTimeOffset(),
+                PeriodToDate: latestMetadataTimeline.Valid.End.ToDateTimeOffset()));
+        }
+
+        return response;
     }
 }
