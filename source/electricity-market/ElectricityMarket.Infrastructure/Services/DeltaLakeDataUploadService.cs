@@ -149,10 +149,9 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
             "Starting upload of {Count} huller log metering points.", hullerLogs.Count);
 
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.MissingMeasurementLogsTableName}";
-        var queryString = _deltaLakeDataUploadStatementFormatter.CreateUploadStatement(tableName, hullerLogs);
-        var query = DatabricksStatement.FromRawSql(queryString);
+        var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, hullerLogs);
 
-        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query.Build());
+        var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
         await foreach (var record in result.ConfigureAwait(false))
         {
             string resultString = Convert.ToString(record);
