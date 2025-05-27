@@ -16,7 +16,6 @@ using ElectricityMarket.WebAPI.Extensions.Authorization;
 using ElectricityMarket.WebAPI.Model;
 using ElectricityMarket.WebAPI.Revision;
 using Energinet.DataHub.Core.App.Common.Abstractions.Users;
-using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Contacts;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 using Energinet.DataHub.ElectricityMarket.Application.Models;

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
 
@@ -31,15 +32,10 @@ public sealed class VerifyGridOwnerHandler : IRequestHandler<VerifyGridOwnerComm
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var result = await _meteringPointRepository.GetMeteringPointForSignatureAsync(
-           new Domain.Models.MeteringPointIdentification(request.MeteringPointIdentification))
+        var meteringPoint = await _meteringPointRepository.GetMeteringPointForSignatureAsync(
+           new MeteringPointIdentification(request.MeteringPointIdentification))
             .ConfigureAwait(false);
 
-        if (result == null)
-        {
-            return false;
-        }
-
-        return request.GridAreaCodes.Contains(result.Metadata.GridAreaCode);
+        return meteringPoint != null && request.GridAreaCodes.Contains(meteringPoint.Metadata.GridAreaCode);
     }
 }

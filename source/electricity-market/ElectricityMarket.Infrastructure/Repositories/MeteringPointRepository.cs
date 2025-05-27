@@ -97,9 +97,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             .FirstOrDefaultAsync(x => x.Identification == identification.Value)
             .ConfigureAwait(false);
 
-        if (entity == null)
-            return null;
-        return MeteringPointMapper.MapFromEntity(entity);
+        return entity == null ? null : MeteringPointMapper.MapFromEntity(entity);
     }
 
     public async Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification)

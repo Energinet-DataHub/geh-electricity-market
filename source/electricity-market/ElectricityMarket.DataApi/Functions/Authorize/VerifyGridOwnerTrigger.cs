@@ -38,20 +38,21 @@ internal sealed class VerifyGridOwnerTrigger
         [FromBody] ReadOnlyCollection<string> gridAreaCodes,
         FunctionContext executionContext)
     {
-        var indentification = req.Query["identification"];
-        if (string.IsNullOrWhiteSpace(indentification))
+        var identification = req.Query["identification"];
+        if (string.IsNullOrWhiteSpace(identification))
         {
             var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
             return badRequestResponse;
         }
 
-        var command = new VerifyGridOwnerCommand(indentification, gridAreaCodes);
+        var command = new VerifyGridOwnerCommand(identification, gridAreaCodes);
 
         var result = await _mediator
             .Send(command)
             .ConfigureAwait(false);
 
-        HttpResponseData response = req.CreateResponse(HttpStatusCode.OK);
+        var response = req.CreateResponse(HttpStatusCode.OK);
+
         await response
             .WriteAsJsonAsync(result)
             .ConfigureAwait(false);

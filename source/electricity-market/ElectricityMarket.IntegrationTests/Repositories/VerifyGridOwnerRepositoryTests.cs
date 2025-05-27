@@ -83,6 +83,27 @@ public class VerifyGridOwnerRepositoryTests : IClassFixture<ElectricityMarketDat
         Assert.True(response);
     }
 
+    [Fact]
+    public async Task VerifyGridOwnerHandler_WhenQuerying_FalseIsReturned()
+    {
+        var parentIdentification = await CreateTestDataAsync();
+
+        var dbContext = _fixture.DatabaseManager.CreateDbContext();
+        await using var electricityMarketDatabaseContext = dbContext;
+
+        var sut = new MeteringPointRepository(null!, dbContext, null!, null!);
+        var res = await sut.GetMeteringPointForSignatureAsync(parentIdentification);
+
+        Assert.NotNull(res);
+
+        var target = new VerifyGridOwnerHandler(sut);
+
+        var command = new VerifyGridOwnerCommand(res.Identification.Value.ToString(CultureInfo.InvariantCulture), new List<string> { "002" }.AsReadOnly());
+
+        var response = await target.Handle(command, CancellationToken.None);
+        Assert.False(response);
+    }
+
     public Task InitializeAsync() => _fixture.InitializeAsync();
 
     public Task DisposeAsync() => _fixture.DisposeAsync();
