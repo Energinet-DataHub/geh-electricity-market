@@ -1,4 +1,5 @@
-CREATE View {catalog_name}.electricity_market_reports_input.measurement_report_metering_point_periods_v1 (
+CREATE View {catalog_name}.electricity_market_reports_input.measurement_report_metering_point_periods_v1 AS
+SELECT
     grid_area_code,
     metering_point_id,
     metering_point_type,
@@ -11,5 +12,4 @@ CREATE View {catalog_name}.electricity_market_reports_input.measurement_report_m
     to_grid_area_code,
     period_from_datetime,
     period_to_datetime
-)
-USING DELTA
+FROM {catalog_name}.electricity_market_internal.measurement_report_metering_point_periods
