@@ -1,4 +1,4 @@
-CREATE TABLE {catalog_name}.electricity_market_internal.measurement_report_metering_point_periods (
+CREATE TABLE {catalog_name}.electricity_market_internal.measurements_report_metering_point_periods (
     grid_area_code STRING NOT NULL,
     metering_point_id STRING NOT NULL,
     metering_point_type STRING NOT NULL,

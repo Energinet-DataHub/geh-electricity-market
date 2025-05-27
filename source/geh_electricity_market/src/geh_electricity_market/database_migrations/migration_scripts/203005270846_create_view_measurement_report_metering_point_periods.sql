@@ -1,4 +1,4 @@
-CREATE View {catalog_name}.electricity_market_reports_input.measurement_report_metering_point_periods_v1 AS
+CREATE View {catalog_name}.electricity_market_reports_input.measurements_report_metering_point_periods_v1_v1 AS
 SELECT
     grid_area_code,
     metering_point_id,
@@ -12,4 +12,4 @@ SELECT
     to_grid_area_code,
     period_from_datetime,
     period_to_datetime
-FROM {catalog_name}.electricity_market_internal.measurement_report_metering_point_periods
+FROM {catalog_name}.electricity_market_internal.measurements_report_metering_point_periods
