@@ -4,7 +4,7 @@ CREATE TABLE {catalog_name}.electricity_market_internal.measurement_report_meter
     metering_point_type STRING NOT NULL,
     metering_point_resolution STRING NOT NULL,
     energy_supplier_id STRING,
-    physical_status BOOL NOT NULL,
+    physical_status BOOLEAN NOT NULL,
     settlement_method STRING,
     unit STRING NOT NULL,
     from_grid_area_code STRING,
