@@ -144,25 +144,6 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return allRelated.Select(MeteringPointMapper.MapFromEntity);
     }
 
-    public async IAsyncEnumerable<MeteringPoint> GetAllMeteringPointsAsync(int batchSize = 10000)
-    {
-        var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        readContext.Database.SetCommandTimeout(60 * 60);
-
-        await using (readContext.ConfigureAwait(false))
-        {
-            var entities = readContext.MeteringPoints
-            .AsSplitQuery()
-            .Take(batchSize)
-            .AsAsyncEnumerable();
-
-            await foreach (var entity in entities)
-            {
-                yield return MeteringPointMapper.MapFromEntity(entity);
-            }
-        }
-    }
-
     public async IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000)
     {
         var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
