@@ -3,7 +3,7 @@ SELECT
     grid_area_code,
     metering_point_id,
     metering_point_type,
-    metering_point_resolution,
+    resolution,
     energy_supplier_id,
     physical_status,
     settlement_method,
