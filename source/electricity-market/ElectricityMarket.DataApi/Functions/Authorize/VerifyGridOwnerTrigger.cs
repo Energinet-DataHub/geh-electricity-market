@@ -35,21 +35,17 @@ internal sealed class VerifyGridOwnerTrigger
     public async Task<HttpResponseData> VerifyGridOwnerAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "verify-grid-owner")]
         HttpRequestData req,
-        [FromBody] ReadOnlyCollection<string> gridAreaCode,
+        [FromBody] ReadOnlyCollection<string> gridAreaCodes,
         FunctionContext executionContext)
     {
-        // Ensure the "identification" query parameter is not null or empty
-        if (string.IsNullOrWhiteSpace(req.Query["identification"]))
+        var indentification = req.Query["identification"];
+        if (string.IsNullOrWhiteSpace(indentification))
         {
             var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-
-            // await badRequestResponse.WriteStringAsync("The 'identification' query parameter is required.").ConfigureAwait(false);
             return badRequestResponse;
         }
 
-#pragma warning disable CS8604 // Possible null reference argument.
-        var command = new VerifyGridOwnerCommand(req.Query["identification"], gridAreaCode);
-#pragma warning restore CS8604 // Possible null reference argument.
+        var command = new VerifyGridOwnerCommand(indentification, gridAreaCodes);
 
         var result = await _mediator
             .Send(command)

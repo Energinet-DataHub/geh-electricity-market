@@ -62,25 +62,6 @@ public class MeteringPointController : ControllerBase
         return Ok(meteringPoint.MeteringPoint);
     }
 
-    [HttpPost("{identification}/verify-grid-owner")]
-    [EnableRevision(RevisionActivities.VerifyGridOwnerRequested, typeof(MeteringPoint), "meteringPointId")]
-    [AllowAnonymous]
-    public async Task<ActionResult<bool>> VerifyGridOwnerAsync(string meteringPointId, [FromBody] ReadOnlyCollection<string> gridAreaCodes)
-    {
-        var verifyGridOwnerCommand = new VerifyGridOwnerCommand(meteringPointId, gridAreaCodes);
-
-        var meteringPoint = await _mediator
-            .Send(verifyGridOwnerCommand)
-            .ConfigureAwait(false);
-
-        if (!meteringPoint)
-        {
-            return NotFound();
-        }
-
-        return Ok(meteringPoint);
-    }
-
     [HttpGet("{identification}/related")]
     [EnableRevision(RevisionActivities.RelatedMeteringPointsRequested, typeof(MeteringPoint), "identification")]
     [Authorize(Roles = "metering-point:search")]
