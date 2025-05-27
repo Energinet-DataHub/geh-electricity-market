@@ -35,7 +35,17 @@ runs:
           --no-build \
           --no-restore \
           --configuration Release \
-          --output '.\source\electricity-market\ElectricityMarket.IntegrationTests\bin\Release\net8.0'
+          --output '.\source\electricity-market\ElectricityMarket.IntegrationTests\publish'
+
+    - name: Publish ElectricityMarket Tests
+      shell: bash
+      run: |
+        dotnet publish \
+          '.\source\electricity-market\ElectricityMarket.Tests\ElectricityMarket.Tests.csproj' \
+          --no-build \
+          --no-restore \
+          --configuration Release \
+          --output '.\source\electricity-market\ElectricityMarket.Tests\publish'
 
     - name: Copy all directories and files in source/electricity-market except the obj-directories
       shell: bash

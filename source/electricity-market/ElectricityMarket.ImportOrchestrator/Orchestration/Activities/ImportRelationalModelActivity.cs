@@ -17,7 +17,7 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class ImportRelationalModelActivity
+internal sealed class ImportRelationalModelActivity
 {
     public const string ActivityName = "ImportRelationalModelActivityV5";
 

@@ -14,7 +14,7 @@
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public class SwitchToStreamingActivityInput
+internal sealed class SwitchToStreamingActivityInput
 {
     public long Cutoff { get; set; }
 }
