@@ -149,7 +149,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
         _logger.LogInformation(
             "Starting upload of {Count} huller log metering points.", hullerLogs.Count);
 
-        const int maxBatchSize = 256;
+        const int maxBatchSize = 50;
         var allResults = new List<object>();
         var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.MissingMeasurementLogsTableName}";
 
