@@ -41,11 +41,11 @@ runs:
       shell: bash
       run: |
         dotnet publish \
-          '.\source\electricity-market\ElectricityMarket.Tests\ElectricityMarket.Tests.csproj' \
+          '.\source\electricity-market\ElectricityMarket.UnitTests\ElectricityMarket.UnitTests.csproj' \
           --no-build \
           --no-restore \
           --configuration Release \
-          --output '.\source\electricity-market\ElectricityMarket.Tests\publish'
+          --output '.\source\electricity-market\ElectricityMarket.UnitTests\publish'
 
     - name: Copy all directories and files in source/electricity-market except the obj-directories
       shell: bash
