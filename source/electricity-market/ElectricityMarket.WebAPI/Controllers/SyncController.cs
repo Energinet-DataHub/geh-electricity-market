@@ -64,4 +64,16 @@ public class SyncController : ControllerBase
 
         return Ok();
     }
+
+    [HttpGet("hullerlog")]
+    public async Task<ActionResult> StartHullerLogSyncAsync()
+    {
+        var command = new SyncHullerLogCommand();
+
+        await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok();
+    }
 }
