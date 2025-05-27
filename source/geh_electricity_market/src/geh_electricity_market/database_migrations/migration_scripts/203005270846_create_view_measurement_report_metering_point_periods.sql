@@ -6,10 +6,9 @@ SELECT
     resolution,
     energy_supplier_id,
     physical_status,
-    settlement_method,
-    unit,
+    quantity_unit,
     from_grid_area_code,
     to_grid_area_code,
-    period_from_datetime,
-    period_to_datetime
+    period_from_date,
+    period_to_date
 FROM {catalog_name}.electricity_market_internal.measurements_report_metering_point_periods
