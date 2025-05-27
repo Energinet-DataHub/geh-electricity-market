@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Common;
 using Energinet.DataHub.ElectricityMarket.Application.Helpers;
 
@@ -25,14 +24,108 @@ namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 public class DeltaLakeDataUploadStatementFormatter
 {
     private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
-    private readonly string _dateTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
+    private readonly DeltaLakeDataUploadParameterFormatter _parameterFormatter = new();
 
-    public string CreateUploadStatement<T>(string tableName, IEnumerable<T> dtos)
+    public DatabricksStatement CreateUploadStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
+    {
+        var paramIndex = 0;
+        var parameters = new List<QueryParameter>();
+
+        var columnNames = GetColumnNames<T>().ToList();
+        var columnsString = string.Join(", ", columnNames);
+
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
+        {
+            var paramName = $"_p{paramIndex++}";
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
+            return $":{paramName}";
+        })) + ")"));
+
+        var keyNames = GetKeyNames<T>().ToList();
+        var mergeConditionString = string.Join(" AND ", keyNames.Select(key => $"t.{key} = u.{key}"));
+
+        var updateString = string.Join(", ", columnNames.Where(c => !keyNames.Contains(c)).Select(key => $"t.{key} = u.{key}"));
+        var insertString = string.Join(", ", columnNames.Select(key => $"u.{key}"));
+
+        var queryString = $"""
+                           with _updates as (
+                            SELECT * FROM (
+                              VALUES
+                                {valuesString}
+                            ) A({columnsString})
+                           )
+                           MERGE INTO {tableName} t USING _updates u
+                           ON {mergeConditionString}
+                           WHEN MATCHED THEN UPDATE SET {updateString}
+                           WHEN NOT MATCHED BY TARGET THEN INSERT ({columnsString}) VALUES({insertString});
+                           """;
+
+        var builder = DatabricksStatement.FromRawSql(queryString);
+        AddParameters(parameters, builder);
+
+        return builder.Build();
+    }
+
+    public DatabricksStatement CreateInsertStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
+    {
+        var paramIndex = 0;
+        var parameters = new List<QueryParameter>();
+
+        var columnNames = GetColumnNames<T>().ToList();
+        var columnsString = string.Join(", ", columnNames);
+
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
+        {
+            var paramName = $"_p{paramIndex++}";
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
+            return $":{paramName}";
+        })) + ")"));
+
+        var queryString = $"""
+                           INSERT INTO {tableName} ({columnsString}) VALUES {valuesString}
+                           """;
+
+        var builder = DatabricksStatement.FromRawSql(queryString);
+        AddParameters(parameters, builder);
+
+        return builder.Build();
+    }
+
+    public DatabricksStatement CreateDeleteStatementWithParameters<T>(string tableName, IEnumerable<T> rowObjects)
+    {
+        var paramIndex = 0;
+        var parameters = new List<QueryParameter>();
+
+        var columnNames = GetColumnNames<T>().ToList();
+        var columnsString = string.Join(", ", columnNames);
+
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop =>
+        {
+            var paramName = $"_p{paramIndex++}";
+            var param = _parameterFormatter.GetPropertyValueForParameter(prop, dto, paramName);
+            parameters.Add(param);
+            return $":{paramName}";
+        })) + ")"));
+
+        var queryString = $"""
+                DELETE FROM {tableName}
+                WHERE ({columnsString}) IN ({valuesString});
+                """;
+
+        var builder = DatabricksStatement.FromRawSql(queryString);
+        AddParameters(parameters, builder);
+
+        return builder.Build();
+    }
+
+    public string CreateUploadStatement<T>(string tableName, IEnumerable<T> rowObjects)
     {
         var columnNames = GetColumnNames<T>().ToList();
         var columnsString = string.Join(", ", columnNames);
 
-        var valuesString = string.Join(", ", dtos.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop => GetPropertyValue(prop, dto))) + ")"));
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetProperties<T>().Select(prop => _parameterFormatter.GetPropertyValue(prop, dto))) + ")"));
 
         var keyNames = GetKeyNames<T>().ToList();
         var mergeConditionString = string.Join(" AND ", keyNames.Select(key => $"t.{key} = u.{key}"));
@@ -54,35 +147,43 @@ public class DeltaLakeDataUploadStatementFormatter
                 """;
     }
 
+    public string CreateDeleteStatement<T>(string tableName, IEnumerable<T> rowObjects)
+    {
+        var valuesString = string.Join(", ", rowObjects.Select(dto => "(" + string.Join(", ", GetKeys<T>().Select(prop => _parameterFormatter.GetPropertyValue(prop, dto))) + ")"));
+
+        var keyNames = GetKeyNames<T>().ToList();
+        var keyColumnsString = string.Join(", ", keyNames);
+
+        return $"""
+                DELETE FROM {tableName}
+                WHERE ({keyColumnsString}) IN ({valuesString});
+                """;
+    }
+
+    private static void AddParameters(List<QueryParameter> parameters, DatabricksStatementBuilder builder)
+    {
+        // HACK: Use reflection to access private field _queryParameters in DatabricksStatementBuilder class. A fix for this is available in geh-core version > 13.1.0
+        foreach (var p in parameters)
+        {
+            var fieldInfo = builder.GetType().GetField("_queryParameters", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var parameterList = (List<QueryParameter>)fieldInfo.GetValue(builder)!;
+            parameterList.Add(p);
+        }
+    }
+
     private static IEnumerable<PropertyInfo> GetProperties<T>()
     {
         return typeof(T).GetProperties().Where(p => p.CanRead).OrderBy(p => p.Name);
     }
 
-    private string? GetPropertyValue<T>(PropertyInfo prop, T dto)
+    private static IEnumerable<PropertyInfo> GetKeys<T>()
     {
-        if (prop.PropertyType == typeof(DateTimeOffset))
-        {
-            return "'" + ((DateTimeOffset)prop.GetValue(dto, null)!).ToString(_dateTimeFormat, CultureInfo.InvariantCulture) + "'";
-        }
-
-        if (prop.PropertyType == typeof(DateTimeOffset?))
-        {
-            var value = (DateTimeOffset?)prop.GetValue(dto, null);
-            if (value is not null)
-            {
-                return "'" + ((DateTimeOffset)value).ToString(_dateTimeFormat, CultureInfo.InvariantCulture) + "'";
-            }
-
-            return "null";
-        }
-
-        return "'" + prop.GetValue(dto, null) + "'";
+        return typeof(T).GetProperties().Where(p => p.CanRead && p.CustomAttributes.Any(attr => attr.AttributeType == typeof(DeltaLakeKeyAttribute)));
     }
 
     private IEnumerable<string> GetKeyNames<T>()
     {
-        return typeof(T).GetProperties().Where(p => p.CanRead && p.CustomAttributes.Any(attr => attr.AttributeType == typeof(DeltaLakeKeyAttribute))).Select(p => _snakeCaseFormatter.ToSnakeCase(p.Name));
+        return GetKeys<T>().Select(p => _snakeCaseFormatter.ToSnakeCase(p.Name));
     }
 
     private IEnumerable<string> GetColumnNames<T>()

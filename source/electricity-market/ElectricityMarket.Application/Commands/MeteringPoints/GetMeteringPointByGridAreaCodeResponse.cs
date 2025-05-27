@@ -16,4 +16,4 @@ using Energinet.DataHub.ElectricityMarket.Application.Models;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.MeteringPoints;
 
-public sealed record GetMeteringPointByGridAreaCodeResponse(IEnumerable<MeteringPointDto> MeteringPoints);
+public sealed record GetMeteringPointByGridAreaCodeResponse(IEnumerable<MeteringPointIdentificationDto> MeteringPoints);

@@ -13,6 +13,9 @@
 // limitations under the License.
 
 using System;
+using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
@@ -23,15 +26,18 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyInjection;
 
 public static class ElectricityMarketModuleExtensions
 {
-    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services)
+    public static IServiceCollection AddElectricityMarketModule(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions();
 
@@ -44,21 +50,33 @@ public static class ElectricityMarketModuleExtensions
         {
             var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
+                {
+                    options.UseNodaTime();
+                    options.CommandTimeout(60 * 60 * 2);
+                })
+                .AddInterceptors(new FastInterceptor());
+
+            if (configuration.GetValue("AggressiveEfCoreLogging", false))
             {
-                options.UseNodaTime();
-                options.CommandTimeout(60 * 60 * 2);
-            })
-            .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+                var databaseLogger = p.GetRequiredService<ILogger<DatabaseOptions>>();
+#pragma warning disable CA1848, CA2254
+                o.LogTo(x => databaseLogger.Log(LogLevel.Warning, x));
+#pragma warning restore CA1848, CA2254
+            }
+            else
+            {
+                o.UseLoggerFactory(NullLoggerFactory.Instance);
+            }
         });
 
         services.AddDbContext<IMarketParticipantDatabaseContext, MarketParticipantDatabaseContext>((p, o) =>
         {
             var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
             o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
-            {
-                options.UseNodaTime();
-            })
-            .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+                {
+                    options.UseNodaTime();
+                })
+                .UseLoggerFactory(NullLoggerFactory.Instance);
         });
 
         services.AddDbContextFactory<ElectricityMarketDatabaseContext>(
@@ -66,10 +84,12 @@ public static class ElectricityMarketModuleExtensions
             {
                 var databaseOptions = p.GetRequiredService<IOptions<DatabaseOptions>>();
                 o.UseSqlServer(databaseOptions.Value.ConnectionString, options =>
-                {
-                    options.UseNodaTime();
-                })
-                .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], Microsoft.Extensions.Logging.LogLevel.None);
+                    {
+                        options.UseNodaTime();
+                        options.CommandTimeout(60 * 60 * 2);
+                    })
+                    .LogTo(_ => { }, [DbLoggerCategory.Database.Command.Name], LogLevel.None)
+                    .AddInterceptors(new FastInterceptor());
             },
             ServiceLifetime.Scoped);
 
@@ -79,13 +99,15 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<IGridAreaRepository, GridAreaRepository>();
         services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();
         services.AddScoped<IImportedTransactionRepository, ImportedTransactionRepository>();
+        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
 
         // Services
         services.AddScoped<ICsvImporter, CsvImporter>();
         services.AddScoped<IRoleFiltrationService, RoleFiltrationService>();
         services.AddScoped<IRelationalModelPrinter, RelationalModelPrinter>();
         services.AddScoped<IElectricalHeatingPeriodizationService, ElectricalHeatingPeriodizationService>();
-        services.AddScoped<ISyncJobsRepository, SyncJobRepository>();
+        services.AddScoped<ICapacitySettlementService, CapacitySettlementService>();
+        services.AddScoped<INetConsumptionService, NetConsumptionService>();
         services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
 
         return services;
@@ -104,5 +126,32 @@ public static class ElectricityMarketModuleExtensions
             .AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
 
         return services;
+    }
+
+    private sealed class FastInterceptor : DbCommandInterceptor
+    {
+        private const string Marker = "-- FAST1";
+        private const string FastHint = " OPTION (FAST 1)";
+
+        public override InterceptionResult<DbDataReader> ReaderExecuting(
+            DbCommand command,
+            CommandEventData eventData,
+            InterceptionResult<DbDataReader> result)
+        {
+            EnableTurboMode(command);
+            return base.ReaderExecuting(command, eventData, result);
+        }
+
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
+        {
+            EnableTurboMode(command);
+            return base.ReaderExecutingAsync(command, eventData, result, cancellationToken);
+        }
+
+        private static void EnableTurboMode(DbCommand command)
+        {
+            if (command.CommandText.Contains(Marker, StringComparison.InvariantCulture) && !command.CommandText.Contains(FastHint, StringComparison.InvariantCulture))
+                command.CommandText += FastHint;
+        }
     }
 }

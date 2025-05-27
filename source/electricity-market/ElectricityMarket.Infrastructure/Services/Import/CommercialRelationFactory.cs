@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
@@ -64,6 +65,28 @@ public static class CommercialRelationFactory
                 Cpr = importedTransaction.first_consumer_cpr?.TrimEnd(),
                 Cvr = importedTransaction.consumer_cvr?.TrimEnd(),
                 IsProtectedName = importedTransaction.protected_name ?? false,
+                ContactAddresses =
+                {
+                    new ContactAddressEntity
+                    {
+                        IsProtectedAddress = importedTransaction.contact_1_protected_address ?? false,
+                        Attention = importedTransaction.contact_1_attention?.TrimEnd(),
+                        StreetCode = importedTransaction.contact_1_street_code?.TrimEnd(),
+                        StreetName = importedTransaction.contact_1_street_name?.TrimEnd() ?? string.Empty,
+                        BuildingNumber = importedTransaction.contact_1_building_number?.TrimEnd() ?? string.Empty,
+                        CityName = importedTransaction.contact_1_city_name?.TrimEnd() ?? string.Empty,
+                        CitySubdivisionName = importedTransaction.contact_1_city_subdivision_name?.TrimEnd(),
+                        DarReference = importedTransaction.contact_1_dar_reference != null
+                            ? Guid.Parse(importedTransaction.contact_1_dar_reference)
+                            : null,
+                        CountryCode = importedTransaction.contact_1_country_name?.TrimEnd() ?? string.Empty,
+                        Floor = importedTransaction.contact_1_floor_id?.TrimEnd(),
+                        Room = importedTransaction.contact_1_room_id?.TrimEnd(),
+                        PostCode = importedTransaction.contact_1_postcode?.TrimEnd() ?? string.Empty,
+                        PostBox = importedTransaction.contact_1_post_box?.TrimEnd(),
+                        MunicipalityCode = importedTransaction.contact_1_municipality_code?.TrimEnd(),
+                    }
+                }
             };
 
             contact.RelationType = "Contact1";
@@ -71,25 +94,6 @@ public static class CommercialRelationFactory
             contact.Email = importedTransaction.contact_1_email_address?.TrimEnd();
             contact.Phone = importedTransaction.contact_1_phone_number?.TrimEnd();
             contact.Mobile = importedTransaction.contact_1_mobile_number?.TrimEnd();
-            contact.ContactAddress = new ContactAddressEntity
-            {
-                IsProtectedAddress = importedTransaction.contact_1_protected_address ?? false,
-                Attention = importedTransaction.contact_1_attention?.TrimEnd(),
-                StreetCode = importedTransaction.contact_1_street_code?.TrimEnd(),
-                StreetName = importedTransaction.contact_1_street_name?.TrimEnd() ?? string.Empty,
-                BuildingNumber = importedTransaction.contact_1_building_number?.TrimEnd() ?? string.Empty,
-                CityName = importedTransaction.contact_1_city_name?.TrimEnd() ?? string.Empty,
-                CitySubdivisionName = importedTransaction.contact_1_city_subdivision_name?.TrimEnd(),
-                DarReference = importedTransaction.contact_1_dar_reference != null
-                    ? Guid.Parse(importedTransaction.contact_1_dar_reference)
-                    : null,
-                CountryCode = importedTransaction.contact_1_country_name?.TrimEnd() ?? string.Empty,
-                Floor = importedTransaction.contact_1_floor_id?.TrimEnd(),
-                Room = importedTransaction.contact_1_room_id?.TrimEnd(),
-                PostCode = importedTransaction.contact_1_postcode?.TrimEnd() ?? string.Empty,
-                PostBox = importedTransaction.contact_1_post_box?.TrimEnd(),
-                MunicipalityCode = importedTransaction.contact_1_municipality_code?.TrimEnd(),
-            };
 
             energySupplyPeriodEntity.Contacts.Add(contact);
 
@@ -104,24 +108,27 @@ public static class CommercialRelationFactory
                 Email = importedTransaction.contact_4_email_address?.TrimEnd(),
                 Phone = importedTransaction.contact_4_phone_number?.TrimEnd(),
                 Mobile = importedTransaction.contact_4_mobile_number?.TrimEnd(),
-                ContactAddress = new ContactAddressEntity
+                ContactAddresses =
                 {
-                    IsProtectedAddress = importedTransaction.contact_4_protected_address ?? false,
-                    Attention = importedTransaction.contact_4_attention?.TrimEnd(),
-                    StreetCode = importedTransaction.contact_4_street_code?.TrimEnd(),
-                    StreetName = importedTransaction.contact_4_street_name?.TrimEnd() ?? string.Empty,
-                    BuildingNumber = importedTransaction.contact_4_building_number?.TrimEnd() ?? string.Empty,
-                    CityName = importedTransaction.contact_4_city_name?.TrimEnd() ?? string.Empty,
-                    CitySubdivisionName = importedTransaction.contact_4_city_subdivision_name?.TrimEnd(),
-                    DarReference = importedTransaction.contact_4_dar_reference != null
-                        ? Guid.Parse(importedTransaction.contact_4_dar_reference)
-                        : null,
-                    CountryCode = importedTransaction.contact_4_country_name?.TrimEnd() ?? string.Empty,
-                    Floor = importedTransaction.contact_4_floor_id?.TrimEnd(),
-                    Room = importedTransaction.contact_4_room_id?.TrimEnd(),
-                    PostCode = importedTransaction.contact_4_postcode?.TrimEnd() ?? string.Empty,
-                    PostBox = importedTransaction.contact_4_post_box?.TrimEnd(),
-                    MunicipalityCode = importedTransaction.contact_4_municipality_code?.TrimEnd(),
+                    new ContactAddressEntity
+                    {
+                        IsProtectedAddress = importedTransaction.contact_4_protected_address ?? false,
+                        Attention = importedTransaction.contact_4_attention?.TrimEnd(),
+                        StreetCode = importedTransaction.contact_4_street_code?.TrimEnd(),
+                        StreetName = importedTransaction.contact_4_street_name?.TrimEnd() ?? string.Empty,
+                        BuildingNumber = importedTransaction.contact_4_building_number?.TrimEnd() ?? string.Empty,
+                        CityName = importedTransaction.contact_4_city_name?.TrimEnd() ?? string.Empty,
+                        CitySubdivisionName = importedTransaction.contact_4_city_subdivision_name?.TrimEnd(),
+                        DarReference = importedTransaction.contact_4_dar_reference != null
+                            ? Guid.Parse(importedTransaction.contact_4_dar_reference)
+                            : null,
+                        CountryCode = importedTransaction.contact_4_country_name?.TrimEnd() ?? string.Empty,
+                        Floor = importedTransaction.contact_4_floor_id?.TrimEnd(),
+                        Room = importedTransaction.contact_4_room_id?.TrimEnd(),
+                        PostCode = importedTransaction.contact_4_postcode?.TrimEnd() ?? string.Empty,
+                        PostBox = importedTransaction.contact_4_post_box?.TrimEnd(),
+                        MunicipalityCode = importedTransaction.contact_4_municipality_code?.TrimEnd(),
+                    }
                 },
             };
 
@@ -137,6 +144,7 @@ public static class CommercialRelationFactory
                 DisponentName = importedTransaction.second_consumer_party_name.TrimEnd(),
                 Cpr = importedTransaction.second_consumer_cpr?.TrimEnd(),
                 IsProtectedName = importedTransaction.protected_name ?? false,
+                ContactAddresses = { new ContactAddressEntity() }
             };
 
             energySupplyPeriodEntity.Contacts.Add(contact);
@@ -173,28 +181,27 @@ public static class CommercialRelationFactory
                 Email = contact.Email,
                 Phone = contact.Phone,
                 Mobile = contact.Mobile,
-            };
-
-            if (contact.ContactAddress != null)
-            {
-                contactCopy.ContactAddress = new ContactAddressEntity
+                ContactAddresses =
                 {
-                    IsProtectedAddress = contact.ContactAddress.IsProtectedAddress,
-                    Attention = contact.ContactAddress.Attention,
-                    StreetCode = contact.ContactAddress.StreetCode,
-                    StreetName = contact.ContactAddress.StreetName,
-                    BuildingNumber = contact.ContactAddress.BuildingNumber,
-                    CityName = contact.ContactAddress.CityName,
-                    CitySubdivisionName = contact.ContactAddress.CitySubdivisionName,
-                    DarReference = contact.ContactAddress.DarReference,
-                    CountryCode = contact.ContactAddress.CountryCode,
-                    Floor = contact.ContactAddress.Floor,
-                    Room = contact.ContactAddress.Room,
-                    PostCode = contact.ContactAddress.PostCode,
-                    PostBox = contact.ContactAddress.PostBox,
-                    MunicipalityCode = contact.ContactAddress.MunicipalityCode,
-                };
-            }
+                    new ContactAddressEntity
+                    {
+                        IsProtectedAddress = contact.ContactAddresses.Single().IsProtectedAddress,
+                        Attention = contact.ContactAddresses.Single().Attention,
+                        StreetCode = contact.ContactAddresses.Single().StreetCode,
+                        StreetName = contact.ContactAddresses.Single().StreetName,
+                        BuildingNumber = contact.ContactAddresses.Single().BuildingNumber,
+                        CityName = contact.ContactAddresses.Single().CityName,
+                        CitySubdivisionName = contact.ContactAddresses.Single().CitySubdivisionName,
+                        DarReference = contact.ContactAddresses.Single().DarReference,
+                        CountryCode = contact.ContactAddresses.Single().CountryCode,
+                        Floor = contact.ContactAddresses.Single().Floor,
+                        Room = contact.ContactAddresses.Single().Room,
+                        PostCode = contact.ContactAddresses.Single().PostCode,
+                        PostBox = contact.ContactAddresses.Single().PostBox,
+                        MunicipalityCode = contact.ContactAddresses.Single().MunicipalityCode
+                    }
+                }
+            };
 
             copy.Contacts.Add(contactCopy);
         }

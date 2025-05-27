@@ -13,11 +13,9 @@
 // limitations under the License.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
-using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
@@ -29,55 +27,13 @@ using MeteringPointType = Energinet.DataHub.ElectricityMarket.Domain.Models.Mete
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories;
 
-public class MeteringPointRepositoryTest : IClassFixture<ElectricityMarketDatabaseContextFixture>, IAsyncLifetime
+public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatabaseContextFixture>, IAsyncLifetime
 {
     private readonly ElectricityMarketDatabaseContextFixture _fixture;
 
-    public MeteringPointRepositoryTest(ElectricityMarketDatabaseContextFixture fixture)
+    public MeteringPointRepositoryTests(ElectricityMarketDatabaseContextFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task GivenMeteringPoints_WhenQueryingForParentHierarchy_ThenCompleteHierarchyIsReturned()
-    {
-        var (parentIdentification, childIdentification) = await CreateTestDataAsync();
-
-        var dbContext = _fixture.DatabaseManager.CreateDbContext();
-        await using var electricityMarketDatabaseContext = dbContext;
-
-        var sut = new MeteringPointRepository(null!, dbContext, null!, null!);
-
-        var res = await sut.GetMeteringPointHierarchyAsync(parentIdentification);
-
-        Assert.NotNull(res);
-        Assert.NotNull(res.Parent);
-        Assert.Equal(parentIdentification, res.Parent.Identification);
-        Assert.Single(res.Parent.MetadataTimeline);
-        Assert.Single(res.ChildMeteringPoints);
-        Assert.Equal(childIdentification, res.ChildMeteringPoints.First().Identification);
-        Assert.Single(res.ChildMeteringPoints.First().MetadataTimeline);
-    }
-
-    [Fact]
-    public async Task GivenMeteringPoints_WhenQueryingForChildHierarchy_ThenCompleteHierarchyIsReturned()
-    {
-        var (parentIdentification, childIdentification) = await CreateTestDataAsync();
-
-        var dbContext = _fixture.DatabaseManager.CreateDbContext();
-        await using var electricityMarketDatabaseContext = dbContext;
-
-        var sut = new MeteringPointRepository(null!, dbContext, null!, null!);
-
-        var res = await sut.GetMeteringPointHierarchyAsync(childIdentification);
-
-        Assert.NotNull(res);
-        Assert.NotNull(res.Parent);
-        Assert.Equal(parentIdentification, res.Parent.Identification);
-        Assert.Single(res.Parent.MetadataTimeline);
-        Assert.Single(res.ChildMeteringPoints);
-        Assert.Equal(childIdentification, res.ChildMeteringPoints.First().Identification);
-        Assert.Single(res.ChildMeteringPoints.First().MetadataTimeline);
     }
 
     public Task InitializeAsync() => _fixture.InitializeAsync();

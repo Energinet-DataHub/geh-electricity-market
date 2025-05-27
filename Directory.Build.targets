@@ -1,0 +1,5 @@
+<Project>
+  <!--
+    Need an empty Directory.Build.targets file to ensure it does not get overridden by the one in the root of another project.
+    -->
+</Project>

@@ -12,24 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Security;
+using Energinet.DataHub.ElectricityMarket.Application.Common;
 
-public enum MarketRole
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
-    BalanceResponsibleParty,
-    BillingAgent,
-    EnergySupplier,
-    GridAccessProvider,
-    ImbalanceSettlementResponsible,
-    MeterOperator,
-    MeteredDataAdministrator,
-    MeteredDataResponsible,
-    MeteringPointAdministrator,
-    SystemOperator,
-    DanishEnergyAgency,
-    DataHubAdministrator,
-    IndependentAggregator,
-    SerialEnergyTrader,
-    Delegated,
-    ItSupplier,
+    public sealed record NetConsumptionChildDto(
+        [property: DeltaLakeKey]long MeteringPointId,
+        string MeteringPointType,
+        long ParentMeteringPointId,
+        DateTimeOffset CoupledDate,
+        DateTimeOffset? UncoupledDate);
 }
