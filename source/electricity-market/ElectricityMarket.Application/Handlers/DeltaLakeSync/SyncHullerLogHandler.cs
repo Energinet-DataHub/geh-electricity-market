@@ -71,11 +71,11 @@ public sealed class SyncHullerLogHandler(
         {
             maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
 
-            var hullerLogMeteringPoints = _hullerLogService.GetHullerLog(meteringPoint);
+            var hullerLogTimelines = _hullerLogService.GetHullerLog(meteringPoint);
 
-            if (hullerLogMeteringPoints.Any())
+            if (hullerLogTimelines.Any())
             {
-                await _deltaLakeDataUploadService.ImportTransactionsAsync(hullerLogMeteringPoints).ConfigureAwait(false);
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(hullerLogTimelines).ConfigureAwait(false);
             }
         }
 
