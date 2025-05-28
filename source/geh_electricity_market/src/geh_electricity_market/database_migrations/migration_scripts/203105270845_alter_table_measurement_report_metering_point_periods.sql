@@ -1,0 +1,5 @@
+ALTER TABLE {catalog_name}.electricity_market_internal.measurements_report_metering_point_periods DROP COLUMN physical_status
+GO
+ALTER TABLE {catalog_name}.electricity_market_internal.measurements_report_metering_point_periods ADD COLUMN physical_status STRING
+GO
+ALTER TABLE {catalog_name}.electricity_market_internal.measurements_report_metering_point_periods ALTER COLUMN physical_status SET NOT NULL
