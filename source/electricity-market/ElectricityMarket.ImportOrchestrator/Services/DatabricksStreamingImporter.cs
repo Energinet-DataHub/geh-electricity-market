@@ -176,8 +176,9 @@ internal sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
              WHERE btd_trans_doss_id >= {previousCutoff} AND btd_trans_doss_id < {targetCutoff}
              """);
 
-        var results = _databricksSqlWarehouseQueryExecutor
+        var results = await _databricksSqlWarehouseQueryExecutor
             .ExecuteStatementAsync(query.Build())
+            .ToListAsync()
             .ConfigureAwait(false);
 
         var transaction = await _databaseContext.Database
@@ -198,7 +199,7 @@ internal sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 
             try
             {
-                await foreach (var record in results)
+                foreach (var record in results)
                 {
                     ++i;
                     sw.Restart();
