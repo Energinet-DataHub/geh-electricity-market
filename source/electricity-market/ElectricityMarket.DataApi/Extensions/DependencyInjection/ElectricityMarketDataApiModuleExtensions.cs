@@ -24,7 +24,7 @@ using Microsoft.IdentityModel.Protocols.Configuration;
 
 namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Extensions.DependencyInjection;
 
-public static class ElectricityMarketDataApiModuleExtensions
+internal static class ElectricityMarketDataApiModuleExtensions
 {
     public static IServiceCollection AddElectricityMarketDataApiModule(this IServiceCollection services, IConfiguration configuration)
     {

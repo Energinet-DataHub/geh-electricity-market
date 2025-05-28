@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
-
-internal sealed class RequestCutoffActivityInput
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
-    public long CutoffFromInclusive { get; set; }
-    public long CutoffToExclusive { get; set; }
+    public sealed record HullerLogDto(
+        long MeteringPointId,
+        string GridAreaCode,
+        string Resolution,
+        DateTimeOffset PeriodFromDate,
+        DateTimeOffset? PeriodToDate);
 }

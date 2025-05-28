@@ -93,6 +93,11 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             var type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp);
 
+            if (type is "SurplusProductionGroup6" or "InternalUse")
+            {
+                return (true, string.Empty);
+            }
+
             if ((_changeTransactions.Contains(transactionType) || meteringPoint.MeteringPointPeriods.Count == 0) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var addMeteringPointPeriodError))
                 return (false, addMeteringPointPeriodError);
 
@@ -279,29 +284,50 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         }
 
                         prevCr.EnergySupplyPeriods.Add(correctionEsp);
+
+                        if (cr.ElectricalHeatingPeriods.Count > 0)
+                        {
+                            ElectricalHeatingPeriodEntity correctionEhp;
+
+                            if (prevCr.ElectricalHeatingPeriods.Count > 0)
+                            {
+                                correctionEhp = prevCr.ElectricalHeatingPeriods.MaxBy(x => x.ValidFrom)!;
+                            }
+                            else
+                            {
+                                correctionEhp = new ElectricalHeatingPeriodEntity
+                                {
+                                    CreatedAt = importedTransaction.dh2_created,
+                                    ValidFrom = importedTransaction.valid_from_date,
+                                    ValidTo = DateTimeOffset.MaxValue,
+                                    MeteringPointStateId = importedTransaction.metering_point_state_id,
+                                    BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
+                                    Active = importedTransaction.tax_reduction ?? false,
+                                    TransactionType = transactionType,
+                                };
+                                prevCr.ElectricalHeatingPeriods.Add(correctionEhp);
+                            }
+
+                            var toBeRetired = cr.ElectricalHeatingPeriods.Where(x => x.RetiredBy == null);
+                            foreach (var ehpToBeRetired in toBeRetired)
+                            {
+                                ehpToBeRetired.RetiredBy = correctionEhp;
+                                ehpToBeRetired.RetiredAt = DateTimeOffset.UtcNow;
+                            }
+                        }
+
                         return true;
                     }
 
-                case "MDCNSEHON":
+                case "MDCNSEHON" or "MDCNSEHOFF":
                     {
                         if (importedTransaction.tax_settlement_date is null)
                         {
-                            errorMessage = "MDCNSEHON transaction without tax_settlement_date";
+                            errorMessage = $"{transactionType} transaction without tax_settlement_date";
                             return false;
                         }
 
-                        var cr = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
-
-                        cr.ElectricalHeatingPeriods.Add(new ElectricalHeatingPeriodEntity
-                        {
-                            CreatedAt = importedTransaction.dh2_created,
-                            ValidFrom = importedTransaction.tax_settlement_date.Value,
-                            ValidTo = DateTimeOffset.MaxValue,
-                            MeteringPointStateId = importedTransaction.metering_point_state_id,
-                            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
-                            Active = true,
-                            TransactionType = transactionType,
-                        });
+                        HandleElectricalHeating(importedTransaction, meteringPoint);
 
                         return true;
                     }
@@ -465,6 +491,12 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             .MinBy(x => x.ValidFrom)?.ValidFrom ?? DateTimeOffset.MaxValue;
 
         RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
+
+        if (importedTransaction.tax_reduction == true &&
+            importedTransaction.transaction_type.TrimEnd() is "MOVEINES" or "DATAMIG" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP" or "MOVEOUTES" or "ENDSUPPLY")
+        {
+            HandleElectricalHeating(importedTransaction, meteringPoint);
+        }
     }
 
     private static void RetireEspStuff(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint, EnergySupplyPeriodEntity changeEsp)
@@ -480,6 +512,60 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         {
             retiredEsp.RetiredBy = changeEsp;
             retiredEsp.RetiredAt = DateTimeOffset.UtcNow;
+        }
+    }
+
+    private static void HandleElectricalHeating(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
+    {
+        var cr = AllSavedValidCrs(meteringPoint).First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+
+        var activeEhp = cr.ElectricalHeatingPeriods.Where(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy is null).MaxBy(x => x.ValidFrom);
+
+        var changeEhp = new ElectricalHeatingPeriodEntity
+        {
+            CreatedAt = importedTransaction.dh2_created,
+            ValidFrom = importedTransaction.valid_from_date,
+            MeteringPointStateId = importedTransaction.metering_point_state_id,
+            BusinessTransactionDosId = importedTransaction.btd_trans_doss_id,
+            Active = importedTransaction.tax_reduction ?? false,
+            TransactionType = importedTransaction.transaction_type.TrimEnd(),
+        };
+
+        cr.ElectricalHeatingPeriods.Add(changeEhp);
+
+        if (activeEhp is null)
+        {
+            var nextEhp = cr.ElectricalHeatingPeriods.Where(x => x.ValidFrom > importedTransaction.valid_from_date && x.RetiredBy is null).MinBy(x => x.ValidFrom);
+            changeEhp.ValidTo = nextEhp?.ValidFrom ?? DateTimeOffset.MaxValue;
+        }
+        else
+        {
+            if (activeEhp.ValidFrom == importedTransaction.valid_from_date)
+            {
+                activeEhp.RetiredBy = changeEhp;
+            }
+            else
+            {
+                var retBy = new ElectricalHeatingPeriodEntity
+                {
+                    ValidFrom = activeEhp.ValidFrom,
+                    ValidTo = importedTransaction.valid_from_date,
+                    Active = activeEhp.Active,
+                    BusinessTransactionDosId = activeEhp.BusinessTransactionDosId,
+                    MeteringPointStateId = activeEhp.MeteringPointStateId,
+                    CreatedAt = activeEhp.CreatedAt,
+                    TransactionType = activeEhp.TransactionType,
+                };
+                cr.ElectricalHeatingPeriods.Add(retBy);
+
+                activeEhp.RetiredBy = retBy;
+            }
+
+            changeEhp.ValidTo = activeEhp.ValidTo == DateTimeOffset.MaxValue
+                ? DateTimeOffset.MaxValue
+                : cr.ElectricalHeatingPeriods.Where(x => x.ValidFrom > importedTransaction.valid_from_date && x.RetiredBy is null).Min(x => x.ValidFrom);
+
+            activeEhp.RetiredAt = DateTimeOffset.UtcNow;
         }
     }
 }

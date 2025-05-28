@@ -18,7 +18,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Monitor;
 
-public class HealthCheckEndpoint
+internal sealed class HealthCheckEndpoint
 {
     public HealthCheckEndpoint(IHealthCheckEndpointHandler healthCheckEndpointHandler)
     {

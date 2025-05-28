@@ -12,10 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
+using Xunit;
 
-internal sealed class RequestCutoffActivityInput
+namespace Energinet.DataHub.ElectricityMarket.UnitTests.Helpers;
+
+public class ScheduledMeterReadingMonthHelperTests
 {
-    public long CutoffFromInclusive { get; set; }
-    public long CutoffToExclusive { get; set; }
+    [Theory]
+    [InlineData("0131", 2)]
+    [InlineData("0228", 3)]
+    [InlineData("0229", 3)]
+    [InlineData("1231", 1)]
+    public void ConvertToSingleMonth_GivenCorrectInput_ReturnsExpectedMonth(string input, int expectedMonth)
+    {
+        Assert.Equal(expectedMonth, ScheduledMeterReadingMonthHelper.ConvertToSingleMonth(input));
+    }
 }

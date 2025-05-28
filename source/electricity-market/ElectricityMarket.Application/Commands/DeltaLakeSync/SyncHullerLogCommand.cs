@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
+using MediatR;
 
-internal sealed class RequestCutoffActivityInput
-{
-    public long CutoffFromInclusive { get; set; }
-    public long CutoffToExclusive { get; set; }
-}
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
+
+public sealed record SyncHullerLogCommand : IRequest;

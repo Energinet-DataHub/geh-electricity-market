@@ -20,14 +20,14 @@ namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Options;
 /// Contains options for validating the JWT bearer tokens that must be sent as
 /// part of any http request for protected http endpoints.
 /// </summary>
-public class AuthenticationOptions
+internal sealed class AuthenticationOptions
 {
     public const string SectionName = "Auth";
 
     /// <summary>
     /// Uri (scope) which must match the audience of the token.
     /// </summary>
-    [Required(AllowEmptyStrings = false)]
+    [Required]
 #pragma warning disable CA1056
     public string ApplicationIdUri { get; set; } = string.Empty!;
 #pragma warning restore CA1056
@@ -36,6 +36,6 @@ public class AuthenticationOptions
     /// Issuer (tenant) which must match the issuer of the token.
     /// Also used to configure Authority in JWT validation.
     /// </summary>
-    [Required(AllowEmptyStrings = false)]
+    [Required]
     public string Issuer { get; set; } = string.Empty;
 }
