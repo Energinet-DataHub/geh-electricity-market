@@ -15,7 +15,6 @@ CREATE TABLE {catalog_name}.electricity_market_internal.measurements_report_mete
     resolution STRING NOT NULL,
     energy_supplier_id STRING,
     physical_status STRING NOT NULL,
-    settlement_method STRING, -- This is not part of the view, but is included in the table for internal use
     quantity_unit STRING NOT NULL,
     from_grid_area_code STRING,
     to_grid_area_code STRING,
