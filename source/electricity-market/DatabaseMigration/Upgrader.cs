@@ -18,7 +18,7 @@ using DbUp.Engine;
 
 namespace Energinet.DataHub.ElectricityMarket.DatabaseMigration;
 
-public static class Upgrader
+internal static class Upgrader
 {
     public static DatabaseUpgradeResult DatabaseUpgrade(string? connectionString)
     {

@@ -21,7 +21,7 @@ using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class FindCutoffActivity
+internal sealed class FindCutoffActivity
 {
     private readonly ILogger<FindCutoffActivity> _logger;
     private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;

@@ -14,4 +14,4 @@
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed record NoInput;
+internal sealed record NoInput;

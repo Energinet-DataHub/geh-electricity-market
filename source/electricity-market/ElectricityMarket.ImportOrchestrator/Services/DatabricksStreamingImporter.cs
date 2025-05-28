@@ -28,7 +28,7 @@ using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Services;
 
-public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
+internal sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 {
     private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;

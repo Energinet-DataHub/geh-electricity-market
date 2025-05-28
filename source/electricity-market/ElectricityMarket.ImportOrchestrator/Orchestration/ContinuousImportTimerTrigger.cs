@@ -21,7 +21,7 @@ using Microsoft.DurableTask.Client;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
-public sealed class ContinuousImportTimerTrigger
+internal sealed class ContinuousImportTimerTrigger
 {
     private readonly IMediator _mediator;
     private readonly IImportStateService _importStateService;

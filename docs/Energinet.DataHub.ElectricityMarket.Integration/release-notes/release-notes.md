@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.6.0
+
+- Upgrade to .net 9.
+
 ## Version 4.5.0
 
 - `MeteringPointMasterData` is now exposed in a flatten'ed state that only exposed one `EnergySupplier` (optinal)

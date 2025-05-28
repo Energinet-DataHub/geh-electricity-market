@@ -31,7 +31,7 @@ jobs:
       matrix:
         tests_filter_expression:
           - name: ElectricityMarket Results
-            paths: \source\electricity-market\ElectricityMarket.UnitTests\bin\Release\net8.0\Energinet.DataHub.ElectricityMarket.UnitTests.dll
+            paths: \source\electricity-market\ElectricityMarket.UnitTests\publish\Energinet.DataHub.ElectricityMarket.UnitTests.dll
     uses: Energinet-DataHub/.github/.github/workflows/dotnet-postbuild-test.yml@v14
     with:
       download_attempt_limit: 30
@@ -46,7 +46,7 @@ jobs:
       matrix:
         tests_filter_expression:
           - name: ElectricityMarket
-            paths: \source\electricity-market\ElectricityMarket.IntegrationTests\bin\Release\net8.0\Energinet.DataHub.ElectricityMarket.IntegrationTests.dll
+            paths: \source\electricity-market\ElectricityMarket.IntegrationTests\publish\Energinet.DataHub.ElectricityMarket.IntegrationTests.dll
             filter: empty # Means skip
             use_azure_functions_tools: true
             contentroot_variable_name: empty # Means skip
