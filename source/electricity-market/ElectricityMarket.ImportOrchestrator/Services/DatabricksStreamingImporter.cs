@@ -336,7 +336,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 
                     min = Math.Min(min, goldenMin + relMin + saveMin);
                     max = Math.Max(max, goldenMax + relMax + saveMax);
-                    total += goldenTotal + relTotal + saveTotal;
+                    total = goldenTotal + relTotal + saveTotal;
                 }
             }
             finally
