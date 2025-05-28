@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ElectricityMarket.WebAPI</RootNamespace>
@@ -9,20 +9,19 @@
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CA1515</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.13.2" />
-    <PackageReference Include="Energinet.DataHub.Core.App.WebApp" Version="14.0.2" />
-    <PackageReference Include="Energinet.DataHub.Core.Logging.LoggingMiddleware" Version="3.2.1" />
-    <PackageReference Include="Energinet.DataHub.MarketParticipant.Authorization" Version="1.1.1" />
-    <PackageReference Include="Energinet.DataHub.RevisionLog.Integration.WebApi" Version="1.1.4" />
-    <PackageReference Include="MediatR" Version="12.4.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.11" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
-    <PackageReference Include="NodaTime" Version="3.2.1" />
+    <PackageReference Include="Azure.Identity" Version="1.14.0" />
+    <PackageReference Include="Energinet.DataHub.Core.App.WebApp" Version="15.5.0" />
+    <PackageReference Include="Energinet.DataHub.Core.Logging.LoggingMiddleware" Version="5.0.0" />
+    <PackageReference Include="Energinet.DataHub.MarketParticipant.Authorization" Version="1.2.0" />
+    <PackageReference Include="Energinet.DataHub.RevisionLog.Integration.WebApi" Version="1.2.0" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.2" />
   </ItemGroup>
 
   <ItemGroup>

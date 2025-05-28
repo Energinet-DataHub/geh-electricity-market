@@ -17,7 +17,7 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class SwitchToStreamingActivity
+internal sealed class SwitchToStreamingActivity
 {
     private readonly IImportStateService _importStateService;
 

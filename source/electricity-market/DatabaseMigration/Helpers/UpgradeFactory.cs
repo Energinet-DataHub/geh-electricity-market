@@ -21,7 +21,9 @@ using Microsoft.Data.SqlClient;
 
 namespace Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 
+#pragma warning disable CA1515
 public static class UpgradeFactory
+#pragma warning restore CA1515
 {
     public static async Task<UpgradeEngine> GetUpgradeEngineAsync(
         string connectionString,

@@ -18,7 +18,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElectricityMarket.ImportOrchestrator.Services;
 
-public sealed class GoldenStreamingImporter : IGoldenStreamingImporter
+internal sealed class GoldenStreamingImporter : IGoldenStreamingImporter
 {
     private readonly ElectricityMarketDatabaseContext _databaseContext;
     private readonly IImportStateService _importStateService;
