@@ -32,7 +32,7 @@ internal sealed class InitialImportOrchestrator
 
         var cutoff = await orchestrationContext.CallActivityAsync<long>(nameof(FindCutoffActivity));
 
-        await ImportGoldModelAsync(orchestrationContext, cutoff);
+        // await ImportGoldModelAsync(orchestrationContext, cutoff);
         await ImportRelationalModelAsync(orchestrationContext);
 
         await orchestrationContext.CallActivityAsync(nameof(SwitchToStreamingActivity), new SwitchToStreamingActivityInput
