@@ -18,7 +18,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class CreateClusteredIndexActivity
+internal sealed class CreateClusteredIndexActivity
 {
     private readonly ElectricityMarketDatabaseContext _databaseContext;
 

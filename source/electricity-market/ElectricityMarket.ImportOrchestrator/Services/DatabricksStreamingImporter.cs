@@ -28,7 +28,7 @@ using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Services;
 
-public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
+internal sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 {
     private readonly IOptions<DatabricksCatalogOptions> _catalogOptions;
     private readonly DatabricksSqlWarehouseQueryExecutor _databricksSqlWarehouseQueryExecutor;
@@ -176,8 +176,9 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
              WHERE btd_trans_doss_id >= {previousCutoff} AND btd_trans_doss_id < {targetCutoff}
              """);
 
-        var results = _databricksSqlWarehouseQueryExecutor
+        var results = await _databricksSqlWarehouseQueryExecutor
             .ExecuteStatementAsync(query.Build())
+            .ToListAsync()
             .ConfigureAwait(false);
 
         var transaction = await _databaseContext.Database
@@ -198,7 +199,7 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 
             try
             {
-                await foreach (var record in results)
+                foreach (var record in results)
                 {
                     ++i;
                     sw.Restart();
@@ -336,25 +337,40 @@ public sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 
                     min = Math.Min(min, goldenMin + relMin + saveMin);
                     max = Math.Max(max, goldenMax + relMax + saveMax);
-                    total += goldenTotal + relTotal + saveTotal;
+                    total = goldenTotal + relTotal + saveTotal;
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"databricks-streaming-importer: error during rel: {ex.Message}");
+                throw;
             }
             finally
             {
-                _logger.LogWarning($"databricks-streaming-importer: gold time for {i}. Min: {goldenMin}ms. Max: {goldenMax}ms. Avg: {(i > 0 ? goldenTotal / i : 0)}ms.");
-                _logger.LogWarning($"databricks-streaming-importer: rel time for {i}. Min: {relMin}ms. Max: {relMax}ms. Avg: {(i > 0 ? relTotal / i : 0)}ms.");
-                _logger.LogWarning($"databricks-streaming-importer: save time for {i}. Min: {saveMin}ms. Max: {saveMax}ms. Avg: {(i > 0 ? saveTotal / i : 0)}ms.");
-                _logger.LogWarning($"databricks-streaming-importer: total time for {i}. Min: {min}ms. Max: {max}ms. Avg: {(i > 0 ? total / i : 0)}ms.");
+                _logger.LogWarning($"databricks-streaming-importer: gold time for {i}. Min: {goldenMin} ms. Max: {goldenMax} ms. Avg: {(i > 0 ? goldenTotal / i : 0)} ms.");
+                _logger.LogWarning($"databricks-streaming-importer: rel time for {i}. Min: {relMin} ms. Max: {relMax} ms. Avg: {(i > 0 ? relTotal / i : 0)} ms.");
+                _logger.LogWarning($"databricks-streaming-importer: save time for {i}. Min: {saveMin} ms. Max: {saveMax} ms. Avg: {(i > 0 ? saveTotal / i : 0)} ms.");
+                _logger.LogWarning($"databricks-streaming-importer: total time for {i}. Min: {min} ms. Max: {max} ms. Avg: {(i > 0 ? total / i : 0)} ms.");
                 sw.Restart();
             }
 
-            await _importStateService
-                .UpdateStreamingCutoffAsync(targetCutoff)
-                .ConfigureAwait(false);
+            try
+            {
+                await _importStateService
+                    .UpdateStreamingCutoffAsync(targetCutoff)
+                    .ConfigureAwait(false);
 
-            await transaction.CommitAsync().ConfigureAwait(false);
-
-            _logger.LogWarning($"databricks-streaming-importer: transaction committed in {sw.ElapsedMilliseconds}ms");
+                await transaction.CommitAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"databricks-streaming-importer: error during commit: {ex.Message}");
+                throw;
+            }
+            finally
+            {
+                _logger.LogWarning($"databricks-streaming-importer: transaction commit ran for {sw.ElapsedMilliseconds} ms");
+            }
         }
     }
 }

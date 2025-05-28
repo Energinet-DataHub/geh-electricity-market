@@ -14,7 +14,7 @@
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public class ImportRelationalModelActivityInput
+internal sealed class ImportRelationalModelActivityInput
 {
     public int Skip { get; set; }
     public int Take { get; set; }

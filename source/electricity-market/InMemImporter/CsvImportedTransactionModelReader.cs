@@ -23,7 +23,7 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 namespace InMemImporter;
 
-public sealed class CsvImportedTransactionModelReader : IImportedTransactionModelReader
+internal sealed class CsvImportedTransactionModelReader : IImportedTransactionModelReader
 {
     private readonly string _csv;
     private readonly CultureInfo _cultureInfo;

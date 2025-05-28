@@ -18,7 +18,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class FindNumberOfUniqueMeteringPointsActivity
+internal sealed class FindNumberOfUniqueMeteringPointsActivity
 {
     private readonly ElectricityMarketDatabaseContext _databaseContext;
 

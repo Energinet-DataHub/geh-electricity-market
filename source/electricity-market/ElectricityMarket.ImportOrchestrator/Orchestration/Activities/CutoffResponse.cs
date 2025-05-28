@@ -16,4 +16,4 @@ using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statem
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed record CutoffResponse(string StatementId, IReadOnlyList<Chunks> Chunks);
+internal sealed record CutoffResponse(string StatementId, IReadOnlyList<Chunks> Chunks);

@@ -93,6 +93,11 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             var type = MeteringPointEnumMapper.MapDh2ToEntity(MeteringPointEnumMapper.MeteringPointTypes, importedTransaction.type_of_mp);
 
+            if (type is "SurplusProductionGroup6" or "InternalUse")
+            {
+                return (true, string.Empty);
+            }
+
             if ((_changeTransactions.Contains(transactionType) || meteringPoint.MeteringPointPeriods.Count == 0) && !TryAddMeteringPointPeriod(importedTransaction, meteringPoint, out var addMeteringPointPeriodError))
                 return (false, addMeteringPointPeriodError);
 

@@ -14,7 +14,7 @@
 
 namespace ElectricityMarket.ImportOrchestrator.Services;
 
-public interface IGoldenStreamingImporter
+internal interface IGoldenStreamingImporter
 {
     Task ImportAsync();
 }
