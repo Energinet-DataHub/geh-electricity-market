@@ -26,7 +26,7 @@ public class HullerLogService() : IHullerLogService
     private static readonly MeteringPointSubType[] _irrelevantMeteringPointSubtypes = [MeteringPointSubType.Calculated];
     private static readonly Instant _cutOffDate = SystemClock.Instance.GetCurrentInstant().InZone(DateTimeZone.Utc).LocalDateTime.PlusYears(-3).InZoneStrictly(DateTimeZone.Utc).ToInstant();
 
-    public async IAsyncEnumerable<HullerLogDto> GetHullerLogAsync(MeteringPoint meteringPoint)
+    public IEnumerable<HullerLogDto> GetHullerLog(MeteringPoint meteringPoint)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
 

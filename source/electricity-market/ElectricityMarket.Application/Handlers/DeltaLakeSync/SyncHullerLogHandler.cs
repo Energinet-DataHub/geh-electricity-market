@@ -68,16 +68,19 @@ public sealed class SyncHullerLogHandler(
     {
         DateTimeOffset? maxVersion = null;
 
+        var meteringPointsToInsert = new List<HullerLogDto>();
         var meteringPointsToDelete = new List<HullerLogEmptyDto>();
-        var meteringPoints = await meteringPointsToSync.SelectMany(
-            mp =>
-            {
-                maxVersion = maxVersion is null || mp.Version > maxVersion ? mp.Version : maxVersion;
-                meteringPointsToDelete.Add(new HullerLogEmptyDto(mp.Identification.Value));
-                return _hullerLogService.GetHullerLogAsync(mp);
-            }).ToListAsync().ConfigureAwait(false);
 
-        var meteringPointsToInsert = meteringPoints.ToList();
+        await foreach (var mp in meteringPointsToSync.ConfigureAwait(false))
+        {
+            maxVersion = maxVersion is null || mp.Version > maxVersion ? mp.Version : maxVersion;
+            meteringPointsToDelete.Add(new HullerLogEmptyDto(mp.Identification.Value));
+
+            foreach (var hullerLog in _hullerLogService.GetHullerLog(mp))
+            {
+                meteringPointsToInsert.Add(hullerLog);
+            }
+        }
 
         if (meteringPointsToDelete.Count > 0)
         {

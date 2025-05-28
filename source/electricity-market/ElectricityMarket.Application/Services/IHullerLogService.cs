@@ -19,6 +19,6 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
 {
     public interface IHullerLogService
     {
-        IAsyncEnumerable<HullerLogDto> GetHullerLogAsync(MeteringPoint meteringPoint);
+        IEnumerable<HullerLogDto> GetHullerLog(MeteringPoint meteringPoint);
     }
 }
