@@ -40,7 +40,7 @@ public static class ElectricityMarketImportOrchestratorModuleExtensions
             .BindConfiguration(DatabricksCatalogOptions.SectionName)
             .ValidateDataAnnotations();
 
-        services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"));
+        services.AddDatabricksSqlStatementExecution(configuration.GetSection("Databricks"), TokenProvider.ServicePrincipalTokenProvider);
 
         Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.DatabricksSqlStatementExecutionExtensions
             .AddDatabricksSqlStatementExecution(services, configuration.GetSection("Databricks"));
