@@ -75,7 +75,6 @@ public sealed class SyncHullerLogHandler(
                 maxVersion = maxVersion is null || mp.Version > maxVersion ? mp.Version : maxVersion;
                 meteringPointsToDelete.Add(new HullerLogEmptyDto(mp.Identification.Value));
                 return _hullerLogService.GetHullerLogAsync(mp);
-
             }).ToListAsync().ConfigureAwait(false);
 
         var meteringPointsToInsert = meteringPoints.ToList();
