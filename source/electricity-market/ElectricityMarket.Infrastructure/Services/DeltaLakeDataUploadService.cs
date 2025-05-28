@@ -155,7 +155,7 @@ public class DeltaLakeDataUploadService : IDeltaLakeDataUploadService
 
         foreach (var batch in hullerLogs.Chunk(maxBatchSize))
         {
-            var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, batch);
+            var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, batch);
             var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
 
             await foreach (var record in result.ConfigureAwait(false))
