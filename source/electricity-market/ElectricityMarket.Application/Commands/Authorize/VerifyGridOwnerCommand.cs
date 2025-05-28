@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+using System.Collections.ObjectModel;
+using MediatR;
 
-public enum SyncJobName
-{
-    ElectricalHeating,
-    CapacitySettlement,
-    NetConsumption,
-    HullerLog
-}
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
+
+public sealed record VerifyGridOwnerCommand(string MeteringPointIdentification,
+    ReadOnlyCollection<string> GridAreaCodes) : IRequest<bool>;

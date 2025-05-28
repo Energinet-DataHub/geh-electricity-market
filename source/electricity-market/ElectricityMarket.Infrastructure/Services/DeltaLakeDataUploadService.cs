@@ -155,4 +155,33 @@ public class DeltaLakeDataUploadService(
             }
         }
     }
+
+    public async Task ImportTransactionsAsync(IReadOnlyList<HullerLogDto> hullerLogs)
+    {
+        ArgumentNullException.ThrowIfNull(hullerLogs);
+
+        _logger.LogInformation(
+            "Starting upload of {Count} huller log metering points.", hullerLogs.Count);
+
+        const int maxBatchSize = 50;
+        var allResults = new List<object>();
+        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.MissingMeasurementLogsTableName}";
+
+        foreach (var batch in hullerLogs.Chunk(maxBatchSize))
+        {
+            var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, batch);
+            var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
+
+            await foreach (var record in result.ConfigureAwait(false))
+            {
+                allResults.Add(record);
+            }
+        }
+
+        foreach (var record in allResults)
+        {
+            string resultString = JsonSerializer.Serialize(record);
+            _logger.LogInformation("Huller log uploaded: {ResultString}", resultString);
+        }
+    }
 }

@@ -29,4 +29,6 @@ public interface IDeltaLakeDataUploadService
     Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents);
 
     Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionChildDto> netConsumptionChildren);
+
+    Task ImportTransactionsAsync(IReadOnlyList<HullerLogDto> hullerLogs);
 }
