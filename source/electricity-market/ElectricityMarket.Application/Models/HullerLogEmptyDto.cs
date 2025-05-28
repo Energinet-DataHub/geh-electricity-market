@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services
-{
-    public interface IHullerLogService
-    {
-        IAsyncEnumerable<HullerLogDto> GetHullerLogAsync(MeteringPoint meteringPoint);
-    }
-}
+public sealed record HullerLogEmptyDto(long MeteringPointId);
