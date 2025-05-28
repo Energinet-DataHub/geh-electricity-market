@@ -19,13 +19,13 @@ RUN apt-get update \
 
 # Change to non-root user
 ENV USER=vscode \
-    HOME=/home/vscode \
-    UV_PROJECT_ENVIRONMENT=/home/vscode/.venv \
-    ASDF_DATA_DIR=/home/vscode/.asdf \
-    UV_CACHE_DIR=/home/vscode/.cache/uv \
-    MYPY_CACHE_DIR=/home/vscode/.cache/mypy \
-    RUFF_CACHE_DIR=/home/vscode/.cache/ruff \
-    PYTHONPYCACHEPREFIX=/home/vscode/.cache/pycache
+  HOME=/home/vscode \
+  UV_PROJECT_ENVIRONMENT=/home/vscode/.venv \
+  ASDF_DATA_DIR=/home/vscode/.asdf \
+  UV_CACHE_DIR=/home/vscode/.cache/uv \
+  MYPY_CACHE_DIR=/home/vscode/.cache/mypy \
+  RUFF_CACHE_DIR=/home/vscode/.cache/ruff \
+  PYTHONPYCACHEPREFIX=/home/vscode/.cache/pycache
 
 
 # Add tool-versions and startup script
