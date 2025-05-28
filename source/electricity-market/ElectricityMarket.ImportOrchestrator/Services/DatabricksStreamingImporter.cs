@@ -191,10 +191,10 @@ internal sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
                 .ToImmutableDictionary(k => k.Key, v => v.Value);
 
             var i = 0;
-            long goldenMin = 0, goldenMax = 0, goldenTotal = 0;
-            long relMin = 0, relMax = 0, relTotal = 0;
-            long saveMin = 0, saveMax = 0, saveTotal = 0;
-            long min = 0, max = 0, total = 0;
+            long goldenMin = long.MaxValue, goldenMax = 0, goldenTotal = 0;
+            long relMin = long.MaxValue, relMax = 0, relTotal = 0;
+            long saveMin = long.MaxValue, saveMax = 0, saveTotal = 0;
+            long min = long.MaxValue, max = 0, total = 0;
 
             try
             {
@@ -336,25 +336,40 @@ internal sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
 
                     min = Math.Min(min, goldenMin + relMin + saveMin);
                     max = Math.Max(max, goldenMax + relMax + saveMax);
-                    total += goldenTotal + relTotal + saveTotal;
+                    total = goldenTotal + relTotal + saveTotal;
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"databricks-streaming-importer: error during rel: {ex.Message}");
+                throw;
             }
             finally
             {
-                _logger.LogWarning($"databricks-streaming-importer: gold time. Min: {goldenMin}ms. Max: {goldenMax}ms. Avg: {(i > 0 ? goldenTotal / i : 0)}ms.");
-                _logger.LogWarning($"databricks-streaming-importer: rel time. Min: {relMin}ms. Max: {relMax}ms. Avg: {(i > 0 ? relTotal / i : 0)}ms.");
-                _logger.LogWarning($"databricks-streaming-importer: save time. Min: {saveMin}ms. Max: {saveMax}ms. Avg: {(i > 0 ? saveTotal / i : 0)}ms.");
-                _logger.LogWarning($"databricks-streaming-importer: total time. Min: {min}ms. Max: {max}ms. Avg: {(i > 0 ? total / i : 0)}ms.");
+                _logger.LogWarning($"databricks-streaming-importer: gold time for {i}. Min: {goldenMin} ms. Max: {goldenMax} ms. Avg: {(i > 0 ? goldenTotal / i : 0)} ms.");
+                _logger.LogWarning($"databricks-streaming-importer: rel time for {i}. Min: {relMin} ms. Max: {relMax} ms. Avg: {(i > 0 ? relTotal / i : 0)} ms.");
+                _logger.LogWarning($"databricks-streaming-importer: save time for {i}. Min: {saveMin} ms. Max: {saveMax} ms. Avg: {(i > 0 ? saveTotal / i : 0)} ms.");
+                _logger.LogWarning($"databricks-streaming-importer: total time for {i}. Min: {min} ms. Max: {max} ms. Avg: {(i > 0 ? total / i : 0)} ms.");
                 sw.Restart();
             }
 
-            await _importStateService
-                .UpdateStreamingCutoffAsync(targetCutoff)
-                .ConfigureAwait(false);
+            try
+            {
+                await _importStateService
+                    .UpdateStreamingCutoffAsync(targetCutoff)
+                    .ConfigureAwait(false);
 
-            await transaction.CommitAsync().ConfigureAwait(false);
-
-            _logger.LogWarning($"databricks-streaming-importer: transaction committed in {sw.ElapsedMilliseconds}ms");
+                await transaction.CommitAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"databricks-streaming-importer: error during commit: {ex.Message}");
+                throw;
+            }
+            finally
+            {
+                _logger.LogWarning($"databricks-streaming-importer: transaction commit ran for {sw.ElapsedMilliseconds} ms");
+            }
         }
     }
 }
