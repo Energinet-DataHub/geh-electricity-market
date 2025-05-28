@@ -74,7 +74,7 @@ public class DeltaLakeDataUploadService(
         ArgumentNullException.ThrowIfNull(capacitySettlementPeriods);
         logger.LogInformation(
             "Starting upload of {Count} capacity settlement metering point periods.", capacitySettlementPeriods.Count);
-        var chunkSize = 42; // databricks max params (256) / number of properties
+        const int chunkSize = 42; // databricks max params (256) / number of properties
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.CapacitySettlementPeriodTableName}";
 
         var chunks = capacitySettlementPeriods.Chunk(chunkSize);
@@ -96,7 +96,7 @@ public class DeltaLakeDataUploadService(
         ArgumentNullException.ThrowIfNull(capacitySettlementEmptyDtos);
         logger.LogInformation(
             "Starting clearing of {Count} capacity settlement metering point periods.", capacitySettlementEmptyDtos.Count);
-        var chunkSize = 256; // databricks max params (256) / number of properties
+        const int chunkSize = 256; // databricks max params (256) / number of properties
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.CapacitySettlementPeriodTableName}";
 
         var chunks = capacitySettlementEmptyDtos.Chunk(chunkSize);
@@ -118,7 +118,7 @@ public class DeltaLakeDataUploadService(
         ArgumentNullException.ThrowIfNull(netConsumptionParents);
         logger.LogInformation(
             "Starting upload of {Count} net consumption parent metering points.", netConsumptionParents.Count);
-        var chunkSize = 42; // databricks max params (256) / number of properties
+        const int chunkSize = 42; // databricks max params (256) / number of properties
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionParentTableName}";
 
         var chunks = netConsumptionParents.Chunk(chunkSize);
@@ -140,7 +140,7 @@ public class DeltaLakeDataUploadService(
         ArgumentNullException.ThrowIfNull(netConsumptionChildren);
         logger.LogInformation(
             "Starting upload of {Count} net consumption child metering points.", netConsumptionChildren.Count);
-        var chunkSize = 51; // databricks max params (256) / number of properties
+        const int chunkSize = 51; // databricks max params (256) / number of properties
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionChildTableName}";
         var chunks = netConsumptionChildren.Chunk(chunkSize);
         foreach (var chunk in chunks)
@@ -160,28 +160,22 @@ public class DeltaLakeDataUploadService(
     {
         ArgumentNullException.ThrowIfNull(hullerLogs);
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Starting upload of {Count} huller log metering points.", hullerLogs.Count);
 
-        const int maxBatchSize = 50;
-        var allResults = new List<object>();
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.MissingMeasurementLogsTableName}";
+        const int chunkSize = 50;
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MissingMeasurementLogsTableName}";
 
-        foreach (var batch in hullerLogs.Chunk(maxBatchSize))
+        foreach (var batch in hullerLogs.Chunk(chunkSize))
         {
             var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, batch);
-            var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
 
             await foreach (var record in result.ConfigureAwait(false))
             {
-                allResults.Add(record);
+                string resultString = JsonSerializer.Serialize(record);
+                logger.LogInformation(" - Huller log uploaded: {ResultString}", resultString);
             }
-        }
-
-        foreach (var record in allResults)
-        {
-            string resultString = JsonSerializer.Serialize(record);
-            _logger.LogInformation("Huller log uploaded: {ResultString}", resultString);
         }
     }
 }
