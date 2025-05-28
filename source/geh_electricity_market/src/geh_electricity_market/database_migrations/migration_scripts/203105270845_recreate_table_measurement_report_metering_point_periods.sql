@@ -25,7 +25,8 @@ CREATE TABLE {catalog_name}.electricity_market_internal.measurements_report_mete
 USING DELTA
 CLUSTER BY (grid_area_code, metering_point_id, period_from_date, period_to_date)
 TBLPROPERTIES (
-    delta.deletedFileRetentionDuration = "interval 30 days"
+    delta.deletedFileRetentionDuration = "interval 30 days",
+    'delta.columnMapping.mode' = 'name'
 )
 GO
 
