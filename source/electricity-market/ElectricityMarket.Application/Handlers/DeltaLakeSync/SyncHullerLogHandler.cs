@@ -52,7 +52,7 @@ public sealed class SyncHullerLogHandler(
                 .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
-            if (maxVersion > DateTimeOffset.MinValue)
+            if (maxVersion is not null && maxVersion > DateTimeOffset.MinValue)
             {
                 currentSyncJob = currentSyncJob with { Version = maxVersion.Value };
                 await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
