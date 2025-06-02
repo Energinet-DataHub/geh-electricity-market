@@ -11,11 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using System.Runtime.CompilerServices;
 
-namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
-
-internal sealed class RequestCutoffActivityInput
-{
-    public long CutoffFromInclusive { get; set; }
-    public long CutoffToExclusive { get; set; }
-}
+[assembly: InternalsVisibleTo("Energinet.DataHub.ElectricityMarket.IntegrationTests")]

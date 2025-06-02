@@ -43,7 +43,7 @@ public static class ScheduledMeterReadingMonthHelper
                     if (month != 2 && DateTime.DaysInMonth(1900, month) == day)
                     {
                         // The year is irrelevant, as all months except february have the same amount of days regardless of leap years
-                        return month + 1;
+                        return month < 12 ? month + 1 : 1;
                     }
                     else
                     {

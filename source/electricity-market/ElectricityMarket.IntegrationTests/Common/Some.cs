@@ -19,7 +19,7 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 
-public static class Some
+internal static class Some
 {
     public static string IntString(int charCount)
     {

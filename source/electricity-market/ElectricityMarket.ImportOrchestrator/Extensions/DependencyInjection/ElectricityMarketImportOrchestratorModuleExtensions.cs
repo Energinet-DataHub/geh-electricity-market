@@ -27,7 +27,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ElectricityMarket.ImportOrchestrator.Extensions.DependencyInjection;
 
-public static class ElectricityMarketImportOrchestratorModuleExtensions
+internal static class ElectricityMarketImportOrchestratorModuleExtensions
 {
     public static IServiceCollection AddElectricityMarketImportOrchestratorModule(this IServiceCollection services, IConfiguration configuration)
     {

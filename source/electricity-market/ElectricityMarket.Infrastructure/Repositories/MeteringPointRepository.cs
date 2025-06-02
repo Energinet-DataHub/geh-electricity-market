@@ -170,7 +170,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             .Take(batchSize)
             .AsAsyncEnumerable();
 
-            await foreach (var entity in entities)
+            await foreach (var entity in entities.ConfigureAwait(false))
             {
                 yield return MeteringPointMapper.MapFromEntity(entity);
             }

@@ -18,7 +18,7 @@ using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 
-public static class TestCommercialRelationPreparationHelper
+internal static class TestCommercialRelationPreparationHelper
 {
     public static Task<CommercialRelationEntity> PrepareCommercialRelationAsync(
         this ElectricityMarketDbUpDatabaseFixture fixture)

@@ -16,7 +16,7 @@ using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statem
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public class ImportGoldModelActivityInput
+internal sealed class ImportGoldModelActivityInput
 {
     public string StatementId { get; set; } = null!;
     public Chunks Chunk { get; set; } = null!;

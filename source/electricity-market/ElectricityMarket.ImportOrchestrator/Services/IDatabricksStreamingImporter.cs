@@ -14,7 +14,7 @@
 
 namespace ElectricityMarket.ImportOrchestrator.Services;
 
-public interface IDatabricksStreamingImporter
+internal interface IDatabricksStreamingImporter
 {
     Task ImportAsync();
 }

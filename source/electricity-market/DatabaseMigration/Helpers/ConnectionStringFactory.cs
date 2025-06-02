@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 
-public static class ConnectionStringFactory
+internal static class ConnectionStringFactory
 {
     private const string DefaultConnectionString = "Server=(local); Database=ElectricityMarketDatabase; Trusted_connection=true";
 
