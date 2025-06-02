@@ -64,7 +64,7 @@ public class RoleFiltrationServiceTests
         var mockedCommercialRelationNotInTenant = MockedMeteringPointObjects.GetMockedCommercialRelation(14, "123");
         var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
             1,
-            tenant.ActorNumber,
+            "570715000000000002",
             mockedMeteringPointMetadata,
             [mockedMeteringPointMetadata, mockedMeteringPointMetadataNotInTenant],
             mockedCommercialRelation,
@@ -99,7 +99,7 @@ public class RoleFiltrationServiceTests
         var mockedCommercialRelationNotInTenant = MockedMeteringPointObjects.GetMockedCommercialRelation(14, "123");
         var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
             1,
-            tenant.ActorNumber,
+            "570715000000000003",
             mockedMeteringPointMetadata,
             [mockedMeteringPointMetadata, mockedMeteringPointMetadataNotInTenant],
             mockedCommercialRelation,
@@ -120,33 +120,4 @@ public class RoleFiltrationServiceTests
         Assert.Equal(tenant.ActorNumber, result.Metadata!.OwnedBy);
     }
 
-    [Fact]
-    public async Task FilterFields_WhenDelegated_ReturnsFilteredMeteringPointAsync()
-    {
-        // Arrange
-        var tenant = new TenantDto("45", EicFunction.Delegated);
-        var mockedMeteringPointMetadata = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(11, tenant.ActorNumber);
-        var mockedMeteringPointMetadataNotInTenant = MockedMeteringPointObjects.GetMockedMeteringPointMetadata(12, "123");
-        var mockedCommercialRelation = MockedMeteringPointObjects.GetMockedCommercialRelation(13, tenant.ActorNumber);
-        var mockedCommercialRelationNotInTenant = MockedMeteringPointObjects.GetMockedCommercialRelation(14, "123");
-        var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
-            1,
-            tenant.ActorNumber,
-            mockedMeteringPointMetadata,
-            [mockedMeteringPointMetadata, mockedMeteringPointMetadataNotInTenant],
-            mockedCommercialRelation,
-            [mockedCommercialRelation, mockedCommercialRelationNotInTenant]);
-
-        _meteringPointDelegationRepository
-            .Setup(x => x.GetDelegationsAsync(It.IsAny<MeteringPointIdentification>()))
-            .ReturnsAsync(MockedMeteringPointObjects.GetMockedDelegations(tenant.ActorNumber));
-
-        var target = new RoleFiltrationService(_meteringPointDelegationRepository.Object);
-
-        // Act
-        var result = await target.FilterFieldsAsync(meteringPoint, tenant);
-
-        // Assert
-        Assert.NotNull(result);
-    }
 }

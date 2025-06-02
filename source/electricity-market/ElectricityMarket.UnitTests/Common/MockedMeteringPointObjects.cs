@@ -97,12 +97,4 @@ internal static class MockedMeteringPointObjects
     internal static ElectricalHeatingDto GetMockedElectricalHeating(long id)
         => new(id, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
 
-    internal static IEnumerable<MeteringPointDelegation> GetMockedDelegations(string actorNumber)
-    {
-        return new List<MeteringPointDelegation>
-        {
-            new(new Interval(DateTimeOffset.Now.AddDays(-1).ToInstant(), DateTimeOffset.Now.AddDays(1).ToInstant()), actorNumber),
-            new(new Interval(DateTimeOffset.Now.AddDays(-2).ToInstant(), DateTimeOffset.Now.AddDays(2).ToInstant()), actorNumber),
-        };
-    }
 }

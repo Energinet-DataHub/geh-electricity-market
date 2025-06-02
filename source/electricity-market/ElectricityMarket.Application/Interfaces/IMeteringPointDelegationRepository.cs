@@ -18,5 +18,5 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
 public interface IMeteringPointDelegationRepository
 {
-    Task<IEnumerable<MeteringPointDelegation>> GetDelegationsAsync(MeteringPointIdentification identification);
+    Task<bool> IsMeteringPointDelegatedAsync(MeteringPointIdentification identification);
 }
