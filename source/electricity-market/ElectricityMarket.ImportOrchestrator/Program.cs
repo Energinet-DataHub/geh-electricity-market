@@ -38,7 +38,7 @@ var host = new HostBuilder()
     })
     .ConfigureLogging((hostingContext, logging) =>
     {
-        logging.AddLoggingConfigurationForIsolatedWorker(hostingContext);
+        logging.AddLoggingConfigurationForIsolatedWorker(hostingContext.Configuration);
     })
     .Build();
 

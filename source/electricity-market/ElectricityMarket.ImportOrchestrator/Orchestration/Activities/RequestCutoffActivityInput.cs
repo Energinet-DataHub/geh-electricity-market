@@ -14,7 +14,7 @@
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class RequestCutoffActivityInput
+internal sealed class RequestCutoffActivityInput
 {
     public long CutoffFromInclusive { get; set; }
     public long CutoffToExclusive { get; set; }

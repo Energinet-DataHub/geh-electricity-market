@@ -88,6 +88,18 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return MeteringPointMapper.MapFromEntity(entity);
     }
 
+    public async Task<MeteringPoint?> GetMeteringPointForSignatureAsync(MeteringPointIdentification identification)
+    {
+        ArgumentNullException.ThrowIfNull(identification);
+
+        var entity = await _electricityMarketDatabaseContext.MeteringPoints
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(x => x.Identification == identification.Value)
+            .ConfigureAwait(false);
+
+        return entity == null ? null : MeteringPointMapper.MapFromEntity(entity);
+    }
+
     public async Task<string> GetMeteringPointDebugViewAsync(MeteringPointIdentification identification)
     {
         ArgumentNullException.ThrowIfNull(identification);
@@ -158,7 +170,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             .Take(batchSize)
             .AsAsyncEnumerable();
 
-            await foreach (var entity in entities)
+            await foreach (var entity in entities.ConfigureAwait(false))
             {
                 yield return MeteringPointMapper.MapFromEntity(entity);
             }

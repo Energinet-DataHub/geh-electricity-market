@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public interface ICapacitySettlementResult
+namespace Energinet.DataHub.ElectricityMarket.Application.Services
 {
-    long MeteringPointId { get; }
+    public interface IHullerLogService
+    {
+        IReadOnlyList<HullerLogDto> GetHullerLog(MeteringPoint meteringPoint);
+    }
 }

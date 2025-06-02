@@ -77,15 +77,16 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
     {
         DateTimeOffset? maxVersion = null;
 
-        var meteringPoints = await meteringPointsToSync.SelectMany(
+        var meteringPointsToDelete = new List<CapacitySettlementEmptyDto>();
+        var meteringPoints = await meteringPointsToSync.Where(mp => mp.IsParent()).SelectMany(
             mp =>
             {
                 maxVersion = maxVersion is null || maxVersion < mp.Version ? mp.Version : maxVersion;
+                meteringPointsToDelete.Add(new CapacitySettlementEmptyDto(mp.Identification.Value));
                 return _capacitySettlementService.GetCapacitySettlementPeriodsAsync(mp, cancellationToken);
             }).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        var meteringPointsToInsert = meteringPoints.OfType<CapacitySettlementPeriodDto>().ToList();
-        var meteringPointsToDelete = meteringPoints.ToList();
+        var meteringPointsToInsert = meteringPoints.ToList();
 
         if (meteringPointsToDelete.Count > 0)
         {

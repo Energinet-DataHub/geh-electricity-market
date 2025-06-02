@@ -123,10 +123,7 @@ public class CapacitySettlementServiceTests
             CancellationToken.None).ToListAsync();
 
         // No capacity settlement period found
-        Assert.Single(capacitySettlementPeriodsAsync);
-        var emptyPeriodDtos = capacitySettlementPeriodsAsync.OfType<CapacitySettlementEmptyDto>().ToList();
-        Assert.Single(emptyPeriodDtos);
-        Assert.Equal(parentMeteringPoint.Identification.Value, emptyPeriodDtos.Single().MeteringPointId);
+        Assert.Empty(capacitySettlementPeriodsAsync);
     }
 
     [Fact]

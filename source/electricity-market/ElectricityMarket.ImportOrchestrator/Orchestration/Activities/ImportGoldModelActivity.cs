@@ -31,7 +31,7 @@ using Microsoft.Extensions.Options;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
-public sealed class ImportGoldModelActivity : IDisposable
+internal sealed class ImportGoldModelActivity : IDisposable
 {
     public const string ActivityName = "ImportGoldModelActivityV6";
 

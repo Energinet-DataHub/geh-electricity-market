@@ -18,7 +18,7 @@ using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 
-public static class TestMeteringPointPeriodPreparationHelper
+internal static class TestMeteringPointPeriodPreparationHelper
 {
     public static Task<MeteringPointPeriodEntity> PrepareMeteringPointPeriodAsync(
         this ElectricityMarketDbUpDatabaseFixture fixture)

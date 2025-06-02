@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace InMemImporter;
 
-public static class Program
+internal static class Program
 {
     public static async Task Main(params string[] args)
     {

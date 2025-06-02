@@ -20,7 +20,7 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
 #pragma warning disable CA2007
 
-public sealed class InitialImportOrchestrator
+internal sealed class InitialImportOrchestrator
 {
     [Function(nameof(OrchestrateInitialImportAsync))]
     public async Task OrchestrateInitialImportAsync(

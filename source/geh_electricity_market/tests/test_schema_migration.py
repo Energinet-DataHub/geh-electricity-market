@@ -7,6 +7,7 @@ from geh_common.data_products.electricity_market_measurements_input import (
     net_consumption_group_6_child_metering_points_v1,
     net_consumption_group_6_consumption_metering_point_periods_v1,
 )
+from geh_common.data_products.electricity_market_reports_input import measurements_report_metering_point_periods_v1
 from geh_common.testing.dataframes.assert_schemas import assert_schema
 
 from tests import SPARK_CATALOG_NAME
@@ -21,6 +22,7 @@ from tests import SPARK_CATALOG_NAME
         missing_measurements_log_metering_point_periods_v1,
         net_consumption_group_6_consumption_metering_point_periods_v1,
         net_consumption_group_6_child_metering_points_v1,
+        measurements_report_metering_point_periods_v1,
     ],
 )
 def test_schema_migration(spark, migrations_executed, dataproduct):

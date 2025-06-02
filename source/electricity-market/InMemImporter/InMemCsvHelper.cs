@@ -16,7 +16,7 @@ using System.Globalization;
 
 namespace InMemImporter;
 
-public static class InMemCsvHelper
+internal static class InMemCsvHelper
 {
     public static (CultureInfo CultureInfo, string Csv) PreapareCsv(string rawCsv)
     {

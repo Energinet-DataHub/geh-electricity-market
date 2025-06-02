@@ -24,9 +24,11 @@ public interface IDeltaLakeDataUploadService
 
     Task InsertCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken);
 
-    Task DeleteCapacitySettlementPeriodsAsync(IReadOnlyList<ICapacitySettlementResult> capacitySettlementResultDtos, CancellationToken cancellationToken);
+    Task DeleteCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken);
 
     Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents);
 
     Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionChildDto> netConsumptionChildren);
+
+    Task ImportTransactionsAsync(IReadOnlyList<HullerLogDto> hullerLogs);
 }
