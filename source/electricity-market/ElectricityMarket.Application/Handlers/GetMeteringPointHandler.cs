@@ -45,7 +45,9 @@ public sealed class GetMeteringPointHandler : IRequestHandler<GetMeteringPointCo
             return null;
         }
 
-        var filteredMeteringPoint = _roleFiltrationService.FilterFields(MeteringPointMapper.Map(meteringPoint), request.Tenant);
+        var filteredMeteringPoint = await _roleFiltrationService
+                                        .FilterFieldsAsync(MeteringPointMapper.Map(meteringPoint), request.Tenant)
+                                        .ConfigureAwait(false);
 
         if (filteredMeteringPoint == null)
         {
