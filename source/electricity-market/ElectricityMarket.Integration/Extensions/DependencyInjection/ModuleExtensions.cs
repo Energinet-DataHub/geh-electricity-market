@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System.Net.Http;
-using Azure.Identity;
 using Energinet.DataHub.Core.App.Common.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Integration.Authorization;
 using Energinet.DataHub.ElectricityMarket.Integration.Extensions.HealthChecks;
