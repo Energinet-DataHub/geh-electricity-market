@@ -327,7 +327,9 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                             return false;
                         }
 
-                        HandleElectricalHeating(importedTransaction, meteringPoint);
+                        var cr = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+
+                        HandleElectricalHeating(importedTransaction, meteringPoint, cr);
 
                         return true;
                     }
@@ -482,20 +484,21 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         {
             changeEsp.ValidTo = DateTimeOffset.MaxValue;
             RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
-            return;
         }
+        else
+        {
+            changeEsp.ValidTo = AllSavedValidCrs(meteringPoint)
+                .SelectMany(x => x.EnergySupplyPeriods)
+                .Where(x => x.ValidFrom > importedTransaction.valid_from_date)
+                .MinBy(x => x.ValidFrom)?.ValidFrom ?? DateTimeOffset.MaxValue;
 
-        changeEsp.ValidTo = AllSavedValidCrs(meteringPoint)
-            .SelectMany(x => x.EnergySupplyPeriods)
-            .Where(x => x.ValidFrom > importedTransaction.valid_from_date)
-            .MinBy(x => x.ValidFrom)?.ValidFrom ?? DateTimeOffset.MaxValue;
-
-        RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
+            RetireEspStuff(importedTransaction, meteringPoint, changeEsp);
+        }
 
         if (importedTransaction.tax_reduction == true &&
             importedTransaction.transaction_type.TrimEnd() is "MOVEINES" or "DATAMIG" or "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP" or "MOVEOUTES" or "ENDSUPPLY")
         {
-            HandleElectricalHeating(importedTransaction, meteringPoint);
+            HandleElectricalHeating(importedTransaction, meteringPoint, commercialRelationEntity);
         }
     }
 
@@ -515,11 +518,11 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
         }
     }
 
-    private static void HandleElectricalHeating(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint)
+    private static void HandleElectricalHeating(ImportedTransactionEntity importedTransaction, MeteringPointEntity meteringPoint, CommercialRelationEntity cr)
     {
-        var cr = AllSavedValidCrs(meteringPoint).First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+        var allSavedValidCrs = AllSavedValidCrs(meteringPoint).ToList();
 
-        var activeEhp = cr.ElectricalHeatingPeriods.Where(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy is null).MaxBy(x => x.ValidFrom);
+        var activeEhp = allSavedValidCrs.SelectMany(x => x.ElectricalHeatingPeriods).Where(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy is null).MaxBy(x => x.ValidFrom);
 
         var changeEhp = new ElectricalHeatingPeriodEntity
         {
