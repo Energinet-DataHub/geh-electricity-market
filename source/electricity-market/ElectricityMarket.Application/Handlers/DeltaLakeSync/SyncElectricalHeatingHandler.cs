@@ -14,6 +14,7 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -74,19 +75,33 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
     private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
     {
         var maxVersion = DateTimeOffset.MinValue;
+        var parentMeteringPointsToInsert = new List<ElectricalHeatingParentDto>();
+        var childMeteringPointsToInsert = new List<ElectricalHeatingChildDto>();
         await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
         {
             maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
-            var parentMeteringPoints = _electricalHeatingPeriodizationService.GetParentElectricalHeating(meteringPoint);
-            if (parentMeteringPoints.Any())
+            foreach (var parent in _electricalHeatingPeriodizationService.GetParentElectricalHeating(meteringPoint))
             {
-                await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPoints).ConfigureAwait(false);
+                parentMeteringPointsToInsert.Add(parent);
+            }
 
-                var childMeteringPoints = await _electricalHeatingPeriodizationService.GetChildElectricalHeatingAsync(parentMeteringPoints.Select(p => p.MeteringPointId).Distinct()).ConfigureAwait(false);
-                if (childMeteringPoints.Any())
-                {
-                    await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPoints).ConfigureAwait(false);
-                }
+            if (parentMeteringPointsToInsert.Count > 0)
+            {
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPointsToInsert)
+                    .ConfigureAwait(false);
+            }
+
+            var uniqueParentIds = parentMeteringPointsToInsert.Select(p => p.MeteringPointId).Distinct();
+
+            await foreach (var child in _electricalHeatingPeriodizationService
+                               .GetChildElectricalHeatingAsync(uniqueParentIds).ConfigureAwait(false))
+            {
+                childMeteringPointsToInsert.Add(child);
+            }
+
+            if (childMeteringPointsToInsert.Count > 0)
+            {
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPointsToInsert).ConfigureAwait(false);
             }
         }
 
