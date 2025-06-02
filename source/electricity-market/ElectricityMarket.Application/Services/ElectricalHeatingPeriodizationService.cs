@@ -59,40 +59,41 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// - the period does not end before 2021-01-01<br/>
     /// - the electrical heating is or has been registered for the period.
     /// </summary>
-    public IReadOnlyList<ElectricalHeatingParentDto> GetParentElectricalHeating(MeteringPoint meteringPoint)
+    public IEnumerable<ElectricalHeatingParentDto> GetParentElectricalHeating(MeteringPoint meteringPoint)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
-        var response = new List<ElectricalHeatingParentDto>();
         if (meteringPoint.CommercialRelationTimeline.Any(cr => cr.ElectricalHeatingPeriods.Any()))
         {
             var electricalHeatingTimeline = meteringPoint.CommercialRelationTimeline.SelectMany(cr => cr.ElectricalHeatingPeriods);
             var metadataTimeline = meteringPoint.MetadataTimeline
                 .Where(mt => mt.Parent is null && mt.Type == MeteringPointType.Consumption // Consumption (parent) metering points
                     && mt.SubType == MeteringPointSubType.Physical && _relevantConnectionStates.Contains(mt.ConnectionState) // the metering point physical status is connected or disconnected
-                    && mt.Valid.End > _cutoffDate); // the period does not end before 2021-01-01
+                    && mt.Valid.End > _cutoffDate).ToList(); // the period does not end before 2021-01-01
 
             foreach (var electricalHeatingPeriod in electricalHeatingTimeline)
             {
                 var metadataInPeriod = metadataTimeline
-                    .Where(m => m.Valid.Start >= electricalHeatingPeriod.Period.Start && m.Valid.End <= electricalHeatingPeriod.Period.End);
+                    .Where(m => m.Valid.Start < electricalHeatingPeriod.Period.End && electricalHeatingPeriod.Period.Start < m.Valid.End);
                 foreach (var meteringPointMetadata in metadataInPeriod)
                 {
-                    if (meteringPointMetadata.Valid.Start >= electricalHeatingPeriod.Period.Start
-                        && meteringPointMetadata.Valid.End <= electricalHeatingPeriod.Period.End)
+                    var start = meteringPointMetadata.Valid.Start;
+                    var end = meteringPointMetadata.Valid.End;
+                    if (meteringPointMetadata.Valid.Start < electricalHeatingPeriod.Period.Start)
                     {
-                        var electricalHeatingParent = new ElectricalHeatingParentDto(
-                            meteringPoint.Identification.Value,
-                            meteringPointMetadata.NetSettlementGroup,
-                            meteringPointMetadata.NetSettlementGroup == 6 ? meteringPointMetadata.ScheduledMeterReadingMonth : 1,
-                            meteringPointMetadata.Valid.Start.ToDateTimeOffset(),
-                            meteringPointMetadata.Valid.End.ToDateTimeOffset());
-                        response.Add(electricalHeatingParent);
+                        start = electricalHeatingPeriod.Period.Start;
                     }
+
+                    if (meteringPointMetadata.Valid.End > electricalHeatingPeriod.Period.End)
+                    {
+                        end = electricalHeatingPeriod.Period.End;
+                    }
+
+                    var interval = new Interval(start, end);
+                    var electricalHeatingParent = CreateParent(meteringPoint.Identification.Value, meteringPointMetadata, interval);
+                    yield return electricalHeatingParent;
                 }
             }
         }
-
-        return response;
     }
 
     /// <summary>
@@ -106,10 +107,9 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// - the period does not end before 2021-01-01.
     /// </summary>
     ///
-    public async Task<IReadOnlyList<ElectricalHeatingChildDto>> GetChildElectricalHeatingAsync(IEnumerable<long> parentMeteringPointIds)
+    public async IAsyncEnumerable<ElectricalHeatingChildDto> GetChildElectricalHeatingAsync(IEnumerable<long> parentMeteringPointIds)
     {
         ArgumentNullException.ThrowIfNull(parentMeteringPointIds);
-        var response = new List<ElectricalHeatingChildDto>();
         foreach (var parentId in parentMeteringPointIds)
         {
             var childMeteringPoints = await _meteringPointRepository.GetChildMeteringPointsAsync(parentId).ConfigureAwait(false);
@@ -130,11 +130,12 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
                         metadataTimeline.Parent!.Value,
                         metadataTimeline.Valid.Start.ToDateTimeOffset(),
                         metadataTimeline.Valid.End.ToDateTimeOffset());
-                    response.Add(electricalHeatingChild);
+                    yield return electricalHeatingChild;
                 }
             }
         }
-
-        return response;
     }
+
+    private static ElectricalHeatingParentDto CreateParent(long identification, MeteringPointMetadata metadata, Interval period)
+        => new(identification, metadata.NetSettlementGroup, metadata.NetSettlementGroup == 6 ? metadata.ScheduledMeterReadingMonth : 1, period.Start.ToDateTimeOffset(), period.End.ToDateTimeOffset());
 }
