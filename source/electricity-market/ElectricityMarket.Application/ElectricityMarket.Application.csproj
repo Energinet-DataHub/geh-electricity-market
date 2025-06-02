@@ -16,7 +16,7 @@
     <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
-    <PackageReference Include="Energinet.DataHub.Core.App.Common.Abstractions" Version="15.5.0" />
+    <PackageReference Include="Energinet.DataHub.Core.App.Common.Abstractions" Version="15.6.0" />
     <PackageReference Include="Energinet.DataHub.Core.Databricks.SqlStatementExecution" Version="12.1.1" />
   </ItemGroup>
 

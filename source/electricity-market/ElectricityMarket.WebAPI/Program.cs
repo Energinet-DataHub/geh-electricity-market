@@ -43,6 +43,7 @@ builder.Services
     .AddJwtBearerAuthenticationForWebApp(builder.Configuration)
     .AddUserAuthenticationForWebApp<FrontendUser, FrontendUserProvider>()
     .AddPermissionAuthorizationForWebApp()
+    .AddSubsystemAuthenticationForWebApp(builder.Configuration)
     .AddElectricityMarketWebApiModule(builder.Configuration)
     .AddRevisionLogIntegrationModule(builder.Configuration)
     .AddRevisionLogIntegrationWebApiModule<DefaultRevisionLogEntryHandler>(SubsystemInformation.Id);

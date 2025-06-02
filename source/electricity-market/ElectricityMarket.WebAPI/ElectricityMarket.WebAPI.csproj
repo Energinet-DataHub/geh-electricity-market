@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.14.0" />
-    <PackageReference Include="Energinet.DataHub.Core.App.WebApp" Version="15.5.0" />
+    <PackageReference Include="Energinet.DataHub.Core.App.WebApp" Version="15.6.0" />
     <PackageReference Include="Energinet.DataHub.Core.Logging.LoggingMiddleware" Version="5.0.0" />
     <PackageReference Include="Energinet.DataHub.MarketParticipant.Authorization" Version="1.2.0" />
     <PackageReference Include="Energinet.DataHub.RevisionLog.Integration.WebApi" Version="1.2.0" />

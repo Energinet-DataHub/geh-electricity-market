@@ -13,7 +13,7 @@
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Energinet.DataHub.Core.App.FunctionApp" Version="15.5.0" />
+    <PackageReference Include="Energinet.DataHub.Core.App.FunctionApp" Version="15.6.0" />
     <PackageReference Include="Energinet.DataHub.Core.Messaging" Version="7.1.0" />
     <PackageReference Include="Energinet.DataHub.RevisionLog.Integration" Version="1.2.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.1" />

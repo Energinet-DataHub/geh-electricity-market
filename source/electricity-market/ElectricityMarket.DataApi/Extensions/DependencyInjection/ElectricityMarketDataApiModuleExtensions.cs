@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using DarkLoop.Azure.Functions.Authorization;
+using Energinet.DataHub.Core.App.FunctionApp.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Application;
 using Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Monitor;
 using Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Options;
@@ -44,15 +45,7 @@ internal static class ElectricityMarketDataApiModuleExtensions
         if (authenticationOptions == null)
             throw new InvalidOperationException("Missing authentication configuration.");
 
-        GuardAuthenticationOptions(authenticationOptions);
-
-        services
-            .AddFunctionsAuthentication(JwtFunctionsBearerDefaults.AuthenticationScheme)
-            .AddJwtFunctionsBearer(options =>
-            {
-                options.Audience = authenticationOptions.ApplicationIdUri;
-                options.Authority = authenticationOptions.Issuer;
-            });
+        services.AddSubsystemAuthenticationForIsolatedWorker(configuration);
 
         AddHealthChecks(services);
 
@@ -65,13 +58,5 @@ internal static class ElectricityMarketDataApiModuleExtensions
             .AddScoped<HealthCheckEndpoint>()
             .AddHealthChecks()
             .AddDbContextCheck<ElectricityMarketDatabaseContext>();
-    }
-
-    private static void GuardAuthenticationOptions(AuthenticationOptions authenticationOptions)
-    {
-        if (string.IsNullOrWhiteSpace(authenticationOptions.ApplicationIdUri))
-            throw new InvalidConfigurationException($"Missing '{nameof(AuthenticationOptions.ApplicationIdUri)}'.");
-        if (string.IsNullOrWhiteSpace(authenticationOptions.Issuer))
-            throw new InvalidConfigurationException($"Missing '{nameof(AuthenticationOptions.Issuer)}'.");
     }
 }
