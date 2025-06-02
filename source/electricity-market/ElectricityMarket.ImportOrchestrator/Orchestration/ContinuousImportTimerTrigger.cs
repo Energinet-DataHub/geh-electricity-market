@@ -21,7 +21,7 @@ using Microsoft.DurableTask.Client;
 
 namespace ElectricityMarket.ImportOrchestrator.Orchestration;
 
-public sealed class ContinuousImportTimerTrigger
+internal sealed class ContinuousImportTimerTrigger
 {
     private readonly IMediator _mediator;
     private readonly IImportStateService _importStateService;
@@ -55,6 +55,7 @@ public sealed class ContinuousImportTimerTrigger
             await _mediator.Send(new SyncElectricalHeatingCommand()).ConfigureAwait(false);
             await _mediator.Send(new SyncCapacitySettlementCommand()).ConfigureAwait(false);
             await _mediator.Send(new SyncNetConsumptionCommand()).ConfigureAwait(false);
+            await _mediator.Send(new SyncHullerLogCommand()).ConfigureAwait(false);
         }
         else if (await _importStateService.IsStreamingImportEnabledAsync().ConfigureAwait(false))
         {

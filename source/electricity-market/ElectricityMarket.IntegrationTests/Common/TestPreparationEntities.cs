@@ -21,7 +21,7 @@ using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 
-public static class TestPreparationEntities
+internal static class TestPreparationEntities
 {
     private static int _stateIdCounter;
 

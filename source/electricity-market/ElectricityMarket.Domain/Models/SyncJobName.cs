@@ -18,5 +18,6 @@ public enum SyncJobName
 {
     ElectricalHeating,
     CapacitySettlement,
-    NetConsumption
+    NetConsumption,
+    HullerLog
 }

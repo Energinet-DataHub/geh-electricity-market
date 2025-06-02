@@ -20,4 +20,4 @@ public sealed record CapacitySettlementPeriodDto(
     DateTimeOffset? PeriodToDate,
     long ChildMeteringPointId,
     DateTimeOffset ChildPeriodFromDate,
-    DateTimeOffset? ChildPeriodToDate) : ICapacitySettlementResult;
+    DateTimeOffset? ChildPeriodToDate);

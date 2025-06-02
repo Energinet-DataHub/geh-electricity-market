@@ -18,7 +18,7 @@ using System.Linq;
 
 namespace Energinet.DataHub.ElectricityMarket.DatabaseMigration.Helpers;
 
-public static class EnvironmentFilter
+internal static class EnvironmentFilter
 {
     private static readonly string[] _validEnvironments = ["U-001", "U-002", "T-001", "TEST-001", "TEST-002", "B-001", "B-002", "PREPROD-001", "PREPROD-002", "PROD-001", "SANDBOX-002", "DEV-001", "DEV-002", "DEV-003", "LOCALDEV"];
 

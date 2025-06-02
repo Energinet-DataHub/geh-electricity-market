@@ -26,7 +26,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
     public class NetConsumptionService(IMeteringPointRepository meteringPointRepository, ILogger<NetConsumptionService> logger) : INetConsumptionService
     {
         private static readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
-        private static readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.Consumption, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
+        private static readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.Consumption, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption, MeteringPointType.ConsumptionFromGrid];
 
         private readonly Instant _cutOffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
         private readonly DateTimeOffset _endPeriodCutOffDate = new(DateTime.Today, DateTimeOffset.Now.Offset);
