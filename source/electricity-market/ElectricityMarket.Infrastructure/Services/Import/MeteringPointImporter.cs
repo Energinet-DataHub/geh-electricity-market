@@ -201,7 +201,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (allCrsOrdered.Count > 0)
         {
-            if (_changeTransactions.Contains(transactionType) && transactionType != "DATAMIG" && transactionType != "ENDSUPPLY")
+            if (_changeTransactions.Contains(transactionType) && transactionType != "DATAMIG" && transactionType != "ENDSUPPLY" && transactionType != "CLSDWNMP")
             {
                 return true;
             }
@@ -341,7 +341,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             }
         }
 
-        if (transactionType is not ("ENDSUPPLY" or "INCMOVEOUT" or "INCMOVEIN" or "INCMOVEMAN"))
+        if (transactionType is not ("ENDSUPPLY" or "INCMOVEOUT" or "INCMOVEIN" or "INCMOVEMAN" or "CLSDWNMP"))
         {
             if (transactionType is "MOVEOUTES")
             {
