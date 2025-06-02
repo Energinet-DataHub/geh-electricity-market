@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using DarkLoop.Azure.Functions.Authorization;
 using Energinet.DataHub.Core.App.FunctionApp.Extensions.DependencyInjection;
 using Energinet.DataHub.ElectricityMarket.Application;
 using Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Monitor;
@@ -21,7 +20,6 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions.DependencyIn
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Protocols.Configuration;
 
 namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Extensions.DependencyInjection;
 
