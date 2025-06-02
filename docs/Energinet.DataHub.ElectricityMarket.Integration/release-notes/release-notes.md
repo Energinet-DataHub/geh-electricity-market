@@ -1,5 +1,9 @@
 # Energinet.DataHub.ElectricityMarket.Integration release notes
 
+## Version 4.6.1
+
+- Updated to use Authentication from Core packages
+
 ## Version 4.6.0
 
 - Upgrade to .net 9.
