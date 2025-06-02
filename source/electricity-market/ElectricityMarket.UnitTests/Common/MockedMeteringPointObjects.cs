@@ -96,5 +96,4 @@ internal static class MockedMeteringPointObjects
 
     internal static ElectricalHeatingDto GetMockedElectricalHeating(long id)
         => new(id, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
-
 }

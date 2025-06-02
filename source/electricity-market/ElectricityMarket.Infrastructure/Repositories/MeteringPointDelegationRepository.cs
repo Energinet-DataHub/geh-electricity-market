@@ -34,53 +34,29 @@ public sealed class MeteringPointDelegationRepository : IMeteringPointDelegation
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }
 
-    public async Task<bool> IsMeteringPointDelegatedAsync(MeteringPointIdentification identification)
+    public async Task<string?> GetMeteringPointDelegatedToActorNumberAsync(MeteringPointIdentification identification)
     {
         ArgumentNullException.ThrowIfNull(identification);
 
         var allowedDelegatedProcesses = new[] { DelegatedProcess.RequestMeteringPointData, DelegatedProcess.SendMeteringPointData, DelegatedProcess.ReceiveMeteringPointData };
 
-        return await _electricityMarketDatabaseContext.MeteringPoints
-            .Where(meteringPoint => meteringPoint.Identification == identification.Value)
-            .Join(
-                _electricityMarketDatabaseContext.MeteringPointPeriods,
-                meteringPoint => meteringPoint.Id,
-                meteringPointPeriod => meteringPointPeriod.MeteringPointId,
-                (meteringPoint, meteringPointPeriod) => new { meteringPoint, meteringPointPeriod })
-            .Where(x => x.meteringPointPeriod.ValidFrom <= DateTimeOffset.UtcNow && x.meteringPointPeriod.ValidTo > DateTimeOffset.UtcNow)
-            .Join(
-                _electricityMarketDatabaseContext.GridAreas,
-                x => x.meteringPointPeriod.GridAreaCode,
-                gridArea => gridArea.Code,
-                (x, gridArea) => new { x.meteringPoint, x.meteringPointPeriod, gridArea })
-            .Join(
-                _electricityMarketDatabaseContext.MarketRoleGridAreas,
-                x => x.gridArea.Id,
-                marketRoleGridArea => marketRoleGridArea.GridAreaId,
-                (x, marketRoleGridArea) => new { x.meteringPoint, x.meteringPointPeriod, x.gridArea, marketRoleGridArea })
-            .Join(
-                _electricityMarketDatabaseContext.MarketRoles,
-                x => x.marketRoleGridArea.MarketRoleId,
-                marketRole => marketRole.Id,
-                (x, marketRole) => new { x.meteringPoint, x.meteringPointPeriod, x.gridArea, x.marketRoleGridArea, marketRole })
-            .Where(x => x.marketRole.Function == EicFunction.GridAccessProvider)
-            .Join(
-                _electricityMarketDatabaseContext.Actors,
-                x => x.marketRole.ActorId,
-                actor => actor.Id,
-                (x, actor) => new { x.meteringPoint, x.meteringPointPeriod, x.gridArea, x.marketRoleGridArea, x.marketRole, actor })
-            .Join(
-                _electricityMarketDatabaseContext.DelegationPeriods,
-                x => x.gridArea.Id,
-                delegation => delegation.GridAreaId,
-                (x, delegation) => new { x.meteringPoint, x.meteringPointPeriod, x.gridArea, x.marketRoleGridArea, x.marketRole, x.actor, delegation })
-            .Where(x => x.delegation.StartsAt <= DateTimeOffset.UtcNow && (x.delegation.StopsAt == null || x.delegation.StopsAt > DateTimeOffset.UtcNow))
-            .Join(
-                _electricityMarketDatabaseContext.ProcessDelegations,
-                x => x.delegation.ProcessDelegationId,
-                processDelegation => processDelegation.Id,
-                (x, processDelegation) => processDelegation.DelegatedProcess)
-            .AnyAsync(delegatedProcess => allowedDelegatedProcesses.Contains(delegatedProcess))
-            .ConfigureAwait(false);
+        var query = await (from meteringPoint in _electricityMarketDatabaseContext.MeteringPoints
+                           where meteringPoint.Identification == identification.Value
+                           join meteringPointPeriod in _electricityMarketDatabaseContext.MeteringPointPeriods on meteringPoint.Id equals meteringPointPeriod.MeteringPointId
+                           where meteringPointPeriod.ValidFrom <= DateTimeOffset.UtcNow && meteringPointPeriod.ValidTo > DateTimeOffset.UtcNow
+                           join gridArea in _electricityMarketDatabaseContext.GridAreas on meteringPointPeriod.GridAreaCode equals gridArea.Code
+                           join marketRoleGridArea in _electricityMarketDatabaseContext.MarketRoleGridAreas on gridArea.Id equals marketRoleGridArea.GridAreaId
+                           join marketRole in _electricityMarketDatabaseContext.MarketRoles on marketRoleGridArea.MarketRoleId equals marketRole.Id
+                           where marketRole.Function == EicFunction.GridAccessProvider
+                           join actor in _electricityMarketDatabaseContext.Actors on marketRole.ActorId equals actor.Id
+                           join delegation in _electricityMarketDatabaseContext.DelegationPeriods on gridArea.Id equals delegation.GridAreaId
+                           where delegation.StartsAt <= DateTimeOffset.UtcNow && (delegation.StopsAt == null || delegation.StopsAt > DateTimeOffset.UtcNow)
+                           join processDelegation in _electricityMarketDatabaseContext.ProcessDelegations on delegation.ProcessDelegationId equals processDelegation.Id
+                           where allowedDelegatedProcesses.Contains(processDelegation.DelegatedProcess)
+                           select new { DelegatedToActorNumber = actor.ActorNumber })
+                        .FirstOrDefaultAsync()
+                        .ConfigureAwait(false);
+
+        return query?.DelegatedToActorNumber;
     }
 }

@@ -119,5 +119,4 @@ public class RoleFiltrationServiceTests
         Assert.NotNull(result.Metadata);
         Assert.Equal(tenant.ActorNumber, result.Metadata!.OwnedBy);
     }
-
 }
