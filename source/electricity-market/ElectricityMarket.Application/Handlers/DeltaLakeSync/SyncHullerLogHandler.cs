@@ -14,6 +14,7 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -51,9 +52,9 @@ public sealed class SyncHullerLogHandler(
                 .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
-            if (maxVersion > DateTimeOffset.MinValue)
+            if (maxVersion is not null && maxVersion > DateTimeOffset.MinValue)
             {
-                currentSyncJob = currentSyncJob with { Version = maxVersion };
+                currentSyncJob = currentSyncJob with { Version = maxVersion.Value };
                 await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
             }
             else
@@ -63,20 +64,36 @@ public sealed class SyncHullerLogHandler(
         }
     }
 
-    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
+    private async Task<DateTimeOffset?> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
     {
-        var maxVersion = DateTimeOffset.MinValue;
+        DateTimeOffset? maxVersion = null;
 
-        await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
+        var meteringPointsToInsert = new List<HullerLogDto>();
+        var meteringPointsToDelete = new List<HullerLogEmptyDto>();
+
+        await foreach (var mp in meteringPointsToSync.ConfigureAwait(false))
         {
-            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
+            maxVersion = maxVersion is null || mp.Version > maxVersion ? mp.Version : maxVersion;
+            meteringPointsToDelete.Add(new HullerLogEmptyDto(mp.Identification.Value));
 
-            var hullerLogTimelines = _hullerLogService.GetHullerLog(meteringPoint);
-
-            if (hullerLogTimelines.Any())
+            foreach (var hullerLog in _hullerLogService.GetHullerLog(mp))
             {
-                await _deltaLakeDataUploadService.ImportTransactionsAsync(hullerLogTimelines).ConfigureAwait(false);
+                meteringPointsToInsert.Add(hullerLog);
             }
+        }
+
+        if (meteringPointsToDelete.Count > 0)
+        {
+            await _deltaLakeDataUploadService
+                .DeleteHullerLogPeriodsAsync(meteringPointsToDelete)
+                .ConfigureAwait(false);
+        }
+
+        if (meteringPointsToInsert.Count > 0)
+        {
+            await _deltaLakeDataUploadService
+                .InsertHullerLogPeriodsAsync(meteringPointsToInsert)
+                .ConfigureAwait(false);
         }
 
         return maxVersion;

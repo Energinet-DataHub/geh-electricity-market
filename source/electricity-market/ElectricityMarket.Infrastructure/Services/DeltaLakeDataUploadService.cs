@@ -156,7 +156,7 @@ public class DeltaLakeDataUploadService(
         }
     }
 
-    public async Task ImportTransactionsAsync(IReadOnlyList<HullerLogDto> hullerLogs)
+    public async Task InsertHullerLogPeriodsAsync(IReadOnlyList<HullerLogDto> hullerLogs)
     {
         ArgumentNullException.ThrowIfNull(hullerLogs);
 
@@ -176,6 +176,35 @@ public class DeltaLakeDataUploadService(
                 string resultString = JsonSerializer.Serialize(record);
                 logger.LogInformation(" - Huller log uploaded: {ResultString}", resultString);
             }
+        }
+    }
+
+    public async Task DeleteHullerLogPeriodsAsync(IReadOnlyList<HullerLogEmptyDto> emptyHullerLogs)
+    {
+        ArgumentNullException.ThrowIfNull(emptyHullerLogs);
+        logger.LogInformation(
+            "Starting clearing of {Count} huller log metering point periods.", emptyHullerLogs.Count);
+
+        const int maxBatchSize = 250;
+
+        var allResults = new List<object>();
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MissingMeasurementLogsTableName}";
+
+        foreach (var batch in emptyHullerLogs.Chunk(maxBatchSize))
+        {
+            var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, batch);
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
+
+            await foreach (var record in result.ConfigureAwait(false))
+            {
+                allResults.Add(record);
+            }
+        }
+
+        foreach (var record in allResults)
+        {
+            string resultString = JsonSerializer.Serialize(record);
+            logger.LogInformation("Huller log deleted: {ResultString}", resultString);
         }
     }
 }
