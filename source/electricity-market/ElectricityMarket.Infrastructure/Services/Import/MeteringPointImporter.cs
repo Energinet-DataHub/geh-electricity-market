@@ -107,7 +107,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
             if (type is not "Production" and not "Consumption")
                 return (true, string.Empty);
 
-            if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY")
+            if (string.IsNullOrWhiteSpace(importedTransaction.balance_supplier_id) && transactionType != "ENDSUPPLY" && transactionType != "CLSDWNMP")
                 return (true, string.Empty);
 
             if (_unhandledTransactions.Contains(transactionType))
@@ -232,7 +232,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         return true;
                     }
 
-                case "ENDSUPPLY":
+                case "ENDSUPPLY" or "CLSDWNMP":
                     {
                         var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
                         commercialRelationEntity.EndDate = importedTransaction.valid_from_date;
