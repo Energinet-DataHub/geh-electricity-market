@@ -182,18 +182,18 @@ public class DeltaLakeDataUploadService(
     public async Task DeleteHullerLogPeriodsAsync(IReadOnlyList<HullerLogEmptyDto> emptyHullerLogs)
     {
         ArgumentNullException.ThrowIfNull(emptyHullerLogs);
-        _logger.LogInformation(
+        logger.LogInformation(
             "Starting clearing of {Count} huller log metering point periods.", emptyHullerLogs.Count);
 
         const int maxBatchSize = 250;
 
         var allResults = new List<object>();
-        var tableName = $"{_catalogOptions.Value.Name}.{_catalogOptions.Value.SchemaName}.{_catalogOptions.Value.MissingMeasurementLogsTableName}";
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MissingMeasurementLogsTableName}";
 
         foreach (var batch in emptyHullerLogs.Chunk(maxBatchSize))
         {
             var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, batch);
-            var result = _databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
 
             await foreach (var record in result.ConfigureAwait(false))
             {
@@ -204,7 +204,7 @@ public class DeltaLakeDataUploadService(
         foreach (var record in allResults)
         {
             string resultString = JsonSerializer.Serialize(record);
-            _logger.LogInformation("Huller log deleted: {ResultString}", resultString);
+            logger.LogInformation("Huller log deleted: {ResultString}", resultString);
         }
     }
 }
