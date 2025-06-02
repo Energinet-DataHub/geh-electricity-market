@@ -58,7 +58,6 @@ public sealed class MeteringPointDelegationRepository : IMeteringPointDelegation
           .Select(mpp => mpp.GridAreaCode)
           .ToHashSet();
 
-
         var gridAreaOwnerQuery =
             await (from gridArea in _marketParticipantDatabaseContext.GridAreas
                    where allGridAreas.Contains(gridArea.Code)
