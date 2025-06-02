@@ -26,7 +26,7 @@ public class HullerLogService() : IHullerLogService
     private static readonly MeteringPointSubType[] _irrelevantMeteringPointSubtypes = [MeteringPointSubType.Calculated];
     private static readonly Instant _cutOffDate = SystemClock.Instance.GetCurrentInstant().InZone(DateTimeZone.Utc).LocalDateTime.PlusYears(-3).InZoneStrictly(DateTimeZone.Utc).ToInstant();
 
-    public IReadOnlyList<HullerLogDto> GetHullerLog(MeteringPoint meteringPoint)
+    public IEnumerable<HullerLogDto> GetHullerLog(MeteringPoint meteringPoint)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
 
@@ -40,15 +40,13 @@ public class HullerLogService() : IHullerLogService
             && !_irrelevantMeteringPointSubtypes.Contains(s.Metadata.SubType)
             && (s.Metadata.Valid.Start >= _cutOffDate || (s.Metadata.Valid.Start < _cutOffDate && s.Metadata.Valid.End > _cutOffDate))))
         {
-            response.Add(new HullerLogDto(
+            yield return new HullerLogDto(
                 MeteringPointId: meteringPoint.Identification.Value,
                 GridAreaCode: segment.Metadata.GridAreaCode,
                 Resolution: segment.Metadata.Resolution,
                 PeriodFromDate: segment.Metadata.Valid.Start.ToDateTimeOffset(),
-                PeriodToDate: segment.Metadata.Valid.End == Instant.MaxValue ? null : segment.Metadata.Valid.End.ToDateTimeOffset()));
+                PeriodToDate: segment.Metadata.Valid.End == Instant.MaxValue ? null : segment.Metadata.Valid.End.ToDateTimeOffset());
         }
-
-        return response;
     }
 
     private static IReadOnlyList<TimelineSegment> BuildMergedTimeline(MeteringPoint meteringPoint)
