@@ -13,4 +13,4 @@
 // limitations under the License.
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
-public sealed record ElectricalHeatingChildDto(long MeteringPointId, string MeteringPointType, string MeteringPointSubType, long ParentMeteringPointId, DateTimeOffset CoupledDate, DateTimeOffset? UncoupledDate);
+public sealed record ElectricalHeatingEmptyDto(long MeteringPointId);
