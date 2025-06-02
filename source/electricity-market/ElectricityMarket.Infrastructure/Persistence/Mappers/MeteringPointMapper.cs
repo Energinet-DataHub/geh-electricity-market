@@ -28,7 +28,7 @@ internal static class MeteringPointMapper
             from.Id,
             from.Version,
             new MeteringPointIdentification(from.Identification),
-            from.MeteringPointPeriods.Where(mpp => mpp.RetiredBy == null).Select(MapFromEntity).OrderBy(mpp => mpp.Valid.Start).ToList(),
+            from.MeteringPointPeriods.Where(mpp => mpp.RetiredBy == null && mpp.ValidFrom != mpp.ValidTo).Select(MapFromEntity).OrderBy(mpp => mpp.Valid.Start).ToList(),
             from.CommercialRelations.Where(cr => cr.EndDate > cr.StartDate).Select(MapFromEntity).OrderBy(cr => cr.Period.Start).ToList());
     }
 
