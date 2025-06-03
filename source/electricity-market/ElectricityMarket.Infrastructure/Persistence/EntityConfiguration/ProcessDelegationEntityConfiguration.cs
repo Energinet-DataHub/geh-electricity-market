@@ -25,7 +25,7 @@ public sealed class ProcessDelegationEntityConfiguration : IEntityTypeConfigurat
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.ToTable("ProcessDelegation");
+        builder.ToTable("ProcessDelegation", "dbo");
         builder.HasKey(d => d.Id);
 
         builder

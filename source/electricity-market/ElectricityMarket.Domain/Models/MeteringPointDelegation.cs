@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Application.Security;
+using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public interface IRoleFiltrationService
-{
-    Task<MeteringPointDto?> FilterFieldsAsync(MeteringPointDto meteringPoint, TenantDto tenant);
-}
+public record MeteringPointDelegation(Interval ValidPeriod, string DelegatedActorNumber);

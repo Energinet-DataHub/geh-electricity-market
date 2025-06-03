@@ -12,15 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
 public class RoleFiltrationService : IRoleFiltrationService
 {
-    public MeteringPointDto? FilterFields(MeteringPointDto meteringPoint, TenantDto tenant)
+    private readonly IMeteringPointDelegationRepository _meteringPointDelegationRepository;
+    public RoleFiltrationService(IMeteringPointDelegationRepository meteringPointDelegationRepository)
+    {
+        _meteringPointDelegationRepository = meteringPointDelegationRepository;
+    }
+
+    public async Task<MeteringPointDto?> FilterFieldsAsync(MeteringPointDto meteringPoint, TenantDto tenant)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint, nameof(meteringPoint));
         ArgumentNullException.ThrowIfNull(tenant, nameof(tenant));
@@ -30,6 +38,7 @@ public class RoleFiltrationService : IRoleFiltrationService
             EicFunction.DataHubAdministrator or EicFunction.SystemOperator or EicFunction.DanishEnergyAgency => meteringPoint,
             EicFunction.EnergySupplier => EnergySupplierFiltering(meteringPoint, tenant),
             EicFunction.GridAccessProvider => GridAccessProviderFiltering(meteringPoint, tenant),
+            EicFunction.Delegated => await DelegatedFilteringAsync(meteringPoint, tenant).ConfigureAwait(false),
             _ => null
         };
     }
@@ -61,18 +70,6 @@ public class RoleFiltrationService : IRoleFiltrationService
         {
             CommercialRelation = mergedCommercialRelation,
             CommercialRelationTimeline = [mergedCommercialRelation],
-        };
-    }
-
-    private static CommercialRelationDto RemoveEnergySupplierAndMergeEnergySupplyPeriods(
-        CommercialRelationDto commercialRelation, IEnumerable<EnergySupplyPeriodDto> energySupplyPeriodTimeline)
-    {
-        return commercialRelation with
-        {
-            EnergySupplier = string.Empty,
-            StartDate = DateTimeOffset.MinValue,
-            EndDate = DateTimeOffset.MaxValue,
-            EnergySupplyPeriodTimeline = energySupplyPeriodTimeline,
         };
     }
 
@@ -129,5 +126,50 @@ public class RoleFiltrationService : IRoleFiltrationService
             ActiveEnergySupplyPeriod = null,
             EnergySupplyPeriodTimeline = []
         };
+    }
+
+    private async Task<MeteringPointDto?> DelegatedFilteringAsync(MeteringPointDto meteringPoint, TenantDto tenant)
+    {
+        ArgumentNullException.ThrowIfNull(meteringPoint, nameof(meteringPoint));
+        ArgumentNullException.ThrowIfNull(tenant, nameof(tenant));
+
+        var delegatedToActorNumbers = await _meteringPointDelegationRepository.GetMeteringPointDelegatedToActorNumbersAsync(
+            new MeteringPointIdentification(meteringPoint.Identification))
+            .ConfigureAwait(false);
+
+        if (delegatedToActorNumbers.Contains(tenant.ActorNumber))
+        {
+            return meteringPoint with
+            {
+                CommercialRelation = null,
+                CommercialRelationTimeline = [],
+                MetadataTimeline = [],
+                Metadata = meteringPoint.Metadata with
+                {
+                    InstallationAddress = null,
+                    ParentMeteringPoint = null,
+                    AssetType = null,
+                    Capacity = null,
+                    PowerLimitKw = null,
+                    MeterNumber = null,
+                    NetSettlementGroup = null,
+                    ConnectionState = null,
+                    ConnectionType = null,
+                    DisconnectionType = null,
+                    Product = null,
+                    ProductObligation = null,
+                    ScheduledMeterReadingMonth = null,
+                    FromGridAreaCode = null,
+                    ToGridAreaCode = null,
+                    EnvironmentalFriendly = null,
+                    PowerPlantGsrn = null,
+                    SettlementMethod = null,
+                    GridAreaCode = string.Empty,
+                    OwnedBy = string.Empty,
+                }
+            };
+        }
+
+        return null;
     }
 }

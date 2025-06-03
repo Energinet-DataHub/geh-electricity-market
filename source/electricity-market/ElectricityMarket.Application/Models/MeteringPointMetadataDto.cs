@@ -22,14 +22,14 @@ public sealed record MeteringPointMetadataDto(
     DateTimeOffset ValidTo,
     string? ParentMeteringPoint,
     MeteringPointType Type,
-    MeteringPointSubType SubType,
-    ConnectionState ConnectionState,
+    MeteringPointSubType? SubType,
+    ConnectionState? ConnectionState,
     string Resolution,
     string GridAreaCode,
     string OwnedBy,
     ConnectionType? ConnectionType,
     DisconnectionType? DisconnectionType,
-    Product Product,
+    Product? Product,
     bool? ProductObligation,
     MeteringPointMeasureUnit MeasureUnit,
     AssetType? AssetType,
@@ -43,4 +43,4 @@ public sealed record MeteringPointMetadataDto(
     string? ToGridAreaCode,
     string? PowerPlantGsrn,
     SettlementMethod? SettlementMethod,
-    InstallationAddressDto InstallationAddress);
+    InstallationAddressDto? InstallationAddress);
