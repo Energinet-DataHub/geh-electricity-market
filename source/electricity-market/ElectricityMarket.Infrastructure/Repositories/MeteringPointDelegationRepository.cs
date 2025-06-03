@@ -34,7 +34,7 @@ public sealed class MeteringPointDelegationRepository : IMeteringPointDelegation
         _electricityMarketDatabaseContext = electricityMarketDatabaseContext;
     }
 
-    public async Task<string?> GetMeteringPointDelegatedToActorNumberAsync(MeteringPointIdentification identification)
+    public async Task<IEnumerable<string>> GetMeteringPointDelegatedToActorNumbersAsync(MeteringPointIdentification identification)
     {
         ArgumentNullException.ThrowIfNull(identification);
 
@@ -53,10 +53,14 @@ public sealed class MeteringPointDelegationRepository : IMeteringPointDelegation
                            where delegation.StartsAt <= DateTimeOffset.UtcNow && (delegation.StopsAt == null || delegation.StopsAt > DateTimeOffset.UtcNow)
                            join processDelegation in _electricityMarketDatabaseContext.ProcessDelegations on delegation.ProcessDelegationId equals processDelegation.Id
                            where allowedDelegatedProcesses.Contains(processDelegation.DelegatedProcess)
-                           select new { DelegatedToActorNumber = actor.ActorNumber })
-                        .FirstOrDefaultAsync()
+                           join delegatedToActor in _electricityMarketDatabaseContext.Actors on delegation.DelegatedToActorId equals delegatedToActor.Id
+                           select new { DelegatedToActorNumber = delegatedToActor.ActorNumber })
+                        .ToListAsync()
                         .ConfigureAwait(false);
 
-        return query?.DelegatedToActorNumber;
+        if (query == null)
+            return Enumerable.Empty<string>();
+
+        return query.Select(x => x.DelegatedToActorNumber);
     }
 }

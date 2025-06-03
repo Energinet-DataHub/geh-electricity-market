@@ -133,11 +133,11 @@ public class RoleFiltrationService : IRoleFiltrationService
         ArgumentNullException.ThrowIfNull(meteringPoint, nameof(meteringPoint));
         ArgumentNullException.ThrowIfNull(tenant, nameof(tenant));
 
-        var delegatedToActorNumber = await _meteringPointDelegationRepository
-            .GetMeteringPointDelegatedToActorNumberAsync(new MeteringPointIdentification(meteringPoint.Identification))
+        var delegatedToActorNumbers = await _meteringPointDelegationRepository.GetMeteringPointDelegatedToActorNumbersAsync(
+            new MeteringPointIdentification(meteringPoint.Identification))
             .ConfigureAwait(false);
 
-        if (delegatedToActorNumber == tenant.ActorNumber)
+        if (delegatedToActorNumbers.Contains(tenant.ActorNumber))
         {
             return meteringPoint with
             {
