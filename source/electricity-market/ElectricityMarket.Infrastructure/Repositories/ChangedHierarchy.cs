@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using System;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
+namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
-public sealed record MeteringPointHierarchy(MeteringPoint Parent, IEnumerable<MeteringPoint> ChildMeteringPoints);
+public sealed class ChangedHierarchy
+{
+    public long ParentIdentification { get; set; }
+    public DateTimeOffset MaxVersion { get; set; }
+}

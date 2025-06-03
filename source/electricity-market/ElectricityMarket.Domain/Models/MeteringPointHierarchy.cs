@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
-
-public interface ICapacitySettlementService
-{
-    IEnumerable<CapacitySettlementPeriodDto> GetCapacitySettlementPeriods(MeteringPointHierarchy meteringPointHierarchy);
-}
+public sealed record MeteringPointHierarchy(MeteringPoint Parent, IEnumerable<MeteringPoint> ChildMeteringPoints, DateTimeOffset Version);
