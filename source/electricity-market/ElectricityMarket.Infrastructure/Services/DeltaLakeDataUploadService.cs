@@ -80,7 +80,7 @@ public class DeltaLakeDataUploadService(
         var chunks = capacitySettlementPeriods.Chunk(chunkSize);
         foreach (var chunk in chunks)
         {
-            var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, capacitySettlementPeriods);
+            var query = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
             await foreach (var record in result.ConfigureAwait(false))
@@ -102,7 +102,7 @@ public class DeltaLakeDataUploadService(
         var chunks = capacitySettlementEmptyDtos.Chunk(chunkSize);
         foreach (var chunk in chunks)
         {
-            var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, capacitySettlementEmptyDtos);
+            var query = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query, cancellationToken);
             await foreach (var record in result.ConfigureAwait(false))
@@ -124,7 +124,7 @@ public class DeltaLakeDataUploadService(
         var chunks = netConsumptionParents.Chunk(chunkSize);
         foreach (var chunk in chunks)
         {
-            var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, netConsumptionParents);
+            var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, chunk);
 
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
             await foreach (var record in result.ConfigureAwait(false))
@@ -145,7 +145,7 @@ public class DeltaLakeDataUploadService(
         var chunks = netConsumptionChildren.Chunk(chunkSize);
         foreach (var chunk in chunks)
         {
-            var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, netConsumptionChildren);
+            var query = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, chunk);
 
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(query);
             await foreach (var record in result.ConfigureAwait(false))
