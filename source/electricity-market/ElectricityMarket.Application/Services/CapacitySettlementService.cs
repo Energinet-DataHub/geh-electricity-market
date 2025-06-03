@@ -13,26 +13,15 @@
 // limitations under the License.
 
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
-using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services;
 
 public class CapacitySettlementService : ICapacitySettlementService
 {
-    private readonly IMeteringPointRepository _meteringPointRepository;
-    private readonly ILogger<CapacitySettlementService> _logger;
     private readonly Instant _capacitySettlementEnabledFrom = Instant.FromUtc(2024, 12, 31, 23, 0, 0);
-
-    public CapacitySettlementService(IMeteringPointRepository meteringPointRepository, ILogger<CapacitySettlementService> logger)
-    {
-        _meteringPointRepository = meteringPointRepository;
-        _logger = logger;
-    }
 
     // """
     // Metering point periods for consumption metering points (parent) that have a coupled 'capacity_settlement' metering point (child).
@@ -50,18 +39,9 @@ public class CapacitySettlementService : ICapacitySettlementService
     // - No column may use quoted values
     // - All date/time values must include seconds
     // """
-    public async IAsyncEnumerable<CapacitySettlementPeriodDto> GetCapacitySettlementPeriodsAsync(
-        MeteringPoint meteringPoint, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public IEnumerable<CapacitySettlementPeriodDto> GetCapacitySettlementPeriods(MeteringPointHierarchy meteringPointHierarchy)
     {
-        ArgumentNullException.ThrowIfNull(meteringPoint);
-
-        var meteringPointHierarchy = await GetMeteringPointHierarchyAsync(meteringPoint, cancellationToken).ConfigureAwait(false);
-
-        // No need to consider this metering point
-        if (meteringPointHierarchy is null)
-        {
-            yield break;
-        }
+        ArgumentNullException.ThrowIfNull(meteringPointHierarchy);
 
         var capacitySettlementMeteringPoint =
             meteringPointHierarchy.ChildMeteringPoints.SingleOrDefault(mp =>
@@ -156,48 +136,5 @@ public class CapacitySettlementService : ICapacitySettlementService
         }
 
         return dateTimeOffset;
-    }
-
-    private async Task<MeteringPointHierarchy?> GetMeteringPointHierarchyAsync(MeteringPoint meteringPoint, CancellationToken cancellationToken)
-    {
-        // This metering point is a parent
-        if (meteringPoint.MetadataTimeline.All(period => period.Parent is null))
-        {
-            // This is a consumption parent metering point, so we must process the hierarchy
-            if (meteringPoint.MetadataTimeline.Any(period => period.Type == MeteringPointType.Consumption))
-            {
-                var children = await _meteringPointRepository.GetChildMeteringPointsAsync(meteringPoint.Identification.Value).ConfigureAwait(false);
-                return new MeteringPointHierarchy(meteringPoint, children);
-            }
-
-            // This is a non-consumption parent metering point, so skip it
-            return null;
-        }
-
-        // This metering point is not a parent, but has type capacity settlement, so we must process the hierarchy
-        if (meteringPoint.MetadataTimeline.Any(period => period.Type == MeteringPointType.CapacitySettlement))
-        {
-            var parentIdentification = meteringPoint.MetadataTimeline.First(period => period.Parent is not null).Parent!;
-            var parent = await _meteringPointRepository.GetAsync(parentIdentification).ConfigureAwait(false);
-
-            if (parent is null)
-            {
-                _logger.LogWarning("Skipping orphan metering point {Id}", meteringPoint.Id);
-                return null;
-            }
-
-            // This is a consumption parent metering point, so we must process the hierarchy
-            if (parent.MetadataTimeline.Any(period => period.Type == MeteringPointType.Consumption))
-            {
-                var children = new List<MeteringPoint> { meteringPoint };
-                return new MeteringPointHierarchy(parent, children);
-            }
-
-            // Parent was not a consumption metering point, so skip it
-            return null;
-        }
-
-        // Not a parent and not a capacity settlement metering point, so skip it
-        return null;
     }
 }

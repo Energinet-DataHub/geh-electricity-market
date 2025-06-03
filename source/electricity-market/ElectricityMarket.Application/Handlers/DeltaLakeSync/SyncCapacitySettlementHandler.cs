@@ -25,8 +25,6 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Handlers.DeltaLakeSync
 
 public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlementCommand>
 {
-    private const int BatchSize = 50;
-
     private readonly IMeteringPointRepository _meteringPointRepository;
     private readonly ISyncJobsRepository _syncJobsRepository;
     private readonly ICapacitySettlementService _capacitySettlementService;
@@ -59,7 +57,7 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
                 currentSyncJob.Version,
                 SyncJobName.CapacitySettlement);
 
-            var meteringPointsToSync = _meteringPointRepository.GetMeteringPointsToSyncAsync(currentSyncJob.Version, BatchSize);
+            var meteringPointsToSync = _meteringPointRepository.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version);
             var maxVersionProcessed = await HandleBatchAsync(meteringPointsToSync, cancellationToken).ConfigureAwait(false);
             if (maxVersionProcessed is not null)
             {
@@ -73,17 +71,17 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
         }
     }
 
-    private async Task<DateTimeOffset?> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync, CancellationToken cancellationToken)
+    private async Task<DateTimeOffset?> HandleBatchAsync(IAsyncEnumerable<MeteringPointHierarchy> meteringPointHierarchiesToSync, CancellationToken cancellationToken)
     {
         DateTimeOffset? maxVersion = null;
 
         var meteringPointsToDelete = new List<CapacitySettlementEmptyDto>();
-        var meteringPoints = await meteringPointsToSync.Where(mp => mp.IsParent()).SelectMany(
-            mp =>
+        var meteringPoints = await meteringPointHierarchiesToSync.SelectMany(
+            mph =>
             {
-                maxVersion = maxVersion is null || maxVersion < mp.Version ? mp.Version : maxVersion;
-                meteringPointsToDelete.Add(new CapacitySettlementEmptyDto(mp.Identification.Value));
-                return _capacitySettlementService.GetCapacitySettlementPeriodsAsync(mp, cancellationToken);
+                maxVersion = maxVersion is null || maxVersion < mph.Version ? mph.Version : maxVersion;
+                meteringPointsToDelete.Add(new CapacitySettlementEmptyDto(mph.Parent.Identification.Value));
+                return _capacitySettlementService.GetCapacitySettlementPeriods(mph).ToAsyncEnumerable();
             }).ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var meteringPointsToInsert = meteringPoints.ToList();

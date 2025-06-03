@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Linq;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
@@ -20,10 +21,11 @@ using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 
-internal static class MeteringPointMapper
+public static class MeteringPointMapper
 {
     public static MeteringPoint MapFromEntity(MeteringPointEntity from)
     {
+        ArgumentNullException.ThrowIfNull(from);
         return new MeteringPoint(
             from.Id,
             from.Version,

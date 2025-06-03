@@ -13,12 +13,16 @@
 // limitations under the License.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using ConnectionState = Energinet.DataHub.ElectricityMarket.Domain.Models.ConnectionState;
 using MeteringPointIdentification = Energinet.DataHub.ElectricityMarket.Domain.Models.MeteringPointIdentification;
@@ -40,7 +44,109 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
 
     public Task DisposeAsync() => _fixture.DisposeAsync();
 
-    private async Task<(MeteringPointIdentification ParentIdentification, MeteringPointIdentification ChildIdentification)> CreateTestDataAsync()
+    [Fact]
+    public async Task GivenCapacitySettlementMeteringPoint_WhenQueryingSinceBeginningOfTime_ThenMeteringPointHierarchyIsReturned()
+    {
+        // Given metering points
+        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), DateTimeOffset.MinValue.AddYears(40));
+        await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
+        var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+
+        // When querying
+        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue).ToListAsync();
+
+        // Then hierarchy is returned
+        Assert.NotNull(hierarchies);
+        Assert.Single(hierarchies);
+        Assert.Equal(DateTimeOffset.MinValue.AddYears(40), hierarchies[0].Version);
+
+        Assert.NotNull(hierarchies[0].Parent);
+        Assert.Equal(parentIdentification, hierarchies[0].Parent.Identification);
+
+        Assert.Single(hierarchies[0].ChildMeteringPoints);
+        Assert.Equal(childIdentification, hierarchies[0].ChildMeteringPoints.First().Identification);
+    }
+
+    [Fact]
+    public async Task GivenChangedCapacitySettlementMeteringPoint_WhenQuerying_ThenMeteringPointHierarchyIsReturned()
+    {
+        // Given changed child capacity settlement metering point
+        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), DateTimeOffset.MinValue.AddYears(20));
+        await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
+        var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+
+        // When querying
+        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue.AddYears(15)).ToListAsync();
+
+        // Then hierarchy is returned
+        Assert.NotNull(hierarchies);
+        Assert.Single(hierarchies);
+        Assert.Equal(DateTimeOffset.MinValue.AddYears(20), hierarchies[0].Version);
+
+        Assert.NotNull(hierarchies[0].Parent);
+        Assert.Equal(parentIdentification, hierarchies[0].Parent.Identification);
+
+        Assert.Single(hierarchies[0].ChildMeteringPoints);
+        Assert.Equal(childIdentification, hierarchies[0].ChildMeteringPoints.First().Identification);
+    }
+
+    [Fact]
+    public async Task GivenChangedParentMeteringPoint_WhenQuerying_ThenMeteringPointHierarchyIsReturned()
+    {
+        // Given changed parent metering point
+        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(25), DateTimeOffset.MinValue.AddYears(10));
+        await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
+        var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+
+        // When querying
+        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue.AddYears(15)).ToListAsync();
+
+        // Then hierarchy is returned
+        Assert.NotNull(hierarchies);
+        Assert.Single(hierarchies);
+        Assert.Equal(DateTimeOffset.MinValue.AddYears(25), hierarchies[0].Version);
+
+        Assert.NotNull(hierarchies[0].Parent);
+        Assert.Equal(parentIdentification, hierarchies[0].Parent.Identification);
+
+        Assert.Single(hierarchies[0].ChildMeteringPoints);
+        Assert.Equal(childIdentification, hierarchies[0].ChildMeteringPoints.First().Identification);
+    }
+
+    [Fact]
+    public async Task GivenMultipleChangedMeteringPoints_WhenQuerying_ThenMeteringPointsAreReturnedOrdered()
+    {
+        // Given multiple changed metering points
+        var (parent1Identification, child1Identification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(50), DateTimeOffset.MinValue.AddYears(60));
+        var (parent2Identification, child2Identification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(110), DateTimeOffset.MinValue.AddYears(120));
+        await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
+        var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+
+        // When querying
+        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue.AddYears(15)).ToListAsync();
+
+        // Then hierarchies are returned ordered by version
+        Assert.NotNull(hierarchies);
+        Assert.Equal(2, hierarchies.Count);
+        var hierarchy1 = hierarchies[0];
+        var hierarchy2 = hierarchies[1];
+        Assert.Equal(DateTimeOffset.MinValue.AddYears(60), hierarchy1.Version);
+        Assert.Equal(DateTimeOffset.MinValue.AddYears(120), hierarchy2.Version);
+
+        Assert.NotNull(hierarchy1.Parent);
+        Assert.Equal(parent1Identification, hierarchy1.Parent.Identification);
+
+        Assert.NotNull(hierarchy2.Parent);
+        Assert.Equal(parent2Identification, hierarchy2.Parent.Identification);
+
+        Assert.Single(hierarchy1.ChildMeteringPoints);
+        Assert.Equal(child1Identification, hierarchy1.ChildMeteringPoints.First().Identification);
+
+        Assert.Single(hierarchy2.ChildMeteringPoints);
+        Assert.Equal(child2Identification, hierarchy2.ChildMeteringPoints.First().Identification);
+    }
+
+    private async Task<(MeteringPointIdentification ParentIdentification, MeteringPointIdentification ChildIdentification)> CreateTestDataAsync(DateTimeOffset parentVersion, DateTimeOffset childVersion)
     {
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
 
@@ -69,7 +175,7 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         await dbContext.MeteringPointPeriods.AddAsync(meteringPointPeriodEntity);
         await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
         {
-            Identification = parentIdentification.Value, MeteringPointPeriods = { meteringPointPeriodEntity }
+            Identification = parentIdentification.Value, Version = parentVersion, MeteringPointPeriods = { meteringPointPeriodEntity }
         });
 
         // Child metering point
@@ -106,7 +212,7 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
             GridAreaCode = "002",
             OwnedBy = "4672928796220",
             ConnectionState = ConnectionState.Connected.ToString(),
-            Type = MeteringPointType.Consumption.ToString(),
+            Type = MeteringPointType.CapacitySettlement.ToString(),
             SubType = MeteringPointSubType.Physical.ToString(),
             Resolution = "PT15M",
             ScheduledMeterReadingMonth = 1,
@@ -115,14 +221,14 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
             Product = Product.EnergyActive.ToString(),
             TransactionType = "CREATEMP",
             InstallationAddress = secondChildInstallationAddress,
-            ParentIdentification = null
+            ParentIdentification = parentIdentification.Value
         };
         var childIdentification = Some.MeteringPointIdentification();
         await dbContext.MeteringPointPeriods.AddAsync(childMeteringPointPeriodEntity);
         await dbContext.MeteringPointPeriods.AddAsync(secondChildMeteringPointPeriodEntity);
         await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
         {
-            Identification = childIdentification.Value, MeteringPointPeriods = { childMeteringPointPeriodEntity, secondChildMeteringPointPeriodEntity }
+            Identification = childIdentification.Value, Version = childVersion, MeteringPointPeriods = { childMeteringPointPeriodEntity, secondChildMeteringPointPeriodEntity }
         });
 
         // Unrelated metering point
@@ -150,10 +256,25 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         await dbContext.MeteringPointPeriods.AddAsync(unrelatedMeteringPointPeriodEntity);
         await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
         {
-            Identification = unrelatedIdentification.Value, MeteringPointPeriods = { unrelatedMeteringPointPeriodEntity }
+            Identification = unrelatedIdentification.Value, Version = DateTimeOffset.MinValue.AddYears(30), MeteringPointPeriods = { unrelatedMeteringPointPeriodEntity }
         });
 
         await dbContext.SaveChangesAsync();
         return (parentIdentification, childIdentification);
+    }
+
+    private sealed class TestContextFactory : IDbContextFactory<ElectricityMarketDatabaseContext>
+    {
+        private readonly ElectricityMarketDatabaseContextFixture _fixture;
+
+        public TestContextFactory(ElectricityMarketDatabaseContextFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
+        public ElectricityMarketDatabaseContext CreateDbContext()
+        {
+            return _fixture.DatabaseManager.CreateDbContext();
+        }
     }
 }
