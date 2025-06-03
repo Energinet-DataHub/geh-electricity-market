@@ -64,20 +64,21 @@ internal sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
             .RunAsync(new NoInput())
             .ConfigureAwait(false);
 
-        _logger.LogWarning($"databricks-streaming-importer: current max cutoff fetched in {sw.ElapsedMilliseconds}ms");
+        _logger.LogWarning($"databricks-streaming-importer: current max cutoff fetched in {sw.ElapsedMilliseconds} ms");
         sw.Restart();
 
         var previousCutoff = await _importStateService
             .GetStreamingImportCutoffAsync()
             .ConfigureAwait(false);
 
-        _logger.LogWarning($"databricks-streaming-importer: current prev cutoff fetched in {sw.ElapsedMilliseconds}ms");
+        _logger.LogWarning($"databricks-streaming-importer: current prev cutoff fetched in {sw.ElapsedMilliseconds} ms");
         sw.Restart();
 
         if (currentMaxCutoff == previousCutoff)
             return;
 
-        var targetCutoff = Math.Min(currentMaxCutoff, previousCutoff + 4_000);
+        const int limit = 4_000;
+        var targetCutoff = Math.Min(currentMaxCutoff, previousCutoff + limit);
 
         var query = DatabricksStatement.FromRawSql(
             $"""
@@ -180,6 +181,9 @@ internal sealed class DatabricksStreamingImporter : IDatabricksStreamingImporter
             .ExecuteStatementAsync(query.Build())
             .ToListAsync()
             .ConfigureAwait(false);
+
+        _logger.LogWarning($"databricks-streaming-importer: fetched {limit} from databaricks in {sw.ElapsedMilliseconds} ms");
+        sw.Restart();
 
         var transaction = await _databaseContext.Database
             .BeginTransactionAsync()
