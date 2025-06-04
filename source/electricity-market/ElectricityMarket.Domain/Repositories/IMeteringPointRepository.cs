@@ -29,4 +29,6 @@ public interface IMeteringPointRepository
     IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000);
 
     Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(long identification);
+
+    IAsyncEnumerable<MeteringPointHierarchy> GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50);
 }

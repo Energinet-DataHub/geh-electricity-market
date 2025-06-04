@@ -75,6 +75,11 @@ public class MeteringPointController : ControllerBase
     [Authorize(Roles = "metering-point:search")]
     public async Task<ActionResult<RelatedMeteringPointsDto>> GetRelatedMeteringPointAsync(string identification)
     {
+        if (_userContext.CurrentUser.MarketRole == EicFunction.Delegated)
+        {
+            return Forbid();
+        }
+
         var getRelatedCommand = new GetRelatedMeteringPointsCommand(identification);
 
         var meteringPointWithRelated = await _mediator

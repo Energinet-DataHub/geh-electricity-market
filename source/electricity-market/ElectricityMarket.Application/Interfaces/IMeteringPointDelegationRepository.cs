@@ -14,6 +14,9 @@
 
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
+namespace Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 
-public sealed record MeteringPointHierarchy(MeteringPoint Parent, IEnumerable<MeteringPoint> ChildMeteringPoints);
+public interface IMeteringPointDelegationRepository
+{
+    Task<IEnumerable<string>> GetMeteringPointDelegatedToActorNumbersAsync(MeteringPointIdentification identification);
+}

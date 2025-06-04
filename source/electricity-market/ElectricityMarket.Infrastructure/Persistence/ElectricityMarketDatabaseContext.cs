@@ -16,6 +16,7 @@ using System;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.EntityConfiguration;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model.MarketParticipant;
+using Energinet.DataHub.MarketParticipant.Infrastructure.Persistence.EntityConfiguration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
@@ -50,6 +51,9 @@ public class ElectricityMarketDatabaseContext : DbContext
     public DbSet<MarketRoleGridAreaEntity> MarketRoleGridAreas { get; private set; } = null!;
     public DbSet<SyncJobsEntity> SyncJobs { get; private set; } = null!;
 
+    public DbSet<ProcessDelegationEntity> ProcessDelegations { get; private set; } = null!;
+    public DbSet<DelegationPeriodEntity> DelegationPeriods { get; private set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
@@ -72,6 +76,9 @@ public class ElectricityMarketDatabaseContext : DbContext
         modelBuilder.ApplyConfiguration(new MarketRoleEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarketRoleGridAreaEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncJobsEntityConfiguration());
+
+        modelBuilder.ApplyConfiguration(new ProcessDelegationEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new DelegationPeriodEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

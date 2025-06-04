@@ -16,12 +16,14 @@ using System;
 using System.Collections.Generic;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
+using NodaTime;
+using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 
-public static class MockedMeteringPointObjects
+internal static class MockedMeteringPointObjects
 {
-    public static MeteringPointDto GetMockedMeteringPoint(
+    internal static MeteringPointDto GetMockedMeteringPoint(
         long id,
         string identification,
         MeteringPointMetadataDto metadata,
@@ -30,7 +32,7 @@ public static class MockedMeteringPointObjects
         IEnumerable<CommercialRelationDto> commercialRelationTimeline)
         => new(id, identification, metadata, metadataTimeline, commercialRelation, commercialRelationTimeline);
 
-    public static MeteringPointDto GetMockedMeteringPoint(long id, string ownedBy)
+    internal static MeteringPointDto GetMockedMeteringPoint(long id, string ownedBy)
         => new(
             id,
             "Identification",
@@ -39,7 +41,7 @@ public static class MockedMeteringPointObjects
             GetMockedCommercialRelation(2, ownedBy),
             []);
 
-    public static MeteringPointMetadataDto GetMockedMeteringPointMetadata(long id, string ownedBy)
+    internal static MeteringPointMetadataDto GetMockedMeteringPointMetadata(long id, string ownedBy)
     => new(
         id,
         DateTimeOffset.Now.AddDays(-1),
@@ -69,10 +71,10 @@ public static class MockedMeteringPointObjects
         SettlementMethod.NonProfiled,
         GetMockedInstallationAddress(11));
 
-    public static InstallationAddressDto GetMockedInstallationAddress(long id)
+    internal static InstallationAddressDto GetMockedInstallationAddress(long id)
         => new(id, "StreetCode", "StreetName", "BuildingNumber", "CityName", "CitySubDivisionName", Guid.NewGuid(), WashInstructions.Washable, "CountryCode", "Floor", "Room", "PostCode", "MunicipalityCode", "LocationDescription");
 
-    public static CommercialRelationDto GetMockedCommercialRelation(long id, string energySypplier)
+    internal static CommercialRelationDto GetMockedCommercialRelation(long id, string energySypplier)
         => new(
             id,
             energySypplier,
@@ -83,15 +85,15 @@ public static class MockedMeteringPointObjects
             GetMockedElectricalHeating(22),
             new List<ElectricalHeatingDto>());
 
-    public static EnergySupplyPeriodDto GetMockedEnergySupplyPeriod(long id)
+    internal static EnergySupplyPeriodDto GetMockedEnergySupplyPeriod(long id)
         => new(id, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1), [GetMockedCustomer(111)]);
 
-    public static CustomerDto GetMockedCustomer(long id)
+    internal static CustomerDto GetMockedCustomer(long id)
         => new(id, "Name", "Cvr", false, GetMockedCustomerContact(1111), GetMockedCustomerContact(1112));
 
-    public static CustomerContactDto GetMockedCustomerContact(long id)
+    internal static CustomerContactDto GetMockedCustomerContact(long id)
         => new(id, "Name", "Email", false, "Phone", "Mobile", "Attention", "StreetCode", "StreetName", "BuildingNumber", "PostCode", "CityName", "CitySubdivision", Guid.NewGuid(), "CountryCode", "Floor", "Room", "PostBox", "MunicipalityCode");
 
-    public static ElectricalHeatingDto GetMockedElectricalHeating(long id)
+    internal static ElectricalHeatingDto GetMockedElectricalHeating(long id)
         => new(id, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
 }

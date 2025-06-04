@@ -14,10 +14,14 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
+using Moq;
 using Xunit;
 using Xunit.Categories;
 
@@ -26,24 +30,31 @@ namespace Energinet.DataHub.ElectricityMarket.UnitTests.Services;
 [UnitTest]
 public class RoleFiltrationServiceTests
 {
+    private readonly Mock<IMeteringPointDelegationRepository> _meteringPointDelegationRepository;
+
+    public RoleFiltrationServiceTests()
+    {
+        _meteringPointDelegationRepository = new Mock<IMeteringPointDelegationRepository>();
+    }
+
     [Fact]
-    public void FilterFields_WhenDatahubAdministrator_ReturnsSameMeteringPoint()
+    public async Task FilterFields_WhenDatahubAdministrator_ReturnsSameMeteringPointAsync()
     {
         // Arrange
         var tenant = new TenantDto("101", EicFunction.DataHubAdministrator);
         var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(1, tenant.ActorNumber);
 
-        var target = new RoleFiltrationService();
+        var target = new RoleFiltrationService(_meteringPointDelegationRepository.Object);
 
         // Act
-        var result = target.FilterFields(meteringPoint, tenant);
+        var result = await target.FilterFieldsAsync(meteringPoint, tenant);
 
         // Assert
         Assert.Equal(meteringPoint, result);
     }
 
     [Fact]
-    public void FilterFields_WhenEnergySupplier()
+    public async Task FilterFields_WhenEnergySupplier_ReturnsFilteredMeteringPointAsync()
     {
         // Arrange
         var tenant = new TenantDto("373", EicFunction.EnergySupplier);
@@ -53,16 +64,16 @@ public class RoleFiltrationServiceTests
         var mockedCommercialRelationNotInTenant = MockedMeteringPointObjects.GetMockedCommercialRelation(14, "123");
         var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
             1,
-            tenant.ActorNumber,
+            "570715000000000002",
             mockedMeteringPointMetadata,
             [mockedMeteringPointMetadata, mockedMeteringPointMetadataNotInTenant],
             mockedCommercialRelation,
             [mockedCommercialRelation, mockedCommercialRelationNotInTenant]);
 
-        var target = new RoleFiltrationService();
+        var target = new RoleFiltrationService(_meteringPointDelegationRepository.Object);
 
         // Act
-        var result = target.FilterFields(meteringPoint, tenant);
+        var result = await target.FilterFieldsAsync(meteringPoint, tenant);
 
         var ownedCommercialRelations = result?.CommercialRelationTimeline?.FirstOrDefault(x => x.Id == 13);
         var notOwnedCommercialRelations = result?.CommercialRelationTimeline?.FirstOrDefault(x => x.Id == 14);
@@ -78,7 +89,7 @@ public class RoleFiltrationServiceTests
     }
 
     [Fact]
-    public void FilterFields_WhenGridAccessProvider()
+    public async Task FilterFields_WhenGridAccessProvider_ReturnsFilteredMeteringPointAsync()
     {
         // Arrange
         var tenant = new TenantDto("45", EicFunction.GridAccessProvider);
@@ -88,16 +99,16 @@ public class RoleFiltrationServiceTests
         var mockedCommercialRelationNotInTenant = MockedMeteringPointObjects.GetMockedCommercialRelation(14, "123");
         var meteringPoint = MockedMeteringPointObjects.GetMockedMeteringPoint(
             1,
-            tenant.ActorNumber,
+            "570715000000000003",
             mockedMeteringPointMetadata,
             [mockedMeteringPointMetadata, mockedMeteringPointMetadataNotInTenant],
             mockedCommercialRelation,
             [mockedCommercialRelation, mockedCommercialRelationNotInTenant]);
 
-        var target = new RoleFiltrationService();
+        var target = new RoleFiltrationService(_meteringPointDelegationRepository.Object);
 
         // Act
-        var result = target.FilterFields(meteringPoint, tenant);
+        var result = await target.FilterFieldsAsync(meteringPoint, tenant);
 
         // Assert
         Assert.NotEqual(meteringPoint, result);

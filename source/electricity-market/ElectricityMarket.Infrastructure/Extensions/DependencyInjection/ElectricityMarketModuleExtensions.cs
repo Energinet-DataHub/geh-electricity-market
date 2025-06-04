@@ -95,6 +95,7 @@ public static class ElectricityMarketModuleExtensions
 
         // Repositories
         services.AddScoped<IMeteringPointRepository, MeteringPointRepository>();
+        services.AddScoped<IMeteringPointDelegationRepository, MeteringPointDelegationRepository>();
         services.AddScoped<IMeteringPointIntegrationRepository, MeteringPointIntegrationRepository>();
         services.AddScoped<IGridAreaRepository, GridAreaRepository>();
         services.AddScoped<IProcessDelegationRepository, ProcessDelegationRepository>();

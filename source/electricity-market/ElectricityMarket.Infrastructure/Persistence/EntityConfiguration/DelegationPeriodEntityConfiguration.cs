@@ -25,7 +25,7 @@ public sealed class DelegationPeriodEntityConfiguration : IEntityTypeConfigurati
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.ToTable("DelegationPeriod");
+        builder.ToTable("DelegationPeriod", "dbo");
         builder.HasKey(d => d.Id);
     }
 }
