@@ -19,18 +19,22 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 
 public sealed class StreamingImporter : IStreamingImporter
 {
+    private readonly ILogger<StreamingImporter> _logger;
     private readonly ElectricityMarketDatabaseContext _databaseContext;
     private readonly IMeteringPointImporter _meteringPointImporter;
 
     public StreamingImporter(
+        ILogger<StreamingImporter> logger,
         ElectricityMarketDatabaseContext databaseContext,
         IMeteringPointImporter meteringPointImporter)
     {
+        _logger = logger;
         _databaseContext = databaseContext;
         _meteringPointImporter = meteringPointImporter;
     }
@@ -80,6 +84,14 @@ public sealed class StreamingImporter : IStreamingImporter
                 .ConfigureAwait(false);
         }
 
-        await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
+        try
+        {
+            await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("databricks-streaming-importer: error during save changes mp {Id}: {Error}", meteringPointIdentification, e.Message);
+            throw;
+        }
     }
 }
