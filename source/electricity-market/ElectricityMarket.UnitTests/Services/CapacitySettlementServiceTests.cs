@@ -31,9 +31,9 @@ public class CapacitySettlementServiceTests
     private readonly Instant _systemTime = SystemClock.Instance.GetCurrentInstant();
 
     [Fact]
-    public void GivenModifiedCapacityChildMeteringPoint_WhenFindingCapacitySettlementPeriods_ReturnPeriod()
+    public void GivenCapacitySettlementHierarchy_WhenFindingCapacitySettlementPeriods_ReturnPeriod()
     {
-        // Given capacity settlement period
+        // Given capacity settlement hierarchy
         var capacitySettlementMeteringPointMetadata = CreateCapacitySettlementMeteringPointMetadata(ValidIntervalNow(), Any.MeteringPointIdentification());
         var capacitySettlementMeteringPoint = CreateCapacitySettlementChildMeteringPoint([capacitySettlementMeteringPointMetadata], DateTimeOffset.Now);
 
@@ -57,11 +57,13 @@ public class CapacitySettlementServiceTests
     }
 
     [Fact]
-    public void GivenModifiedParentMeteringPoint_WhenFindingCapacitySettlementPeriods_ReturnPeriod()
+    public void GivenCapacitySettlementChildClosedDownBefore2025_WhenFindingCapacitySettlementPeriods_NoPeriodsAreReturned()
     {
-        // Given parent metering point
-        var capacitySettlementMeteringPointMetadata = CreateCapacitySettlementMeteringPointMetadata(ValidIntervalNow(), Any.MeteringPointIdentification());
-        var capacitySettlementMeteringPointMetadataClosed = CreateCapacitySettlementMeteringPointMetadata(new Interval(capacitySettlementMeteringPointMetadata.Valid.End, capacitySettlementMeteringPointMetadata.Valid.End.Plus(Duration.FromDays(1))), null, ConnectionState.ClosedDown);
+        // Given closed down capacity settlement hierarchy
+        var parentIdentification = Any.MeteringPointIdentification();
+        var interval = new Interval(Instant.FromUtc(2024, 1, 1, 0, 0, 0), Instant.FromUtc(2024, 12, 31, 22, 59, 59));
+        var capacitySettlementMeteringPointMetadata = CreateCapacitySettlementMeteringPointMetadata(interval, parentIdentification);
+        var capacitySettlementMeteringPointMetadataClosed = CreateCapacitySettlementMeteringPointMetadata(new Interval(capacitySettlementMeteringPointMetadata.Valid.End, null), parentIdentification, ConnectionState.ClosedDown);
         var capacitySettlementMeteringPoint = CreateCapacitySettlementChildMeteringPoint([capacitySettlementMeteringPointMetadata, capacitySettlementMeteringPointMetadataClosed], DateTimeOffset.Now);
 
         var parentMeteringPointMetadata = CreateParentMeteringPointMetadata(ValidIntervalNow());
@@ -72,15 +74,8 @@ public class CapacitySettlementServiceTests
         // When finding capacity settlement periods to sync
         var capacitySettlementPeriods = _sut.GetCapacitySettlementPeriods(hierarchy).ToList();
 
-        // Single capacity settlement period found
-        Assert.Single(capacitySettlementPeriods);
-        var dto = capacitySettlementPeriods.Single();
-        Assert.Equal(parentMeteringPoint.Identification.Value, dto.MeteringPointId);
-        Assert.Equal(parentMeteringPointMetadata.Valid.Start.ToDateTimeOffset(), dto.PeriodFromDate);
-        Assert.Equal(parentMeteringPointMetadata.Valid.End.ToDateTimeOffset(), dto.PeriodToDate);
-        Assert.Equal(capacitySettlementMeteringPoint.Identification.Value, dto.ChildMeteringPointId);
-        Assert.Equal(capacitySettlementMeteringPointMetadata.Valid.Start.ToDateTimeOffset(), dto.ChildPeriodFromDate);
-        Assert.Equal(capacitySettlementMeteringPointMetadata.Valid.End.ToDateTimeOffset(), dto.ChildPeriodToDate);
+        // No capacity settlement period found
+        Assert.Empty(capacitySettlementPeriods);
     }
 
     [Fact]
