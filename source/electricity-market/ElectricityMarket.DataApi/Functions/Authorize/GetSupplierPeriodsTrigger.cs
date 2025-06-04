@@ -33,7 +33,7 @@ namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Functions.Authorize
         public async Task<HttpResponseData> GetSupplierPeriodsTriggerAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "get-supplier-periods")]
         HttpRequestData req,
-        [FromBody] ReadOnlyCollection<Interval> requestedPeriod,
+        [FromBody] Interval requestedPeriod,
         FunctionContext executionContext)
         {
             var meteringPointId = req.Query["meteringPointId"];
@@ -44,7 +44,7 @@ namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Functions.Authorize
                 return badRequestResponse;
             }
 
-            var command = new GetSupplierPeriodsTrigger(meteringPointId, actorNumber, requestedPeriod);
+            var command = new GetSupplierPeriodsCommand(meteringPointId, actorNumber, requestedPeriod);
 
             var result = await _mediator
                 .Send(command)

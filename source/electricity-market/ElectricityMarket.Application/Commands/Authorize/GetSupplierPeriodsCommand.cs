@@ -16,8 +16,7 @@ using System.Collections.ObjectModel;
 using MediatR;
 using NodaTime;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize
-{
-    public sealed record GetSupplierPeriodsCommand(string MeteringPointIdentification, string ActorNumber, Interval RequestedPeriod)
-        : IRequest<IEnumerable<Interval>>;
-}
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
+
+public sealed record GetSupplierPeriodsCommand(string MeteringPointIdentification, string ActorNumber, Interval RequestedPeriod)
+    : IRequest<IEnumerable<Interval>>;
