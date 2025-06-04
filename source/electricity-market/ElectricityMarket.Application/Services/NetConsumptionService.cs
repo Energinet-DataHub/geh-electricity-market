@@ -16,14 +16,13 @@ using Energinet.DataHub.ElectricityMarket.Application.Helpers;
 using Energinet.DataHub.ElectricityMarket.Application.Helpers.Timeline;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Microsoft.Extensions.Logging;
 using NodaTime;
 using NodaTime.Text;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Services
 {
-    public class NetConsumptionService(IMeteringPointRepository meteringPointRepository, ILogger<NetConsumptionService> logger) : INetConsumptionService
+    public class NetConsumptionService(ILogger<NetConsumptionService> logger) : INetConsumptionService
     {
         private static readonly ConnectionState[] _relevantConnectionStates = [ConnectionState.Connected, ConnectionState.Disconnected];
         private static readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.Consumption, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption, MeteringPointType.ConsumptionFromGrid];
@@ -31,9 +30,6 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
         private readonly Instant _cutOffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
         private readonly DateTimeOffset _endPeriodCutOffDate = new(DateTime.Today, DateTimeOffset.Now.Offset);
         private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
-
-        private readonly IMeteringPointRepository _meteringPointRepository = meteringPointRepository;
-        private readonly ILogger<NetConsumptionService> _logger = logger;
 
         /// <summary>
         /// Consumption(parent) metering points in netsettlement group 6.
@@ -59,21 +55,22 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
         /// - No column may use quoted values
         /// - All date/time values must include seconds.
         /// </summary>
-        public IReadOnlyList<NetConsumptionParentDto> GetParentNetConsumption(MeteringPoint meteringPoint)
+        public IReadOnlyList<NetConsumptionParentDto> GetParentNetConsumption(MeteringPointHierarchy meteringPointHierarchy)
         {
-            ArgumentNullException.ThrowIfNull(meteringPoint);
+            ArgumentNullException.ThrowIfNull(meteringPointHierarchy);
+            var parentMeteringPoint = meteringPointHierarchy.Parent;
 
-            var segments = BuildMergedTimeline(meteringPoint);
+            var segments = BuildMergedTimeline(parentMeteringPoint);
 
             var response = new List<NetConsumptionParentDto>();
 
-            var electricalHeatingPeriods = meteringPoint.CommercialRelationTimeline
+            var electricalHeatingPeriods = parentMeteringPoint.CommercialRelationTimeline
                 .SelectMany(cr => cr.ElectricalHeatingPeriods)
                 .Select(ehp => ehp.Period)
                 .Where(iv => iv.End > _cutOffDate)
                 .ToList();
 
-            var firstCustomerRelationByClient = meteringPoint
+            var firstCustomerRelationByClient = parentMeteringPoint
                     .CommercialRelationTimeline
                         .Where(cr => cr.ClientId.HasValue)
                         .GroupBy(cr => cr.ClientId!.Value)
@@ -90,7 +87,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
             {
                 if (segment.Metadata.ScheduledMeterReadingMonth is null)
                 {
-                    _logger.LogError(
+                    logger.LogError(
                         "{ScheduledMeterReadingMonth} is null, which is not allowed for Net Settlement Group 6.",
                         segment.Metadata.ScheduledMeterReadingMonth);
                     continue;
@@ -110,7 +107,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                     : to;
 
                 response.Add(new NetConsumptionParentDto(
-                    MeteringPointId: meteringPoint.Identification.Value,
+                    MeteringPointId: parentMeteringPoint.Identification.Value,
                     HasElectricalHeating: hasElectricalHeating,
                     SettlementMonth: (int)segment.Metadata.ScheduledMeterReadingMonth,
                     PeriodFromDate: from,
@@ -134,37 +131,33 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
         /// - No column may use quoted values
         /// - All date/time values must include seconds.
         /// </summary>
-        public async Task<IReadOnlyList<NetConsumptionChildDto>> GetChildNetConsumptionAsync(IEnumerable<long> parentMeteringPointIds)
+        public IReadOnlyList<NetConsumptionChildDto> GetChildNetConsumption(MeteringPointHierarchy meteringPointHierarchy)
         {
-            ArgumentNullException.ThrowIfNull(parentMeteringPointIds);
+            ArgumentNullException.ThrowIfNull(meteringPointHierarchy);
+            var childMeteringPoints = meteringPointHierarchy.ChildMeteringPoints;
 
             var response = new List<NetConsumptionChildDto>();
 
-            foreach (var parentId in parentMeteringPointIds)
+            foreach (var child in childMeteringPoints)
             {
-                var childMeteringPoints = await _meteringPointRepository.GetChildMeteringPointsAsync(parentId).ConfigureAwait(false);
+                var metadataTimelines = child.MetadataTimeline.Where(mt =>
+                    mt.Parent is not null
+                    && _relevantMeteringPointTypes.Contains(mt.Type)
+                    && _relevantConnectionStates.Contains(mt.ConnectionState)
+                    && mt.Valid.End > _cutOffDate);
 
-                foreach (var child in childMeteringPoints)
+                foreach (var metadataTimeline in metadataTimelines)
                 {
-                    var metadataTimelines = child.MetadataTimeline.Where(mt =>
-                        mt.Parent is not null
-                        && _relevantMeteringPointTypes.Contains(mt.Type)
-                        && _relevantConnectionStates.Contains(mt.ConnectionState)
-                        && mt.Valid.End > _cutOffDate);
+                    var uncoupledDate = metadataTimeline.Valid.End.ToDateTimeOffset();
 
-                    foreach (var metadataTimeline in metadataTimelines)
-                    {
-                        var uncoupledDate = metadataTimeline.Valid.End.ToDateTimeOffset();
+                    var netConsumptionChild = new NetConsumptionChildDto(
+                        MeteringPointId: child.Identification.Value,
+                        MeteringPointType: _snakeCaseFormatter.ToSnakeCase(metadataTimeline.Type.ToString()),
+                        ParentMeteringPointId: metadataTimeline.Parent!.Value,
+                        CoupledDate: metadataTimeline.Valid.Start.ToDateTimeOffset(),
+                        UncoupledDate: uncoupledDate == DateTimeOffset.MaxValue || uncoupledDate > _endPeriodCutOffDate.ToUniversalTime() ? null : uncoupledDate);
 
-                        var netConsumptionChild = new NetConsumptionChildDto(
-                            MeteringPointId: child.Identification.Value,
-                            MeteringPointType: _snakeCaseFormatter.ToSnakeCase(metadataTimeline.Type.ToString()),
-                            ParentMeteringPointId: metadataTimeline.Parent!.Value,
-                            CoupledDate: metadataTimeline.Valid.Start.ToDateTimeOffset(),
-                            UncoupledDate: uncoupledDate == DateTimeOffset.MaxValue || uncoupledDate > _endPeriodCutOffDate.ToUniversalTime() ? null : uncoupledDate);
-
-                        response.Add(netConsumptionChild);
-                    }
+                    response.Add(netConsumptionChild);
                 }
             }
 

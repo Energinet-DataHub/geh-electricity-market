@@ -56,10 +56,10 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
                 currentSyncJob.Version,
                 SyncJobName.NetConsumption);
 
-            var meteringPointsToSync = _meteringPointRepository
-                .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+            var meteringPointHierarchiesToSync = _meteringPointRepository
+                .GetNetConsumptionMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version);
 
-            var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
+            var maxVersion = await HandleBatchAsync(meteringPointHierarchiesToSync).ConfigureAwait(false);
 
             if (maxVersion > DateTimeOffset.MinValue)
             {
@@ -73,24 +73,23 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
         }
     }
 
-    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
+    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPointHierarchy> meteringPointHierarchiesToSync)
     {
         var maxVersion = DateTimeOffset.MinValue;
-        await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
+        await foreach (var hierarchy in meteringPointHierarchiesToSync.ConfigureAwait(false))
         {
-            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
+            maxVersion = hierarchy.Version > maxVersion ? hierarchy.Version : maxVersion;
 
-            var parentMeteringPoints = _netConsumptionService.GetParentNetConsumption(meteringPoint);
-            if (parentMeteringPoints.Any())
+            var netConsumptionParentDtos = _netConsumptionService.GetParentNetConsumption(hierarchy);
+            if (netConsumptionParentDtos.Any())
             {
-                await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPoints).ConfigureAwait(false);
+                await _deltaLakeDataUploadService.ImportTransactionsAsync(netConsumptionParentDtos).ConfigureAwait(false);
 
-                var childMeteringPoints = await _netConsumptionService.GetChildNetConsumptionAsync(parentMeteringPoints.Select(p => p.MeteringPointId)
-                    .Distinct()).ConfigureAwait(false);
+                var netConsumptionChildDtos = _netConsumptionService.GetChildNetConsumption(hierarchy).Distinct().ToList();
 
-                if (childMeteringPoints.Any())
+                if (netConsumptionChildDtos.Count != 0)
                 {
-                    await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPoints).ConfigureAwait(false);
+                    await _deltaLakeDataUploadService.ImportTransactionsAsync(netConsumptionChildDtos).ConfigureAwait(false);
                 }
             }
         }
