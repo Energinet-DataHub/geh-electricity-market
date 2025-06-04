@@ -15,6 +15,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Hosts.DataApi.Functions.Authorize
 {
