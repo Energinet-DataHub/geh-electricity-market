@@ -107,31 +107,27 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     /// - the period does not end before 2021-01-01.
     /// </summary>
     ///
-    public async IAsyncEnumerable<ElectricalHeatingChildDto> GetChildElectricalHeatingAsync(IEnumerable<long> parentMeteringPointIds)
+    public IEnumerable<ElectricalHeatingChildDto> GetChildElectricalHeating(IEnumerable<MeteringPoint> childMeteringPoints)
     {
-        ArgumentNullException.ThrowIfNull(parentMeteringPointIds);
-        foreach (var parentId in parentMeteringPointIds)
+        ArgumentNullException.ThrowIfNull(childMeteringPoints);
+        foreach (var child in childMeteringPoints)
         {
-            var childMeteringPoints = await _meteringPointRepository.GetChildMeteringPointsAsync(parentId).ConfigureAwait(false);
-            foreach (var child in childMeteringPoints)
-            {
-                var metadataTimelines = child.MetadataTimeline.Where(mt =>
-                mt.Parent is not null &&
-                _relevantMeteringPointTypes.Contains(mt.Type) // the metering point is of following types
-                && _relevantConnectionStates.Contains(mt.ConnectionState) // the child metering point physical status is connected or disconnected
-                && mt.Valid.End > _cutoffDate); // the period does not end before 2021-01-01
+            var metadataTimelines = child.MetadataTimeline.Where(mt =>
+            mt.Parent is not null &&
+            _relevantMeteringPointTypes.Contains(mt.Type) // the metering point is of following types
+            && _relevantConnectionStates.Contains(mt.ConnectionState) // the child metering point physical status is connected or disconnected
+            && mt.Valid.End > _cutoffDate); // the period does not end before 2021-01-01
 
-                foreach (var metadataTimeline in metadataTimelines)
-                {
-                    var electricalHeatingChild = new ElectricalHeatingChildDto(
-                        child.Identification.Value,
-                        _snakeCaseFormatter.ToSnakeCase(metadataTimeline.Type.ToString()),
-                        _snakeCaseFormatter.ToSnakeCase(metadataTimeline.SubType.ToString()),
-                        metadataTimeline.Parent!.Value,
-                        metadataTimeline.Valid.Start.ToDateTimeOffset(),
-                        metadataTimeline.Valid.End.ToDateTimeOffset());
-                    yield return electricalHeatingChild;
-                }
+            foreach (var metadataTimeline in metadataTimelines)
+            {
+                var electricalHeatingChild = new ElectricalHeatingChildDto(
+                    child.Identification.Value,
+                    _snakeCaseFormatter.ToSnakeCase(metadataTimeline.Type.ToString()),
+                    _snakeCaseFormatter.ToSnakeCase(metadataTimeline.SubType.ToString()),
+                    metadataTimeline.Parent!.Value,
+                    metadataTimeline.Valid.Start.ToDateTimeOffset(),
+                    metadataTimeline.Valid.End.ToDateTimeOffset());
+                yield return electricalHeatingChild;
             }
         }
     }
