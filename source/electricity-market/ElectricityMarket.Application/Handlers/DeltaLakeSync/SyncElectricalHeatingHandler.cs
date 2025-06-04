@@ -57,7 +57,7 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
                 currentSyncJob.Version,
                 SyncJobName.ElectricalHeating);
             var meteringPointsToSync = _meteringPointRepository
-                .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+                .GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version);
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
             if (maxVersion > DateTimeOffset.MinValue)
@@ -72,38 +72,43 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
         }
     }
 
-    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPoint> meteringPointsToSync)
+    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPointHierarchy> meteringPointHierarchies)
     {
         var maxVersion = DateTimeOffset.MinValue;
         var parentMeteringPointsToInsert = new List<ElectricalHeatingParentDto>();
         var childMeteringPointsToInsert = new List<ElectricalHeatingChildDto>();
-        await foreach (var meteringPoint in meteringPointsToSync.ConfigureAwait(false))
+        var parentMeteringPointsToDelete = new List<ElectricalHeatingEmptyDto>();
+        var childMeteringPointsToDelete = new List<ElectricalHeatingEmptyDto>();
+        await foreach (var hierarchy in meteringPointHierarchies.ConfigureAwait(false))
         {
-            var uniqueParentIds = new HashSet<long>();
-            maxVersion = meteringPoint.Version > maxVersion ? meteringPoint.Version : maxVersion;
-            foreach (var parent in _electricalHeatingPeriodizationService.GetParentElectricalHeating(meteringPoint))
-            {
-                parentMeteringPointsToInsert.Add(parent);
-                uniqueParentIds.Add(parent.MeteringPointId);
-            }
+            maxVersion = hierarchy.Version > maxVersion ? hierarchy.Version : maxVersion;
+            parentMeteringPointsToInsert.AddRange(_electricalHeatingPeriodizationService.GetParentElectricalHeating(hierarchy.Parent));
+            childMeteringPointsToInsert.AddRange(_electricalHeatingPeriodizationService.GetChildElectricalHeating(hierarchy.ChildMeteringPoints));
+            parentMeteringPointsToDelete.Add(new ElectricalHeatingEmptyDto(hierarchy.Parent.Identification.Value));
+            childMeteringPointsToDelete.AddRange(hierarchy.ChildMeteringPoints.Select(cmp => new ElectricalHeatingEmptyDto(cmp.Identification.Value)));
+        }
 
+        if (parentMeteringPointsToDelete.Count > 0)
+        {
+            await _deltaLakeDataUploadService.DeleteParentElectricalHeatingAsync(parentMeteringPointsToDelete)
+                .ConfigureAwait(false);
+        }
 
-            await foreach (var child in _electricalHeatingPeriodizationService
-                               .GetChildElectricalHeatingAsync(uniqueParentIds).ConfigureAwait(false))
-            {
-                childMeteringPointsToInsert.Add(child);
-            }
+        if (childMeteringPointsToDelete.Count > 0)
+        {
+            await _deltaLakeDataUploadService.DeleteChildElectricalHeatingAsync(childMeteringPointsToDelete)
+                .ConfigureAwait(false);
         }
 
         if (parentMeteringPointsToInsert.Count > 0)
         {
-            await _deltaLakeDataUploadService.ImportTransactionsAsync(parentMeteringPointsToInsert)
+            await _deltaLakeDataUploadService.InsertParentElectricalHeatingAsync(parentMeteringPointsToInsert)
                 .ConfigureAwait(false);
         }
 
         if (childMeteringPointsToInsert.Count > 0)
         {
-            await _deltaLakeDataUploadService.ImportTransactionsAsync(childMeteringPointsToInsert).ConfigureAwait(false);
+            await _deltaLakeDataUploadService.InsertChildElectricalHeatingAsync(childMeteringPointsToInsert).ConfigureAwait(false);
         }
 
         return maxVersion;
