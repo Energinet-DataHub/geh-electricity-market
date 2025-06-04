@@ -73,10 +73,16 @@ public class RoleFiltrationService : IRoleFiltrationService
         };
     }
 
-    private static MeteringPointDto EnergySupplierFiltering(MeteringPointDto meteringPoint, TenantDto tenant)
+    private static MeteringPointDto? EnergySupplierFiltering(MeteringPointDto meteringPoint, TenantDto tenant)
     {
         ArgumentNullException.ThrowIfNull(meteringPoint);
         ArgumentNullException.ThrowIfNull(tenant);
+
+        if (meteringPoint.Metadata.Type == MeteringPointType.Exchange)
+        {
+            // Exchange metering points are not relevant for energy suppliers
+            return null;
+        }
 
         var isActiveEnergySupplier = meteringPoint.CommercialRelation?.EnergySupplier == tenant.ActorNumber;
 
