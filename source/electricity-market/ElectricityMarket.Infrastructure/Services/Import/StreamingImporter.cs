@@ -90,7 +90,7 @@ public sealed class StreamingImporter : IStreamingImporter
         }
         catch (Exception e)
         {
-            _logger.LogError($"databricks-streaming-importer: error during save changes mp {meteringPointIdentification}: {e.Message}");
+            _logger.LogError("databricks-streaming-importer: error during save changes mp {Id}: {Error}", meteringPointIdentification, e.Message);
             throw;
         }
     }
