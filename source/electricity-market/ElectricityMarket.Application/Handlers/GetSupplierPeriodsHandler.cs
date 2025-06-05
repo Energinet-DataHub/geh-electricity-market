@@ -17,7 +17,6 @@ using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using MediatR;
 using NodaTime;
-using static Apache.Arrow.Memory.MemoryAllocator;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 
@@ -70,7 +69,6 @@ public sealed class GetSupplierPeriodsHandler : IRequestHandler<GetSupplierPerio
                 }
 
                 resultPeriods.Add(new Interval(start, end));
-
             }
         }
 

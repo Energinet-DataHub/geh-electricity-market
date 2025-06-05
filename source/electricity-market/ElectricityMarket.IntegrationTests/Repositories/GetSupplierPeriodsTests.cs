@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -46,7 +45,6 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories
         private readonly int _endDateOffset3 = -150;
         private readonly Instant _today = Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime());
         private readonly DateTimeOffset _todayDateTime = DateTime.Today.ToUniversalTime();
-
 
         public GetSupplierPeriodsTests(ElectricityMarketDatabaseContextFixture fixture)
         {
@@ -96,7 +94,6 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories
 
             Assert.Equal(_today.Minus(Duration.FromDays(10)), response.First().Start);
             Assert.Equal(_today.Minus(Duration.FromDays(5)), response.First().End);
-
 
             // act + assert 1 period from 3 should be returned.
             // This period should match requested end date (=-5 from today). No end date (max value) in commercial relation.
