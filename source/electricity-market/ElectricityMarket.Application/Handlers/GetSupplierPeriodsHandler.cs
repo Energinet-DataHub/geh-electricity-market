@@ -45,6 +45,7 @@ public sealed class GetSupplierPeriodsHandler : IRequestHandler<GetSupplierPerio
         if (commercialRelations != null)
         {
             // Retrieve commercial relations where the supplier is related to the metering point
+            // TODO Question: Why is has end not set to false? Is no end date always max value, or is this only in the mock set up??
             var filteredCommercialRelations = commercialRelations.Where(c => (c.EnergySupplier == energySupplier) && (c.Period.Start <= request.RequestedPeriod.End)
                 && (!c.Period.HasEnd || c.Period.End >= request.RequestedPeriod.Start));
             if (filteredCommercialRelations == null)
