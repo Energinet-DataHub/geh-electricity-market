@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPointTransaction;
 DROP TABLE IF EXISTS electricitymarket.QuarantinedMeteringPoint;
 DROP TABLE IF EXISTS electricitymarket.ElectricalHeatingPeriod;
-DROP TABLE IF EXISTS electricitymarket.ContactAddress;
 DROP TABLE IF EXISTS electricitymarket.Contact;
+DROP TABLE IF EXISTS electricitymarket.ContactAddress;
 DROP TABLE IF EXISTS electricitymarket.EnergySupplyPeriod;
 DROP TABLE IF EXISTS electricitymarket.CommercialRelation;
 DROP TABLE IF EXISTS electricitymarket.MeteringPointPeriod;
