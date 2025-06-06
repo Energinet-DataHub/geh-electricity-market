@@ -15,7 +15,6 @@
 using Energinet.DataHub.ElectricityMarket.Application.Helpers;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using NodaTime;
 using NodaTime.Text;
 
@@ -27,13 +26,6 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
     private readonly MeteringPointType[] _relevantMeteringPointTypes = [MeteringPointType.SupplyToGrid, MeteringPointType.ConsumptionFromGrid, MeteringPointType.ElectricalHeating, MeteringPointType.NetConsumption];
     private readonly Instant _cutoffDate = InstantPattern.ExtendedIso.Parse("2021-01-01T00:00:00Z").Value;
     private readonly SnakeCaseFormatter _snakeCaseFormatter = new();
-
-    private readonly IMeteringPointRepository _meteringPointRepository;
-
-    public ElectricalHeatingPeriodizationService(IMeteringPointRepository meteringPointRepository)
-    {
-        _meteringPointRepository = meteringPointRepository;
-    }
 
     /// <summary>
     /// Consumption (parent) metering points related to electrical heating. <br/>

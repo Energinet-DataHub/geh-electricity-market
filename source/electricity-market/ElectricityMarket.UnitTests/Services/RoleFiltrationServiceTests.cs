@@ -18,7 +18,6 @@ using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Security;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models.Actors;
 using Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 using Moq;
