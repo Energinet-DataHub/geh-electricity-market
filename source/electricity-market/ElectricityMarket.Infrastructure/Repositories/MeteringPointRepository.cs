@@ -126,9 +126,9 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(gridAreaCode);
 
         var query = from mpp in _electricityMarketDatabaseContext.MeteringPointPeriods
-            join mp in _electricityMarketDatabaseContext.MeteringPoints on mpp.MeteringPointId equals mp.Id
-            where mpp.GridAreaCode == gridAreaCode
-            select mp.Identification;
+                    join mp in _electricityMarketDatabaseContext.MeteringPoints on mpp.MeteringPointId equals mp.Id
+                    where mpp.GridAreaCode == gridAreaCode
+                    select mp.Identification;
 
         return (await query.Distinct().ToListAsync().ConfigureAwait(false))
             .Select(x => new MeteringPointIdentification(x));
@@ -239,6 +239,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
 
     public async IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
     {
+        var relevantSettlementGroups = new List<int?> { null, 2, 6 };
+
         var query = """
                     SELECT TOP(@batchSize) Hierarchy.ParentIdentification, (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) as MaxVersion FROM
                     (
@@ -274,14 +276,22 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             await foreach (var item in changedItems.ConfigureAwait(false))
             {
                 var parent = MeteringPointMapper.MapFromEntity(_electricityMarketDatabaseContext.MeteringPoints.AsNoTracking().First(mp => mp.Identification == item.ParentIdentification));
-                var children = await _electricityMarketDatabaseContext.MeteringPoints
-                    .AsSplitQuery()
-                    .AsNoTracking()
-                    .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == parent.Identification.Value))
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+                var children = new List<MeteringPoint>();
+                var settlementGroups = parent.MetadataTimeline.Select(m => m.NetSettlementGroup).Distinct().ToList();
 
-                yield return new MeteringPointHierarchy(parent, children.Select(MeteringPointMapper.MapFromEntity), item.MaxVersion);
+                if (settlementGroups.Intersect(relevantSettlementGroups).Any())
+                {
+                    var childMeteringPointEntities = await _electricityMarketDatabaseContext.MeteringPoints
+                        .AsSplitQuery()
+                        .AsNoTracking()
+                        .Where(x => x.MeteringPointPeriods.Any(y =>
+                            y.ParentIdentification == parent.Identification.Value))
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+                    children.AddRange(childMeteringPointEntities.Select(MeteringPointMapper.MapFromEntity));
+                }
+
+                yield return new MeteringPointHierarchy(parent, children, item.MaxVersion);
             }
         }
     }
