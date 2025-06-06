@@ -43,10 +43,9 @@ public sealed class GetSupplierPeriodsHandler : IRequestHandler<GetSupplierPerio
         var resultPeriods = new List<Interval>();
         if (commercialRelations != null)
         {
-            // Retrieve commercial relations where the supplier is related to the metering point
-            // TODO Question: Why is has end not set to false? Is no end date always max value, or is this only in the mock set up??
-            var filteredCommercialRelations = commercialRelations.Where(c => (c.EnergySupplier == energySupplier) && (c.Period.Start <= request.RequestedPeriod.End)
-                && (!c.Period.HasEnd || c.Period.End >= request.RequestedPeriod.Start));
+            // Retrieve commercial relations where energySupplier is energySupplier from the request and requested period overlaps the period of the Commercial relation.
+            var filteredCommercialRelations = commercialRelations.Where(c => (c.EnergySupplier == energySupplier) && (c.Period.Start < request.RequestedPeriod.End)
+                && (c.Period.End > request.RequestedPeriod.Start));
             if (filteredCommercialRelations == null)
             {
                 return Enumerable.Empty<Interval>();
@@ -54,8 +53,7 @@ public sealed class GetSupplierPeriodsHandler : IRequestHandler<GetSupplierPerio
 
             foreach (var relation in filteredCommercialRelations)
             {
-                // Set the periods before the request start date to the request start date and the periods after the request end date to the request end date (e.g. respect the
-                // request period).
+                // Select the part of the commercial relation period that overlaps with the period from the request.
                 var start = relation.Period.Start;
                 var end = relation.Period.End;
                 if (relation.Period.Start < request.RequestedPeriod.Start)
