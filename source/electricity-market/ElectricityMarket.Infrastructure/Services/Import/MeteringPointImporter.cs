@@ -214,10 +214,46 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
                         return true;
                     }
 
+                case "HTXCOR" or "MANCOR":
+                    {
+                        var activeEsp = meteringPoint.CommercialRelations.Where(x => x.StartDate != x.EndDate)
+                            .SelectMany(x => x.EnergySupplyPeriods)
+                            .Where(x => x.ValidFrom <= importedTransaction.valid_from_date && x.RetiredBy == null)
+                            .MaxBy(x => x.ValidFrom);
+
+                        if (activeEsp == null)
+                        {
+                            HandleMoveIn(importedTransaction, meteringPoint);
+                            return true;
+                        }
+
+                        if (activeEsp.WebAccessCode != importedTransaction.web_access_code?.Trim())
+                        {
+                            HandleMoveIn(importedTransaction, meteringPoint);
+                            return true;
+                        }
+
+                        if (activeEsp.EnergySupplier != importedTransaction.balance_supplier_id?.Trim())
+                        {
+                            var commercialRelationEntity = allCrsOrdered.First(x => x.StartDate <= importedTransaction.valid_from_date && importedTransaction.valid_from_date < x.EndDate);
+                            HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
+                            return true;
+                        }
+
+                        if (!TryDetermineClientIdForChangeOfSupplier(importedTransaction, out errorMessage, allCrsOrdered, out var clientId)) return false;
+
+                        var cr = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
+                        cr.ClientId = clientId.Value;
+
+                        return true;
+                    }
+
                 case "CHANGESUP" or "CHGSUPSHRT" or "MANCHGSUP":
                     {
+                        if (!TryDetermineClientIdForChangeOfSupplier(importedTransaction, out errorMessage, allCrsOrdered, out var clientId)) return false;
+
                         var commercialRelationEntity = CommercialRelationFactory.CreateCommercialRelation(importedTransaction);
-                        commercialRelationEntity.ClientId = allCrsOrdered.Last(x => x.StartDate < importedTransaction.valid_from_date).ClientId;
+                        commercialRelationEntity.ClientId = clientId.Value;
 
                         TryCloseActiveCr(importedTransaction, meteringPoint);
                         HandleEspStuff(importedTransaction, meteringPoint, commercialRelationEntity);
@@ -570,5 +606,30 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             activeEhp.RetiredAt = DateTimeOffset.UtcNow;
         }
+    }
+
+    private static bool TryDetermineClientIdForChangeOfSupplier(ImportedTransactionEntity importedTransaction, [NotNullWhen(false)] out string? errorMessage, List<CommercialRelationEntity> allCrsOrdered, [NotNullWhen(true)] out Guid? clientId)
+    {
+        var prevCr = allCrsOrdered.Where(x => x.StartDate < importedTransaction.valid_from_date && x.StartDate != x.EndDate).MaxBy(x => x.StartDate) ??
+                     allCrsOrdered.SingleOrDefault(x => x.StartDate == importedTransaction.valid_from_date && x.StartDate != x.EndDate);
+
+        if (prevCr != null)
+        {
+            if (prevCr.ClientId == null)
+            {
+                errorMessage = "No client id found on prevCR";
+                clientId = null;
+                return false;
+            }
+
+            clientId = prevCr.ClientId.Value;
+        }
+        else
+        {
+            clientId = Guid.NewGuid();
+        }
+
+        errorMessage = null;
+        return true;
     }
 }
