@@ -188,10 +188,45 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
     }
 
-    public async IAsyncEnumerable<MeteringPointHierarchy> GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
+    public IAsyncEnumerable<MeteringPointHierarchy> GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
     {
-        var query = """
-                    SELECT TOP(@batchSize) Hierarchy.ParentIdentification, (CASE WHEN [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) as MaxVersion FROM
+        var capacitySettlementTypeString = MeteringPointType.CapacitySettlement.ToString();
+        var existsClause = $"""
+                           SELECT 1
+                           FROM [electricitymarket].[MeteringPointPeriod] [mpp]
+                           WHERE [mpp].[ParentIdentification] = [mp].[Identification] AND [mpp].[Type] = '{capacitySettlementTypeString}'
+                           """;
+
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+    }
+
+    public IAsyncEnumerable<MeteringPointHierarchy> GetNetConsumptionMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
+    {
+        var settlementGroup6Code = NetSettlementGroup.Group6.Code;
+        var existsClause = $"""
+                           SELECT 1
+                           FROM [electricitymarket].[MeteringPointPeriod] [mpp]
+                           WHERE [mpp].[MeteringPointId] = [mp].[Id] AND [mpp].[SettlementGroup] = {settlementGroup6Code}
+                           """;
+
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+    }
+
+    public IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(
+        DateTimeOffset lastSyncedVersion, int batchSize = 50)
+    {
+        var existsClause = """
+                           SELECT 1
+                           FROM [electricitymarket].[CommercialRelation] [cr] JOIN [electricitymarket].[ElectricalHeatingPeriod] [ehp] ON [ehp].[CommercialRelationId] = [cr].[Id]
+                           WHERE [cr].[MeteringPointId] = [mp].[Id]
+                           """;
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+    }
+
+    private async IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(string existsClause, DateTimeOffset lastSyncedVersion, int batchSize)
+    {
+        var query = $"""
+                    SELECT TOP(@batchSize) Hierarchy.ParentIdentification, (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) as MaxVersion FROM
                     (
                         SELECT [mp].[Identification] as [ParentIdentification], [mp].[Version] as [ParentVersion], (SELECT MAX([Version])
                             FROM [electricitymarket].[MeteringPoint] [child_mp]
@@ -204,12 +239,10 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                             FROM [electricitymarket].[MeteringPointPeriod] [mpp]
                             WHERE [mpp].[MeteringPointId] = [mp].[Id] AND [mpp].[ParentIdentification] IS NOT NULL
                         ) AND EXISTS (
-                            SELECT 1
-                            FROM [electricitymarket].[MeteringPointPeriod] [mpp]
-                            WHERE [mpp].[ParentIdentification] = [mp].[Identification] AND [mpp].[Type] = 'CapacitySettlement'
+                            {existsClause}
                         )
                     ) AS Hierarchy
-                    WHERE (CASE WHEN [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion
+                    WHERE (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion
                     ORDER BY [MaxVersion] ASC;
                     """;
 
@@ -233,65 +266,6 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                     .ConfigureAwait(false);
 
                 yield return new MeteringPointHierarchy(parent, children.Select(MeteringPointMapper.MapFromEntity), item.MaxVersion);
-            }
-        }
-    }
-
-    public async IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
-    {
-        var relevantSettlementGroups = new List<int?> { null, 2, 6 };
-
-        var query = """
-                    SELECT TOP(@batchSize) Hierarchy.ParentIdentification, (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) as MaxVersion FROM
-                    (
-                        SELECT [mp].[Identification] as [ParentIdentification], [mp].[Version] as [ParentVersion], (SELECT MAX([Version])
-                            FROM [electricitymarket].[MeteringPoint] [child_mp]
-                            JOIN [electricitymarket].[MeteringPointPeriod] [child_mpp]
-                            ON [child_mp].[Id] = [child_mpp].[MeteringPointId]
-                            WHERE [child_mpp].[ParentIdentification] = [mp].[Identification]) as MaxChildVersion
-                        FROM [electricitymarket].[MeteringPoint] [mp]
-                        WHERE NOT EXISTS (
-                            SELECT 1
-                            FROM [electricitymarket].[MeteringPointPeriod] [mpp]
-                            WHERE [mpp].[MeteringPointId] = [mp].[Id] AND [mpp].[ParentIdentification] IS NOT NULL
-                        ) AND EXISTS (
-                            SELECT 1
-                            FROM [electricitymarket].[CommercialRelation] [cr] JOIN [electricitymarket].[ElectricalHeatingPeriod] [ehp] ON [ehp].[CommercialRelationId] = [cr].[Id]
-                            WHERE [cr].[MeteringPointId] = [mp].[Id]
-                        )
-                    ) AS Hierarchy
-                    WHERE (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion
-                    ORDER BY [MaxVersion] ASC;
-                    """;
-
-        var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        readContext.Database.SetCommandTimeout(60 * 60);
-
-        await using (readContext.ConfigureAwait(false))
-        {
-            var batchSizeParam = new SqlParameter("batchSize", batchSize);
-            var latestVersionParam = new SqlParameter("latestVersion", lastSyncedVersion);
-            var changedItems = readContext.Database.SqlQueryRaw<ChangedHierarchy>(query, batchSizeParam, latestVersionParam).AsNoTracking().AsAsyncEnumerable();
-
-            await foreach (var item in changedItems.ConfigureAwait(false))
-            {
-                var parent = MeteringPointMapper.MapFromEntity(_electricityMarketDatabaseContext.MeteringPoints.AsNoTracking().First(mp => mp.Identification == item.ParentIdentification));
-                var children = new List<MeteringPoint>();
-                var settlementGroups = parent.MetadataTimeline.Select(m => m.NetSettlementGroup).Distinct().ToList();
-
-                if (settlementGroups.Intersect(relevantSettlementGroups).Any())
-                {
-                    var childMeteringPointEntities = await _electricityMarketDatabaseContext.MeteringPoints
-                        .AsSplitQuery()
-                        .AsNoTracking()
-                        .Where(x => x.MeteringPointPeriods.Any(y =>
-                            y.ParentIdentification == parent.Identification.Value))
-                        .ToListAsync()
-                        .ConfigureAwait(false);
-                    children.AddRange(childMeteringPointEntities.Select(MeteringPointMapper.MapFromEntity));
-                }
-
-                yield return new MeteringPointHierarchy(parent, children, item.MaxVersion);
             }
         }
     }
