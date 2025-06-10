@@ -96,7 +96,7 @@ internal static class MeteringPointMapper
             commercialRelation.Period.End.ToDateTimeOffset(),
             espTimeline.FirstOrDefault(esp => esp.ValidFrom <= now && esp.ValidTo > now),
             espTimeline,
-            heatingPeriods.FirstOrDefault(hp => hp.ValidFrom <= now && hp.ValidTo > now),
+            heatingPeriods.FirstOrDefault(hp => hp.ValidFrom <= now && hp.ValidTo > now && hp.IsActive),
             heatingPeriods);
     }
 
@@ -105,7 +105,8 @@ internal static class MeteringPointMapper
         return new ElectricalHeatingDto(
             electricalHeatingPeriod.Id,
             electricalHeatingPeriod.Period.Start.ToDateTimeOffset(),
-            electricalHeatingPeriod.Period.End.ToDateTimeOffset());
+            electricalHeatingPeriod.Period.End.ToDateTimeOffset(),
+            electricalHeatingPeriod.IsActive);
     }
 
     private static EnergySupplyPeriodDto Map(EnergySupplyPeriod energySupplyPeriod)
