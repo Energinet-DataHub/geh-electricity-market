@@ -30,6 +30,7 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
     private readonly IElectricalHeatingPeriodizationService _electricalHeatingPeriodizationService;
     private readonly IDeltaLakeDataUploadService _deltaLakeDataUploadService;
     private readonly ILogger<SyncElectricalHeatingHandler> _logger;
+    private readonly List<int?> _relevantSettlementGroups = [null, 2, 6];
 
     public SyncElectricalHeatingHandler(
         IMeteringPointRepository meteringPointRepository,
@@ -83,7 +84,14 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
         {
             maxVersion = hierarchy.Version > maxVersion ? hierarchy.Version : maxVersion;
             parentMeteringPointsToInsert.AddRange(_electricalHeatingPeriodizationService.GetParentElectricalHeating(hierarchy.Parent));
-            childMeteringPointsToInsert.AddRange(_electricalHeatingPeriodizationService.GetChildElectricalHeating(hierarchy.ChildMeteringPoints));
+
+            var parentSettlementGroups = hierarchy.Parent.MetadataTimeline.Select(m => m.NetSettlementGroup).Distinct().ToList();
+            if (parentSettlementGroups.Intersect(_relevantSettlementGroups).Any())
+            {
+                childMeteringPointsToInsert.AddRange(
+                    _electricalHeatingPeriodizationService.GetChildElectricalHeating(hierarchy.ChildMeteringPoints));
+            }
+
             parentMeteringPointsToDelete.Add(new ElectricalHeatingEmptyDto(hierarchy.Parent.Identification.Value));
             childMeteringPointsToDelete.AddRange(hierarchy.ChildMeteringPoints.Select(cmp => new ElectricalHeatingEmptyDto(cmp.Identification.Value)));
         }
