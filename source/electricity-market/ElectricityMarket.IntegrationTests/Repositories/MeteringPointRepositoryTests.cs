@@ -185,7 +185,7 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
     public async Task GivenElectricalHeatingMeteringPoint_WhenQueryingFromBeginningOfTime_ThenReturnsHierarchy()
     {
         // Given metering points
-        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), DateTimeOffset.MinValue.AddYears(40));
+        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), MeteringPointType.Consumption, DateTimeOffset.MinValue.AddYears(40), MeteringPointType.ElectricalHeating);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
 
@@ -208,7 +208,7 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
     public async Task GivenElectricalHeatingMeteringPoint_WhenOnlyChildrenAreInRange_ThenReturnsHierarchy()
     {
         // Given metering points
-        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), DateTimeOffset.MinValue.AddYears(40));
+        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), MeteringPointType.Consumption, DateTimeOffset.MinValue.AddYears(40), MeteringPointType.ElectricalHeating);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
 
@@ -231,7 +231,7 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
     public async Task GivenElectricalHeatingMeteringPoint_WhenNothingInRange_ThenReturnsEmpty()
     {
         // Given metering points
-        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), DateTimeOffset.MinValue.AddYears(40));
+        var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), MeteringPointType.Consumption, DateTimeOffset.MinValue.AddYears(40), MeteringPointType.ElectricalHeating);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
 
@@ -243,7 +243,7 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         Assert.Empty(hierarchies);
     }
 
-    private async Task<(MeteringPointIdentification ParentIdentification, MeteringPointIdentification ChildIdentification)> CreateTestDataAsync(DateTimeOffset parentVersion, DateTimeOffset childVersion)
+    private async Task<(MeteringPointIdentification ParentIdentification, MeteringPointIdentification ChildIdentification)> CreateTestDataAsync(DateTimeOffset parentVersion, MeteringPointType parentMeteringPointType, DateTimeOffset childVersion, MeteringPointType childMeteringPointType, int? parentSettlementGroup = null)
     {
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
 
@@ -286,8 +286,8 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
             ModifiedAt = DateTimeOffset.Now,
             ElectricalHeatingPeriods = { electricalHeatingPeriodEntity }
         };
-        await dbContext.MeteringPointPeriods.AddAsync(meteringPointPeriodEntity);
         await dbContext.CommercialRelations.AddAsync(commercialRelationEntity);
+        await dbContext.MeteringPointPeriods.AddAsync(meteringPointPeriodEntity);
         await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
         {
             Identification = parentIdentification.Value,
