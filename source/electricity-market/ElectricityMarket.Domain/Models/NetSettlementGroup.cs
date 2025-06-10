@@ -12,14 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
-
-public interface INetConsumptionService
+public sealed class NetSettlementGroup
 {
-    IReadOnlyList<NetConsumptionParentDto> GetParentNetConsumption(MeteringPointHierarchy meteringPointHierarchy);
+    private NetSettlementGroup(int code, string description)
+    {
+        Code = code;
+        Description = description;
+    }
 
-    IReadOnlyList<NetConsumptionChildDto> GetChildNetConsumption(MeteringPointHierarchy meteringPointHierarchy);
+    public static NetSettlementGroup Group6 { get; } = new(6, "Yearly");
+
+    public int Code { get; }
+
+    public string Description { get; }
 }
