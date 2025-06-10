@@ -270,9 +270,46 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
 
         // Parent metering point
+        var parentMeteringPointEntity =
+            GetParentMeteringPoint(parentVersion, parentMeteringPointType, parentSettlementGroup);
+        var parentIdentification = new MeteringPointIdentification(parentMeteringPointEntity.Identification);
+        await dbContext.MeteringPoints.AddAsync(parentMeteringPointEntity);
+
+        // Child metering point
+        var childMeteringPointEntity = GetChildMeteringPoint(parentIdentification.Value, childVersion, childMeteringPointType);
+        var childIdentification = new MeteringPointIdentification(childMeteringPointEntity.Identification);
+        await dbContext.MeteringPoints.AddAsync(childMeteringPointEntity);
+
+        // Unrelated metering point
+        var unrelatedMeteringPointEntity = GetUnrelatedMeteringPoint();
+        await dbContext.MeteringPoints.AddAsync(unrelatedMeteringPointEntity);
+
+        await dbContext.SaveChangesAsync();
+        return (parentIdentification, childIdentification);
+    }
+
+    private async Task<MeteringPointIdentification> CreateTestDataNoChildrenAsync(DateTimeOffset parentVersion, MeteringPointType parentMeteringPointType, int? parentSettlementGroup = null)
+    {
+        await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
+
+        // Parent metering point
+        var parentMeteringPointEntity =
+            GetParentMeteringPoint(parentVersion, parentMeteringPointType, parentSettlementGroup);
+
+        await dbContext.MeteringPoints.AddAsync(parentMeteringPointEntity);
+
+        // Unrelated metering point
+        var unrelatedMeteringPointEntity = GetUnrelatedMeteringPoint();
+        await dbContext.MeteringPoints.AddAsync(unrelatedMeteringPointEntity);
+
+        await dbContext.SaveChangesAsync();
+        return new MeteringPointIdentification(parentMeteringPointEntity.Identification);
+    }
+
+    private MeteringPointEntity GetParentMeteringPoint(DateTimeOffset parentVersion, MeteringPointType parentMeteringPointType, int? parentSettlementGroup = null)
+    {
         var parentIdentification = Some.MeteringPointIdentification();
         var installationAddress = Some.InstallationAddressEntity();
-        await dbContext.InstallationAddresses.AddAsync(installationAddress);
         var meteringPointPeriodEntity = new MeteringPointPeriodEntity()
         {
             ValidFrom = DateTimeOffset.Now.AddDays(-1),
@@ -299,7 +336,6 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
             CreatedAt = DateTimeOffset.Now,
             TransactionType = "MDCNSEHON"
         };
-        await dbContext.ElectricalHeatingPeriods.AddAsync(electricalHeatingPeriodEntity);
         var commercialRelationEntity = new CommercialRelationEntity()
         {
             EndDate = DateTimeOffset.MaxValue,
@@ -308,21 +344,20 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
             ModifiedAt = DateTimeOffset.Now,
             ElectricalHeatingPeriods = { electricalHeatingPeriodEntity }
         };
-        await dbContext.CommercialRelations.AddAsync(commercialRelationEntity);
-        await dbContext.MeteringPointPeriods.AddAsync(meteringPointPeriodEntity);
-        await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
+        var meteringPointEntity = new MeteringPointEntity()
         {
             Identification = parentIdentification.Value,
             Version = parentVersion,
             MeteringPointPeriods = { meteringPointPeriodEntity },
             CommercialRelations = { commercialRelationEntity }
-        });
+        };
+        return meteringPointEntity;
+    }
 
-        // Child metering point
+    private MeteringPointEntity GetChildMeteringPoint(long parentIdentification, DateTimeOffset childVersion, MeteringPointType childMeteringPointType)
+    {
         var childInstallationAddress = Some.InstallationAddressEntity();
         var secondChildInstallationAddress = Some.InstallationAddressEntity();
-        await dbContext.InstallationAddresses.AddAsync(childInstallationAddress);
-        await dbContext.InstallationAddresses.AddAsync(secondChildInstallationAddress);
         var childMeteringPointPeriodEntity = new MeteringPointPeriodEntity()
         {
             ValidFrom = DateTimeOffset.Now.AddDays(-7),
@@ -340,7 +375,7 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
             Product = Product.EnergyActive.ToString(),
             TransactionType = "CREATEMP",
             InstallationAddress = childInstallationAddress,
-            ParentIdentification = parentIdentification.Value
+            ParentIdentification = parentIdentification
         };
         var secondChildMeteringPointPeriodEntity = new MeteringPointPeriodEntity()
         {
@@ -361,109 +396,22 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
             Product = Product.EnergyActive.ToString(),
             TransactionType = "CREATEMP",
             InstallationAddress = secondChildInstallationAddress,
-            ParentIdentification = parentIdentification.Value
+            ParentIdentification = parentIdentification
         };
         var childIdentification = Some.MeteringPointIdentification();
-        await dbContext.MeteringPointPeriods.AddAsync(childMeteringPointPeriodEntity);
-        await dbContext.MeteringPointPeriods.AddAsync(secondChildMeteringPointPeriodEntity);
-        await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
+        var childMeteringPointEntity = new MeteringPointEntity()
         {
             Identification = childIdentification.Value,
             Version = childVersion,
             MeteringPointPeriods = { childMeteringPointPeriodEntity, secondChildMeteringPointPeriodEntity }
-        });
-
-        // Unrelated metering point
-        var unrelatedIdentification = Some.MeteringPointIdentification();
-        var unrelatedInstallationAddress = Some.InstallationAddressEntity();
-        await dbContext.InstallationAddresses.AddAsync(unrelatedInstallationAddress);
-        var unrelatedMeteringPointPeriodEntity = new MeteringPointPeriodEntity()
-        {
-            ValidFrom = DateTimeOffset.Now.AddDays(-1),
-            ValidTo = DateTimeOffset.Now.AddDays(2),
-            CreatedAt = DateTimeOffset.Now,
-            GridAreaCode = "001",
-            OwnedBy = "4672928796219",
-            ConnectionState = ConnectionState.Connected.ToString(),
-            Type = MeteringPointType.Consumption.ToString(),
-            SubType = MeteringPointSubType.Physical.ToString(),
-            Resolution = "PT15M",
-            ScheduledMeterReadingMonth = 1,
-            MeteringPointStateId = 1,
-            MeasureUnit = MeasureUnit.kWh.ToString(),
-            Product = Product.EnergyActive.ToString(),
-            TransactionType = "CREATEMP",
-            InstallationAddress = unrelatedInstallationAddress
         };
-        await dbContext.MeteringPointPeriods.AddAsync(unrelatedMeteringPointPeriodEntity);
-        await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
-        {
-            Identification = unrelatedIdentification.Value,
-            Version = DateTimeOffset.MinValue.AddYears(30),
-            MeteringPointPeriods = { unrelatedMeteringPointPeriodEntity }
-        });
-
-        await dbContext.SaveChangesAsync();
-        return (parentIdentification, childIdentification);
+        return childMeteringPointEntity;
     }
 
-    private async Task<MeteringPointIdentification> CreateTestDataNoChildrenAsync(DateTimeOffset parentVersion, MeteringPointType parentMeteringPointType, int? parentSettlementGroup = null)
+    private MeteringPointEntity GetUnrelatedMeteringPoint()
     {
-        await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
-
-        // Parent metering point
-        var parentIdentification = Some.MeteringPointIdentification();
-        var installationAddress = Some.InstallationAddressEntity();
-        await dbContext.InstallationAddresses.AddAsync(installationAddress);
-        var meteringPointPeriodEntity = new MeteringPointPeriodEntity()
-        {
-            ValidFrom = DateTimeOffset.Now.AddDays(-1),
-            ValidTo = DateTimeOffset.Now.AddDays(2),
-            CreatedAt = DateTimeOffset.Now,
-            GridAreaCode = "001",
-            OwnedBy = "4672928796219",
-            ConnectionState = ConnectionState.Connected.ToString(),
-            Type = parentMeteringPointType.ToString(),
-            SubType = MeteringPointSubType.Physical.ToString(),
-            Resolution = "PT15M",
-            ScheduledMeterReadingMonth = 1,
-            MeteringPointStateId = 1,
-            MeasureUnit = MeasureUnit.kWh.ToString(),
-            Product = Product.EnergyActive.ToString(),
-            TransactionType = "CREATEMP",
-            InstallationAddress = installationAddress,
-            SettlementGroup = parentSettlementGroup
-        };
-        var electricalHeatingPeriodEntity = new ElectricalHeatingPeriodEntity()
-        {
-            ValidFrom = DateTimeOffset.Now.AddDays(-1),
-            ValidTo = DateTimeOffset.MaxValue,
-            CreatedAt = DateTimeOffset.Now,
-            TransactionType = "MDCNSEHON"
-        };
-        await dbContext.ElectricalHeatingPeriods.AddAsync(electricalHeatingPeriodEntity);
-        var commercialRelationEntity = new CommercialRelationEntity()
-        {
-            EndDate = DateTimeOffset.MaxValue,
-            EnergySupplier = "ElSupplier A/S",
-            StartDate = DateTimeOffset.Now.AddDays(-2),
-            ModifiedAt = DateTimeOffset.Now,
-            ElectricalHeatingPeriods = { electricalHeatingPeriodEntity }
-        };
-        await dbContext.CommercialRelations.AddAsync(commercialRelationEntity);
-        await dbContext.MeteringPointPeriods.AddAsync(meteringPointPeriodEntity);
-        await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
-        {
-            Identification = parentIdentification.Value,
-            Version = parentVersion,
-            MeteringPointPeriods = { meteringPointPeriodEntity },
-            CommercialRelations = { commercialRelationEntity }
-        });
-
-        // Unrelated metering point
         var unrelatedIdentification = Some.MeteringPointIdentification();
         var unrelatedInstallationAddress = Some.InstallationAddressEntity();
-        await dbContext.InstallationAddresses.AddAsync(unrelatedInstallationAddress);
         var unrelatedMeteringPointPeriodEntity = new MeteringPointPeriodEntity()
         {
             ValidFrom = DateTimeOffset.Now.AddDays(-1),
@@ -482,16 +430,13 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
             TransactionType = "CREATEMP",
             InstallationAddress = unrelatedInstallationAddress
         };
-        await dbContext.MeteringPointPeriods.AddAsync(unrelatedMeteringPointPeriodEntity);
-        await dbContext.MeteringPoints.AddAsync(new MeteringPointEntity()
+        var unrelatedMeteringPointEntity = new MeteringPointEntity()
         {
             Identification = unrelatedIdentification.Value,
             Version = DateTimeOffset.MinValue.AddYears(30),
             MeteringPointPeriods = { unrelatedMeteringPointPeriodEntity }
-        });
-
-        await dbContext.SaveChangesAsync();
-        return parentIdentification;
+        };
+        return unrelatedMeteringPointEntity;
     }
 
     private sealed class TestContextFactory : IDbContextFactory<ElectricityMarketDatabaseContext>
