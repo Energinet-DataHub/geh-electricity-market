@@ -17,7 +17,6 @@ using System.Collections.Immutable;
 using System.Data;
 using System.Diagnostics;
 using System.Dynamic;
-using System.Runtime.CompilerServices;
 using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution;
 using Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution.Statement;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Helpers;
@@ -33,7 +32,7 @@ namespace ElectricityMarket.ImportOrchestrator.Orchestration.Activities;
 
 internal sealed class ImportGoldModelActivity : IDisposable
 {
-    public const string ActivityName = "ImportGoldModelActivityV8";
+    public const string ActivityName = "ImportGoldModelActivityV9";
 
     private readonly BlockingCollection<ExpandoObject> _importCollection = new(500_000);
     private readonly BlockingCollection<IDataReader> _submitCollection = new(2);
@@ -130,29 +129,9 @@ internal sealed class ImportGoldModelActivity : IDisposable
         var sw = Stopwatch.StartNew();
         var firstLog = true;
 
-        var retryCount = 0;
-Retry:
-
-        ConfiguredCancelableAsyncEnumerable<dynamic> results;
-
-        try
-        {
-            results = _databricksSqlWarehouseQueryExecutor
+        var results = _databricksSqlWarehouseQueryExecutor
                 .ExecuteChunkyStatementAsync(statementId, chunk)
                 .ConfigureAwait(false);
-        }
-        catch (Exception)
-        {
-            retryCount++;
-
-            if (retryCount < 2)
-            {
-                await Task.Delay(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
-                goto Retry;
-            }
-
-            throw;
-        }
 
         await foreach (var record in results)
         {

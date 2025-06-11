@@ -16,8 +16,6 @@ using System;
 using System.Collections.Generic;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using NodaTime;
-using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 
@@ -95,5 +93,5 @@ internal static class MockedMeteringPointObjects
         => new(id, "Name", "Email", false, "Phone", "Mobile", "Attention", "StreetCode", "StreetName", "BuildingNumber", "PostCode", "CityName", "CitySubdivision", Guid.NewGuid(), "CountryCode", "Floor", "Room", "PostBox", "MunicipalityCode");
 
     internal static ElectricalHeatingDto GetMockedElectricalHeating(long id)
-        => new(id, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
+        => new(id, DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1), true);
 }

@@ -18,4 +18,5 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public sealed record ElectricalHeatingPeriod(
     long Id,
-    Interval Period);
+    Interval Period,
+    bool IsActive);
