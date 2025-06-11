@@ -14,6 +14,7 @@
 
 using Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Application.Services;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -59,11 +60,11 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
             var meteringPointHierarchiesToSync = _meteringPointRepository
                 .GetNetConsumptionMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version);
 
-            var maxVersion = await HandleBatchAsync(meteringPointHierarchiesToSync).ConfigureAwait(false);
+            var maxVersionProcessed = await HandleBatchAsync(meteringPointHierarchiesToSync).ConfigureAwait(false);
 
-            if (maxVersion > DateTimeOffset.MinValue)
+            if (maxVersionProcessed is not null)
             {
-                currentSyncJob = currentSyncJob with { Version = maxVersion };
+                currentSyncJob = currentSyncJob with { Version = maxVersionProcessed.Value };
                 await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
             }
             else
@@ -73,25 +74,47 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
         }
     }
 
-    private async Task<DateTimeOffset> HandleBatchAsync(IAsyncEnumerable<MeteringPointHierarchy> meteringPointHierarchiesToSync)
+    private async Task<DateTimeOffset?> HandleBatchAsync(IAsyncEnumerable<MeteringPointHierarchy> meteringPointHierarchiesToSync)
     {
-        var maxVersion = DateTimeOffset.MinValue;
+        DateTimeOffset? maxVersion = null;
+
+        var meteringPointsToDelete = new List<NetConsumptionEmptyDto>();
+        var meteringPointParentsToInsert = new List<NetConsumptionParentDto>();
+        var meteringPointChildrenToInsert = new List<NetConsumptionChildDto>();
+
         await foreach (var hierarchy in meteringPointHierarchiesToSync.ConfigureAwait(false))
         {
-            maxVersion = hierarchy.Version > maxVersion ? hierarchy.Version : maxVersion;
+            maxVersion = maxVersion is null || maxVersion < hierarchy.Version ? hierarchy.Version : maxVersion;
+            meteringPointsToDelete.Add(new NetConsumptionEmptyDto(hierarchy.Parent.Identification.Value));
 
             var netConsumptionParentDtos = _netConsumptionService.GetParentNetConsumption(hierarchy);
             if (netConsumptionParentDtos.Any())
             {
-                await _deltaLakeDataUploadService.ImportTransactionsAsync(netConsumptionParentDtos).ConfigureAwait(false);
+                meteringPointParentsToInsert.AddRange(netConsumptionParentDtos);
 
                 var netConsumptionChildDtos = _netConsumptionService.GetChildNetConsumption(hierarchy).Distinct().ToList();
 
                 if (netConsumptionChildDtos.Count != 0)
                 {
-                    await _deltaLakeDataUploadService.ImportTransactionsAsync(netConsumptionChildDtos).ConfigureAwait(false);
+                    meteringPointChildrenToInsert.AddRange(netConsumptionChildDtos);
                 }
             }
+        }
+
+        if (meteringPointsToDelete.Count > 0)
+        {
+            await _deltaLakeDataUploadService.DeleteNetConsumptionParentsAsync(meteringPointsToDelete).ConfigureAwait(false);
+            await _deltaLakeDataUploadService.DeleteNetConsumptionChildrenAsync(meteringPointsToDelete).ConfigureAwait(false);
+        }
+
+        if (meteringPointParentsToInsert.Count > 0)
+        {
+            await _deltaLakeDataUploadService.InsertNetConsumptionParentsAsync(meteringPointParentsToInsert).ConfigureAwait(false);
+        }
+
+        if (meteringPointChildrenToInsert.Count > 0)
+        {
+            await _deltaLakeDataUploadService.InsertNetConsumptionChildrenAsync(meteringPointChildrenToInsert).ConfigureAwait(false);
         }
 
         return maxVersion;
