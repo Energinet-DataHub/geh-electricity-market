@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Models;
 
-public enum SyncJobName
+namespace Energinet.DataHub.ElectricityMarket.Application.Services
 {
-    ElectricalHeating,
-    CapacitySettlement,
-    NetConsumption,
-    HullerLog,
-    MeasurementsReport
+    public interface IMeasurementsReportService
+    {
+        IEnumerable<MeasurementsReportDto> GetMeasurementsReport(MeteringPointHierarchy meteringPointHierarchy);
+    }
 }

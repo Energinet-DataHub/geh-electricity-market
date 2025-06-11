@@ -22,6 +22,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Helpers.Timeline
         private readonly List<TimelineSegment> _segments = [];
 
         public void AddSegment(
+            MeteringPointIdentification? identification,
             Instant start,
             MeteringPointMetadata metadata,
             CommercialRelation? commercialRelation)
@@ -36,6 +37,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Helpers.Timeline
             }
 
             _segments.Add(new TimelineSegment(
+                Identification: identification,
                 Period: new Interval(start, Instant.MaxValue),
                 Metadata: metadata,
                 Relation: commercialRelation));

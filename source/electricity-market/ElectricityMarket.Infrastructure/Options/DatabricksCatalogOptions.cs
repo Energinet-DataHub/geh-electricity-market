@@ -24,6 +24,7 @@ public sealed record DatabricksCatalogOptions
     public string Name { get; set; } = null!;
 
     public string SchemaName { get; } = "electricity_market_internal";
+    public string ReportsSchemaName { get; } = "electricity_market_reports_input";
 
     public string ElectricalHeatingParentTableName { get; } = "electrical_heating_consumption_metering_point_periods";
     public string ElectricalHeatingChildTableName { get; } = "electrical_heating_child_metering_points";
@@ -31,4 +32,5 @@ public sealed record DatabricksCatalogOptions
     public string NetConsumptionParentTableName { get; } = "net_consumption_group_6_consumption_metering_point_periods";
     public string NetConsumptionChildTableName { get; } = "net_consumption_group_6_child_metering_point";
     public string CapacitySettlementPeriodTableName { get; } = "capacity_settlement_metering_point_periods";
+    public string MeasurementsReportTableName { get; } = "measurements_report_metering_point_periods_v1";
 }
