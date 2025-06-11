@@ -17,4 +17,5 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 public sealed record ElectricalHeatingDto(
     long Id,
     DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo);
+    DateTimeOffset ValidTo,
+    bool IsActive);
