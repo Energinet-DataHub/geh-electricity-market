@@ -178,18 +178,9 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         }
     }
 
-    public async Task<IEnumerable<MeteringPoint>> GetChildMeteringPointsAsync(long identification)
+    public IAsyncEnumerable<MeteringPointHierarchy> GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50)
     {
-        var childMeteringPoints = await _electricityMarketDatabaseContext.MeteringPoints
-            .AsSplitQuery()
-            .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == identification)).ToListAsync()
-            .ConfigureAwait(false);
-
-        return childMeteringPoints.Select(MeteringPointMapper.MapFromEntity);
-    }
-
-    public IAsyncEnumerable<MeteringPointHierarchy> GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
-    {
+        ArgumentNullException.ThrowIfNull(syncJob);
         var capacitySettlementTypeString = MeteringPointType.CapacitySettlement.ToString();
         var existsClause = $"""
                            SELECT 1
@@ -197,11 +188,12 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                            WHERE [mpp].[ParentIdentification] = [mp].[Identification] AND [mpp].[Type] = '{capacitySettlementTypeString}'
                            """;
 
-        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, syncJob, batchSize);
     }
 
-    public IAsyncEnumerable<MeteringPointHierarchy> GetNetConsumptionMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
+    public IAsyncEnumerable<MeteringPointHierarchy> GetNetConsumptionMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50)
     {
+        ArgumentNullException.ThrowIfNull(syncJob);
         var settlementGroup6Code = NetSettlementGroup.Group6.Code;
         var existsClause = $"""
                            SELECT 1
@@ -209,21 +201,22 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                            WHERE [mpp].[MeteringPointId] = [mp].[Id] AND [mpp].[SettlementGroup] = {settlementGroup6Code}
                            """;
 
-        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, syncJob, batchSize);
     }
 
     public IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(
-        DateTimeOffset lastSyncedVersion, int batchSize = 50)
+        SyncJob syncJob, int batchSize = 50)
     {
+        ArgumentNullException.ThrowIfNull(syncJob);
         var existsClause = """
                            SELECT 1
                            FROM [electricitymarket].[CommercialRelation] [cr] JOIN [electricitymarket].[ElectricalHeatingPeriod] [ehp] ON [ehp].[CommercialRelationId] = [cr].[Id]
                            WHERE [cr].[MeteringPointId] = [mp].[Id]
                            """;
-        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, syncJob, batchSize);
     }
 
-    private async IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(string existsClause, DateTimeOffset lastSyncedVersion, int batchSize)
+    private async IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(string existsClause, SyncJob syncJob, int batchSize)
     {
         var query = $"""
                     SELECT TOP(@batchSize) Hierarchy.ParentIdentification, (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) as MaxVersion FROM
@@ -242,7 +235,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                             {existsClause}
                         )
                     ) AS Hierarchy
-                    WHERE (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion
+                    WHERE (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion AND [Hierarchy].[ParentIdentification] > @latestIdentification
                     ORDER BY [MaxVersion] ASC;
                     """;
 
@@ -252,8 +245,9 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         await using (readContext.ConfigureAwait(false))
         {
             var batchSizeParam = new SqlParameter("batchSize", batchSize);
-            var latestVersionParam = new SqlParameter("latestVersion", lastSyncedVersion);
-            var changedItems = readContext.Database.SqlQueryRaw<ChangedHierarchy>(query, batchSizeParam, latestVersionParam).AsNoTracking().AsAsyncEnumerable();
+            var latestVersionParam = new SqlParameter("latestVersion", syncJob.Version);
+            var latestIdentification = new SqlParameter("latestIdentification", syncJob.MeteringPointId);
+            var changedItems = readContext.Database.SqlQueryRaw<ChangedHierarchy>(query, batchSizeParam, latestVersionParam, latestIdentification).AsNoTracking().AsAsyncEnumerable();
 
             await foreach (var item in changedItems.ConfigureAwait(false))
             {
