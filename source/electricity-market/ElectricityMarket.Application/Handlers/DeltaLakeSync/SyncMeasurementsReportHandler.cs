@@ -30,32 +30,26 @@ public sealed class SyncMeasurementsReportHandler(
     IDeltaLakeDataUploadService deltaLakeDataUploadService,
     ILogger<SyncMeasurementsReportHandler> logger) : IRequestHandler<SyncMeasurementsReportCommand>
 {
-    private readonly IMeteringPointRepository _meteringPointRepository = meteringPointRepository;
-    private readonly ISyncJobsRepository _syncJobsRepository = syncJobsRepository;
-    private readonly IMeasurementsReportService _measurementsReportService = measurementsReportService;
-    private readonly IDeltaLakeDataUploadService _deltaLakeDataUploadService = deltaLakeDataUploadService;
-    private readonly ILogger<SyncMeasurementsReportHandler> _logger = logger;
-
     public async Task Handle(SyncMeasurementsReportCommand request, CancellationToken cancellationToken)
     {
-        var currentSyncJob = await _syncJobsRepository.GetByNameAsync(SyncJobName.MeasurementsReport).ConfigureAwait(false);
+        var currentSyncJob = await syncJobsRepository.GetByNameAsync(SyncJobName.MeasurementsReport).ConfigureAwait(false);
 
         var moreData = true;
         while (moreData)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 "SyncMeasurementsReportHandler: Sync job version {Version} for {JobName} started.",
                 currentSyncJob.Version,
                 SyncJobName.MeasurementsReport);
 
-            var meteringPointsToSync = _meteringPointRepository
-                .GetMeteringPointHierarchiesToSyncAsync(null, currentSyncJob.Version);
+            var meteringPointsToSync = meteringPointRepository
+                .GetMeasurementsReportMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version);
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
             if (maxVersion is not null && maxVersion > DateTimeOffset.MinValue)
             {
                 currentSyncJob = currentSyncJob with { Version = maxVersion.Value };
-                await _syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
+                await syncJobsRepository.AddOrUpdateAsync(currentSyncJob).ConfigureAwait(false);
             }
             else
             {
@@ -76,7 +70,7 @@ public sealed class SyncMeasurementsReportHandler(
             maxVersion = maxVersion is null || mph.Version > maxVersion ? mph.Version : maxVersion;
             meteringPointsToDelete.Add(new MeasurementsReportEmptyDto(mph.Parent.Identification.Value));
 
-            foreach (var measurementsReport in _measurementsReportService.GetMeasurementsReport(mph))
+            foreach (var measurementsReport in measurementsReportService.GetMeasurementsReport(mph))
             {
                 meteringPointsToInsert.Add(measurementsReport);
             }
@@ -84,14 +78,14 @@ public sealed class SyncMeasurementsReportHandler(
 
         if (meteringPointsToDelete.Count > 0)
         {
-            await _deltaLakeDataUploadService
+            await deltaLakeDataUploadService
                 .DeleteMeasurementsReportPeriodsAsync(meteringPointsToDelete)
                 .ConfigureAwait(false);
         }
 
         if (meteringPointsToInsert.Count > 0)
         {
-            await _deltaLakeDataUploadService
+            await deltaLakeDataUploadService
                 .InsertMeasurementsReportPeriodsAsync(meteringPointsToInsert)
                 .ConfigureAwait(false);
         }

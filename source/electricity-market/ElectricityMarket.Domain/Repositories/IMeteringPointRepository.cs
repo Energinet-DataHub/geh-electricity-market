@@ -36,5 +36,5 @@ public interface IMeteringPointRepository
 
     IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50);
 
-    IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(string? existsClause, DateTimeOffset lastSyncedVersion, int batchSize = 50);
+    IAsyncEnumerable<MeteringPointHierarchy> GetMeasurementsReportMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50);
 }

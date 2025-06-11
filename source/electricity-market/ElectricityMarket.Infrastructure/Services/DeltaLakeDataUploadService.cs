@@ -311,7 +311,7 @@ public class DeltaLakeDataUploadService(
             "Starting upload of {Count} measurements report metering points.", measurementsReports.Count);
 
         const int chunkSize = 20;
-        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.ReportsSchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
 
         foreach (var batch in measurementsReports.Chunk(chunkSize))
         {
@@ -335,7 +335,7 @@ public class DeltaLakeDataUploadService(
         const int maxBatchSize = 250;
 
         var allResults = new List<object>();
-        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.ReportsSchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
 
         foreach (var batch in emptyMeasurementsReports.Chunk(maxBatchSize))
         {

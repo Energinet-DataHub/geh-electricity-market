@@ -17,7 +17,7 @@ using Energinet.DataHub.ElectricityMarket.Application.Common;
 namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
 public sealed record MeasurementsReportDto(
-        [property: DeltaLakeKey] long MeteringPointId,
+        long MeteringPointId,
         string MeteringPointType,
         string GridAreaCode,
         string Resolution,

@@ -16,9 +16,9 @@ namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
 
 public enum SyncJobName
 {
-    ElectricalHeating,
-    CapacitySettlement,
-    NetConsumption,
-    HullerLog,
-    MeasurementsReport
+    ElectricalHeating = 0,
+    CapacitySettlement = 1,
+    NetConsumption = 2,
+    HullerLog = 3,
+    MeasurementsReport = 4
 }

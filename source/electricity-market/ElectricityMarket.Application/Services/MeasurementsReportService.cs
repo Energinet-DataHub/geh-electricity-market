@@ -35,14 +35,9 @@ public class MeasurementsReportService() : IMeasurementsReportService
 
         foreach (var segment in segments.Where(s =>
             _relevantConnectionStates.Contains(s.Metadata.ConnectionState)
-            && (s.Period.Start >= _cutOffDate || (s.Period.Start < _cutOffDate && s.Period.End > _cutOffDate))))
+            && s.Period.End > _cutOffDate))
         {
-            var parentRelation = meteringPointHierarchy
-                .Parent
-                .CommercialRelationTimeline
-                .FirstOrDefault(cr => cr.Period.Contains(segment.Period.Start));
-
-            var energySupplierId = parentRelation?.EnergySupplier;
+            var energySupplierId = segment.Relation?.EnergySupplier;
 
             yield return new MeasurementsReportDto(
                 MeteringPointId: segment.Identification!.Value,
@@ -60,7 +55,7 @@ public class MeasurementsReportService() : IMeasurementsReportService
     }
 
     private static List<TimelineSegment> BuildMergedTimeline(
-            MeteringPointHierarchy hierarchy)
+    MeteringPointHierarchy hierarchy)
     {
         var allSegments = new List<TimelineSegment>();
 
@@ -68,11 +63,19 @@ public class MeasurementsReportService() : IMeasurementsReportService
                      .Concat(hierarchy.ChildMeteringPoints))
         {
             var changePoints = new SortedSet<Instant>();
+
             foreach (var mt in mp.MetadataTimeline)
             {
                 changePoints.Add(mt.Valid.Start);
                 if (mt.Valid.End != Instant.MaxValue)
                     changePoints.Add(mt.Valid.End);
+            }
+
+            foreach (var cr in mp.CommercialRelationTimeline)
+            {
+                changePoints.Add(cr.Period.Start);
+                if (cr.Period.End != Instant.MaxValue)
+                    changePoints.Add(cr.Period.End);
             }
 
             var builder = new TimelineBuilder();
@@ -83,7 +86,11 @@ public class MeasurementsReportService() : IMeasurementsReportService
                 var commercialRelation = mp.CommercialRelationTimeline
                     .FirstOrDefault(r => r.Period.Contains(start));
 
-                builder.AddSegment(mp.Identification, start, metadata, commercialRelation);
+                builder.AddSegment(
+                    mp.Identification,
+                    start,
+                    metadata,
+                    commercialRelation);
             }
 
             allSegments.AddRange(builder.Build());
