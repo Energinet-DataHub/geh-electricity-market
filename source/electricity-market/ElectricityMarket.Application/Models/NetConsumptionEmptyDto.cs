@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NodaTime;
-
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
-
-public sealed record ElectricalHeatingPeriod(
-    long Id,
-    Interval Period,
-    bool IsActive);
+namespace Energinet.DataHub.ElectricityMarket.Application.Models
+{
+    public sealed record NetConsumptionEmptyDto(long MeteringPointId);
+}

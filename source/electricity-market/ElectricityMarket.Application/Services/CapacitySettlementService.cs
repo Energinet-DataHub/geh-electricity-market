@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Immutable;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using NodaTime;
@@ -43,48 +42,27 @@ public class CapacitySettlementService : ICapacitySettlementService
     {
         ArgumentNullException.ThrowIfNull(meteringPointHierarchy);
 
-        var capacitySettlementMeteringPoint =
-            meteringPointHierarchy.ChildMeteringPoints.SingleOrDefault(mp =>
-                mp.MetadataTimeline.Any(p => p.Type == MeteringPointType.CapacitySettlement));
-
-        if (capacitySettlementMeteringPoint is null)
+        if (!meteringPointHierarchy.Parent.MetadataTimeline.Any(x => x.Type == MeteringPointType.Consumption && x.ConnectionState == ConnectionState.Connected))
         {
             yield break;
         }
 
-        var capacitySettlementPeriod = capacitySettlementMeteringPoint.MetadataTimeline.First(p => p.Type == MeteringPointType.CapacitySettlement);
-        var consumptionPeriod = meteringPointHierarchy.Parent.MetadataTimeline.FirstOrDefault(m => m.Type == MeteringPointType.Consumption);
+        var capacitySettlementMeteringPoints = meteringPointHierarchy.ChildMeteringPoints
+            .Where(mp => mp.MetadataTimeline.Any(p => p.Type == MeteringPointType.CapacitySettlement))
+            .ToList();
 
-        if (consumptionPeriod is null)
+        if (capacitySettlementMeteringPoints.Count == 0)
         {
             yield break;
         }
 
-        if (capacitySettlementPeriod.Valid.End < _capacitySettlementEnabledFrom)
+        foreach (var capacitySettlementMeteringPoint in capacitySettlementMeteringPoints)
         {
-            yield break;
+            foreach (var period in GetCapacitySettlementPeriods(meteringPointHierarchy, capacitySettlementMeteringPoint))
+            {
+                yield return period;
+            }
         }
-
-        var commercialRelationsToExport = GetIntervalsToExport(meteringPointHierarchy.Parent, capacitySettlementPeriod);
-
-        var periodsList = commercialRelationsToExport.Select(relation => new CapacitySettlementPeriodDto(
-            meteringPointHierarchy.Parent.Identification.Value,
-            relation.Start.ToDateTimeOffset(),
-            relation.End.ToDateTimeOffset(),
-            capacitySettlementMeteringPoint.Identification.Value,
-            GetCreatedTimestamp(capacitySettlementMeteringPoint),
-            GetClosedDownTimestamp(capacitySettlementMeteringPoint)));
-
-        foreach (var period in periodsList)
-        {
-            yield return period;
-        }
-    }
-
-    private static DateTimeOffset? GetClosedDownTimestamp(MeteringPoint capacitySettlementMeteringPoint)
-    {
-        return capacitySettlementMeteringPoint.MetadataTimeline.OrderBy(period => period.Valid.Start)
-            .FirstOrDefault(period => period.ConnectionState == ConnectionState.ClosedDown)?.Valid.Start.ToDateTimeOffset();
     }
 
     private static bool DoIntervalsOverlap(Interval interval1, Interval interval2)
@@ -92,39 +70,107 @@ public class CapacitySettlementService : ICapacitySettlementService
         return interval1.Start < interval2.End && interval2.Start < interval1.End;
     }
 
-    private static IEnumerable<Interval> GetConnectedInterval(MeteringPoint consumptionMeteringPoint)
+    private IEnumerable<CapacitySettlementPeriodDto> GetCapacitySettlementPeriods(MeteringPointHierarchy meteringPointHierarchy, MeteringPoint capacitySettlementMeteringPoint)
     {
-        var connectedTimestamp = consumptionMeteringPoint.MetadataTimeline.OrderBy(period => period.Valid.Start)
-            .FirstOrDefault(period => period.ConnectionState == ConnectionState.Connected)?.Valid;
+        var capacitySettlementPeriods = capacitySettlementMeteringPoint.MetadataTimeline
+            .Where(p => p.Type == MeteringPointType.CapacitySettlement)
+            .SkipWhile(p => p.ConnectionState != ConnectionState.Connected)
+            .TakeWhile(p => p.ConnectionState != ConnectionState.ClosedDown)
+            .Where(p => p.Valid.End > _capacitySettlementEnabledFrom)
+            .Select(p => p.Valid)
+            .OrderBy(p => p.Start)
+            .ToList();
 
-        if (connectedTimestamp is not null)
+        if (capacitySettlementPeriods.Count > 1)
         {
-            return [connectedTimestamp.Value];
+            for (var i = 0; i < capacitySettlementPeriods.Count - 1; i++)
+            {
+                if (capacitySettlementPeriods[i].End == capacitySettlementPeriods[i + 1].Start)
+                {
+                    // Combine i and i + 1
+                    capacitySettlementPeriods[i] = new Interval(capacitySettlementPeriods[i].Start, capacitySettlementPeriods[i + 1].End);
+                    capacitySettlementPeriods.RemoveAt(i + 1);
+
+                    // Single interval left
+                    if (capacitySettlementPeriods.Count == 1)
+                    {
+                        break;
+                    }
+
+                    // Start over from beginning
+                    i = -1;
+                }
+            }
         }
 
-        return ImmutableList<Interval>.Empty;
-    }
-
-    private IEnumerable<Interval> GetIntervalsToExport(MeteringPoint consumptionMeteringPoint, MeteringPointMetadata capacitySettlementPeriod)
-    {
-        var commercialRelations = consumptionMeteringPoint.CommercialRelationTimeline.Where(relation => relation.Period.End > _capacitySettlementEnabledFrom && DoIntervalsOverlap(relation.Period, capacitySettlementPeriod.Valid)).OrderBy(relation => relation.Period.Start).ToList();
-
-        if (commercialRelations.Count == 0)
+        // Process each capacity settlement period
+        foreach (var capacitySettlementPeriod in capacitySettlementPeriods)
         {
-            return GetConnectedInterval(consumptionMeteringPoint);
+            var overlappingCommercialRelations = meteringPointHierarchy.Parent.CommercialRelationTimeline
+                .Where(x => DoIntervalsOverlap(x.Period, capacitySettlementPeriod))
+                .OrderBy(x => x.Period.Start)
+                .ToList();
+
+            if (overlappingCommercialRelations.Count == 0)
+            {
+                // If no commercial relations, then use parent connected interval
+                var parentFirstConnectedPeriod = meteringPointHierarchy.Parent.MetadataTimeline.FirstOrDefault(x => x.ConnectionState == ConnectionState.Connected);
+                if (parentFirstConnectedPeriod is not null)
+                {
+                    var parentClosedDownDate = meteringPointHierarchy.Parent.MetadataTimeline.FirstOrDefault(x => x.ConnectionState == ConnectionState.ClosedDown)?.Valid.Start.ToDateTimeOffset() ?? DateTimeOffset.MaxValue;
+
+                    yield return new CapacitySettlementPeriodDto(
+                        meteringPointHierarchy.Parent.Identification.Value,
+                        parentFirstConnectedPeriod.Valid.Start.ToDateTimeOffset(),
+                        parentClosedDownDate,
+                        capacitySettlementMeteringPoint.Identification.Value,
+                        Truncate(capacitySettlementPeriod.Start.ToDateTimeOffset()),
+                        capacitySettlementPeriod.End.ToDateTimeOffset());
+                }
+            }
+            else
+            {
+                // Return a period for each commercial relation including an optional period if parent was connected first
+                var parentFirstConnectedPeriod = meteringPointHierarchy.Parent.MetadataTimeline.FirstOrDefault(x => x.ConnectionState == ConnectionState.Connected);
+
+                for (var i = 0; i < overlappingCommercialRelations.Count; i++)
+                {
+                    var commercialRelation = overlappingCommercialRelations[i];
+                    if (i == 0 && parentFirstConnectedPeriod is not null && parentFirstConnectedPeriod.Valid.Start < commercialRelation.Period.Start)
+                    {
+                        yield return new CapacitySettlementPeriodDto(
+                            meteringPointHierarchy.Parent.Identification.Value,
+                            parentFirstConnectedPeriod.Valid.Start.ToDateTimeOffset(),
+                            commercialRelation.Period.End.ToDateTimeOffset(),
+                            capacitySettlementMeteringPoint.Identification.Value,
+                            Truncate(capacitySettlementPeriod.Start.ToDateTimeOffset()),
+                            capacitySettlementPeriod.End.ToDateTimeOffset());
+                    }
+                    else if (i == overlappingCommercialRelations.Count - 1)
+                    {
+                        var parentClosedDownDate = meteringPointHierarchy.Parent.MetadataTimeline.FirstOrDefault(x => x.ConnectionState == ConnectionState.ClosedDown)?.Valid.Start.ToDateTimeOffset() ?? DateTimeOffset.MaxValue;
+
+                        yield return new CapacitySettlementPeriodDto(
+                            meteringPointHierarchy.Parent.Identification.Value,
+                            commercialRelation.Period.Start.ToDateTimeOffset(),
+                            parentClosedDownDate,
+                            capacitySettlementMeteringPoint.Identification.Value,
+                            Truncate(capacitySettlementPeriod.Start.ToDateTimeOffset()),
+                            capacitySettlementPeriod.End.ToDateTimeOffset());
+                    }
+                    else
+                    {
+                        yield return new CapacitySettlementPeriodDto(
+                            meteringPointHierarchy.Parent.Identification.Value,
+                            commercialRelation.Period.Start.ToDateTimeOffset(),
+                            commercialRelation.Period.End.ToDateTimeOffset(),
+                            capacitySettlementMeteringPoint.Identification.Value,
+                            Truncate(capacitySettlementPeriod.Start.ToDateTimeOffset()),
+                            capacitySettlementPeriod.End.ToDateTimeOffset());
+                    }
+                }
+            }
         }
-
-        return commercialRelations.Select(relation => relation.Period);
-    }
-
-    private DateTimeOffset GetCreatedTimestamp(MeteringPoint capacitySettlementMeteringPoint)
-    {
-        var createdTimestamp = capacitySettlementMeteringPoint.MetadataTimeline.OrderBy(period => period.Valid.Start)
-            .FirstOrDefault(period => period.ConnectionState == ConnectionState.Connected)?.Valid.Start;
-
-        createdTimestamp ??= capacitySettlementMeteringPoint.MetadataTimeline.First(p => p.Type == MeteringPointType.CapacitySettlement).Valid.Start;
-
-        return Truncate(createdTimestamp.Value.ToDateTimeOffset());
     }
 
     private DateTimeOffset Truncate(DateTimeOffset dateTimeOffset)

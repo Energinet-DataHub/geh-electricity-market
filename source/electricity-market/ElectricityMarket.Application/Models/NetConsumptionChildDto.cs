@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Common;
-
 namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
     public sealed record NetConsumptionChildDto(
-        [property: DeltaLakeKey]long MeteringPointId,
+        long MeteringPointId,
         string MeteringPointType,
         long ParentMeteringPointId,
         DateTimeOffset CoupledDate,

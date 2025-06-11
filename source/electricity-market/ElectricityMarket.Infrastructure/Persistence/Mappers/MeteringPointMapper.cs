@@ -100,7 +100,8 @@ public static class MeteringPointMapper
     {
         return new ElectricalHeatingPeriod(
             from.Id,
-            new Interval(from.ValidFrom.ToInstant(), from.ValidTo.ToInstant()));
+            new Interval(from.ValidFrom.ToInstant(), from.ValidTo.ToInstant()),
+            from.Active);
     }
 
     private static EnergySupplyPeriod MapFromEntity(EnergySupplyPeriodEntity from)
