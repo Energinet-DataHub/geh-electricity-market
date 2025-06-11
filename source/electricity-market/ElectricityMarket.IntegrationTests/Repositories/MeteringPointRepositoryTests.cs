@@ -53,9 +53,10 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         var (parentIdentification, childIdentification) = await CreateTestDataAsync(parentVersion, MeteringPointType.Consumption, childVersion, MeteringPointType.Consumption, 6);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+        var syncJob = new SyncJob(SyncJobName.CapacitySettlement, DateTimeOffset.MinValue, 0);
 
         // When querying
-        var hierarchies = await sut.GetNetConsumptionMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue).ToListAsync();
+        var hierarchies = await sut.GetNetConsumptionMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchy is returned
         Assert.NotNull(hierarchies);
@@ -78,9 +79,10 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         var (parentIdentification, childIdentification) = await CreateTestDataAsync(parentVersion, MeteringPointType.Consumption, childVersion, MeteringPointType.CapacitySettlement);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+        var syncJob = new SyncJob(SyncJobName.CapacitySettlement, DateTimeOffset.MinValue, 0);
 
         // When querying
-        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue).ToListAsync();
+        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchy is returned
         Assert.NotNull(hierarchies);
@@ -103,9 +105,10 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         var (parentIdentification, childIdentification) = await CreateTestDataAsync(parentVersion, MeteringPointType.Consumption, childVersion, MeteringPointType.CapacitySettlement);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+        var syncJob = new SyncJob(SyncJobName.CapacitySettlement, DateTimeOffset.MinValue.AddYears(15), 0);
 
         // When querying
-        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue.AddYears(15)).ToListAsync();
+        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchy is returned
         Assert.NotNull(hierarchies);
@@ -128,9 +131,10 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         var (parentIdentification, childIdentification) = await CreateTestDataAsync(parentVersion, MeteringPointType.Consumption, childVersion, MeteringPointType.CapacitySettlement);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+        var syncJob = new SyncJob(SyncJobName.CapacitySettlement, DateTimeOffset.MinValue.AddYears(15), 0);
 
         // When querying
-        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue.AddYears(15)).ToListAsync();
+        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchy is returned
         Assert.NotNull(hierarchies);
@@ -156,9 +160,10 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         var (parent2Identification, child2Identification) = await CreateTestDataAsync(parent2Version, MeteringPointType.Consumption, child2Version, MeteringPointType.CapacitySettlement);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+        var syncJob = new SyncJob(SyncJobName.CapacitySettlement, DateTimeOffset.MinValue.AddYears(15), 0);
 
         // When querying
-        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue.AddYears(15)).ToListAsync();
+        var hierarchies = await sut.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchies are returned ordered by version
         Assert.NotNull(hierarchies);
@@ -185,12 +190,13 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
     public async Task GivenElectricalHeatingMeteringPoint_WhenQueryingFromBeginningOfTime_ThenReturnsHierarchy()
     {
         // Given metering points
+        var syncJob = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.MinValue, 0);
         var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), MeteringPointType.Consumption, DateTimeOffset.MinValue.AddYears(40), MeteringPointType.ElectricalHeating);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
 
         // When querying
-        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue).ToListAsync();
+        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchy is returned
         Assert.NotNull(hierarchies);
@@ -208,12 +214,13 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
     public async Task GivenElectricalHeatingMeteringPointWithNoChildren_WhenQueryingFromBeginningOfTime_ThenReturnsHierarchy()
     {
         // Given metering points
+        var syncJob = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.MinValue, 0);
         var parentIdentification = await CreateTestDataNoChildrenAsync(DateTimeOffset.MinValue.AddYears(10), MeteringPointType.Consumption);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
 
         // When querying
-        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue).ToListAsync();
+        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchy is returned
         Assert.NotNull(hierarchies);
@@ -230,12 +237,13 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
     public async Task GivenElectricalHeatingMeteringPoint_WhenOnlyChildrenAreInRange_ThenReturnsHierarchy()
     {
         // Given metering points
+        var syncJob = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.MinValue.AddYears(30), 0);
         var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), MeteringPointType.Consumption, DateTimeOffset.MinValue.AddYears(40), MeteringPointType.ElectricalHeating);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
 
         // When querying
-        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue.AddYears(30)).ToListAsync();
+        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchy is returned
         Assert.NotNull(hierarchies);
@@ -253,12 +261,13 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
     public async Task GivenElectricalHeatingMeteringPoint_WhenNothingInRange_ThenReturnsEmpty()
     {
         // Given metering points
+        var syncJob = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.MinValue.AddYears(50), 0);
         var (parentIdentification, childIdentification) = await CreateTestDataAsync(DateTimeOffset.MinValue.AddYears(10), MeteringPointType.Consumption, DateTimeOffset.MinValue.AddYears(40), MeteringPointType.ElectricalHeating);
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
         var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
 
         // When querying
-        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(DateTimeOffset.MinValue.AddYears(50)).ToListAsync();
+        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
 
         // Then hierarchy is returned
         Assert.NotNull(hierarchies);
