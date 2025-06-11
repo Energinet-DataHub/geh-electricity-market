@@ -201,7 +201,7 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
         if (allCrsOrdered.Count > 0)
         {
-            if (_changeTransactions.Contains(transactionType) && transactionType != "DATAMIG" && transactionType != "ENDSUPPLY" && transactionType != "CLSDWNMP")
+            if (_changeTransactions.Contains(transactionType) && transactionType != "DATAMIG" && transactionType != "ENDSUPPLY" && transactionType != "CLSDWNMP" && transactionType != "HTXCOR" && transactionType != "MANCOR")
             {
                 return true;
             }
