@@ -26,7 +26,6 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 
