@@ -23,7 +23,7 @@ using Energinet.DataHub.ElectricityMarket.Application.Security;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.MarketParticipant.Authorization.Http;
 using Energinet.DataHub.MarketParticipant.Authorization.Model;
-using Energinet.DataHub.MarketParticipant.Authorization.Model.AccessValidationRequests;
+using Energinet.DataHub.MarketParticipant.Authorization.Model.AccessValidationVerify;
 using Energinet.DataHub.RevisionLog.Integration.WebApi;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -150,7 +150,7 @@ public class MeteringPointController : ControllerBase
         [FromQuery] string actorNumber,
         [FromQuery] EicFunction marketRole)
     {
-        var accessValidationRequest = new MeteringPointMasterDataAccessValidationRequest
+        var accessValidationRequest = new MeteringPointMasterDataAccessVerifyRequest()
         {
             MeteringPointId = identification,
             ActorNumber = actorNumber,
