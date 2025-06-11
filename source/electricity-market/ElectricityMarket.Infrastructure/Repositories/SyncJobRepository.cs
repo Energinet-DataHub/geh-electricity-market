@@ -57,12 +57,14 @@ public sealed class SyncJobRepository : ISyncJobsRepository
             {
                 JobName = job.Name,
                 Version = job.Version,
+                MeteringPointId = job.MeteringPointId,
             };
             await _context.SyncJobs.AddAsync(entity).ConfigureAwait(false);
         }
         else
         {
             entity.Version = job.Version;
+            entity.MeteringPointId = job.MeteringPointId;
             _context.SyncJobs.Update(entity);
         }
 
@@ -76,9 +78,9 @@ public sealed class SyncJobRepository : ISyncJobsRepository
         var syncJob = await (
                 from sync in _context.SyncJobs
                 where sync.JobName == job
-                select new SyncJob(sync.JobName, sync.Version))
+                select new SyncJob(sync.JobName, sync.Version, sync.MeteringPointId))
             .SingleOrDefaultAsync()
             .ConfigureAwait(false);
-        return syncJob ?? new SyncJob(job, new DateTimeOffset(SqlDateTime.MinValue.Value, TimeSpan.Zero));
+        return syncJob ?? new SyncJob(job, new DateTimeOffset(SqlDateTime.MinValue.Value, TimeSpan.Zero), 0);
     }
 }
