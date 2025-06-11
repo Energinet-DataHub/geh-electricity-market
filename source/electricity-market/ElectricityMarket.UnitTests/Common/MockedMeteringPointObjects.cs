@@ -16,8 +16,6 @@ using System;
 using System.Collections.Generic;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
-using NodaTime;
-using NodaTime.Extensions;
 
 namespace Energinet.DataHub.ElectricityMarket.UnitTests.Common;
 

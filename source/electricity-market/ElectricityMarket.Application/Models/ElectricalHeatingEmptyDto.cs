@@ -12,13 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Energinet.DataHub.ElectricityMarket.Application.Models;
-using Energinet.DataHub.ElectricityMarket.Domain.Models;
-
-namespace Energinet.DataHub.ElectricityMarket.Application.Services;
-
-public interface IElectricalHeatingPeriodizationService
-{
-    IEnumerable<ElectricalHeatingParentDto> GetParentElectricalHeating(MeteringPoint meteringPoint);
-    IEnumerable<ElectricalHeatingChildDto> GetChildElectricalHeating(IEnumerable<MeteringPoint> childMeteringPoints);
-}
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
+public sealed record ElectricalHeatingEmptyDto(long MeteringPointId);

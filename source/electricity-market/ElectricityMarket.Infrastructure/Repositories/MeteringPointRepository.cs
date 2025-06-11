@@ -126,9 +126,9 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         ArgumentNullException.ThrowIfNull(gridAreaCode);
 
         var query = from mpp in _electricityMarketDatabaseContext.MeteringPointPeriods
-            join mp in _electricityMarketDatabaseContext.MeteringPoints on mpp.MeteringPointId equals mp.Id
-            where mpp.GridAreaCode == gridAreaCode
-            select mp.Identification;
+                    join mp in _electricityMarketDatabaseContext.MeteringPoints on mpp.MeteringPointId equals mp.Id
+                    where mpp.GridAreaCode == gridAreaCode
+                    select mp.Identification;
 
         return (await query.Distinct().ToListAsync().ConfigureAwait(false))
             .Select(x => new MeteringPointIdentification(x));
@@ -212,10 +212,21 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
+    public IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(
+        DateTimeOffset lastSyncedVersion, int batchSize = 50)
+    {
+        var existsClause = """
+                           SELECT 1
+                           FROM [electricitymarket].[CommercialRelation] [cr] JOIN [electricitymarket].[ElectricalHeatingPeriod] [ehp] ON [ehp].[CommercialRelationId] = [cr].[Id]
+                           WHERE [cr].[MeteringPointId] = [mp].[Id]
+                           """;
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+    }
+
     private async IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(string existsClause, DateTimeOffset lastSyncedVersion, int batchSize)
     {
         var query = $"""
-                    SELECT TOP(@batchSize) Hierarchy.ParentIdentification, (CASE WHEN [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) as MaxVersion FROM
+                    SELECT TOP(@batchSize) Hierarchy.ParentIdentification, (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) as MaxVersion FROM
                     (
                         SELECT [mp].[Identification] as [ParentIdentification], [mp].[Version] as [ParentVersion], (SELECT MAX([Version])
                             FROM [electricitymarket].[MeteringPoint] [child_mp]
@@ -231,7 +242,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                             {existsClause}
                         )
                     ) AS Hierarchy
-                    WHERE (CASE WHEN [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion
+                    WHERE (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion
                     ORDER BY [MaxVersion] ASC;
                     """;
 
