@@ -163,7 +163,29 @@ public class DeltaLakeDataUploadService(
         }
     }
 
-    public async Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents)
+    public async Task DeleteNetConsumptionParentsAsync(IReadOnlyList<NetConsumptionEmptyDto> netConsumptionEmptyDtos)
+    {
+        ArgumentNullException.ThrowIfNull(netConsumptionEmptyDtos);
+        logger.LogInformation(
+            "Starting delete of {Count} net consumption parent/child metering points.", netConsumptionEmptyDtos.Count);
+        const int chunkSize = 250; // databricks max params (256) / number of properties
+        var parentTableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionParentTableName}";
+
+        var chunks = netConsumptionEmptyDtos.Chunk(chunkSize);
+        foreach (var chunk in chunks)
+        {
+            var parentDeleteStatement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(parentTableName, chunk);
+
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(parentDeleteStatement);
+            await foreach (var record in result.ConfigureAwait(false))
+            {
+                string resultString = JsonSerializer.Serialize(record);
+                logger.LogInformation(" - Net consumption parents deleted: {ResultString}", resultString);
+            }
+        }
+    }
+
+    public async Task InsertNetConsumptionParentsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents)
     {
         ArgumentNullException.ThrowIfNull(netConsumptionParents);
         logger.LogInformation(
@@ -174,7 +196,7 @@ public class DeltaLakeDataUploadService(
         var chunks = netConsumptionParents.Chunk(chunkSize);
         foreach (var chunk in chunks)
         {
-            var statement = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, chunk);
+            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement);
             await foreach (var record in result.ConfigureAwait(false))
@@ -185,7 +207,30 @@ public class DeltaLakeDataUploadService(
         }
     }
 
-    public async Task ImportTransactionsAsync(IReadOnlyList<NetConsumptionChildDto> netConsumptionChildren)
+    public async Task DeleteNetConsumptionChildrenAsync(IReadOnlyList<NetConsumptionEmptyDto> netConsumptionEmptyDtos)
+    {
+        ArgumentNullException.ThrowIfNull(netConsumptionEmptyDtos);
+        logger.LogInformation(
+            "Starting delete of {Count} net consumption parent/child metering points.", netConsumptionEmptyDtos.Count);
+        const int chunkSize = 250; // databricks max params (256) / number of properties
+        var childrenTableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionChildTableName}";
+
+        var chunks = netConsumptionEmptyDtos.Chunk(chunkSize);
+        foreach (var chunk in chunks)
+        {
+            var childrenEmptyDto = chunk.Select(x => new { ParentMeteringPointId = x.MeteringPointId });
+            var childrenDeleteStatement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(childrenTableName, childrenEmptyDto);
+
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(childrenDeleteStatement);
+            await foreach (var record in result.ConfigureAwait(false))
+            {
+                string resultString = JsonSerializer.Serialize(record);
+                logger.LogInformation(" - Net consumption children deleted: {ResultString}", resultString);
+            }
+        }
+    }
+
+    public async Task InsertNetConsumptionChildrenAsync(IReadOnlyList<NetConsumptionChildDto> netConsumptionChildren)
     {
         ArgumentNullException.ThrowIfNull(netConsumptionChildren);
         logger.LogInformation(
@@ -195,7 +240,7 @@ public class DeltaLakeDataUploadService(
         var chunks = netConsumptionChildren.Chunk(chunkSize);
         foreach (var chunk in chunks)
         {
-            var statement = _deltaLakeDataUploadStatementFormatter.CreateUploadStatementWithParameters(tableName, chunk);
+            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement);
             await foreach (var record in result.ConfigureAwait(false))

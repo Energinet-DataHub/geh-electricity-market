@@ -14,10 +14,5 @@
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Models
 {
-    public sealed record NetConsumptionChildDto(
-        long MeteringPointId,
-        string MeteringPointType,
-        long ParentMeteringPointId,
-        DateTimeOffset CoupledDate,
-        DateTimeOffset? UncoupledDate);
+    public sealed record NetConsumptionEmptyDto(long MeteringPointId);
 }
