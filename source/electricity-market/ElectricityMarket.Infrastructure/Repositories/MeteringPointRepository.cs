@@ -198,7 +198,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                            """;
 
         var query = GetQuery(existsClause, lastSyncedVersion, batchSize);
-        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+        return GetMeteringPointHierarchiesToSyncAsync(query, lastSyncedVersion, batchSize);
     }
 
     public IAsyncEnumerable<MeteringPointHierarchy> GetNetConsumptionMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
@@ -211,7 +211,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                            """;
 
         var query = GetQuery(existsClause, lastSyncedVersion, batchSize);
-        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
+        return GetMeteringPointHierarchiesToSyncAsync(query, lastSyncedVersion, batchSize);
     }
 
     public IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(
