@@ -30,7 +30,7 @@ public static class MeteringPointMapper
             from.Id,
             from.Version,
             new MeteringPointIdentification(from.Identification),
-            from.MeteringPointPeriods.Where(mpp => mpp.RetiredBy == null && mpp.ValidFrom != mpp.ValidTo).Select(MapFromEntity).OrderBy(mpp => mpp.Valid.Start).ToList(),
+            from.MeteringPointPeriods.Where(mpp => mpp.RetiredById == null && mpp.ValidFrom != mpp.ValidTo).Select(MapFromEntity).OrderBy(mpp => mpp.Valid.Start).ToList(),
             from.CommercialRelations.Where(cr => cr.EndDate > cr.StartDate).Select(MapFromEntity).OrderBy(cr => cr.Period.Start).ToList());
     }
 
@@ -92,8 +92,8 @@ public static class MeteringPointMapper
             from.EnergySupplier,
             new Interval(from.StartDate.ToInstant(), from.EndDate.ToInstant()),
             from.ClientId,
-            from.EnergySupplyPeriods.Where(esp => esp.RetiredBy == null).Select(MapFromEntity).OrderBy(esp => esp.Valid.Start).ToList(),
-            from.ElectricalHeatingPeriods.Where(ehp => ehp.RetiredBy == null).Select(MapFromEntity).OrderBy(ehp => ehp.Period.Start).ToList());
+            from.EnergySupplyPeriods.Where(esp => esp.RetiredById == null).Select(MapFromEntity).OrderBy(esp => esp.Valid.Start).ToList(),
+            from.ElectricalHeatingPeriods.Where(ehp => ehp.RetiredById == null).Select(MapFromEntity).OrderBy(ehp => ehp.Period.Start).ToList());
     }
 
     private static ElectricalHeatingPeriod MapFromEntity(ElectricalHeatingPeriodEntity from)
