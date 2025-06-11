@@ -21,7 +21,7 @@ namespace Energinet.DataHub.Core.DatabricksExperimental.SqlStatementExecution;
 
 public partial class DatabricksSqlWarehouseQueryExecutor
 {
-    private protected const string StatementsEndpointPath = "/api/2.0/sql/statements";
+    private const string StatementsEndpointPath = "/api/2.0/sql/statements";
     private readonly HttpClient _httpClient;
     private readonly HttpClient _externalHttpClient;
     private readonly DatabricksSqlStatementOptions _options;
@@ -88,6 +88,7 @@ public partial class DatabricksSqlWarehouseQueryExecutor
     #endregion
 
     #region Download parellel
+
     private async IAsyncEnumerable<dynamic> ExecuteStatementParallelInternalAsync(
         DatabricksStatement statement,
         QueryOptions options,
@@ -240,7 +241,28 @@ public partial class DatabricksSqlWarehouseQueryExecutor
         var strategy = options.Format.GetStrategy(_options);
 
         var uri = StatementsEndpointPath + $"/{statementId}/result/chunks/{chunk.chunk_index}?row_offset={chunk.row_offset}";
-        var chunkResponse = await _httpClient.GetFromJsonAsync<ManifestChunk>(uri).ConfigureAwait(false);
+
+        var retries = 0;
+
+        ManifestChunk chunkResponse;
+
+        while (true)
+        {
+            try
+            {
+                chunkResponse = await _httpClient.GetFromJsonAsync<ManifestChunk>(uri).ConfigureAwait(false);
+                break;
+            }
+            catch (Exception)
+            {
+                if (++retries > 3)
+                {
+                    throw;
+                }
+
+                await Task.Delay(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+            }
+        }
 
         if (chunkResponse?.external_links == null)
         {
