@@ -110,6 +110,7 @@ public static class ElectricityMarketModuleExtensions
         services.AddScoped<ICapacitySettlementService, CapacitySettlementService>();
         services.AddScoped<INetConsumptionService, NetConsumptionService>();
         services.AddScoped<IHullerLogService, HullerLogService>();
+        services.AddScoped<IMeasurementsReportService, MeasurementsReportService>();
         services.AddScoped<IDeltaLakeDataUploadService, DeltaLakeDataUploadService>();
 
         return services;

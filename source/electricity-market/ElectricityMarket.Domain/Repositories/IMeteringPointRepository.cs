@@ -33,4 +33,6 @@ public interface IMeteringPointRepository
     IAsyncEnumerable<MeteringPointHierarchy> GetNetConsumptionMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50);
 
     IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50);
+
+    IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50);
 }

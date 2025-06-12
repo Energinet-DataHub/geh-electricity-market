@@ -56,6 +56,7 @@ internal sealed class ContinuousImportTimerTrigger
             await _mediator.Send(new SyncCapacitySettlementCommand()).ConfigureAwait(false);
             await _mediator.Send(new SyncNetConsumptionCommand()).ConfigureAwait(false);
             await _mediator.Send(new SyncHullerLogCommand()).ConfigureAwait(false);
+            await _mediator.Send(new SyncMeasurementsReportCommand()).ConfigureAwait(false);
         }
         else if (await _importStateService.IsStreamingImportEnabledAsync().ConfigureAwait(false))
         {
