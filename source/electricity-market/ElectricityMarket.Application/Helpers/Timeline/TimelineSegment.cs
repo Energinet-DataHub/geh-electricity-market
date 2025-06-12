@@ -18,6 +18,7 @@ using NodaTime;
 namespace Energinet.DataHub.ElectricityMarket.Application.Helpers.Timeline
 {
     public sealed record TimelineSegment(
+        MeteringPointIdentification? Identification,
         Interval Period,
         MeteringPointMetadata Metadata,
         CommercialRelation? Relation);

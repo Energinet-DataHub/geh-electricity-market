@@ -12,13 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+using MediatR;
 
-public enum SyncJobName
-{
-    ElectricalHeating = 0,
-    CapacitySettlement = 1,
-    NetConsumption = 2,
-    HullerLog = 3,
-    MeasurementsReport = 4
-}
+namespace Energinet.DataHub.ElectricityMarket.Application.Commands.DeltaLakeSync;
+
+public sealed record SyncMeasurementsReportCommand : IRequest;

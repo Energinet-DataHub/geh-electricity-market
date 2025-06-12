@@ -41,4 +41,8 @@ public interface IDeltaLakeDataUploadService
     Task InsertHullerLogPeriodsAsync(IReadOnlyList<HullerLogDto> hullerLogs);
 
     Task DeleteHullerLogPeriodsAsync(IReadOnlyList<HullerLogEmptyDto> emptyHullerLogs);
+
+    Task InsertMeasurementsReportPeriodsAsync(IReadOnlyList<MeasurementsReportDto> measurementsReports);
+
+    Task DeleteMeasurementsReportPeriodsAsync(IReadOnlyList<MeasurementsReportEmptyDto> emptyMeasurementsReports);
 }
