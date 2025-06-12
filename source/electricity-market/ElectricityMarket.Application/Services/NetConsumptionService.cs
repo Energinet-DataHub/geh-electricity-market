@@ -194,7 +194,7 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Services
                 var commercialRelation = meteringPoint.CommercialRelationTimeline
                     .FirstOrDefault(r => r.Period.Contains(start));
 
-                builder.AddSegment(start, metadata, commercialRelation);
+                builder.AddSegment(null, start, metadata, commercialRelation);
             }
 
             return builder.Build();

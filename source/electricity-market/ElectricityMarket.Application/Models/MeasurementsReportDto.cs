@@ -12,13 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Energinet.DataHub.ElectricityMarket.Domain.Models;
+namespace Energinet.DataHub.ElectricityMarket.Application.Models;
 
-public enum SyncJobName
-{
-    ElectricalHeating = 0,
-    CapacitySettlement = 1,
-    NetConsumption = 2,
-    HullerLog = 3,
-    MeasurementsReport = 4
-}
+public sealed record MeasurementsReportDto(
+        long MeteringPointId,
+        string MeteringPointType,
+        string GridAreaCode,
+        string Resolution,
+        string? EnergySupplierId,
+        string PhysicalStatus,
+        string QuantityUnit,
+        string? FromGridAreaCode,
+        string? ToGridAreaCode,
+        DateTimeOffset PeriodFromDate,
+        DateTimeOffset? PeriodToDate);
