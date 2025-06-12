@@ -24,6 +24,8 @@ namespace Energinet.DataHub.ElectricityMarket.Application.Handlers;
 public sealed class GetYearlySumPeriodHandler : IRequestHandler<GetYearlySumPeriodCommand, Interval?>
 {
     private readonly IMeteringPointRepository _meteringPointRepository;
+    private readonly Instant _yearAgo = Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime().AddDays(-365));
+    private readonly Instant _today = Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime());
 
     public GetYearlySumPeriodHandler(IMeteringPointRepository meteringPointRepository)
     {
@@ -41,19 +43,17 @@ public sealed class GetYearlySumPeriodHandler : IRequestHandler<GetYearlySumPeri
 
         // Only possible for E17/E18 metering point types.
         if (meteringPoint.Metadata.Type != MeteringPointType.Consumption && meteringPoint.Metadata.Type != MeteringPointType.Production)
-        {
             return null;
-        }
 
         if (meteringPoint.EnergySupplyPeriod != null)
         {
-            var startOfsupplyLessThan365Go = meteringPoint.EnergySupplyPeriod.Valid.Start.CompareTo(Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime().AddDays(-365))) > 0;
+            var startOfsupplyLessThan365Go = meteringPoint.EnergySupplyPeriod.Valid.Start.CompareTo(_yearAgo) > 0;
             if (startOfsupplyLessThan365Go)
             {
-                if (meteringPoint.EnergySupplyPeriod.Valid.End.CompareTo(Instant.FromDateTimeOffset(DateTime.MaxValue)) == 0)
+                if (meteringPoint.EnergySupplyPeriod.Valid.End.CompareTo(Instant.FromDateTimeOffset(DateTime.MaxValue)) >= 0)
                 {
                     // Start from current supply start up till today.
-                    return new Interval(meteringPoint.EnergySupplyPeriod.Valid.Start, Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime()));
+                    return new Interval(meteringPoint.EnergySupplyPeriod.Valid.Start, _today);
                 }
 
                 // Start and end equal to actual supply period.
@@ -61,11 +61,21 @@ public sealed class GetYearlySumPeriodHandler : IRequestHandler<GetYearlySumPeri
             }
 
             // Start 365 days ago, end Today or equal to supplier end when before today.
-            return new Interval(Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime().AddDays(-365)), meteringPoint.EnergySupplyPeriod.Valid.End.CompareTo(Instant.FromDateTimeOffset(DateTime.MaxValue)) == 0 ? Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime()) : meteringPoint.EnergySupplyPeriod.Valid.End);
+            return new Interval(_yearAgo, meteringPoint.EnergySupplyPeriod.Valid.End.CompareTo(Instant.FromDateTimeOffset(DateTime.MaxValue)) >= 0 ? _today : meteringPoint.EnergySupplyPeriod.Valid.End);
         }
 
-        // No supplier return null.
-        return null;
-    }
+        // Retrieve commercial relations with end date in the last year (yearAgo).
+        var filteredCommercialRelations = meteringPoint.CommercialRelationTimeline.Where(c => (c.Period.End >= _yearAgo) && (c.Period.End <= _today));
 
+        // No supplier in the last year: return null.
+        if (filteredCommercialRelations == null)
+            return null;
+
+        var mostRecentMovein = filteredCommercialRelations.OrderByDescending(x => x.Period.Start).FirstOrDefault()?
+                .EnergySupplyPeriodTimeline.OrderByDescending(x => x.Valid.Start).First();
+
+        // Null when no result, less than year ago => start date else year ago date.
+        return mostRecentMovein == null ? null : new Interval(mostRecentMovein.Valid.Start.CompareTo(_yearAgo) > 0 ? mostRecentMovein.Valid.Start : _yearAgo, mostRecentMovein.Valid.End);
+
+    }
 }
