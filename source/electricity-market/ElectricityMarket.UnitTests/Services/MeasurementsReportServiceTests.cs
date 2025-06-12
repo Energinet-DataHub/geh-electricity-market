@@ -28,7 +28,7 @@ public class MeasurementsReportServiceTests
     private readonly MeasurementsReportService _sut = new();
 
     [Fact]
-    public void Given_ParentAndChild_When_BuildMergedTimelineIsCalled_Then_YieldExpectedGapFreeSlices()
+    public void Given_ParentAndChildren_When_GetMeasurementsReportIsCalled_Then_YieldExpectedMeasurementsReports()
     {
         // Arrange
         var parentId = new MeteringPointIdentification(1L);
