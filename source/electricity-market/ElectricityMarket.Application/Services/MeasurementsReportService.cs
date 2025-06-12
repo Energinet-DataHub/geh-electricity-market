@@ -54,35 +54,34 @@ public class MeasurementsReportService() : IMeasurementsReportService
         }
     }
 
-    private static List<TimelineSegment> BuildMergedTimeline(
-    MeteringPointHierarchy hierarchy)
+    private static List<TimelineSegment> BuildMergedTimeline(MeteringPointHierarchy hierarchy)
     {
         var allSegments = new List<TimelineSegment>();
 
         foreach (var mp in new[] { hierarchy.Parent }
                      .Concat(hierarchy.ChildMeteringPoints))
         {
-            var changePoints = new SortedSet<Instant>();
+            var metadataBounds = mp.MetadataTimeline
+                .SelectMany(mt => new[] { mt.Valid.Start, mt.Valid.End })
+                .Where(i => i != Instant.MaxValue);
 
-            foreach (var mt in mp.MetadataTimeline)
-            {
-                changePoints.Add(mt.Valid.Start);
-                if (mt.Valid.End != Instant.MaxValue)
-                    changePoints.Add(mt.Valid.End);
-            }
+            var relationBounds = mp.CommercialRelationTimeline
+                .SelectMany(cr => new[] { cr.Period.Start, cr.Period.End })
+                .Where(i => i != Instant.MaxValue);
 
-            foreach (var cr in mp.CommercialRelationTimeline)
-            {
-                changePoints.Add(cr.Period.Start);
-                if (cr.Period.End != Instant.MaxValue)
-                    changePoints.Add(cr.Period.End);
-            }
+            var changePoints = new SortedSet<Instant>(metadataBounds);
+            changePoints.UnionWith(relationBounds);
+
+            var validPoints = changePoints
+                .Where(cp => mp.MetadataTimeline.Any(mt => mt.Valid.Contains(cp)))
+                .ToList();
 
             var builder = new TimelineBuilder();
-            foreach (var start in changePoints)
+            foreach (var start in validPoints)
             {
                 var metadata = mp.MetadataTimeline
                     .First(m => m.Valid.Contains(start));
+
                 var commercialRelation = mp.CommercialRelationTimeline
                     .FirstOrDefault(r => r.Period.Contains(start));
 
