@@ -76,4 +76,16 @@ public class SyncController : ControllerBase
 
         return Ok();
     }
+
+    [HttpGet("measurements-report")]
+    public async Task<ActionResult> StartMeasurementsReportSyncAsync()
+    {
+        var command = new SyncMeasurementsReportCommand();
+
+        await _mediator
+            .Send(command)
+            .ConfigureAwait(false);
+
+        return Ok();
+    }
 }

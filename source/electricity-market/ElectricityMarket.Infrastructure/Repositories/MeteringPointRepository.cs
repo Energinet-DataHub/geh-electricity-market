@@ -192,11 +192,12 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     {
         var capacitySettlementTypeString = MeteringPointType.CapacitySettlement.ToString();
         var existsClause = $"""
-                           SELECT 1
-                           FROM [electricitymarket].[MeteringPointPeriod] [mpp]
-                           WHERE [mpp].[ParentIdentification] = [mp].[Identification] AND [mpp].[Type] = '{capacitySettlementTypeString}'
+                           AND EXISTS (
+                            SELECT 1
+                            FROM [electricitymarket].[MeteringPointPeriod] [mpp]
+                            WHERE [mpp].[ParentIdentification] = [mp].[Identification] AND [mpp].[Type] = '{capacitySettlementTypeString}'
+                           )
                            """;
-
         return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
@@ -204,11 +205,12 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
     {
         var settlementGroup6Code = NetSettlementGroup.Group6.Code;
         var existsClause = $"""
-                           SELECT 1
-                           FROM [electricitymarket].[MeteringPointPeriod] [mpp]
-                           WHERE [mpp].[MeteringPointId] = [mp].[Id] AND [mpp].[SettlementGroup] = {settlementGroup6Code}
+                           AND EXISTS (
+                            SELECT 1
+                            FROM [electricitymarket].[MeteringPointPeriod] [mpp]
+                            WHERE [mpp].[MeteringPointId] = [mp].[Id] AND [mpp].[SettlementGroup] = {settlementGroup6Code}
+                           )
                            """;
-
         return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
@@ -216,14 +218,21 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
         DateTimeOffset lastSyncedVersion, int batchSize = 50)
     {
         var existsClause = """
-                           SELECT 1
-                           FROM [electricitymarket].[CommercialRelation] [cr] JOIN [electricitymarket].[ElectricalHeatingPeriod] [ehp] ON [ehp].[CommercialRelationId] = [cr].[Id]
-                           WHERE [cr].[MeteringPointId] = [mp].[Id]
+                           AND EXISTS (
+                            SELECT 1
+                            FROM [electricitymarket].[CommercialRelation] [cr] JOIN [electricitymarket].[ElectricalHeatingPeriod] [ehp] ON [ehp].[CommercialRelationId] = [cr].[Id]
+                            WHERE [cr].[MeteringPointId] = [mp].[Id]
+                           )
                            """;
         return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
-    private async IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(string existsClause, DateTimeOffset lastSyncedVersion, int batchSize)
+    public IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize)
+    {
+        return GetMeteringPointHierarchiesToSyncAsync(null, lastSyncedVersion, batchSize);
+    }
+
+    private async IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(string? existsClause, DateTimeOffset lastSyncedVersion, int batchSize)
     {
         var query = $"""
                     SELECT TOP(@batchSize) Hierarchy.ParentIdentification, (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) as MaxVersion FROM
@@ -238,9 +247,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                             SELECT 1
                             FROM [electricitymarket].[MeteringPointPeriod] [mpp]
                             WHERE [mpp].[MeteringPointId] = [mp].[Id] AND [mpp].[ParentIdentification] IS NOT NULL
-                        ) AND EXISTS (
-                            {existsClause}
-                        )
+                        ) {existsClause ?? string.Empty}
                     ) AS Hierarchy
                     WHERE (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion
                     ORDER BY [MaxVersion] ASC;

@@ -68,7 +68,7 @@ public class HullerLogService() : IHullerLogService
             var metadata = meteringPoint.MetadataTimeline
                 .First(m => m.Valid.Contains(start));
 
-            builder.AddSegment(start, metadata, null);
+            builder.AddSegment(null, start, metadata, null);
         }
 
         return builder.Build();

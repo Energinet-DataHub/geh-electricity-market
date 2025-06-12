@@ -302,4 +302,56 @@ public class DeltaLakeDataUploadService(
             logger.LogInformation("Huller log deleted: {ResultString}", resultString);
         }
     }
+
+    public async Task InsertMeasurementsReportPeriodsAsync(IReadOnlyList<MeasurementsReportDto> measurementsReports)
+    {
+        ArgumentNullException.ThrowIfNull(measurementsReports);
+
+        logger.LogInformation(
+            "Starting upload of {Count} measurements report metering points.", measurementsReports.Count);
+
+        const int chunkSize = 20;
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
+
+        foreach (var batch in measurementsReports.Chunk(chunkSize))
+        {
+            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, batch);
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement);
+
+            await foreach (var record in result.ConfigureAwait(false))
+            {
+                string resultString = JsonSerializer.Serialize(record);
+                logger.LogInformation(" - Measurements report uploaded: {ResultString}", resultString);
+            }
+        }
+    }
+
+    public async Task DeleteMeasurementsReportPeriodsAsync(IReadOnlyList<MeasurementsReportEmptyDto> emptyMeasurementsReports)
+    {
+        ArgumentNullException.ThrowIfNull(emptyMeasurementsReports);
+        logger.LogInformation(
+            "Starting clearing of {Count} measurements report metering point periods.", emptyMeasurementsReports.Count);
+
+        const int maxBatchSize = 250;
+
+        var allResults = new List<object>();
+        var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
+
+        foreach (var batch in emptyMeasurementsReports.Chunk(maxBatchSize))
+        {
+            var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, batch);
+            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement);
+
+            await foreach (var record in result.ConfigureAwait(false))
+            {
+                allResults.Add(record);
+            }
+        }
+
+        foreach (var record in allResults)
+        {
+            string resultString = JsonSerializer.Serialize(record);
+            logger.LogInformation("Measurements report deleted: {ResultString}", resultString);
+        }
+    }
 }
