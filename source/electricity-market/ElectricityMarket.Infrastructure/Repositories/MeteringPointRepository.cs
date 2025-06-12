@@ -198,8 +198,8 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                             WHERE [mpp].[ParentIdentification] = [mp].[Identification] AND [mpp].[Type] = '{capacitySettlementTypeString}'
                            )
                            """;
-        var query = GetQuery(existsClause, lastSyncedVersion, batchSize);
-        return GetMeteringPointHierarchiesToSyncAsync(query, lastSyncedVersion, batchSize);
+
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
     public IAsyncEnumerable<MeteringPointHierarchy> GetNetConsumptionMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 50)
@@ -212,8 +212,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                             WHERE [mpp].[MeteringPointId] = [mp].[Id] AND [mpp].[SettlementGroup] = {settlementGroup6Code}
                            )
                            """;
-        var query = GetQuery(existsClause, lastSyncedVersion, batchSize);
-        return GetMeteringPointHierarchiesToSyncAsync(query, lastSyncedVersion, batchSize);
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
     public IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(
@@ -227,8 +226,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                            )
                            """;
 
-        var query = GetQuery(existsClause, lastSyncedVersion, batchSize);
-        return GetMeteringPointHierarchiesToSyncAsync(query, lastSyncedVersion, batchSize);
+        return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
     public IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize)
@@ -256,10 +254,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                     WHERE (CASE WHEN [Hierarchy].[MaxChildVersion] IS NULL OR [Hierarchy].[ParentVersion] > [Hierarchy].[MaxChildVersion] THEN [Hierarchy].[ParentVersion] ELSE [Hierarchy].[MaxChildVersion] END) > @latestVersion
                     ORDER BY [MaxVersion] ASC;
                     """;
-    }
 
-    private async IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(string query, DateTimeOffset lastSyncedVersion, int batchSize)
-    {
         var readContext = await _contextFactory.CreateDbContextAsync().ConfigureAwait(false);
         readContext.Database.SetCommandTimeout(60 * 60);
 

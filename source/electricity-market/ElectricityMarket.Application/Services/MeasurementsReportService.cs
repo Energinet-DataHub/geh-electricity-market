@@ -58,19 +58,20 @@ public class MeasurementsReportService() : IMeasurementsReportService
     {
         var allSegments = new List<TimelineSegment>();
 
-        foreach (var mp in new[] { hierarchy.Parent }
+        var parent = hierarchy.Parent;
+        var parentRelationBounds = parent.CommercialRelationTimeline
+            .SelectMany(cr => new[] { cr.Period.Start, cr.Period.End })
+            .Where(i => i != Instant.MaxValue);
+
+        foreach (var mp in new[] { parent }
                      .Concat(hierarchy.ChildMeteringPoints))
         {
             var metadataBounds = mp.MetadataTimeline
                 .SelectMany(mt => new[] { mt.Valid.Start, mt.Valid.End })
                 .Where(i => i != Instant.MaxValue);
 
-            var relationBounds = mp.CommercialRelationTimeline
-                .SelectMany(cr => new[] { cr.Period.Start, cr.Period.End })
-                .Where(i => i != Instant.MaxValue);
-
             var changePoints = new SortedSet<Instant>(metadataBounds);
-            changePoints.UnionWith(relationBounds);
+            changePoints.UnionWith(parentRelationBounds);
 
             var validPoints = changePoints
                 .Where(cp => mp.MetadataTimeline.Any(mt => mt.Valid.Contains(cp)))
@@ -82,14 +83,17 @@ public class MeasurementsReportService() : IMeasurementsReportService
                 var metadata = mp.MetadataTimeline
                     .First(m => m.Valid.Contains(start));
 
-                var commercialRelation = mp.CommercialRelationTimeline
-                    .FirstOrDefault(r => r.Period.Contains(start));
+                var relation = (mp == parent)
+                    ? parent.CommercialRelationTimeline
+                        .FirstOrDefault(r => r.Period.Contains(start))
+                    : parent.CommercialRelationTimeline
+                        .FirstOrDefault(r => r.Period.Contains(start));
 
                 builder.AddSegment(
                     mp.Identification,
                     start,
                     metadata,
-                    commercialRelation);
+                    relation);
             }
 
             allSegments.AddRange(builder.Build());
