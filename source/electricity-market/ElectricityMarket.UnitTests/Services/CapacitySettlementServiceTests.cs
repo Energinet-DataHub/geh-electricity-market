@@ -253,7 +253,7 @@ public class CapacitySettlementServiceTests
     }
 
     [Fact]
-    public void GivenEndedCommercialRelation_WhenFindingCapacitySettlementPeriods_ReturnedPeriodEndsAtClosedDate()
+    public void GivenEndedSupply_WhenFindingCapacitySettlementPeriods_ReturnedPeriodEndsAtClosedDate()
     {
         // Given ended commercial relation and open-ended consumption metering point
         var capacitySettlementStart = _date25122024;
@@ -280,6 +280,38 @@ public class CapacitySettlementServiceTests
         var dto = capacitySettlementPeriods.First();
         Assert.Equal(_date25122024.ToDateTimeOffset(), dto.PeriodFromDate);
         Assert.Equal(closedDownInterval.Start.ToDateTimeOffset(), dto.PeriodToDate);
+    }
+
+    [Fact]
+    public void GivenMoveOut_WhenFindingCapacitySettlementPeriods_ReturnedPeriodEndsAtClosedDate()
+    {
+        // Given ended commercial relation and open-ended consumption metering point
+        var capacitySettlementStart = _date25122024;
+        var capacitySettlementEnd = _date23022025;
+        var capacitySettlementMeteringPointMetadata = CreateCapacitySettlementMeteringPointMetadata(new Interval(capacitySettlementStart,  capacitySettlementEnd), Any.MeteringPointIdentification());
+        var capacitySettlementMeteringPointMetadataClosed = CreateCapacitySettlementMeteringPointMetadata(new Interval(capacitySettlementMeteringPointMetadata.Valid.End, capacitySettlementMeteringPointMetadata.Valid.End.Plus(Duration.FromDays(1))), null, ConnectionState.ClosedDown);
+        var capacitySettlementMeteringPoint = CreateCapacitySettlementChildMeteringPoint([capacitySettlementMeteringPointMetadata, capacitySettlementMeteringPointMetadataClosed]);
+
+        var connectedInterval = new Interval(capacitySettlementStart.Plus(Duration.FromDays(10)), capacitySettlementEnd.Plus(Duration.FromDays(10)));
+        var closedDownInterval = new Interval(connectedInterval.End, null);
+        var parentMeteringPointMetadata = CreateParentMeteringPointMetadata(connectedInterval);
+        var parentMeteringPointMetadataClosedDown = CreateParentMeteringPointMetadata(closedDownInterval, ConnectionState.ClosedDown);
+        var clientInterval = new Interval(capacitySettlementStart.Minus(Duration.FromDays(10)), capacitySettlementStart.Plus(Duration.FromDays(10)));
+        var noClientInterval = new Interval(clientInterval.End, capacitySettlementEnd.Plus(Duration.FromDays(10)));
+        var commercialRelation = new CommercialRelation(1, "Watts Inc.", clientInterval, Guid.NewGuid(), [], []);
+        var moveOutCommercialRelation = new CommercialRelation(2, "Watts Inc.", noClientInterval, null, [], []);
+        var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, [parentMeteringPointMetadata, parentMeteringPointMetadataClosedDown], [commercialRelation, moveOutCommercialRelation]);
+
+        var hierarchy = new MeteringPointHierarchy(parentMeteringPoint, [capacitySettlementMeteringPoint], DateTimeOffset.MinValue);
+
+        // When finding capacity settlement periods to sync
+        var capacitySettlementPeriods = _sut.GetCapacitySettlementPeriods(hierarchy).ToList();
+
+        // One open-ended row is returned
+        Assert.Single(capacitySettlementPeriods);
+        var dto = capacitySettlementPeriods.First();
+        Assert.Equal(clientInterval.Start.ToDateTimeOffset(), dto.PeriodFromDate);
+        Assert.Equal(noClientInterval.End.ToDateTimeOffset(), dto.PeriodToDate);
     }
 
     private static MeteringPoint CreateParentMeteringPoint(MeteringPointIdentification parentIdentification, List<MeteringPointMetadata> meteringPointMetadata, List<CommercialRelation> commercialRelations)

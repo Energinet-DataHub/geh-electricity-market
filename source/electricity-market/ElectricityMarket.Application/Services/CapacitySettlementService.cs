@@ -79,34 +79,14 @@ public class CapacitySettlementService : ICapacitySettlementService
             .Where(p => p.Valid.End > _capacitySettlementEnabledFrom)
             .Select(p => p.Valid)
             .OrderBy(p => p.Start)
+            .Combine((a, b) => a.End == b.Start, (a, b) => new Interval(a.Start, b.End))
             .ToList();
-
-        if (capacitySettlementPeriods.Count > 1)
-        {
-            for (var i = 0; i < capacitySettlementPeriods.Count - 1; i++)
-            {
-                if (capacitySettlementPeriods[i].End == capacitySettlementPeriods[i + 1].Start)
-                {
-                    // Combine i and i + 1
-                    capacitySettlementPeriods[i] = new Interval(capacitySettlementPeriods[i].Start, capacitySettlementPeriods[i + 1].End);
-                    capacitySettlementPeriods.RemoveAt(i + 1);
-
-                    // Single interval left
-                    if (capacitySettlementPeriods.Count == 1)
-                    {
-                        break;
-                    }
-
-                    // Start over from beginning
-                    i = -1;
-                }
-            }
-        }
 
         // Process each capacity settlement period
         foreach (var capacitySettlementPeriod in capacitySettlementPeriods)
         {
             var overlappingCommercialRelations = meteringPointHierarchy.Parent.CommercialRelationTimeline
+                .Combine((a, b) => a.Period.End == b.Period.Start && a.ClientId is not null && b.ClientId is null, (a, b) => a with { Period = new Interval(a.Period.Start, b.Period.End) })
                 .Where(x => DoIntervalsOverlap(x.Period, capacitySettlementPeriod))
                 .OrderBy(x => x.Period.Start)
                 .ToList();
