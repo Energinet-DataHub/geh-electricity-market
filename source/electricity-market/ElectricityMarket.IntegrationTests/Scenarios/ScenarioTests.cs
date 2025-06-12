@@ -166,6 +166,7 @@ public class ScenarioTests
         lines = SanitizeSectionColumn(lines, "MeteringPointPeriod", "RetiredAt", DateTimeOffset.MinValue.ToString("u")).ToList();
         lines = SanitizeSectionColumn(lines, "MeteringPoint", "Version", DateTimeOffset.MinValue.ToString("u")).ToList();
         lines = SanitizeSectionColumn(lines, "EnergySupplyPeriod", "RetiredAt", DateTimeOffset.MinValue.ToString("u")).ToList();
+        lines = SanitizeSectionColumn(lines, "ElectricalHeatingPeriod", "RetiredAt", DateTimeOffset.MinValue.ToString("u")).ToList();
 
         var trimEnd = string.Join('\n', lines).TrimEnd('\n');
 
@@ -192,7 +193,7 @@ public class ScenarioTests
             var columnIndex = lines[headerIndex + 2].IndexOf(column, StringComparison.InvariantCultureIgnoreCase);
 
             sanitizedLines.AddRange(lines[..dataStartIndex]);
-            sanitizedLines.AddRange(lines[dataStartIndex..dataStopIndex].Select(x => string.Concat(x.AsSpan(0, columnIndex), value, x.AsSpan(columnIndex + value.Length))));
+            sanitizedLines.AddRange(lines[dataStartIndex..dataStopIndex].Select(x => string.Concat(x.AsSpan(0, columnIndex), value, x.AsSpan(columnIndex + value.Length > x.Length - 2 ? columnIndex + column.Length : columnIndex + value.Length))));
             sanitizedLines.AddRange(lines[dataStopIndex..]);
 
             return sanitizedLines;
