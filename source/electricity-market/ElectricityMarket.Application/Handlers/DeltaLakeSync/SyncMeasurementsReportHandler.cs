@@ -43,7 +43,7 @@ public sealed class SyncMeasurementsReportHandler(
                 SyncJobName.MeasurementsReport);
 
             var meteringPointsToSync = meteringPointRepository
-                .GetMeasurementsReportMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version);
+                .GetMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version);
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
             if (maxVersion is not null && maxVersion > DateTimeOffset.MinValue)
