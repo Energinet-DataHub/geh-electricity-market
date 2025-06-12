@@ -86,7 +86,8 @@ public class CapacitySettlementService : ICapacitySettlementService
         foreach (var capacitySettlementPeriod in capacitySettlementPeriods)
         {
             var overlappingCommercialRelations = meteringPointHierarchy.Parent.CommercialRelationTimeline
-                .Combine((a, b) => a.Period.End == b.Period.Start && a.ClientId is not null && b.ClientId is null, (a, b) => a with { Period = new Interval(a.Period.Start, b.Period.End) })
+                .Where(x => x.Period.Start != x.Period.End)
+                .Combine((a, b) => a.Period.End == b.Period.Start && ((a.ClientId is not null && b.ClientId is null) || a.ClientId == b.ClientId), (a, b) => a with { Period = new Interval(a.Period.Start, b.Period.End) })
                 .Where(x => DoIntervalsOverlap(x.Period, capacitySettlementPeriod))
                 .OrderBy(x => x.Period.Start)
                 .ToList();
