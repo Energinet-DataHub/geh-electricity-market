@@ -198,6 +198,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                             WHERE [mpp].[ParentIdentification] = [mp].[Identification] AND [mpp].[Type] = '{capacitySettlementTypeString}'
                            )
                            """;
+
         return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
@@ -224,6 +225,7 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
                             WHERE [cr].[MeteringPointId] = [mp].[Id]
                            )
                            """;
+
         return GetMeteringPointHierarchiesToSyncAsync(existsClause, lastSyncedVersion, batchSize);
     }
 
