@@ -275,6 +275,47 @@ public class MeteringPointRepositoryTests : IClassFixture<ElectricityMarketDatab
         Assert.Empty(hierarchies);
     }
 
+    [Fact]
+    public async Task GivenMeteringPointWithSameVersion_WhenQueryingFromBeginningOfTime_ThenReturnHierarchy()
+    {
+        // Given metering points
+        var syncJob = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.MinValue, 0);
+        var sameVersion = DateTimeOffset.MinValue.AddYears(10);
+        var meteringPoint1 = await CreateTestDataNoChildrenAsync(sameVersion, MeteringPointType.Consumption);
+        var meteringPoint2 = await CreateTestDataNoChildrenAsync(sameVersion, MeteringPointType.Consumption);
+        await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
+        var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+
+        // When querying
+        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
+
+        // Then hierarchy is returned
+        Assert.NotNull(hierarchies);
+        Assert.NotEmpty(hierarchies);
+        Assert.Contains(meteringPoint1.Value, hierarchies.Select(h => h.Parent.Identification.Value));
+        Assert.Contains(meteringPoint2.Value, hierarchies.Select(h => h.Parent.Identification.Value));
+    }
+
+    [Fact]
+    public async Task GivenMeteringPointWithSameVersion_WhenQueryingById_ThenReturnOnlyOneHierarchy()
+    {
+        // Given metering points
+        var sameVersion = DateTimeOffset.MinValue.AddYears(10);
+        var meteringPoint1 = await CreateTestDataNoChildrenAsync(sameVersion, MeteringPointType.Consumption);
+        var meteringPoint2 = await CreateTestDataNoChildrenAsync(sameVersion, MeteringPointType.Consumption);
+        var syncJob = new SyncJob(SyncJobName.ElectricalHeating, sameVersion.AddMilliseconds(-1), Math.Min(meteringPoint1.Value, meteringPoint2.Value));
+        await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
+        var sut = new MeteringPointRepository(null!, dbContext, null!, new TestContextFactory(_fixture));
+
+        // When querying
+        var hierarchies = await sut.GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(syncJob).ToListAsync();
+
+        // Then hierarchy is returned
+        Assert.NotNull(hierarchies);
+        Assert.Single(hierarchies);
+        Assert.Equal(Math.Max(meteringPoint1.Value, meteringPoint2.Value), hierarchies.Single().Parent.Identification.Value);
+    }
+
     private async Task<(MeteringPointIdentification ParentIdentification, MeteringPointIdentification ChildIdentification)> CreateTestDataAsync(DateTimeOffset parentVersion, MeteringPointType parentMeteringPointType, DateTimeOffset childVersion, MeteringPointType childMeteringPointType, int? parentSettlementGroup = null)
     {
         await using var dbContext = _fixture.DatabaseManager.CreateDbContext();
