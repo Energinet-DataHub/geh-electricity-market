@@ -314,6 +314,36 @@ public class CapacitySettlementServiceTests
         Assert.Equal(noClientInterval.End.ToDateTimeOffset(), dto.PeriodToDate);
     }
 
+    [Fact]
+    public void GivenCollapsedCommercialRelation_WhenFindingCapacitySettlementPeriods_CollapsedCommercialRelationIsNotIncluded()
+    {
+        // Given collapsed commercial relations
+        var capacitySettlementMeteringPointMetadata = CreateCapacitySettlementMeteringPointMetadata(new Interval(_date25122024,  _date23022025), Any.MeteringPointIdentification());
+        var capacitySettlementMeteringPointMetadataClosed = CreateCapacitySettlementMeteringPointMetadata(new Interval(capacitySettlementMeteringPointMetadata.Valid.End, capacitySettlementMeteringPointMetadata.Valid.End.Plus(Duration.FromDays(1))), null, ConnectionState.ClosedDown);
+        var capacitySettlementMeteringPoint = CreateCapacitySettlementChildMeteringPoint([capacitySettlementMeteringPointMetadata, capacitySettlementMeteringPointMetadataClosed]);
+
+        var parentMeteringPointMetadata = CreateParentMeteringPointMetadata(ValidIntervalNow());
+        var clientId = Guid.NewGuid();
+        var commercialRelation1Interval = new Interval(_date25122024, Instant.FromUtc(2025, 2, 21, 0, 0, 0));
+        var commercialRelation1 = new CommercialRelation(1, "Watts Inc.", commercialRelation1Interval, clientId, [], []);
+        var collapsedCommercialRelation2Interval = new Interval(commercialRelation1Interval.End, commercialRelation1Interval.End);
+        var collapsedCommercialRelation2 = new CommercialRelation(2, "Watts Inc.", collapsedCommercialRelation2Interval, Guid.NewGuid(), [], []);
+        var commercialRelation3Interval = new Interval(commercialRelation1Interval.End, Instant.MaxValue);
+        var commercialRelation3 = new CommercialRelation(2, "Watts Inc.", commercialRelation3Interval, clientId, [], []);
+        var parentMeteringPoint = CreateParentMeteringPoint(capacitySettlementMeteringPointMetadata.Parent!, [parentMeteringPointMetadata], [commercialRelation1, collapsedCommercialRelation2, commercialRelation3]);
+
+        var hierarchy = new MeteringPointHierarchy(parentMeteringPoint, [capacitySettlementMeteringPoint], DateTimeOffset.MinValue);
+
+        // When finding capacity settlement periods to sync
+        var capacitySettlementPeriods = _sut.GetCapacitySettlementPeriods(hierarchy).ToList();
+
+        // One row per commercial relation is exported
+        Assert.Single(capacitySettlementPeriods);
+        var dto = capacitySettlementPeriods.First();
+        Assert.Equal(commercialRelation1.Period.Start.ToDateTimeOffset(), dto.PeriodFromDate);
+        Assert.Equal(commercialRelation3.Period.End.ToDateTimeOffset(), dto.PeriodToDate);
+    }
+
     private static MeteringPoint CreateParentMeteringPoint(MeteringPointIdentification parentIdentification, List<MeteringPointMetadata> meteringPointMetadata, List<CommercialRelation> commercialRelations)
     {
         return new MeteringPoint(1, DateTimeOffset.Now, parentIdentification, meteringPointMetadata, commercialRelations);
