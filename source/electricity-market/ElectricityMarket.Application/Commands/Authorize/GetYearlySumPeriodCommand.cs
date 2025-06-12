@@ -17,5 +17,5 @@ using NodaTime;
 
 namespace Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 
-public sealed record GetYearlySumPeriodCommand(string MeteringPointIdentification, Interval RequestedPeriod)
+public sealed record GetYearlySumPeriodCommand(string MeteringPointIdentification)
     : IRequest<Interval?>;

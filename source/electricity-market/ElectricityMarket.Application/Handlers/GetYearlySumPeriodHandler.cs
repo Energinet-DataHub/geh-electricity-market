@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Azure.Core;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
 using Energinet.DataHub.ElectricityMarket.Domain.Models;
 using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
@@ -76,6 +75,5 @@ public sealed class GetYearlySumPeriodHandler : IRequestHandler<GetYearlySumPeri
 
         // Null when no result, less than year ago => start date else year ago date.
         return mostRecentMovein == null ? null : new Interval(mostRecentMovein.Valid.Start.CompareTo(_yearAgo) > 0 ? mostRecentMovein.Valid.Start : _yearAgo, mostRecentMovein.Valid.End);
-
     }
 }

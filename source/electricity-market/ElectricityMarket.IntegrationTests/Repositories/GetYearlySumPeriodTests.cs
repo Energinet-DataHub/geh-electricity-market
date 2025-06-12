@@ -14,7 +14,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Energinet.DataHub.ElectricityMarket.Application.Commands.Authorize;
@@ -25,7 +24,6 @@ using Energinet.DataHub.ElectricityMarket.Infrastructure.Repositories;
 using Energinet.DataHub.ElectricityMarket.Integration.Models.MasterData;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Common;
 using Energinet.DataHub.ElectricityMarket.IntegrationTests.Fixtures;
-using Microsoft.EntityFrameworkCore.SqlServer.NodaTime.Extensions;
 using NodaTime;
 using Xunit;
 using ConnectionState = Energinet.DataHub.ElectricityMarket.Domain.Models.ConnectionState;
@@ -41,7 +39,6 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories
         private readonly string _balanceSupplier1 = "12345678";
         private readonly Instant _yearAgo = Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime().AddDays(-365));
         private readonly Instant _today = Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime());
-        private readonly DateTimeOffset _todayDateTime = DateTime.Today.ToUniversalTime();
         private readonly DateTimeOffset _moreThanyearAgoDateTime = DateTime.Today.AddDays(-375).ToUniversalTime();
 
         public GetYearlySumPeriodTests(ElectricityMarketDatabaseContextFixture fixture)
@@ -66,14 +63,12 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories
             // act + assert period of last 365 days.
             var target = new GetYearlySumPeriodHandler(sut);
 
-            var requestPeriod = new Interval(Instant.FromDateTimeUtc(DateTime.UtcNow.AddDays(-100)), Instant.FromDateTimeUtc(DateTime.UtcNow.AddDays(-1)));
-            var command = new GetYearlySumPeriodCommand(res.Identification.Value.ToString(CultureInfo.InvariantCulture), requestPeriod);
+            var command = new GetYearlySumPeriodCommand(res.Identification.Value.ToString(CultureInfo.InvariantCulture));
             var response = await target.Handle(command, CancellationToken.None);
 
             Assert.NotNull(response);
             Assert.Equal(_yearAgo, response.Value.Start);
             Assert.Equal(_today, response.Value.End);
-
         }
 
         [Fact]
@@ -93,14 +88,12 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories
             // act + assert period of last 150 days.
             var target = new GetYearlySumPeriodHandler(sut);
 
-            var requestPeriod = new Interval(Instant.FromDateTimeUtc(DateTime.UtcNow.AddDays(-100)), Instant.FromDateTimeUtc(DateTime.UtcNow.AddDays(-1)));
-            var command = new GetYearlySumPeriodCommand(res.Identification.Value.ToString(CultureInfo.InvariantCulture), requestPeriod);
+            var command = new GetYearlySumPeriodCommand(res.Identification.Value.ToString(CultureInfo.InvariantCulture));
             var response = await target.Handle(command, CancellationToken.None);
 
             Assert.NotNull(response);
             Assert.Equal(Instant.FromDateTimeUtc(DateTime.Today.ToUniversalTime().AddDays(-150)), response.Value.Start);
             Assert.Equal(_today, response.Value.End);
-
         }
 
         [Fact]
@@ -120,8 +113,7 @@ namespace Energinet.DataHub.ElectricityMarket.IntegrationTests.Repositories
             // act + assert period till 150 days ago.
             var target = new GetYearlySumPeriodHandler(sut);
 
-            var requestPeriod = new Interval(Instant.FromDateTimeUtc(DateTime.UtcNow.AddDays(-100)), Instant.FromDateTimeUtc(DateTime.UtcNow.AddDays(-1)));
-            var command = new GetYearlySumPeriodCommand(res.Identification.Value.ToString(CultureInfo.InvariantCulture), requestPeriod);
+            var command = new GetYearlySumPeriodCommand(res.Identification.Value.ToString(CultureInfo.InvariantCulture));
             var response = await target.Handle(command, CancellationToken.None);
 
             Assert.NotNull(response);
