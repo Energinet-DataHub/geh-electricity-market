@@ -49,7 +49,7 @@ public sealed class SyncHullerLogHandler(
                 SyncJobName.HullerLog);
 
             var meteringPointsToSync = _meteringPointRepository
-                .GetMeteringPointsToSyncAsync(currentSyncJob.Version);
+                .GetMeteringPointsToSyncAsync(currentSyncJob.Version, 10000);
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
             if (maxVersion is not null && maxVersion > DateTimeOffset.MinValue)
