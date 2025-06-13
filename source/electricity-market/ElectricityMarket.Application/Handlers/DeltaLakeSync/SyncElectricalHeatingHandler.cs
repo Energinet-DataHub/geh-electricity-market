@@ -58,7 +58,7 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
                 currentSyncJob.Version,
                 SyncJobName.ElectricalHeating);
             var meteringPointsToSync = _meteringPointRepository
-                .GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version, 10000);
+                .GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(currentSyncJob, 10000);
 
             var maxVersion = await HandleBatchAsync(meteringPointsToSync).ConfigureAwait(false);
             if (maxVersion > DateTimeOffset.MinValue)

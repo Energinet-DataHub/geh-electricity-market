@@ -52,7 +52,7 @@ public class SyncJobRepositoryTests : IAsyncLifetime
     {
         // Arrange
         var repository = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
-        var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow);
+        var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow, 123456789);
 
         // Act
         var result = await repository.AddOrUpdateAsync(job);
@@ -67,7 +67,7 @@ public class SyncJobRepositoryTests : IAsyncLifetime
         // Arrange
         var repository = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
         var repository2 = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
-        var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow);
+        var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow, 123456789);
 
         // Act
         var result = await repository.AddOrUpdateAsync(job);
@@ -78,6 +78,7 @@ public class SyncJobRepositoryTests : IAsyncLifetime
         Assert.NotNull(job2);
         Assert.Equal(job.Name, job2.Name);
         Assert.Equal(job.Version, job2.Version);
+        Assert.Equal(job.MeteringPointId, job2.MeteringPointId);
     }
 
     [Fact]
@@ -87,13 +88,14 @@ public class SyncJobRepositoryTests : IAsyncLifetime
         var repository = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
         var repository2 = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
         var repository3 = new SyncJobRepository(_fixture.DbUpDatabaseManager.CreateDbContext());
-        var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow);
+        var job = new SyncJob(SyncJobName.ElectricalHeating, DateTimeOffset.UtcNow, 123456789);
 
         // Act
         var result = await repository.AddOrUpdateAsync(job);
         var job2 = await repository2.GetByNameAsync(SyncJobName.ElectricalHeating);
-        var version = DateTimeOffset.UtcNow.AddDays(-1);
-        job2 = job2 with { Version = version };
+        var newVersion = DateTimeOffset.UtcNow.AddDays(-1);
+        var newIdentification = 234567891;
+        job2 = job2 with { Version = newVersion, MeteringPointId = newIdentification };
         await repository2.AddOrUpdateAsync(job2);
         var job3 = await repository3.GetByNameAsync(SyncJobName.ElectricalHeating);
 
@@ -101,7 +103,8 @@ public class SyncJobRepositoryTests : IAsyncLifetime
         Assert.True(result);
         Assert.NotNull(job3);
         Assert.Equal(job.Name, job3.Name);
-        Assert.Equal(version, job3.Version);
+        Assert.Equal(newVersion, job3.Version);
+        Assert.Equal(newIdentification, job3.MeteringPointId);
     }
 
     public async Task InitializeAsync()
@@ -112,6 +115,6 @@ public class SyncJobRepositoryTests : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-       return Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }

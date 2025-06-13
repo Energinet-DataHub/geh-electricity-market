@@ -22,4 +22,6 @@ public sealed class SyncJobsEntity
     public SyncJobName JobName { get; set; }
 
     public DateTimeOffset Version { get; set; }
+
+    public long MeteringPointId { get; set; }
 }
