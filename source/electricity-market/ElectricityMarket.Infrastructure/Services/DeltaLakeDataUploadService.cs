@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Energinet.DataHub.Core.Databricks.SqlStatementExecution;
 using Energinet.DataHub.ElectricityMarket.Application.Interfaces;
 using Energinet.DataHub.ElectricityMarket.Application.Models;
+using Energinet.DataHub.ElectricityMarket.Domain.Exceptions;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -45,16 +46,13 @@ public class DeltaLakeDataUploadService(
 
         var chunks = electricalHeatingParent.Chunk(51); // databricks max params (256) / number of properties
         await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
-        {
-            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
-
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
-            await foreach (var record in result.ConfigureAwait(false))
             {
-                string resultString = JsonSerializer.Serialize(record);
+                var statement =
+                    _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
+
+                var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
                 logger.LogInformation(" - Electrical Heating Parents Uploaded: {ResultString}", resultString);
-            }
-        }).ConfigureAwait(false);
+            }).ConfigureAwait(false);
     }
 
     public async Task InsertChildElectricalHeatingAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren)
@@ -69,12 +67,8 @@ public class DeltaLakeDataUploadService(
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Electrical Heating Children Uploaded: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Electrical Heating Children Uploaded: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -90,12 +84,8 @@ public class DeltaLakeDataUploadService(
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Electrical Heating Parents Deleted: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Electrical Heating Parents Deleted: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -111,12 +101,8 @@ public class DeltaLakeDataUploadService(
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Electrical Heating Child Deleted: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Electrical Heating Child Deleted: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -133,12 +119,8 @@ public class DeltaLakeDataUploadService(
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, ctx);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Capacity settlement Uploaded: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Capacity settlement Uploaded: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -155,12 +137,8 @@ public class DeltaLakeDataUploadService(
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, ctx);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Capacity settlement deleted: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Capacity settlement deleted: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -177,12 +155,8 @@ public class DeltaLakeDataUploadService(
         {
             var parentDeleteStatement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(parentTableName, chunk);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(parentDeleteStatement, cancellationToken);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Net consumption parents deleted: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(parentDeleteStatement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Net consumption parents deleted: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -199,12 +173,8 @@ public class DeltaLakeDataUploadService(
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Net Consumption Parents Uploaded: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Net Consumption Parents Uploaded: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -223,12 +193,8 @@ public class DeltaLakeDataUploadService(
             var childrenDeleteStatement =
                 _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(childrenTableName, childrenEmptyDto);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(childrenDeleteStatement, cancellationToken);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Net consumption children deleted: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(childrenDeleteStatement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Net consumption children deleted: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -244,12 +210,8 @@ public class DeltaLakeDataUploadService(
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Net Consumption Children Uploaded: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Net Consumption Children Uploaded: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -268,13 +230,9 @@ public class DeltaLakeDataUploadService(
         await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
 
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Huller log uploaded: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Huller log uploaded: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -285,8 +243,6 @@ public class DeltaLakeDataUploadService(
             "Starting clearing of {Count} huller log metering point periods.", emptyHullerLogs.Count);
 
         const int maxBatchSize = 250;
-
-        var allResults = new List<object>();
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MissingMeasurementLogsTableName}";
 
         var chunks = emptyHullerLogs.Chunk(maxBatchSize);
@@ -294,13 +250,9 @@ public class DeltaLakeDataUploadService(
         await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
 
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Electrical Heating Parents Uploaded: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Huller log deleted: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -319,13 +271,9 @@ public class DeltaLakeDataUploadService(
         await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
 
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Measurements report uploaded: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Measurements report uploaded: {ResultString}", resultString);
         }).ConfigureAwait(false);
     }
 
@@ -336,8 +284,6 @@ public class DeltaLakeDataUploadService(
             "Starting clearing of {Count} measurements report metering point periods.", emptyMeasurementsReports.Count);
 
         const int maxBatchSize = 250;
-
-        var allResults = new List<object>();
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
 
         var chunks = emptyMeasurementsReports.Chunk(maxBatchSize);
@@ -345,13 +291,27 @@ public class DeltaLakeDataUploadService(
         await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
-            var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
 
-            await foreach (var record in result.ConfigureAwait(false))
-            {
-                string resultString = JsonSerializer.Serialize(record);
-                logger.LogInformation(" - Electrical Heating Parents Uploaded: {ResultString}", resultString);
-            }
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(" - Measurements report deleted: {ResultString}", resultString);
         }).ConfigureAwait(false);
+    }
+
+    private async Task<string> ExecuteDatabricksStatementAsync(DatabricksStatement statement, CancellationToken cancellationToken = default)
+    {
+        var resultString = string.Empty;
+        try
+        {
+            await foreach (var record in databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken).ConfigureAwait(false))
+            {
+                resultString = JsonSerializer.Serialize(record);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new DatabricksExecutionException($"Databricks statement execution failed with: {ex.Message}", ex.InnerException);
+        }
+
+        return resultString;
     }
 }
