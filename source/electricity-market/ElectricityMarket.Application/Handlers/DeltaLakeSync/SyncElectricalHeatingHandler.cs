@@ -83,10 +83,12 @@ public sealed class SyncElectricalHeatingHandler : IRequestHandler<SyncElectrica
         await foreach (var hierarchy in meteringPointHierarchies.ConfigureAwait(false))
         {
             maxVersion = hierarchy.Version > maxVersion ? hierarchy.Version : maxVersion;
-            parentMeteringPointsToInsert.AddRange(_electricalHeatingPeriodizationService.GetParentElectricalHeating(hierarchy.Parent));
+            var parentMeteringPoints =
+                _electricalHeatingPeriodizationService.GetParentElectricalHeating(hierarchy.Parent).ToList();
+            parentMeteringPointsToInsert.AddRange(parentMeteringPoints);
 
             var parentSettlementGroups = hierarchy.Parent.MetadataTimeline.Select(m => m.NetSettlementGroup).Distinct().ToList();
-            if (parentSettlementGroups.Intersect(_relevantSettlementGroups).Any())
+            if (parentMeteringPoints.Count > 0 && parentSettlementGroups.Intersect(_relevantSettlementGroups).Any())
             {
                 childMeteringPointsToInsert.AddRange(
                     _electricalHeatingPeriodizationService.GetChildElectricalHeating(hierarchy.ChildMeteringPoints));

@@ -56,10 +56,12 @@ public class ElectricalHeatingPeriodizationService : IElectricalHeatingPeriodiza
         ArgumentNullException.ThrowIfNull(meteringPoint);
         if (meteringPoint.CommercialRelationTimeline.Any(cr => cr.ElectricalHeatingPeriods.Any()))
         {
-            var electricalHeatingTimeline = meteringPoint.CommercialRelationTimeline.SelectMany(cr => cr.ElectricalHeatingPeriods);
+            var electricalHeatingTimeline = meteringPoint.CommercialRelationTimeline
+                .SelectMany(cr => cr.ElectricalHeatingPeriods)
+                .Where(ehp => ehp.IsActive && ehp.Period.End > _cutoffDate);
             var metadataTimeline = meteringPoint.MetadataTimeline
                 .Where(mt => mt.Parent is null && mt.Type == MeteringPointType.Consumption // Consumption (parent) metering points
-                    && mt.SubType == MeteringPointSubType.Physical && _relevantConnectionStates.Contains(mt.ConnectionState) // the metering point physical status is connected or disconnected
+                   && _relevantConnectionStates.Contains(mt.ConnectionState) // the metering point physical status is connected or disconnected
                     && mt.Valid.End > _cutoffDate).ToList(); // the period does not end before 2021-01-01
 
             foreach (var electricalHeatingPeriod in electricalHeatingTimeline)
