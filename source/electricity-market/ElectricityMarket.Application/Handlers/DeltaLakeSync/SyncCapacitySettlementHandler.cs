@@ -57,7 +57,7 @@ public class SyncCapacitySettlementHandler : IRequestHandler<SyncCapacitySettlem
                 currentSyncJob.Version,
                 SyncJobName.CapacitySettlement);
 
-            var meteringPointsToSync = _meteringPointRepository.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version);
+            var meteringPointsToSync = _meteringPointRepository.GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(currentSyncJob.Version, 10000);
             var maxVersionProcessed = await HandleBatchAsync(meteringPointsToSync, cancellationToken).ConfigureAwait(false);
             if (maxVersionProcessed is not null)
             {
