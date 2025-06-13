@@ -34,6 +34,7 @@ public class DeltaLakeDataUploadService(
     ILogger<DeltaLakeDataUploadService> logger)
     : IDeltaLakeDataUploadService
 {
+    private const int MaxDegreeOfParallelism = 20;
     private readonly DeltaLakeDataUploadStatementFormatter _deltaLakeDataUploadStatementFormatter = new();
 
     public async Task InsertParentElectricalHeatingAsync(IReadOnlyList<ElectricalHeatingParentDto> electricalHeatingParent)
@@ -44,13 +45,14 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingParentTableName}";
 
         var chunks = electricalHeatingParent.Chunk(51); // databricks max params (256) / number of properties
-        foreach (var chunk in chunks)
-        {
-            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
+            {
+                var statement =
+                    _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
-            logger.LogInformation(" - Electrical Heating Parents Uploaded: {ResultString}", resultString);
-        }
+                var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
+                logger.LogInformation(" - Electrical Heating Parents Uploaded: {ResultString}", resultString);
+            }).ConfigureAwait(false);
     }
 
     public async Task InsertChildElectricalHeatingAsync(IReadOnlyList<ElectricalHeatingChildDto> electricalHeatingChildren)
@@ -61,13 +63,13 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingChildTableName}";
 
         var chunks = electricalHeatingChildren.Chunk(42); // databricks max params (256) / number of properties
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Electrical Heating Children Uploaded: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task DeleteParentElectricalHeatingAsync(IReadOnlyList<ElectricalHeatingEmptyDto> electricalHeatingEmpty)
@@ -78,13 +80,13 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingParentTableName}";
 
         var chunks = electricalHeatingEmpty.Chunk(256); // databricks max params (256) / number of properties
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Electrical Heating Parents Deleted: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task DeleteChildElectricalHeatingAsync(IReadOnlyList<ElectricalHeatingEmptyDto> electricalHeatingEmpty)
@@ -95,13 +97,13 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingChildTableName}";
 
         var chunks = electricalHeatingEmpty.Chunk(256); // databricks max params (256) / number of properties
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Electrical Heating Child Deleted: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task InsertCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementPeriodDto> capacitySettlementPeriods, CancellationToken cancellationToken)
@@ -113,13 +115,13 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.CapacitySettlementPeriodTableName}";
 
         var chunks = capacitySettlementPeriods.Chunk(chunkSize);
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism, CancellationToken = cancellationToken }, async (chunk, ctx) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Capacity settlement Uploaded: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task DeleteCapacitySettlementPeriodsAsync(IReadOnlyList<CapacitySettlementEmptyDto> capacitySettlementEmptyDtos, CancellationToken cancellationToken)
@@ -131,13 +133,13 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.CapacitySettlementPeriodTableName}";
 
         var chunks = capacitySettlementEmptyDtos.Chunk(chunkSize);
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism, CancellationToken = cancellationToken }, async (chunk, ctx) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Capacity settlement deleted: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task DeleteNetConsumptionParentsAsync(IReadOnlyList<NetConsumptionEmptyDto> netConsumptionEmptyDtos)
@@ -149,13 +151,13 @@ public class DeltaLakeDataUploadService(
         var parentTableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionParentTableName}";
 
         var chunks = netConsumptionEmptyDtos.Chunk(chunkSize);
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var parentDeleteStatement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(parentTableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(parentDeleteStatement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(parentDeleteStatement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Net consumption parents deleted: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task InsertNetConsumptionParentsAsync(IReadOnlyList<NetConsumptionParentDto> netConsumptionParents)
@@ -167,13 +169,13 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionParentTableName}";
 
         var chunks = netConsumptionParents.Chunk(chunkSize);
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Net Consumption Parents Uploaded: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task DeleteNetConsumptionChildrenAsync(IReadOnlyList<NetConsumptionEmptyDto> netConsumptionEmptyDtos)
@@ -185,14 +187,15 @@ public class DeltaLakeDataUploadService(
         var childrenTableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionChildTableName}";
 
         var chunks = netConsumptionEmptyDtos.Chunk(chunkSize);
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var childrenEmptyDto = chunk.Select(x => new { ParentMeteringPointId = x.MeteringPointId });
-            var childrenDeleteStatement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(childrenTableName, childrenEmptyDto);
+            var childrenDeleteStatement =
+                _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(childrenTableName, childrenEmptyDto);
 
-            var resultString = await ExecuteDatabricksStatementAsync(childrenDeleteStatement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(childrenDeleteStatement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Net consumption children deleted: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task InsertNetConsumptionChildrenAsync(IReadOnlyList<NetConsumptionChildDto> netConsumptionChildren)
@@ -203,13 +206,13 @@ public class DeltaLakeDataUploadService(
         const int chunkSize = 51; // databricks max params (256) / number of properties
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionChildTableName}";
         var chunks = netConsumptionChildren.Chunk(chunkSize);
-        foreach (var chunk in chunks)
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Net Consumption Children Uploaded: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task InsertHullerLogPeriodsAsync(IReadOnlyList<HullerLogDto> hullerLogs)
@@ -222,13 +225,15 @@ public class DeltaLakeDataUploadService(
         const int chunkSize = 50;
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MissingMeasurementLogsTableName}";
 
-        foreach (var batch in hullerLogs.Chunk(chunkSize))
-        {
-            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, batch);
+        var chunks = hullerLogs.Chunk(chunkSize);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
+        {
+            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
+
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Huller log uploaded: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task DeleteHullerLogPeriodsAsync(IReadOnlyList<HullerLogEmptyDto> emptyHullerLogs)
@@ -240,13 +245,15 @@ public class DeltaLakeDataUploadService(
         const int maxBatchSize = 250;
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MissingMeasurementLogsTableName}";
 
-        foreach (var batch in emptyHullerLogs.Chunk(maxBatchSize))
-        {
-            var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, batch);
+        var chunks = emptyHullerLogs.Chunk(maxBatchSize);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
+        {
+            var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
+
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Huller log deleted: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task InsertMeasurementsReportPeriodsAsync(IReadOnlyList<MeasurementsReportDto> measurementsReports)
@@ -259,13 +266,15 @@ public class DeltaLakeDataUploadService(
         const int chunkSize = 20;
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
 
-        foreach (var batch in measurementsReports.Chunk(chunkSize))
-        {
-            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, batch);
+        var chunks = measurementsReports.Chunk(chunkSize);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
+        {
+            var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
+
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Measurements report uploaded: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
     public async Task DeleteMeasurementsReportPeriodsAsync(IReadOnlyList<MeasurementsReportEmptyDto> emptyMeasurementsReports)
@@ -277,21 +286,23 @@ public class DeltaLakeDataUploadService(
         const int maxBatchSize = 250;
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.MeasurementsReportTableName}";
 
-        foreach (var batch in emptyMeasurementsReports.Chunk(maxBatchSize))
-        {
-            var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, batch);
+        var chunks = emptyMeasurementsReports.Chunk(maxBatchSize);
 
-            var resultString = await ExecuteDatabricksStatementAsync(statement).ConfigureAwait(false);
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
+        {
+            var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
+
+            var resultString = await ExecuteDatabricksStatementAsync(statement, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(" - Measurements report deleted: {ResultString}", resultString);
-        }
+        }).ConfigureAwait(false);
     }
 
-    private async Task<string> ExecuteDatabricksStatementAsync(DatabricksStatement statement)
+    private async Task<string> ExecuteDatabricksStatementAsync(DatabricksStatement statement, CancellationToken cancellationToken = default)
     {
         var resultString = string.Empty;
         try
         {
-            await foreach (var record in databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement).ConfigureAwait(false))
+            await foreach (var record in databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken).ConfigureAwait(false))
             {
                 resultString = JsonSerializer.Serialize(record);
             }
