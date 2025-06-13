@@ -58,7 +58,7 @@ public sealed class SyncNetConsumptionHandler : IRequestHandler<SyncNetConsumpti
                 SyncJobName.NetConsumption);
 
             var meteringPointHierarchiesToSync = _meteringPointRepository
-                .GetNetConsumptionMeteringPointHierarchiesToSyncAsync(currentSyncJob);
+                .GetNetConsumptionMeteringPointHierarchiesToSyncAsync(currentSyncJob, 10000);
 
             var maxVersionProcessed = await HandleBatchAsync(meteringPointHierarchiesToSync).ConfigureAwait(false);
 

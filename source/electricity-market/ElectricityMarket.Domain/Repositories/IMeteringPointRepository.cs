@@ -28,11 +28,11 @@ public interface IMeteringPointRepository
 
     IAsyncEnumerable<MeteringPoint> GetMeteringPointsToSyncAsync(DateTimeOffset lastSyncedVersion, int batchSize = 10000);
 
-    IAsyncEnumerable<MeteringPointHierarchy> GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50);
+    IAsyncEnumerable<MeteringPointHierarchy> GetCapacitySettlementMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 10000);
 
-    IAsyncEnumerable<MeteringPointHierarchy> GetNetConsumptionMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50);
+    IAsyncEnumerable<MeteringPointHierarchy> GetNetConsumptionMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 10000);
 
-    IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50);
+    IAsyncEnumerable<MeteringPointHierarchy> GetElectricalHeatingMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 10000);
 
-    IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 50);
+    IAsyncEnumerable<MeteringPointHierarchy> GetMeteringPointHierarchiesToSyncAsync(SyncJob syncJob, int batchSize = 10000);
 }

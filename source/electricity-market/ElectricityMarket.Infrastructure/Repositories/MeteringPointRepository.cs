@@ -23,6 +23,7 @@ using Energinet.DataHub.ElectricityMarket.Domain.Repositories;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Extensions;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Mappers;
+using Energinet.DataHub.ElectricityMarket.Infrastructure.Persistence.Model;
 using Energinet.DataHub.ElectricityMarket.Infrastructure.Services.Import;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -257,19 +258,43 @@ public sealed class MeteringPointRepository : IMeteringPointRepository
             var batchSizeParam = new SqlParameter("batchSize", batchSize);
             var latestVersionParam = new SqlParameter("latestVersion", syncJob.Version);
             var latestIdentification = new SqlParameter("latestIdentification", syncJob.MeteringPointId);
-            var changedItems = readContext.Database.SqlQueryRaw<ChangedHierarchy>(query, batchSizeParam, latestVersionParam, latestIdentification).AsNoTracking().AsAsyncEnumerable();
+            var changedItems = readContext.Database.SqlQueryRaw<ChangedHierarchy>(query, batchSizeParam, latestVersionParam, latestIdentification).AsNoTracking().ToList();
 
-            await foreach (var item in changedItems.ConfigureAwait(false))
+            if (changedItems.Count == 0)
             {
-                var parent = MeteringPointMapper.MapFromEntity(_electricityMarketDatabaseContext.MeteringPoints.AsNoTracking().First(mp => mp.Identification == item.ParentIdentification));
-                var children = await _electricityMarketDatabaseContext.MeteringPoints
-                    .AsSplitQuery()
-                    .AsNoTracking()
-                    .Where(x => x.MeteringPointPeriods.Any(y => y.ParentIdentification == parent.Identification.Value))
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+                yield break;
+            }
 
-                yield return new MeteringPointHierarchy(parent, children.Select(MeteringPointMapper.MapFromEntity), item.MaxVersion);
+            var versionMap = changedItems.ToDictionary(x => x.ParentIdentification, y => y.MaxVersion);
+            var changedMeteringPointIds = versionMap.Keys.ToArray();
+            var changedParents = _electricityMarketDatabaseContext.MeteringPoints.AsNoTracking()
+                .Where(x => changedMeteringPointIds.Contains(x.Identification)).AsEnumerable().Select(MeteringPointMapper.MapFromEntity).ToList();
+
+            var childrenIdsQuery = $"""
+                                   SELECT [mp].[Identification] as [ParentIdentification], [mpp].[MeteringPointId] as [ChildId]
+                                   FROM [electricitymarket].[MeteringPoint] [mp]
+                                   JOIN [electricitymarket].[MeteringPointPeriod] [mpp] ON [mp].[Identification] = [mpp].[ParentIdentification]
+                                   WHERE [mp].[Identification] IN ({string.Join(',', changedMeteringPointIds)});
+                                   """;
+
+            var parentChildMap = _electricityMarketDatabaseContext.Database.SqlQueryRaw<ParentChild>(childrenIdsQuery).AsNoTracking().ToList()
+                .GroupBy(x => x.ParentIdentification).ToDictionary(x => x.Key, y => y.Select(z => z.ChildId).Distinct().ToList());
+
+            foreach (var parent in changedParents)
+            {
+                var children = new List<MeteringPointEntity>();
+                if (parentChildMap.TryGetValue(parent.Identification.Value, out var childrenIds))
+                {
+                    children = await _electricityMarketDatabaseContext.MeteringPoints
+                        .AsSplitQuery()
+                        .AsNoTracking()
+                        .Where(x => childrenIds.Contains(x.Id))
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+                }
+
+                var hierarchyVersion = versionMap[parent.Identification.Value];
+                yield return new MeteringPointHierarchy(parent, children.Select(MeteringPointMapper.MapFromEntity), hierarchyVersion);
             }
         }
     }
