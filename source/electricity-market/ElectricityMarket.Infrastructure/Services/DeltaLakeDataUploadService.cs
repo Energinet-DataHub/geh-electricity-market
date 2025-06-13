@@ -33,6 +33,7 @@ public class DeltaLakeDataUploadService(
     ILogger<DeltaLakeDataUploadService> logger)
     : IDeltaLakeDataUploadService
 {
+    private const int MaxDegreeOfParallelism = 20;
     private readonly DeltaLakeDataUploadStatementFormatter _deltaLakeDataUploadStatementFormatter = new();
 
     public async Task InsertParentElectricalHeatingAsync(IReadOnlyList<ElectricalHeatingParentDto> electricalHeatingParent)
@@ -43,7 +44,7 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingParentTableName}";
 
         var chunks = electricalHeatingParent.Chunk(51); // databricks max params (256) / number of properties
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
@@ -64,7 +65,7 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingChildTableName}";
 
         var chunks = electricalHeatingChildren.Chunk(42); // databricks max params (256) / number of properties
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
@@ -85,7 +86,7 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingParentTableName}";
 
         var chunks = electricalHeatingEmpty.Chunk(256); // databricks max params (256) / number of properties
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
@@ -106,7 +107,7 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.ElectricalHeatingChildTableName}";
 
         var chunks = electricalHeatingEmpty.Chunk(256); // databricks max params (256) / number of properties
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
@@ -128,7 +129,7 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.CapacitySettlementPeriodTableName}";
 
         var chunks = capacitySettlementPeriods.Chunk(chunkSize);
-        await Parallel.ForEachAsync(chunks, cancellationToken, async (chunk, ctx) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism, CancellationToken = cancellationToken }, async (chunk, ctx) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
@@ -150,7 +151,7 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.CapacitySettlementPeriodTableName}";
 
         var chunks = capacitySettlementEmptyDtos.Chunk(chunkSize);
-        await Parallel.ForEachAsync(chunks, cancellationToken, async (chunk, ctx) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism, CancellationToken = cancellationToken }, async (chunk, ctx) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
 
@@ -172,7 +173,7 @@ public class DeltaLakeDataUploadService(
         var parentTableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionParentTableName}";
 
         var chunks = netConsumptionEmptyDtos.Chunk(chunkSize);
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var parentDeleteStatement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(parentTableName, chunk);
 
@@ -194,7 +195,7 @@ public class DeltaLakeDataUploadService(
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionParentTableName}";
 
         var chunks = netConsumptionParents.Chunk(chunkSize);
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
@@ -216,7 +217,7 @@ public class DeltaLakeDataUploadService(
         var childrenTableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionChildTableName}";
 
         var chunks = netConsumptionEmptyDtos.Chunk(chunkSize);
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var childrenEmptyDto = chunk.Select(x => new { ParentMeteringPointId = x.MeteringPointId });
             var childrenDeleteStatement =
@@ -239,7 +240,7 @@ public class DeltaLakeDataUploadService(
         const int chunkSize = 51; // databricks max params (256) / number of properties
         var tableName = $"{catalogOptions.Value.Name}.{catalogOptions.Value.SchemaName}.{catalogOptions.Value.NetConsumptionChildTableName}";
         var chunks = netConsumptionChildren.Chunk(chunkSize);
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
 
@@ -264,7 +265,7 @@ public class DeltaLakeDataUploadService(
 
         var chunks = hullerLogs.Chunk(chunkSize);
 
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
@@ -290,7 +291,7 @@ public class DeltaLakeDataUploadService(
 
         var chunks = emptyHullerLogs.Chunk(maxBatchSize);
 
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
@@ -315,7 +316,7 @@ public class DeltaLakeDataUploadService(
 
         var chunks = measurementsReports.Chunk(chunkSize);
 
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateInsertStatementWithParameters(tableName, chunk);
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
@@ -341,7 +342,7 @@ public class DeltaLakeDataUploadService(
 
         var chunks = emptyMeasurementsReports.Chunk(maxBatchSize);
 
-        await Parallel.ForEachAsync(chunks, async (chunk, cancellationToken) =>
+        await Parallel.ForEachAsync(chunks, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, async (chunk, cancellationToken) =>
         {
             var statement = _deltaLakeDataUploadStatementFormatter.CreateDeleteStatementWithParameters(tableName, chunk);
             var result = databricksSqlWarehouseQueryExecutor.ExecuteStatementAsync(statement, cancellationToken);
