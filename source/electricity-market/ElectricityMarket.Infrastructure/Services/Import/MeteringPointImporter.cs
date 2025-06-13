@@ -602,7 +602,9 @@ public sealed class MeteringPointImporter : IMeteringPointImporter
 
             changeEhp.ValidTo = activeEhp.ValidTo == DateTimeOffset.MaxValue
                 ? DateTimeOffset.MaxValue
-                : cr.ElectricalHeatingPeriods.Where(x => x.ValidFrom > importedTransaction.valid_from_date && x.RetiredBy is null).Min(x => x.ValidFrom);
+                : meteringPoint.CommercialRelations
+                    .SelectMany(x => x.ElectricalHeatingPeriods).Where(x => x.ValidFrom > importedTransaction.valid_from_date && x.RetiredBy is null)
+                    .Min(x => x.ValidFrom);
 
             activeEhp.RetiredAt = DateTimeOffset.UtcNow;
         }
