@@ -71,6 +71,7 @@ public sealed class ImportedTransactionEntity
     public string? second_consumer_cpr { get; set; }
     public string? consumer_cvr { get; set; }
     public bool? protected_name { get; set; }
+    public string? contact_1_address_code { get; set; }
     public string? contact_1_contact_name1 { get; set; }
     public bool? contact_1_protected_address { get; set; }
     public string? contact_1_phone_number { get; set; }
@@ -89,6 +90,7 @@ public sealed class ImportedTransactionEntity
     public string? contact_1_room_id { get; set; }
     public string? contact_1_post_box { get; set; }
     public string? contact_1_municipality_code { get; set; }
+    public string? contact_4_address_code { get; set; }
     public string? contact_4_contact_name1 { get; set; }
     public bool? contact_4_protected_address { get; set; }
     public string? contact_4_phone_number { get; set; }
