@@ -56,6 +56,7 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [consumer_cvr]                    CHAR(8)            NULL,
     [protected_name]                  BIT                NULL,
 
+    [contact_1_address_code]          CHAR(3)            NULL,
     [contact_1_contact_name1]         NVARCHAR(256)      NULL,
     [contact_1_protected_address]     BIT                NULL,
     [contact_1_phone_number]          NVARCHAR(64)       NULL,
@@ -75,6 +76,7 @@ CREATE TABLE [electricitymarket].[GoldenImport]
     [contact_1_post_box]              NVARCHAR(64)       NULL,
     [contact_1_municipality_code]     NVARCHAR(64)       NULL,
 
+    [contact_4_address_code]          CHAR(3)            NULL,
     [contact_4_contact_name1]         NVARCHAR(256)      NULL,
     [contact_4_protected_address]     BIT                NULL,
     [contact_4_phone_number]          NVARCHAR(64)       NULL,
